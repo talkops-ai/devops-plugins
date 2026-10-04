@@ -4,12 +4,19 @@
 
 Security and identity skills for the main agent: least-privilege IAM, Security Hub/GuardDuty/Inspector findings, Cognito authentication, and Secrets Manager best practices, with read-only IAM, Well-Architected security, and AWS Security Agent MCP servers and the secret-safety hook.
 
+## Install
+
+| Host | How |
+|---|---|
+| Claude Code | `/plugin marketplace add talkops-ai/devops-plugins`, then `/plugin install aws-security-identity@talkops-devops-plugins` |
+| Codex | `codex plugin marketplace add talkops-ai/devops-plugins`, then install from the Plugins Directory |
+| Other Agent Plugins hosts | Load this directory; [`plugin.json`](./plugin.json), `skills/`, and [`mcp.json`](./mcp.json) follow the portable [Agent Plugins](https://agent-plugins.org) format |
+
 ## How it works
 
 This is a **vertical plugin**: its skills, commands, and MCP servers attach directly to your main agent, with no sub-agent hand-off. Prefer the [`aws-cloud-security-engineer`](../../agent-plugins/aws-cloud-security-engineer) or [`aws-devsecops-agent`](../../agent-plugins/aws-devsecops-agent) agent plugin when you want an isolated specialist instead.
 
-- Install: `claude plugin install aws-security-identity@talkops-devops-plugins`
-- Skills activate from their descriptions; invoke one explicitly with `/aws-security-identity:<skill>`
+- Skills activate from their descriptions; in Claude Code invoke one explicitly with `/aws-security-identity:<skill>`
 
 ## Skills
 
@@ -28,21 +35,19 @@ This is a **vertical plugin**: its skills, commands, and MCP servers attach dire
 | `/aws-security-identity:access-denied` | Explain why an AWS API call was denied |
 | `/aws-security-identity:create-secret` | Create a secret in Secrets Manager the right way |
 | `/aws-security-identity:least-privilege-policy` | Generate a least-privilege IAM policy |
-| `/aws-security-identity:scan-code` | Run an AWS Security Agent code scan on the repository |
 | `/aws-security-identity:security-findings` | Triage Security Hub, GuardDuty, and Inspector findings |
 
 ## MCP servers
 
-Declared in [`.mcp.json`](./.mcp.json); started when the plugin is enabled and available to the main agent.
+Declared in [`.mcp.json`](./.mcp.json) (Claude Code) and [`mcp.json`](./mcp.json) (portable); started when the plugin is enabled and available to the main agent.
 
-| Server | Transport | Launch | Tool names | Notes |
+| Server | Transport | Launch | Claude Code tool names | Notes |
 |---|---|---|---|---|
 | `aws-mcp` | stdio | `uvx mcp-proxy-for-aws-cli==1.7.0` `--skip-auth --metadata` | `mcp__plugin_aws-security-identity_aws-mcp__*` | Managed AWS MCP Server via the toolkit's pinned proxy (aws___call_aws, aws___search_documentation, aws___retrieve_skill, ...). |
-| `iam` | stdio | `uvx awslabs.iam-mcp-server@latest` | `mcp__plugin_aws-security-identity_iam__*` | Read-only by default (the published server has no --readonly flag). Add --allow-write to enable IAM mutations. |
+| `iam` | stdio | `uvx awslabs.iam-mcp-server@latest` | `mcp__plugin_aws-security-identity_iam__*` | Read-only by default (the server only mutates with --allow-write). Add --allow-write to allow IAM mutations. |
 | `wa-security` | stdio | `uvx awslabs.well-architected-security-mcp-server@latest` | `mcp__plugin_aws-security-identity_wa-security__*` |  |
-| `security-agent` | stdio | `uvx awslabs.security-agent-mcp-server@latest` | `mcp__plugin_aws-security-identity_security-agent__*` | AWS Security Agent scans and pentests. No read-only mode: first use may provision an agent space and IAM role, so confirm before running. |
 
-AWS credentials are inherited from the host environment (`AWS_PROFILE`, SSO, or instance role). `AWS_REGION` defaults to `us-east-1` when unset. Toggle any server off per project in `/mcp`.
+AWS credentials are inherited from the host environment (`AWS_PROFILE`, SSO, or instance role). In Claude Code `AWS_REGION` defaults to `us-east-1` when unset; the portable `mcp.json` can't express that default, so set `AWS_REGION` in your environment on other hosts. Codex starts MCP servers with a minimal environment: if a server can't see your profile, set `AWS_PROFILE`/`AWS_REGION` for it in `~/.codex/config.toml`.
 
 ## Hooks
 
@@ -51,8 +56,8 @@ AWS credentials are inherited from the host environment (`AWS_PROFILE`, SSO, or 
 
 ## Upstream
 
-Derived from the following Apache-2.0 sources (see the repository `NOTICE`):
+Derived from the following open-source sources (see the repository `NOTICE`):
 
-- [`core-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws)
-- [`aws-core`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws)
-- [`specialized-skills/security-and-identity-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws)
+- [`core-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws, Apache-2.0)
+- [`aws-core`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws, Apache-2.0)
+- [`specialized-skills/security-and-identity-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws, Apache-2.0)

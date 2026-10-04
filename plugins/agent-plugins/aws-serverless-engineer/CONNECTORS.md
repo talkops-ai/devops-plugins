@@ -2,9 +2,11 @@
 
 # Optional connectors: AWS Serverless Engineer
 
-These MCP servers need a connection target (cluster endpoint, host, or credentials secret) that only you know, so the plugin does **not** start them. Add the ones you need to your own Claude Code configuration with the exact key shown; the key determines the tool names (`mcp__<key>__*`). The `aws-serverless-engineer` agent's `tools:` allowlist already grants `mcp__<key>__*` for each key below.
+These MCP servers need a connection target (cluster endpoint, host, credentials, or a local runtime such as Docker) that only you can supply, so the plugin does **not** start them. Add the ones you need to your own agent host configuration with the exact key shown; the key determines the tool names (`mcp__<key>__*`). In Claude Code the `aws-serverless-engineer` agent's `tools:` allowlist already grants `mcp__<key>__*` for each key below.
 
-AWS credentials are inherited from your environment. Prefer least-privilege, read-only database users and keep write flags off unless you need them.
+Each connector below has a Claude Code command, a Codex command, and the equivalent `~/.codex/config.toml` block. Other MCP hosts take the same `command`, `args`, and `env`.
+
+AWS credentials are inherited from your environment. Prefer least-privilege, read-only database users and keep write flags off unless you need them. Codex starts MCP servers with a minimal environment; if a server can't find your AWS profile, add `AWS_PROFILE` and `AWS_REGION` to its `env`.
 
 ## Connectors
 
@@ -15,18 +17,50 @@ AWS credentials are inherited from your environment. Prefer least-privilege, rea
 
 ### `lambda-tool`
 
+Claude Code:
+
 ```bash
-claude mcp add --env AWS_REGION=<region> --env FUNCTION_PREFIX=<prefix> lambda-tool -- \
-  uvx awslabs.lambda-tool-mcp-server@latest
+claude mcp add --scope user --env 'AWS_REGION=<region>' --env 'FUNCTION_PREFIX=<prefix>' lambda-tool -- uvx awslabs.lambda-tool-mcp-server@latest
+```
+
+Codex:
+
+```bash
+codex mcp add lambda-tool --env 'AWS_REGION=<region>' --env 'FUNCTION_PREFIX=<prefix>' -- uvx awslabs.lambda-tool-mcp-server@latest
+```
+
+Codex `config.toml`:
+
+```toml
+[mcp_servers.lambda-tool]
+command = "uvx"
+args = ["awslabs.lambda-tool-mcp-server@latest"]
+env = { AWS_REGION = "<region>", FUNCTION_PREFIX = "<prefix>" }
 ```
 
 Always scope with `FUNCTION_PREFIX`, `FUNCTION_LIST`, or `FUNCTION_TAG_KEY`/`FUNCTION_TAG_VALUE`; unfiltered it exposes every function in the account.
 
 ### `stepfunctions-tool`
 
+Claude Code:
+
 ```bash
-claude mcp add --env AWS_REGION=<region> --env STATE_MACHINE_PREFIX=<prefix> stepfunctions-tool -- \
-  uvx awslabs.stepfunctions-tool-mcp-server@latest
+claude mcp add --scope user --env 'AWS_REGION=<region>' --env 'STATE_MACHINE_PREFIX=<prefix>' stepfunctions-tool -- uvx awslabs.stepfunctions-tool-mcp-server@latest
+```
+
+Codex:
+
+```bash
+codex mcp add stepfunctions-tool --env 'AWS_REGION=<region>' --env 'STATE_MACHINE_PREFIX=<prefix>' -- uvx awslabs.stepfunctions-tool-mcp-server@latest
+```
+
+Codex `config.toml`:
+
+```toml
+[mcp_servers.stepfunctions-tool]
+command = "uvx"
+args = ["awslabs.stepfunctions-tool-mcp-server@latest"]
+env = { AWS_REGION = "<region>", STATE_MACHINE_PREFIX = "<prefix>" }
 ```
 
 Always scope with `STATE_MACHINE_PREFIX`, `STATE_MACHINE_LIST`, or a tag filter.

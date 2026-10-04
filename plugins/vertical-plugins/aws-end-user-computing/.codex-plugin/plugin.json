@@ -13,5 +13,20 @@
     "workspaces",
     "end-user-computing",
     "vdi"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "interface": {
+    "displayName": "AWS End User Computing",
+    "shortDescription": "Amazon WorkSpaces skills for the main agent",
+    "longDescription": "Amazon WorkSpaces skills for the main agent: setting up and operating agent access to WorkSpaces desktops.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/vertical-plugins/aws-end-user-computing",
+    "brandColor": "#FF9900"
+  }
 }

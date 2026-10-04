@@ -19,5 +19,21 @@
     "opensearch",
     "mwaa",
     "airflow"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "AWS Data Engineer",
+    "shortDescription": "Data-lake and analytics engineer",
+    "longDescription": "Data-lake and analytics engineer: S3 Tables/Iceberg, Glue connections and Data Catalog, Athena and Redshift queries, ingestion pipelines, S3 Vectors, OpenSearch, and MWAA (Airflow) authoring, testing, debugging, and upgrades.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/agent-plugins/aws-data-engineer",
+    "brandColor": "#FF9900"
+  }
 }

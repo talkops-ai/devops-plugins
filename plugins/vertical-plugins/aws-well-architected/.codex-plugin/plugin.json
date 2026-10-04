@@ -13,5 +13,20 @@
     "well-architected",
     "architecture-review",
     "best-practices"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "interface": {
+    "displayName": "AWS Well-Architected",
+    "shortDescription": "Evidence-backed AWS Well-Architected Framework reviews across all six pillars on the main agent, with AWS Knowledge and…",
+    "longDescription": "Evidence-backed AWS Well-Architected Framework reviews across all six pillars on the main agent, with AWS Knowledge and the Well-Architected security MCP server.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/vertical-plugins/aws-well-architected",
+    "brandColor": "#FF9900"
+  }
 }

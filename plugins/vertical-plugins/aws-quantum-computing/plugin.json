@@ -1,0 +1,17 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "aws-quantum-computing",
+  "version": "0.1.0",
+  "description": "Amazon Braket skills for the main agent: building, simulating, and running quantum circuits and hybrid jobs on Braket devices.",
+  "author": {
+    "name": "TalkOps AI"
+  },
+  "homepage": "https://github.com/talkops-ai/devops-plugins",
+  "repository": "https://github.com/talkops-ai/devops-plugins",
+  "license": "Apache-2.0",
+  "keywords": [
+    "aws",
+    "quantum",
+    "braket"
+  ]
+}

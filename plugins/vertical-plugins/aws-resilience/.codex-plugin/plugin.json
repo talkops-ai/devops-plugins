@@ -16,5 +16,20 @@
     "chaos-engineering",
     "disaster-recovery",
     "arc"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "interface": {
+    "displayName": "AWS Resilience",
+    "shortDescription": "Resilience skills for the main agent",
+    "longDescription": "Resilience skills for the main agent: Resilience Hub assessments (single and multi-account), Fault Injection Service experiments, ARC Region switch and recovery controller, resilience lifecycle, and resilience program design.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/vertical-plugins/aws-resilience",
+    "brandColor": "#FF9900"
+  }
 }

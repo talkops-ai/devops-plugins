@@ -18,5 +18,21 @@
     "bedrock",
     "terraform",
     "activate"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "AWS Startup Advisor",
+    "shortDescription": "Stage-aware AWS guidance for startups",
+    "longDescription": "Stage-aware AWS guidance for startups: architecture and cost advice, project scaffolding, Azure/GCP/Heroku-to-AWS migrations, LLM SDK rewrites to Bedrock, agent runtime selection, DevOps Agent operations, and AWS Activate offers.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/agent-plugins/aws-startup-advisor",
+    "brandColor": "#FF9900"
+  }
 }

@@ -20,6 +20,26 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 \"$0\"; command -v python >/dev/null 2>&1 && exec python \"$0\"; exec py -3 \"$0\"' \"${CLAUDE_PLUGIN_ROOT}/hooks/aws-mutation-gate.py\"",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "use_aws|mcp__aws.*|mcp__plugin_.*aws-mcp.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 \"$0\"; command -v python >/dev/null 2>&1 && exec python \"$0\"; exec py -3 \"$0\"' \"${CLAUDE_PLUGIN_ROOT}/hooks/aws-mutation-gate.py\"",
+            "timeout": 5
+          }
+        ]
       }
     ]
   }

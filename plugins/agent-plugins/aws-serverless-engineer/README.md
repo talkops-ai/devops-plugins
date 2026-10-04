@@ -4,12 +4,21 @@
 
 Designs, builds, deploys, and debugs serverless applications: Lambda (incl. durable functions, managed instances, MicroVMs), API Gateway, Step Functions, and SAM/CDK deployment with template validation.
 
+## Install
+
+| Host | How |
+|---|---|
+| Claude Code | `/plugin marketplace add talkops-ai/devops-plugins`, then `/plugin install aws-serverless-engineer@talkops-devops-plugins` |
+| Codex | `codex plugin marketplace add talkops-ai/devops-plugins`, then install from the Plugins Directory; for the agent persona, copy [`codex/agents/aws-serverless-engineer.toml`](./codex/agents/aws-serverless-engineer.toml) to `~/.codex/agents/` |
+| Other Agent Plugins hosts | Load this directory; [`plugin.json`](./plugin.json), `skills/`, and [`mcp.json`](./mcp.json) follow the portable [Agent Plugins](https://agent-plugins.org) format |
+
 ## Agent
 
 This is an **agent plugin**: every skill, command, hook, and MCP server below is bound to the [`aws-serverless-engineer`](./agents/aws-serverless-engineer.md) agent, which the host runtime spawns as a dynamic sub-agent.
 
 - Claude Code: `@agent-aws-serverless-engineer:aws-serverless-engineer` or let Claude delegate based on the agent description
 - Headless: `claude --agent aws-serverless-engineer:aws-serverless-engineer`
+- Codex: install the custom agent above, then ask Codex to spawn `aws-serverless-engineer`. Codex plugins can't bundle agents, so without it the skills and MCP servers attach to the main agent.
 
 ## Skills
 
@@ -34,13 +43,13 @@ This is an **agent plugin**: every skill, command, hook, and MCP server below is
 
 ## MCP servers
 
-Declared in [`.mcp.json`](./.mcp.json) and bound to the agent through its `tools:` allowlist.
+Declared in [`.mcp.json`](./.mcp.json) (Claude Code) and [`mcp.json`](./mcp.json) (portable). In Claude Code they are bound to the agent through its `tools:` allowlist.
 
-| Server | Transport | Launch | Agent tool pattern | Notes |
+| Server | Transport | Launch | Claude Code tool pattern | Notes |
 |---|---|---|---|---|
 | `aws-serverless-mcp` | stdio | `uvx awslabs.aws-serverless-mcp-server@latest` `--allow-write` | `mcp__plugin_aws-serverless-engineer_aws-serverless-mcp__*` |  |
 
-AWS credentials are inherited from the host environment (`AWS_PROFILE`, SSO, or instance role). `AWS_REGION` defaults to `us-east-1` when unset. Toggle any server off per project in `/mcp`.
+AWS credentials are inherited from the host environment (`AWS_PROFILE`, SSO, or instance role). In Claude Code `AWS_REGION` defaults to `us-east-1` when unset; the portable `mcp.json` can't express that default, so set `AWS_REGION` in your environment on other hosts. Codex starts MCP servers with a minimal environment: if a server can't see your profile, set `AWS_PROFILE`/`AWS_REGION` for it in `~/.codex/config.toml`.
 
 ## Optional connectors
 
@@ -48,13 +57,17 @@ Connection-bound MCP servers you add yourself (see [CONNECTORS.md](./CONNECTORS.
 
 ## Hooks
 
+- **PreToolUse** `Bash` — command: `sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py"`
+- **PreToolUse** `use_aws|mcp__aws.*|mcp__plugin_.*aws-mcp.*` — command: `sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py"`
+- **PreToolUse** `Bash` — command: `sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${…`
+- **PreToolUse** `use_aws|mcp__aws.*|mcp__plugin_.*aws-mcp.*` — command: `sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${…`
 - **PostToolUse** `Edit|Write` — command: `bash "${CLAUDE_PLUGIN_ROOT}/scripts/validate-template.sh"`
 
 ## Upstream
 
-Derived from the following Apache-2.0 sources (see the repository `NOTICE`):
+Derived from the following open-source sources (see the repository `NOTICE`):
 
-- [`aws-serverless`](https://github.com/awslabs/agent-plugins) (awslabs/agent-plugins)
-- [`aws-core`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws)
-- [`specialized-skills/serverless-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws)
-- [`specialized-skills/networking-and-content-delivery-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws)
+- [`aws-serverless`](https://github.com/awslabs/agent-plugins) (awslabs/agent-plugins, Apache-2.0)
+- [`aws-core`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws, Apache-2.0)
+- [`specialized-skills/serverless-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws, Apache-2.0)
+- [`specialized-skills/networking-and-content-delivery-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws, Apache-2.0)

@@ -18,5 +18,21 @@
     "mcp",
     "a2a",
     "cedar"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "AWS AgentCore Engineer",
+    "shortDescription": "Builds, deploys, and operates AI agents on Amazon Bedrock AgentCore",
+    "longDescription": "Builds, deploys, and operates AI agents on Amazon Bedrock AgentCore: Strands/LangGraph scaffolding, Gateway and MCP tools, memory, Cedar policies, evaluations, trace debugging, and production hardening.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/agent-plugins/aws-agentcore-engineer",
+    "brandColor": "#FF9900"
+  }
 }

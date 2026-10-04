@@ -1,0 +1,21 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "aws-iac-engineer",
+  "version": "0.1.0",
+  "description": "Authors, validates, deploys, and troubleshoots AWS infrastructure-as-code: CDK, CloudFormation, AWS Blocks, and CodePipeline/CodeBuild/CodeDeploy CI/CD, with cfn-lint/cfn-guard validation and stack failure diagnosis.",
+  "author": {
+    "name": "TalkOps AI"
+  },
+  "homepage": "https://github.com/talkops-ai/devops-plugins",
+  "repository": "https://github.com/talkops-ai/devops-plugins",
+  "license": "Apache-2.0",
+  "keywords": [
+    "aws",
+    "iac",
+    "cdk",
+    "cloudformation",
+    "codepipeline",
+    "cicd",
+    "aws-blocks"
+  ]
+}

@@ -4,12 +4,21 @@
 
 Data-lake and analytics engineer: S3 Tables/Iceberg, Glue connections and Data Catalog, Athena and Redshift queries, ingestion pipelines, S3 Vectors, OpenSearch, and MWAA (Airflow) authoring, testing, debugging, and upgrades.
 
+## Install
+
+| Host | How |
+|---|---|
+| Claude Code | `/plugin marketplace add talkops-ai/devops-plugins`, then `/plugin install aws-data-engineer@talkops-devops-plugins` |
+| Codex | `codex plugin marketplace add talkops-ai/devops-plugins`, then install from the Plugins Directory; for the agent persona, copy [`codex/agents/aws-data-engineer.toml`](./codex/agents/aws-data-engineer.toml) to `~/.codex/agents/` |
+| Other Agent Plugins hosts | Load this directory; [`plugin.json`](./plugin.json), `skills/`, and [`mcp.json`](./mcp.json) follow the portable [Agent Plugins](https://agent-plugins.org) format |
+
 ## Agent
 
 This is an **agent plugin**: every skill, command, hook, and MCP server below is bound to the [`aws-data-engineer`](./agents/aws-data-engineer.md) agent, which the host runtime spawns as a dynamic sub-agent.
 
 - Claude Code: `@agent-aws-data-engineer:aws-data-engineer` or let Claude delegate based on the agent description
 - Headless: `claude --agent aws-data-engineer:aws-data-engineer`
+- Codex: install the custom agent above, then ask Codex to spawn `aws-data-engineer`. Codex plugins can't bundle agents, so without it the skills and MCP servers attach to the main agent.
 
 ## Skills
 
@@ -41,9 +50,9 @@ This is an **agent plugin**: every skill, command, hook, and MCP server below is
 
 ## MCP servers
 
-Declared in [`.mcp.json`](./.mcp.json) and bound to the agent through its `tools:` allowlist.
+Declared in [`.mcp.json`](./.mcp.json) (Claude Code) and [`mcp.json`](./mcp.json) (portable). In Claude Code they are bound to the agent through its `tools:` allowlist.
 
-| Server | Transport | Launch | Agent tool pattern | Notes |
+| Server | Transport | Launch | Claude Code tool pattern | Notes |
 |---|---|---|---|---|
 | `aws-mcp` | stdio | `uvx mcp-proxy-for-aws-cli==1.7.0` `--skip-auth --metadata` | `mcp__plugin_aws-data-engineer_aws-mcp__*` |  |
 | `dataprocessing` | stdio | `uvx awslabs.aws-dataprocessing-mcp-server@latest` | `mcp__plugin_aws-data-engineer_dataprocessing__*` | Read-only by default. Add --allow-write to let the agent create/modify Glue, EMR, and Athena resources. |
@@ -52,18 +61,20 @@ Declared in [`.mcp.json`](./.mcp.json) and bound to the agent through its `tools
 | `spark-troubleshooting` | stdio | `uvx mcp-proxy-for-aws@latest` `--service --region --read-timeout` | `mcp__plugin_aws-data-engineer_spark-troubleshooting__*` | Managed remote MCP (SageMaker Unified Studio) that diagnoses failed Spark jobs on EMR, Glue, and SageMaker notebooks. Uses your AWS credentials via SigV4. |
 | `spark-upgrade` | stdio | `uvx mcp-proxy-for-aws@latest` `--service --region --read-timeout` | `mcp__plugin_aws-data-engineer_spark-upgrade__*` | Managed remote MCP (SageMaker Unified Studio) that plans and validates Spark version upgrades on EMR. Uses your AWS credentials via SigV4. |
 
-AWS credentials are inherited from the host environment (`AWS_PROFILE`, SSO, or instance role). `AWS_REGION` defaults to `us-east-1` when unset. Toggle any server off per project in `/mcp`.
+AWS credentials are inherited from the host environment (`AWS_PROFILE`, SSO, or instance role). In Claude Code `AWS_REGION` defaults to `us-east-1` when unset; the portable `mcp.json` can't express that default, so set `AWS_REGION` in your environment on other hosts. Codex starts MCP servers with a minimal environment: if a server can't see your profile, set `AWS_PROFILE`/`AWS_REGION` for it in `~/.codex/config.toml`.
 
 ## Hooks
 
 - **PreToolUse** `Bash` — command: `sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py"`
 - **PreToolUse** `use_aws|mcp__aws.*|mcp__plugin_.*aws-mcp.*` — command: `sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py"`
+- **PreToolUse** `Bash` — command: `sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${…`
+- **PreToolUse** `use_aws|mcp__aws.*|mcp__plugin_.*aws-mcp.*` — command: `sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${…`
 
 ## Upstream
 
-Derived from the following Apache-2.0 sources (see the repository `NOTICE`):
+Derived from the following open-source sources (see the repository `NOTICE`):
 
-- [`aws-data-analytics`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws)
-- [`aws-core`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws)
-- [`specialized-skills/analytics-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws)
-- [`specialized-skills/system-table-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws)
+- [`aws-data-analytics`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws, Apache-2.0)
+- [`aws-core`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws, Apache-2.0)
+- [`specialized-skills/analytics-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws, Apache-2.0)
+- [`specialized-skills/system-table-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws, Apache-2.0)

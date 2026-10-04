@@ -1,0 +1,488 @@
+{
+  "name": "talkops-devops-plugins",
+  "interface": {
+    "displayName": "TalkOps DevOps Plugins"
+  },
+  "plugins": [
+    {
+      "name": "aws-iac-engineer",
+      "source": {
+        "source": "local",
+        "path": "./plugins/agent-plugins/aws-iac-engineer"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-platform-engineer",
+      "source": {
+        "source": "local",
+        "path": "./plugins/agent-plugins/aws-platform-engineer"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-sre-agent",
+      "source": {
+        "source": "local",
+        "path": "./plugins/agent-plugins/aws-sre-agent"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-cloud-security-engineer",
+      "source": {
+        "source": "local",
+        "path": "./plugins/agent-plugins/aws-cloud-security-engineer"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-finops-agent",
+      "source": {
+        "source": "local",
+        "path": "./plugins/agent-plugins/aws-finops-agent"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-solutions-architect",
+      "source": {
+        "source": "local",
+        "path": "./plugins/agent-plugins/aws-solutions-architect"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-agentcore-engineer",
+      "source": {
+        "source": "local",
+        "path": "./plugins/agent-plugins/aws-agentcore-engineer"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-data-engineer",
+      "source": {
+        "source": "local",
+        "path": "./plugins/agent-plugins/aws-data-engineer"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-devsecops-agent",
+      "source": {
+        "source": "local",
+        "path": "./plugins/agent-plugins/aws-devsecops-agent"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-startup-advisor",
+      "source": {
+        "source": "local",
+        "path": "./plugins/agent-plugins/aws-startup-advisor"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-location-engineer",
+      "source": {
+        "source": "local",
+        "path": "./plugins/agent-plugins/aws-location-engineer"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-amplify-engineer",
+      "source": {
+        "source": "local",
+        "path": "./plugins/agent-plugins/aws-amplify-engineer"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-serverless-engineer",
+      "source": {
+        "source": "local",
+        "path": "./plugins/agent-plugins/aws-serverless-engineer"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-modernization-agent",
+      "source": {
+        "source": "local",
+        "path": "./plugins/agent-plugins/aws-modernization-agent"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-codebase-documentor",
+      "source": {
+        "source": "local",
+        "path": "./plugins/agent-plugins/aws-codebase-documentor"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-database-engineer",
+      "source": {
+        "source": "local",
+        "path": "./plugins/agent-plugins/aws-database-engineer"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-deployment-agent",
+      "source": {
+        "source": "local",
+        "path": "./plugins/agent-plugins/aws-deployment-agent"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-sagemaker-engineer",
+      "source": {
+        "source": "local",
+        "path": "./plugins/agent-plugins/aws-sagemaker-engineer"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-essentials",
+      "source": {
+        "source": "local",
+        "path": "./plugins/vertical-plugins/aws-essentials"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-infrastructure-as-code",
+      "source": {
+        "source": "local",
+        "path": "./plugins/vertical-plugins/aws-infrastructure-as-code"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-compute",
+      "source": {
+        "source": "local",
+        "path": "./plugins/vertical-plugins/aws-compute"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-containers",
+      "source": {
+        "source": "local",
+        "path": "./plugins/vertical-plugins/aws-containers"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-networking",
+      "source": {
+        "source": "local",
+        "path": "./plugins/vertical-plugins/aws-networking"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-storage",
+      "source": {
+        "source": "local",
+        "path": "./plugins/vertical-plugins/aws-storage"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-databases",
+      "source": {
+        "source": "local",
+        "path": "./plugins/vertical-plugins/aws-databases"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-serverless",
+      "source": {
+        "source": "local",
+        "path": "./plugins/vertical-plugins/aws-serverless"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-messaging-and-streaming",
+      "source": {
+        "source": "local",
+        "path": "./plugins/vertical-plugins/aws-messaging-and-streaming"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-analytics",
+      "source": {
+        "source": "local",
+        "path": "./plugins/vertical-plugins/aws-analytics"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-observability",
+      "source": {
+        "source": "local",
+        "path": "./plugins/vertical-plugins/aws-observability"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-security-identity",
+      "source": {
+        "source": "local",
+        "path": "./plugins/vertical-plugins/aws-security-identity"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-resilience",
+      "source": {
+        "source": "local",
+        "path": "./plugins/vertical-plugins/aws-resilience"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-cost-optimization",
+      "source": {
+        "source": "local",
+        "path": "./plugins/vertical-plugins/aws-cost-optimization"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-ai-ml",
+      "source": {
+        "source": "local",
+        "path": "./plugins/vertical-plugins/aws-ai-ml"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-well-architected",
+      "source": {
+        "source": "local",
+        "path": "./plugins/vertical-plugins/aws-well-architected"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-migration",
+      "source": {
+        "source": "local",
+        "path": "./plugins/vertical-plugins/aws-migration"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-web-and-mobile",
+      "source": {
+        "source": "local",
+        "path": "./plugins/vertical-plugins/aws-web-and-mobile"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-marketplace-seller",
+      "source": {
+        "source": "local",
+        "path": "./plugins/vertical-plugins/aws-marketplace-seller"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-end-user-computing",
+      "source": {
+        "source": "local",
+        "path": "./plugins/vertical-plugins/aws-end-user-computing"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "aws-quantum-computing",
+      "source": {
+        "source": "local",
+        "path": "./plugins/vertical-plugins/aws-quantum-computing"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Cloud"
+    },
+    {
+      "name": "terraform",
+      "source": {
+        "source": "local",
+        "path": "./plugins/partner-built/terraform"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

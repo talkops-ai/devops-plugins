@@ -2,7 +2,7 @@
 
 # Handover: Agent plugins
 
-Audit handbook for the **18 agent plugins** in the `talkops-devops-plugins` marketplace (185 skill copies, 2 automated findings). Companion document: [vertical-plugins.md](./vertical-plugins.md). MCP server usage across both kinds: [mcp-server-coverage.md](../mcp-server-coverage.md).
+Audit handbook for the **18 agent plugins** in the `talkops-devops-plugins` marketplace (185 skill copies, 1 automated findings). Companion document: [vertical-plugins.md](./vertical-plugins.md). MCP server usage across both kinds: [mcp-server-coverage.md](../mcp-server-coverage.md).
 
 Generated 2026-10-04.
 
@@ -53,19 +53,23 @@ plugins/agent-plugins/<name>/
 | `toolkit` | `reference/agent-toolkit-for-aws/plugins` | https://github.com/aws/agent-toolkit-for-aws | `d00d03a (2026-10-03)` |
 | `agent-plugins` | `reference/agent-plugins/plugins` | https://github.com/awslabs/agent-plugins | `e32b05b (2026-10-02)` |
 | `toolkit-skills` | `reference/agent-toolkit-for-aws/skills` | https://github.com/aws/agent-toolkit-for-aws | `d00d03a (2026-10-03)` |
+| `hashicorp` | `reference/hashicorp-agent-skills/plugins` | https://github.com/hashicorp/agent-skills | `f706481 (2026-09-28)` |
+| `talkops` | `src` | https://github.com/talkops-ai/devops-plugins | `a64b3bc (2026-10-04)` |
 | MCP servers | `reference/mcp/src` | https://github.com/awslabs/mcp | `b7d641a7 (2026-10-03)` |
 
 ## Cross-cutting decisions
 
 - **Marketplace model.** The repository mirrors Anthropic's financial-services marketplace: one `.claude-plugin/marketplace.json` plus `plugins/agent-plugins/`, `plugins/vertical-plugins/`, and `plugins/partner-built/` (empty for now).
 - **Single source of truth.** `scripts/aws-plugin-map.json` declares every plugin. `scripts/sync_aws_plugins.py` copies upstream content and generates manifests, `.mcp.json`, hooks, `CONNECTORS.md`, and READMEs. Only `agents/<name>.md` (agent plugins) and `commands/*.md` (vertical plugins) are hand-authored, and the sync never touches them.
+- **TalkOps-authored sources.** Files that are not from an upstream (the `aws-mutation-gate` hook) live under `src/` and are copied by the sync through the `talkops` source, the same way as upstream content.
 - **Copy, not symlink.** `reference/` is gitignored, so upstream content is copied into each plugin. The upstream commits used for this snapshot are listed in the Sources table; re-sync after pulling upstream.
 - **Rewrites fail loudly.** Text rewrites applied to upstream files (renamed plugins, local-first routing) abort the sync if their anchor text disappears upstream, so drift cannot pass silently.
 - **No `"disabled"` MCP entries.** Claude Code ignores `"disabled": true` in a plugin's `.mcp.json` and starts the server anyway. Servers that need a connection target (endpoint, host, secret) are therefore documented as *connectors* in `CONNECTORS.md` instead of being bundled. The sync and validator reject `"disabled"`.
-- **Read-only by default.** Bundled MCP servers run without write flags wherever the server supports a read-only mode; the *Mode* column says `no write flags` for these. Exceptions are called out per plugin under *Automated findings*. The managed AWS MCP server (`aws-mcp`) is different: it has no read-only switch and can run any AWS API call (including mutations) that the caller's IAM permissions allow, so IAM is its real boundary.
-- **Credentials and region.** No `AWS_PROFILE` is hard-coded; credentials come from the host environment (profile, SSO, or instance role). Servers that take a region use `AWS_REGION=${AWS_REGION:-us-east-1}`.
-- **Claude Code only.** Only `.claude-plugin` manifests are shipped. Codex, Kiro, and other host manifests from upstream are excluded through the map's `exclude` list.
+- **Read-only by default.** Bundled MCP servers run without write flags wherever the server supports a read-only mode; the *Mode* column says `no write flags` for these. Exceptions are called out per plugin under *Automated findings*. The managed AWS MCP server (`aws-mcp`) can run any AWS API call the caller's IAM permissions allow, unless its proxy runs with `--read-only`. That flag drops every tool not annotated read-only (`aws___call_aws`, `aws___run_script`, `aws___get_presigned_url`, `aws___recommend`, and others). Agents marked `aws_read_only` in the map (SRE, FinOps, Solutions Architect) use that variant.
+- **Credentials and region.** No `AWS_PROFILE` is hard-coded; credentials come from the host environment (profile, SSO, or instance role). In `.mcp.json`, servers that take a region use `AWS_REGION=${AWS_REGION:-us-east-1}`. The portable `mcp.json` can expand only `${PLUGIN_ROOT}`/`${PLUGIN_DATA}`, so that default is dropped there and the host environment supplies the region. Remote servers that need env expansion in the URL or headers (`aws-devops-agent`) are omitted from `mcp.json`.
+- **Multi-host packaging.** Each plugin ships three layers generated from the same map: the Claude Code layout (`.claude-plugin/plugin.json`, `.mcp.json`, `agents/`, `hooks/hooks.json`); the portable [Agent Plugins 1.0.0](https://agent-plugins.org) layout (`plugin.json`, `mcp.json`, `skills/`), which Codex, Cursor, Copilot, and other adopters read; and the Codex overlay (`.codex-plugin/plugin.json` with the Plugins Directory `interface` card, skills, MCP, and hooks paths). The Codex repo marketplace is `.agents/plugins/marketplace.json`. Codex does not read a root `.codex-plugin/marketplace.json`, so none is shipped. Host support: **Claude Code** runs agents, skills, commands, hooks, and MCP. **Codex** runs skills, MCP, and hooks (after the user trusts them); plugins can't bundle agents, so each agent plugin also ships `codex/agents/<name>.toml` for the user to copy into `~/.codex/agents/`. **Other Agent Plugins hosts** get skills and MCP. Claude-only features (sub-agent tool allowlists, slash commands, prompt hooks) are enhancements, never the only safety mechanism.
 - **MCP tool naming.** Claude Code exposes plugin MCP tools as `mcp__plugin_<plugin>_<server>__<tool>`. User-added connectors are `mcp__<key>__<tool>`.
+- **Layered read-only enforcement.** (1) Server side: `--read-only` on `aws-mcp` for read-only agents, and read-only defaults on the other servers; this works on every host. (2) The `aws-mutation-gate` PreToolUse hook (`src/hooks/aws-mutation-gate.py`, bundled in every agent plugin) classifies mutating `aws`, `terraform`/`tofu`, `cdk`, `sam`, `eksctl`, `kubectl`, `helm`, `copilot`, and `amplify` commands and AWS MCP calls. In Claude Code it denies them for read-only agents and asks for confirmation otherwise; in Codex, whose hook input has no agent identity, it adds a warning to the model context and Codex's approval policy applies. `TALKOPS_AWS_MUTATION_GATE=off|warn|ask|deny` overrides it. (3) IAM: read-only roles, as described in `docs/iam-guardrails.md`, are the real boundary.
 - **Upstream config bugs fixed here.** `iam` no longer passes `--readonly` (the published server rejects it and is read-only by default). `wa-security` uses the correct executable `awslabs.well-architected-security-mcp-server`. `ecs` runs with `--with fastmcp<4` because the published server breaks on fastmcp 4.
 - **Startup smoke test.** Every unique stdio server was launched and completed an MCP `initialize` handshake. A server that rejects a flag fails at startup, so this also validates the flags. `prometheus` and the two Spark proxies could not be confirmed because the test machine's AWS credentials were invalid.
 - **Agent plugins bind everything to one sub-agent.** Skills, commands, hooks, and MCP servers are reached through the primary agent in `agents/<name>.md`, which the host spawns as a dynamic sub-agent. The agent's `tools:` allowlist is the binding: an MCP server the agent does not allowlist is unusable by it.
@@ -73,43 +77,48 @@ plugins/agent-plugins/<name>/
 - **Sub-agents cannot ask mid-run.** Guardrails instruct agents to return missing inputs to the caller as a question list instead of pausing.
 - **Phase 2 enrichment.** Specialized toolkit skills were added to the matching agents (platform, SRE, security, database, data, serverless, modernization), and newly mapped MCP servers were bound to agents as well as verticals.
 - **Security Agent placement.** The `security-agent` MCP server is bound to `aws-devsecops-agent` only, because the agent descriptions assign code scans, threat models, and pentests to devsecops. `aws-cloud-security-engineer` hands those off.
+- **Codex custom agents.** Codex plugins can't contain agents. The sync renders `codex/agents/<name>.toml` (`name`, `description`, `developer_instructions`) from each hand-authored `agents/<name>.md`, adding a short preamble that maps Claude tool names to Codex. Worker agents (aws-startup-advisor) are not rendered. Read-only agents get an explicit read-only instruction, because Codex has no per-agent tool allowlist; `sandbox_mode` is deliberately left unset, since `read-only` would also block local file writes and shell network access.
 
 ## Known gaps and open questions
 
-- **IAM is the boundary for `aws-mcp`.** Every vertical and most agents bundle `aws-mcp`, which can perform mutating AWS API calls. Agents and commands gate changes behind approval, but recommend that users run with least-privilege or read-only IAM roles by default.
+- **IAM is the boundary for `aws-mcp`.** Every vertical and most agents bundle the full `aws-mcp`, which can perform mutating AWS API calls. Agents, commands, and the mutation-gate hook gate changes behind approval, but users should still run with least-privilege or read-only IAM roles by default (see `docs/iam-guardrails.md`).
 - **Unpinned servers.** awslabs servers run as `@latest`, while the managed AWS MCP proxy is pinned (`mcp-proxy-for-aws-cli==1.7.0`). Decide whether to pin versions for reproducibility and supply-chain review.
 - **Region-pinned endpoints.** The managed AWS MCP endpoint and both Spark proxies hard-code `us-east-1` in the URL and ignore `AWS_REGION`. Confirm this is acceptable for non-US accounts.
 - **Credential-dependent servers unverified.** `prometheus`, `spark-troubleshooting`, and `spark-upgrade` still need a handshake test with valid AWS credentials.
 - **Structural validation only.** `scripts/validate_plugins.py` checks manifests, frontmatter, links, tool allowlists, and connector bindings. It does not judge the accuracy of skill content, which needs SME review.
-- **Licensing.** All upstream content is Apache-2.0 and attributed in `NOTICE`. Legal should confirm the attribution format before publishing.
-- **Partner-built plugins.** `plugins/partner-built/` is empty. Candidates noted in the MCP coverage doc (for example the generic OpenAPI bridge) are not yet planned.
+- **Licensing.** Upstream AWS content is Apache-2.0. The HashiCorp Terraform skills in the `terraform` partner plugin are MPL-2.0 (file-level copyleft: keep them unmodified, or publish modifications to those files). Both are attributed in `NOTICE`. Legal should confirm the attribution format before publishing.
+- **Partner-built plugins.** `plugins/partner-built/terraform` ships all 16 HashiCorp Terraform skills unmodified (MPL-2.0) from the same map (`"kind": "partner"`), with the Terraform registry MCP server as a connector. It is the only Terraform offering: no TalkOps agent covers Terraform, so Terraform work runs in the main agent without a specialist's approval gates (the hooks are AWS-plugin only). Decide whether a Terraform agent plugin is needed later. The handbooks cover only the AWS agent and vertical plugins. Other candidates from the MCP coverage doc (for example the generic OpenAPI bridge) are not yet planned.
+- **Codex not smoke-tested.** Codex layouts follow the published spec and the AWS toolkit's layout, and are validated structurally, but no `codex` CLI was available to install them end to end. Check `codex plugin marketplace add`, hook trust prompts, and MCP startup before announcing Codex support.
+- **Codex MCP environment.** Codex starts stdio MCP servers with a minimal environment, so `AWS_PROFILE`/`AWS_REGION` may not reach them. READMEs tell users to set them per server in `~/.codex/config.toml`; confirm this and consider documenting a shell profile or SSO default.
+- **Prompt hooks are Claude-only.** `dsql-verify` (aws-database-engineer, aws-databases) is a `prompt` hook. Codex currently runs only `command` hooks, so it is skipped there.
 - **Telemetry in aws-startup-advisor.** The upstream plugin ships consent and skill-invocation telemetry hooks (`scripts/telemetry/...`). These run on SessionStart and after every Skill call. Review against TalkOps privacy policy, and remove them through the map if needed.
 - **Write-enabled serverless server.** `aws-serverless-engineer` overrides `aws-serverless-mcp` with `--allow-write`, matching the upstream aws-serverless plugin so the agent can deploy SAM apps. Confirm this is wanted. The vertical uses the read-only catalog entry.
 - **DevOps Agent token.** `aws-devsecops-agent` connects to the managed AWS DevOps Agent over HTTP with `DEVOPS_AGENT_TOKEN`. Without it the server fails to connect; document the onboarding step for users.
 - **Overlap when installing both kinds.** If a user installs an agent plugin and its matching vertical, the same skills load twice (once in the main agent, once in the sub-agent). This is harmless but adds context; it is noted in the READMEs.
+- **`awssupport` in a read-only agent.** `aws-sre-agent` is marked `aws_read_only`, but its `awssupport` server can create and update support cases. The prompt requires user confirmation; decide whether case creation should move to a write-capable agent.
 
 ## Plugin summary
 
 | Plugin | Category | Skills | Commands | Workers | MCP | Connectors | Hooks | Hands off to | Findings |
 |---|---|---|---|---|---|---|---|---|---|
-| [`aws-iac-engineer`](#aws-iac-engineer) | infrastructure-as-code | 6 | 0 | 0 | 2 | 0 | secret-safety | aws-cloud-security-engineer, aws-finops-agent, aws-platform-engineer, aws-serverless-engineer | 0 |
-| [`aws-platform-engineer`](#aws-platform-engineer) | platform | 25 | 0 | 0 | 7 | 0 | secret-safety | aws-cloud-security-engineer, aws-database-engineer, aws-iac-engineer, aws-serverless-engineer, aws-sre-agent | 0 |
-| [`aws-sre-agent`](#aws-sre-agent) | observability | 15 | 0 | 0 | 6 | 0 | secret-safety | aws-cloud-security-engineer, aws-devsecops-agent, aws-iac-engineer, aws-platform-engineer | 0 |
-| [`aws-cloud-security-engineer`](#aws-cloud-security-engineer) | security | 9 | 0 | 0 | 4 | 0 | secret-safety | aws-devsecops-agent, aws-iac-engineer, aws-platform-engineer | 0 |
-| [`aws-finops-agent`](#aws-finops-agent) | finops | 2 | 0 | 0 | 3 | 0 | secret-safety | aws-database-engineer, aws-iac-engineer, aws-platform-engineer, aws-solutions-architect | 0 |
-| [`aws-solutions-architect`](#aws-solutions-architect) | architecture | 7 | 0 | 0 | 3 | 0 | secret-safety | aws-agentcore-engineer, aws-cloud-security-engineer, aws-finops-agent, aws-iac-engineer, aws-sagemaker-engineer | 0 |
-| [`aws-agentcore-engineer`](#aws-agentcore-engineer) | ai-agents | 9 | 0 | 0 | 2 | 0 | — | aws-cloud-security-engineer, aws-platform-engineer, aws-solutions-architect | 0 |
-| [`aws-data-engineer`](#aws-data-engineer) | data-analytics | 23 | 0 | 0 | 6 | 0 | secret-safety | aws-cloud-security-engineer, aws-database-engineer, aws-sagemaker-engineer | 0 |
-| [`aws-devsecops-agent`](#aws-devsecops-agent) | devsecops | 14 | 9 | 0 | 2 | 0 | — | aws-cloud-security-engineer, aws-iac-engineer, aws-sre-agent | 1 |
-| [`aws-startup-advisor`](#aws-startup-advisor) | startup | 12 | 1 | 7 | 1 | 0 | inline | aws-agentcore-engineer, aws-finops-agent, aws-iac-engineer, aws-sre-agent | 0 |
-| [`aws-location-engineer`](#aws-location-engineer) | location | 1 | 0 | 0 | 2 | 0 | — | aws-amplify-engineer, aws-cloud-security-engineer, aws-deployment-agent, aws-serverless-engineer | 0 |
-| [`aws-amplify-engineer`](#aws-amplify-engineer) | fullstack | 1 | 0 | 0 | 2 | 0 | — | aws-deployment-agent, aws-location-engineer, aws-serverless-engineer | 0 |
-| [`aws-serverless-engineer`](#aws-serverless-engineer) | serverless | 16 | 0 | 0 | 1 | 2 | inline | aws-database-engineer, aws-deployment-agent, aws-platform-engineer, aws-sre-agent | 1 |
-| [`aws-modernization-agent`](#aws-modernization-agent) | migration | 2 | 0 | 0 | 1 | 0 | — | aws-database-engineer, aws-deployment-agent, aws-iac-engineer | 0 |
-| [`aws-codebase-documentor`](#aws-codebase-documentor) | documentation | 1 | 0 | 0 | 2 | 0 | — | aws-cloud-security-engineer, aws-modernization-agent, aws-solutions-architect | 0 |
-| [`aws-database-engineer`](#aws-database-engineer) | database | 18 | 0 | 0 | 7 | 9 | secret-safety, dsql-verify | aws-cloud-security-engineer, aws-data-engineer, aws-modernization-agent, aws-sre-agent | 0 |
-| [`aws-deployment-agent`](#aws-deployment-agent) | deployment | 4 | 0 | 0 | 3 | 0 | inline | aws-amplify-engineer, aws-iac-engineer, aws-platform-engineer, aws-serverless-engineer | 0 |
-| [`aws-sagemaker-engineer`](#aws-sagemaker-engineer) | ai-ml | 20 | 0 | 0 | 2 | 0 | — | aws-data-engineer, aws-platform-engineer, aws-solutions-architect | 0 |
+| [`aws-iac-engineer`](#aws-iac-engineer) | infrastructure-as-code | 6 | 0 | 0 | 2 | 0 | secret-safety, aws-mutation-gate | aws-cloud-security-engineer, aws-finops-agent, aws-platform-engineer, aws-serverless-engineer | 0 |
+| [`aws-platform-engineer`](#aws-platform-engineer) | platform | 25 | 0 | 0 | 7 | 0 | secret-safety, aws-mutation-gate | aws-cloud-security-engineer, aws-database-engineer, aws-iac-engineer, aws-serverless-engineer, aws-sre-agent | 0 |
+| [`aws-sre-agent`](#aws-sre-agent) | observability | 15 | 0 | 0 | 6 | 0 | secret-safety, aws-mutation-gate | aws-cloud-security-engineer, aws-devsecops-agent, aws-iac-engineer, aws-platform-engineer | 0 |
+| [`aws-cloud-security-engineer`](#aws-cloud-security-engineer) | security | 9 | 0 | 0 | 4 | 0 | secret-safety, aws-mutation-gate | aws-devsecops-agent, aws-iac-engineer, aws-platform-engineer | 0 |
+| [`aws-finops-agent`](#aws-finops-agent) | finops | 2 | 0 | 0 | 3 | 0 | secret-safety, aws-mutation-gate | aws-database-engineer, aws-iac-engineer, aws-platform-engineer, aws-solutions-architect | 0 |
+| [`aws-solutions-architect`](#aws-solutions-architect) | architecture | 7 | 0 | 0 | 3 | 0 | secret-safety, aws-mutation-gate | aws-agentcore-engineer, aws-cloud-security-engineer, aws-finops-agent, aws-iac-engineer, aws-sagemaker-engineer | 0 |
+| [`aws-agentcore-engineer`](#aws-agentcore-engineer) | ai-agents | 9 | 0 | 0 | 2 | 0 | secret-safety, aws-mutation-gate | aws-cloud-security-engineer, aws-platform-engineer, aws-solutions-architect | 0 |
+| [`aws-data-engineer`](#aws-data-engineer) | data-analytics | 23 | 0 | 0 | 6 | 0 | secret-safety, aws-mutation-gate | aws-cloud-security-engineer, aws-database-engineer, aws-sagemaker-engineer | 0 |
+| [`aws-devsecops-agent`](#aws-devsecops-agent) | devsecops | 14 | 9 | 0 | 1 | 0 | secret-safety, aws-mutation-gate | aws-cloud-security-engineer, aws-iac-engineer, aws-sre-agent | 0 |
+| [`aws-startup-advisor`](#aws-startup-advisor) | startup | 12 | 1 | 7 | 1 | 0 | secret-safety, aws-mutation-gate, inline | aws-agentcore-engineer, aws-finops-agent, aws-iac-engineer, aws-sre-agent | 0 |
+| [`aws-location-engineer`](#aws-location-engineer) | location | 1 | 0 | 0 | 2 | 0 | secret-safety, aws-mutation-gate | aws-amplify-engineer, aws-cloud-security-engineer, aws-deployment-agent, aws-serverless-engineer | 0 |
+| [`aws-amplify-engineer`](#aws-amplify-engineer) | fullstack | 1 | 0 | 0 | 2 | 0 | secret-safety, aws-mutation-gate | aws-deployment-agent, aws-location-engineer, aws-serverless-engineer | 0 |
+| [`aws-serverless-engineer`](#aws-serverless-engineer) | serverless | 16 | 0 | 0 | 1 | 2 | secret-safety, aws-mutation-gate, inline | aws-database-engineer, aws-deployment-agent, aws-platform-engineer, aws-sre-agent | 1 |
+| [`aws-modernization-agent`](#aws-modernization-agent) | migration | 2 | 0 | 0 | 1 | 0 | secret-safety, aws-mutation-gate | aws-database-engineer, aws-deployment-agent, aws-iac-engineer | 0 |
+| [`aws-codebase-documentor`](#aws-codebase-documentor) | documentation | 1 | 0 | 0 | 2 | 0 | secret-safety, aws-mutation-gate | aws-cloud-security-engineer, aws-modernization-agent, aws-solutions-architect | 0 |
+| [`aws-database-engineer`](#aws-database-engineer) | database | 18 | 0 | 0 | 7 | 9 | secret-safety, dsql-verify, aws-mutation-gate | aws-cloud-security-engineer, aws-data-engineer, aws-modernization-agent, aws-sre-agent | 0 |
+| [`aws-deployment-agent`](#aws-deployment-agent) | deployment | 4 | 0 | 0 | 3 | 0 | secret-safety, aws-mutation-gate, inline | aws-amplify-engineer, aws-iac-engineer, aws-platform-engineer, aws-serverless-engineer | 0 |
+| [`aws-sagemaker-engineer`](#aws-sagemaker-engineer) | ai-ml | 20 | 0 | 0 | 2 | 0 | secret-safety, aws-mutation-gate | aws-data-engineer, aws-platform-engineer, aws-solutions-architect | 0 |
 
 ### Hand-off graph
 
@@ -195,8 +204,9 @@ Every distinct launch configuration, once. Plugin sections refer back here.
 | `appsignals` | `cloudwatch-applicationsignals-mcp-server` | `uvx awslabs.cloudwatch-applicationsignals-mcp-server@latest` | `FASTMCP_LOG_LEVEL=ERROR`<br>`AWS_REGION=${AWS_REGION:-us-east-1}` | no write flags<br>unpinned `@latest` | [`aws-sre-agent`](#aws-sre-agent) |
 | `appsync` | `aws-appsync-mcp-server` | `uvx awslabs.aws-appsync-mcp-server@latest` | `FASTMCP_LOG_LEVEL=ERROR`<br>`AWS_REGION=${AWS_REGION:-us-east-1}` | no write flags<br>unpinned `@latest` | [`aws-amplify-engineer`](#aws-amplify-engineer) |
 | `aws-devops-agent` (inline in `aws-devsecops-agent`) | `—` | `http https://connect.aidevops.${DEVOPS_AGENT_REGION:-us-east-1}.api.aws/mcp` | — | no write flags<br>needs env `DEVOPS_AGENT_REGION`, `DEVOPS_AGENT_TOKEN` | [`aws-devsecops-agent`](#aws-devsecops-agent) |
-| `aws-mcp` | `—` | `uvx mcp-proxy-for-aws-cli==1.7.0 https://aws-mcp.us-east-1.api.aws/mcp --skip-auth --metadata INSTALL_SOURCE=agent-toolkit-core` | — | any AWS API call, bounded by IAM<br>pinned<br>region hard-coded `us-east-1` | [`aws-iac-engineer`](#aws-iac-engineer), [`aws-platform-engineer`](#aws-platform-engineer), [`aws-sre-agent`](#aws-sre-agent), [`aws-cloud-security-engineer`](#aws-cloud-security-engineer), [`aws-finops-agent`](#aws-finops-agent), [`aws-solutions-architect`](#aws-solutions-architect), [`aws-database-engineer`](#aws-database-engineer) |
+| `aws-mcp` | `—` | `uvx mcp-proxy-for-aws-cli==1.7.0 https://aws-mcp.us-east-1.api.aws/mcp --skip-auth --metadata INSTALL_SOURCE=agent-toolkit-core` | — | any AWS API call, bounded by IAM<br>pinned<br>region hard-coded `us-east-1` | [`aws-iac-engineer`](#aws-iac-engineer), [`aws-platform-engineer`](#aws-platform-engineer), [`aws-cloud-security-engineer`](#aws-cloud-security-engineer), [`aws-database-engineer`](#aws-database-engineer) |
 | `aws-mcp` (catalog `aws-mcp-legacy-proxy`) | `—` | `uvx mcp-proxy-for-aws@latest https://aws-mcp.us-east-1.api.aws/mcp` | — | any AWS API call, bounded by IAM<br>unpinned `@latest`<br>region hard-coded `us-east-1` | [`aws-location-engineer`](#aws-location-engineer), [`aws-amplify-engineer`](#aws-amplify-engineer), [`aws-sagemaker-engineer`](#aws-sagemaker-engineer) |
+| `aws-mcp` (catalog `aws-mcp-read-only`) | `—` | `uvx mcp-proxy-for-aws-cli==1.7.0 https://aws-mcp.us-east-1.api.aws/mcp --skip-auth --read-only --metadata INSTALL_SOURCE=agent-toolkit-core` | — | any AWS API call, bounded by IAM<br>pinned<br>region hard-coded `us-east-1` | [`aws-sre-agent`](#aws-sre-agent), [`aws-finops-agent`](#aws-finops-agent), [`aws-solutions-architect`](#aws-solutions-architect) |
 | `aws-mcp` (inline in `aws-data-engineer`) | `—` | `uvx mcp-proxy-for-aws-cli==1.7.0 https://aws-mcp.us-east-1.api.aws/mcp --skip-auth --metadata INSTALL_SOURCE=agent-toolkit-data-analytics` | — | any AWS API call, bounded by IAM<br>pinned<br>region hard-coded `us-east-1` | [`aws-data-engineer`](#aws-data-engineer) |
 | `aws-mcp` (inline in `aws-startup-advisor`) | `—` | `uvx mcp-proxy-for-aws-cli==1.7.0 https://aws-mcp.us-east-1.api.aws/mcp --skip-auth --metadata INSTALL_SOURCE=agent-toolkit-startup-advisor` | — | any AWS API call, bounded by IAM<br>pinned<br>region hard-coded `us-east-1` | [`aws-startup-advisor`](#aws-startup-advisor) |
 | `aws-serverless-mcp` (inline in `aws-serverless-engineer`) | `aws-serverless-mcp-server` | `uvx awslabs.aws-serverless-mcp-server@latest --allow-write` | `FASTMCP_LOG_LEVEL=ERROR` | ⚠️ write-enabled (`--allow-write`)<br>unpinned `@latest` | [`aws-serverless-engineer`](#aws-serverless-engineer) |
@@ -224,7 +234,6 @@ Every distinct launch configuration, once. Plugin sections refer back here.
 | `redshift` | `redshift-mcp-server` | `uvx awslabs.redshift-mcp-server@latest` | `FASTMCP_LOG_LEVEL=ERROR`<br>`AWS_DEFAULT_REGION=${AWS_REGION:-us-east-1}` | no write flags<br>unpinned `@latest` | [`aws-data-engineer`](#aws-data-engineer) |
 | `s3tables` | `s3-tables-mcp-server` | `uvx awslabs.s3-tables-mcp-server@latest` | `FASTMCP_LOG_LEVEL=ERROR`<br>`AWS_REGION=${AWS_REGION:-us-east-1}` | no write flags<br>unpinned `@latest` | [`aws-data-engineer`](#aws-data-engineer) |
 | `sagemaker` | `sagemaker-ai-mcp-server` | `uvx awslabs.sagemaker-ai-mcp-server@latest` | `FASTMCP_LOG_LEVEL=ERROR`<br>`AWS_REGION=${AWS_REGION:-us-east-1}` | no write flags<br>unpinned `@latest` | [`aws-sagemaker-engineer`](#aws-sagemaker-engineer) |
-| `security-agent` | `security-agent-mcp-server` | `uvx awslabs.security-agent-mcp-server@latest` | `FASTMCP_LOG_LEVEL=ERROR`<br>`AWS_REGION=${AWS_REGION:-us-east-1}` | ⚠️ no read-only mode<br>unpinned `@latest` | [`aws-devsecops-agent`](#aws-devsecops-agent) |
 | `sns-sqs` | `amazon-sns-sqs-mcp-server` | `uvx awslabs.amazon-sns-sqs-mcp-server@latest` | `FASTMCP_LOG_LEVEL=ERROR`<br>`AWS_REGION=${AWS_REGION:-us-east-1}` | no write flags<br>unpinned `@latest` | [`aws-platform-engineer`](#aws-platform-engineer) |
 | `spark-troubleshooting` | `sagemaker-unified-studio-spark-troubleshooting-mcp-server` | `uvx mcp-proxy-for-aws@latest https://sagemaker-unified-studio-mcp.us-east-1.api.aws/spark-troubleshooting/mcp --service sagemaker-unified-studio-mcp --region us-east-1 --read-timeout 180` | — | no write flags<br>unpinned `@latest`<br>region hard-coded `us-east-1` | [`aws-data-engineer`](#aws-data-engineer) |
 | `spark-upgrade` | `sagemaker-unified-studio-spark-upgrade-mcp-server` | `uvx mcp-proxy-for-aws@latest https://sagemaker-unified-studio-mcp.us-east-1.api.aws/spark-upgrade/mcp --service sagemaker-unified-studio-mcp --region us-east-1 --read-timeout 180` | — | no write flags<br>unpinned `@latest`<br>region hard-coded `us-east-1` | [`aws-data-engineer`](#aws-data-engineer) |
@@ -250,9 +259,11 @@ Every distinct launch configuration, once. Plugin sections refer back here.
 
 | Template | Event | Matcher | Action | Files copied | Used by |
 |---|---|---|---|---|---|
+| `aws-mutation-gate` | PreToolUse | `Bash` | command: sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${… | `talkops/hooks/aws-mutation-gate.py` → `hooks/aws-mutation-gate.py` | [`aws-iac-engineer`](#aws-iac-engineer), [`aws-platform-engineer`](#aws-platform-engineer), [`aws-sre-agent`](#aws-sre-agent), [`aws-cloud-security-engineer`](#aws-cloud-security-engineer), [`aws-finops-agent`](#aws-finops-agent), [`aws-solutions-architect`](#aws-solutions-architect), [`aws-agentcore-engineer`](#aws-agentcore-engineer), [`aws-data-engineer`](#aws-data-engineer), [`aws-devsecops-agent`](#aws-devsecops-agent), [`aws-startup-advisor`](#aws-startup-advisor), [`aws-location-engineer`](#aws-location-engineer), [`aws-amplify-engineer`](#aws-amplify-engineer), [`aws-serverless-engineer`](#aws-serverless-engineer), [`aws-modernization-agent`](#aws-modernization-agent), [`aws-codebase-documentor`](#aws-codebase-documentor), [`aws-database-engineer`](#aws-database-engineer), [`aws-deployment-agent`](#aws-deployment-agent), [`aws-sagemaker-engineer`](#aws-sagemaker-engineer) |
+| `aws-mutation-gate` | PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command: sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${… | `talkops/hooks/aws-mutation-gate.py` → `hooks/aws-mutation-gate.py` | [`aws-iac-engineer`](#aws-iac-engineer), [`aws-platform-engineer`](#aws-platform-engineer), [`aws-sre-agent`](#aws-sre-agent), [`aws-cloud-security-engineer`](#aws-cloud-security-engineer), [`aws-finops-agent`](#aws-finops-agent), [`aws-solutions-architect`](#aws-solutions-architect), [`aws-agentcore-engineer`](#aws-agentcore-engineer), [`aws-data-engineer`](#aws-data-engineer), [`aws-devsecops-agent`](#aws-devsecops-agent), [`aws-startup-advisor`](#aws-startup-advisor), [`aws-location-engineer`](#aws-location-engineer), [`aws-amplify-engineer`](#aws-amplify-engineer), [`aws-serverless-engineer`](#aws-serverless-engineer), [`aws-modernization-agent`](#aws-modernization-agent), [`aws-codebase-documentor`](#aws-codebase-documentor), [`aws-database-engineer`](#aws-database-engineer), [`aws-deployment-agent`](#aws-deployment-agent), [`aws-sagemaker-engineer`](#aws-sagemaker-engineer) |
 | `dsql-verify` | PostToolUse | `mcp__.*aurora-dsql.*__transact` | prompt: A DSQL transact operation completed. Verify the result: if it was a DDL change, confirm the schema looks correct using get_schema. If it wa… | — | [`aws-database-engineer`](#aws-database-engineer) |
-| `secret-safety` | PreToolUse | `Bash` | command: sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py` → `hooks/secret-safety.py` | [`aws-iac-engineer`](#aws-iac-engineer), [`aws-platform-engineer`](#aws-platform-engineer), [`aws-sre-agent`](#aws-sre-agent), [`aws-cloud-security-engineer`](#aws-cloud-security-engineer), [`aws-finops-agent`](#aws-finops-agent), [`aws-solutions-architect`](#aws-solutions-architect), [`aws-data-engineer`](#aws-data-engineer), [`aws-database-engineer`](#aws-database-engineer) |
-| `secret-safety` | PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command: sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py` → `hooks/secret-safety.py` | [`aws-iac-engineer`](#aws-iac-engineer), [`aws-platform-engineer`](#aws-platform-engineer), [`aws-sre-agent`](#aws-sre-agent), [`aws-cloud-security-engineer`](#aws-cloud-security-engineer), [`aws-finops-agent`](#aws-finops-agent), [`aws-solutions-architect`](#aws-solutions-architect), [`aws-data-engineer`](#aws-data-engineer), [`aws-database-engineer`](#aws-database-engineer) |
+| `secret-safety` | PreToolUse | `Bash` | command: sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py` → `hooks/secret-safety.py` | [`aws-iac-engineer`](#aws-iac-engineer), [`aws-platform-engineer`](#aws-platform-engineer), [`aws-sre-agent`](#aws-sre-agent), [`aws-cloud-security-engineer`](#aws-cloud-security-engineer), [`aws-finops-agent`](#aws-finops-agent), [`aws-solutions-architect`](#aws-solutions-architect), [`aws-agentcore-engineer`](#aws-agentcore-engineer), [`aws-data-engineer`](#aws-data-engineer), [`aws-devsecops-agent`](#aws-devsecops-agent), [`aws-startup-advisor`](#aws-startup-advisor), [`aws-location-engineer`](#aws-location-engineer), [`aws-amplify-engineer`](#aws-amplify-engineer), [`aws-serverless-engineer`](#aws-serverless-engineer), [`aws-modernization-agent`](#aws-modernization-agent), [`aws-codebase-documentor`](#aws-codebase-documentor), [`aws-database-engineer`](#aws-database-engineer), [`aws-deployment-agent`](#aws-deployment-agent), [`aws-sagemaker-engineer`](#aws-sagemaker-engineer) |
+| `secret-safety` | PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command: sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py` → `hooks/secret-safety.py` | [`aws-iac-engineer`](#aws-iac-engineer), [`aws-platform-engineer`](#aws-platform-engineer), [`aws-sre-agent`](#aws-sre-agent), [`aws-cloud-security-engineer`](#aws-cloud-security-engineer), [`aws-finops-agent`](#aws-finops-agent), [`aws-solutions-architect`](#aws-solutions-architect), [`aws-agentcore-engineer`](#aws-agentcore-engineer), [`aws-data-engineer`](#aws-data-engineer), [`aws-devsecops-agent`](#aws-devsecops-agent), [`aws-startup-advisor`](#aws-startup-advisor), [`aws-location-engineer`](#aws-location-engineer), [`aws-amplify-engineer`](#aws-amplify-engineer), [`aws-serverless-engineer`](#aws-serverless-engineer), [`aws-modernization-agent`](#aws-modernization-agent), [`aws-codebase-documentor`](#aws-codebase-documentor), [`aws-database-engineer`](#aws-database-engineer), [`aws-deployment-agent`](#aws-deployment-agent), [`aws-sagemaker-engineer`](#aws-sagemaker-engineer) |
 
 ### Rewrite templates
 
@@ -291,7 +302,7 @@ File: [`agents/aws-iac-engineer.md`](../../plugins/agent-plugins/aws-iac-enginee
 | Field | Value |
 |---|---|
 | `name` | `aws-iac-engineer` |
-| `description` (delegation trigger) | AWS infrastructure-as-code engineer. Authors, validates, deploys, and troubleshoots CDK (TypeScript/Python) and CloudFormation stacks, AWS Blocks apps, and CodePipeline/CodeBuild/CodeDeploy CI/CD; diagnoses failed or drifted stacks and rollbacks. Use for any "write/fix/deploy this stack or pipeline" request. Not for choosing runtime services (aws-platform-engineer), IAM policy design (aws-cloud-security-engineer), or whole-app "deploy my code to AWS" with service selection and cost estimates (aws-deployment-agent). |
+| `description` (delegation trigger) | AWS infrastructure-as-code engineer. Authors, validates, deploys, and troubleshoots CDK (TypeScript/Python) and CloudFormation stacks, AWS Blocks apps, and CodePipeline/CodeBuild/CodeDeploy CI/CD; diagnoses failed or drifted stacks and rollbacks; imports existing resources into stacks. Use for any "write/fix/deploy this stack or pipeline" request. Not for Terraform (terraform partner plugin), choosing runtime services (aws-platform-engineer), IAM policy design (aws-cloud-security-engineer), or whole-app "deploy my code to AWS" with service selection and cost estimates (aws-deployment-agent). |
 | Built-in tools | `Read`, `Grep`, `Glob`, `Bash`, `Write`, `Edit`, `Skill`, `TodoWrite`, `WebFetch` |
 | MCP tools | `mcp__plugin_aws-iac-engineer_aws-mcp__*`<br>`mcp__plugin_aws-iac-engineer_awsiac__*` |
 | Hands off to | [`aws-cloud-security-engineer`](#aws-cloud-security-engineer), [`aws-finops-agent`](#aws-finops-agent), [`aws-platform-engineer`](#aws-platform-engineer), [`aws-serverless-engineer`](#aws-serverless-engineer) |
@@ -299,28 +310,29 @@ File: [`agents/aws-iac-engineer.md`](../../plugins/agent-plugins/aws-iac-enginee
 Sections (click to open at the line range):
 
 - [What you produce](../../plugins/agent-plugins/aws-iac-engineer/agents/aws-iac-engineer.md#L9-L15)
-- [Workflow](../../plugins/agent-plugins/aws-iac-engineer/agents/aws-iac-engineer.md#L16-L25)
-- [MCP servers bound to this agent](../../plugins/agent-plugins/aws-iac-engineer/agents/aws-iac-engineer.md#L26-L32)
-- [Guardrails](../../plugins/agent-plugins/aws-iac-engineer/agents/aws-iac-engineer.md#L33-L39)
-- [Hand-offs](../../plugins/agent-plugins/aws-iac-engineer/agents/aws-iac-engineer.md#L40-L46)
-- [Skills this agent uses](../../plugins/agent-plugins/aws-iac-engineer/agents/aws-iac-engineer.md#L47-L49)
+- [Workflow](../../plugins/agent-plugins/aws-iac-engineer/agents/aws-iac-engineer.md#L16-L26)
+- [MCP servers bound to this agent](../../plugins/agent-plugins/aws-iac-engineer/agents/aws-iac-engineer.md#L27-L33)
+- [Guardrails](../../plugins/agent-plugins/aws-iac-engineer/agents/aws-iac-engineer.md#L34-L40)
+- [Hand-offs](../../plugins/agent-plugins/aws-iac-engineer/agents/aws-iac-engineer.md#L41-L48)
+- [Skills this agent uses](../../plugins/agent-plugins/aws-iac-engineer/agents/aws-iac-engineer.md#L49-L51)
 
 **What you produce** (verbatim):
 
 > 1. **Infrastructure code** — CDK constructs/stacks or CloudFormation templates with secure defaults (encryption on, least-privilege roles, no public resources unless asked), committed to the user's repo.
 > 2. **Validation evidence** — `cdk synth` output, cfn-lint/cloudformation-validate results, and cfn-guard compliance findings for every template you touch.
 > 3. **CI/CD definitions** — CodePipeline V2, `buildspec.yml`, and CodeDeploy strategies (blue/green, canary, linear) when delivery is in scope.
-> 4. **Failure diagnosis** — for a failed, stuck, or drifted stack: the root-cause event, the fix, and the safe recovery path (continue-update-rollback, import, refactor).
+> 4. **Failure diagnosis** — for a failed, stuck, or drifted stack: the root-cause event, the fix, and the safe recovery path (continue-update-rollback, resource import, refactor).
 
 **Guardrails** (verbatim):
 
-> - **No deploys, deletes, or stack updates without explicit user approval** of the diff/change set. Never pass `--require-approval never` on the user's behalf.
-> - **Never print or fetch secret values.** Use dynamic references (`{{resolve:secretsmanager:...}}`); the plugin's secret-safety hook blocks direct `get-secret-value` calls.
-> - **Stateful resources are protected.** Flag any change that replaces a database, bucket, or table and require confirmation.
+> - **No deploys, deletes, or stack updates without explicit user approval** of the diff/change set. Never pass `--require-approval never` or `--no-confirm-changeset` on the user's behalf. The plugin's `aws-mutation-gate` hook asks for confirmation on these commands too.
+> - **Never print or fetch secret values.** Use dynamic references (`{{resolve:secretsmanager:...}}`) and `manage_master_user_password`; the plugin's secret-safety hook blocks direct `get-secret-value` calls.
+> - **Stateful resources are protected.** Flag any change that replaces or deletes a database, bucket, table, or KMS key, require confirmation, and recommend `DeletionPolicy: Retain` / `RemovalPolicy.RETAIN`.
 > - **No questions mid-run as a sub-agent.** If required inputs are missing (account, region, environment names), stop and return a concise list of questions to the caller.
 
 **Hand-offs** (verbatim):
 
+> - Terraform configurations, modules, and state → the `terraform` partner plugin (HashiCorp)
 > - Runtime/service selection, VPC and container design → `aws-platform-engineer`
 > - IAM policies, trust relationships, SCPs → `aws-cloud-security-engineer`
 > - Cost of the proposed infrastructure → `aws-finops-agent`
@@ -352,8 +364,10 @@ Sections (click to open at the line range):
 |---|---|---|---|---|
 | PreToolUse | `Bash` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
 | PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
+| PreToolUse | `Bash` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
+| PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
 
-Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py`).
+Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py`), `hooks/aws-mutation-gate.py` (from `talkops/hooks/aws-mutation-gate.py`).
 
 ### Rewrites applied to upstream files
 
@@ -364,6 +378,7 @@ Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claud
 ### Design notes
 
 - Scope: authoring and validating CDK, CloudFormation, AWS Blocks, and CodePipeline/CodeBuild/CodeDeploy. End-to-end application deployment belongs to `aws-deployment-agent`.
+- Terraform is out of scope. The description routes it away ("Not for Terraform"), and the hand-offs point to the `terraform` partner plugin (HashiCorp's official skills).
 - `awsiac` provides cfn-lint/cfn-guard validation and stack-failure diagnosis; `aws-mcp` covers everything else.
 
 ### Automated findings
@@ -490,7 +505,7 @@ Sections (click to open at the line range):
 |---|---|---|---|---|---|
 | `aws-mcp` | `uvx mcp-proxy-for-aws-cli==1.7.0 https://aws-mcp.us-east-1.api.aws/mcp --skip-auth --metadata INSTALL_SOURCE=agent-toolkit-core` | any AWS API call, bounded by IAM<br>pinned<br>region hard-coded `us-east-1` | `mcp__plugin_aws-platform-engineer_aws-mcp__*` | ✅ | Managed AWS MCP Server via the toolkit's pinned proxy (aws___call_aws, aws___search_documentation, aws___retrieve_skill, ...). |
 | `eks` | `uvx awslabs.eks-mcp-server@latest` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-platform-engineer_eks__*` | ✅ | Read-only by default. Add --allow-write / --allow-sensitive-data-access to enable mutations and pod logs/secrets. |
-| `ecs` | `uvx --from awslabs-ecs-mcp-server@latest --with fastmcp<4 ecs-mcp-server` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-platform-engineer_ecs__*` | ✅ | Read-only by default. Set ALLOW_WRITE / ALLOW_SENSITIVE_DATA to true to enable mutations. fastmcp<4 works around an upstream incompatibility (add_tool_transformation was removed in fastmcp 4). |
+| `ecs` | `uvx --from awslabs-ecs-mcp-server@latest --with fastmcp<4 ecs-mcp-server` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-platform-engineer_ecs__*` | ✅ | Read-only by default. Set ALLOW_WRITE / ALLOW_SENSITIVE_DATA to true to enable mutations. fastmcp<4 pin: upstream needs fastmcp>=3.2 and is not yet compatible with fastmcp 4. |
 | `awsnetwork` | `uvx awslabs.aws-network-mcp-server@latest` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-platform-engineer_awsnetwork__*` | ✅ | — |
 | `finch` | `uvx awslabs.finch-mcp-server@latest` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-platform-engineer_finch__*` | ✅ | Builds and pushes container images with the local Finch CLI. ECR repository creation is off by default (add --enable-aws-resource-write). |
 | `sns-sqs` | `uvx awslabs.amazon-sns-sqs-mcp-server@latest` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-platform-engineer_sns-sqs__*` | ✅ | Manages SNS topics and SQS queues. Creating topics/queues is off by default (add --allow-resource-creation). |
@@ -502,8 +517,10 @@ Sections (click to open at the line range):
 |---|---|---|---|---|
 | PreToolUse | `Bash` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
 | PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
+| PreToolUse | `Bash` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
+| PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
 
-Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py`).
+Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py`), `hooks/aws-mutation-gate.py` (from `talkops/hooks/aws-mutation-gate.py`).
 
 ### Rewrites applied to upstream files
 
@@ -632,7 +649,7 @@ Sections (click to open at the line range):
 
 | Server | Launch | Mode | Tool names | Allowlisted | Notes |
 |---|---|---|---|---|---|
-| `aws-mcp` | `uvx mcp-proxy-for-aws-cli==1.7.0 https://aws-mcp.us-east-1.api.aws/mcp --skip-auth --metadata INSTALL_SOURCE=agent-toolkit-core` | any AWS API call, bounded by IAM<br>pinned<br>region hard-coded `us-east-1` | `mcp__plugin_aws-sre-agent_aws-mcp__*` | ✅ | Managed AWS MCP Server via the toolkit's pinned proxy (aws___call_aws, aws___search_documentation, aws___retrieve_skill, ...). |
+| `aws-mcp` | `uvx mcp-proxy-for-aws-cli==1.7.0 https://aws-mcp.us-east-1.api.aws/mcp --skip-auth --read-only --metadata INSTALL_SOURCE=agent-toolkit-core` | any AWS API call, bounded by IAM<br>pinned<br>region hard-coded `us-east-1` | `mcp__plugin_aws-sre-agent_aws-mcp__*` | ✅ | Managed AWS MCP Server, read-only: the proxy's --read-only flag drops every tool whose readOnlyHint is not true (aws___call_aws, aws___run_script, aws___get_presigned_url), leaving documentation, regional availability, and skill retrieval. |
 | `cloudwatch` | `uvx awslabs.cloudwatch-mcp-server@latest` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-sre-agent_cloudwatch__*` | ✅ | — |
 | `appsignals` | `uvx awslabs.cloudwatch-applicationsignals-mcp-server@latest` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-sre-agent_appsignals__*` | ✅ | — |
 | `cloudtrail` | `uvx awslabs.cloudtrail-mcp-server@latest` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-sre-agent_cloudtrail__*` | ✅ | — |
@@ -645,8 +662,10 @@ Sections (click to open at the line range):
 |---|---|---|---|---|
 | PreToolUse | `Bash` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
 | PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
+| PreToolUse | `Bash` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
+| PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
 
-Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py`).
+Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py`), `hooks/aws-mutation-gate.py` (from `talkops/hooks/aws-mutation-gate.py`).
 
 ### Rewrites applied to upstream files
 
@@ -659,6 +678,7 @@ Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claud
 - Observability plus resilience: CloudWatch, Application Signals, CloudTrail, Prometheus, AWS Support, and Phase 2 resilience skills (Resilience Hub, FIS, ARC).
 - A guardrail requires approval before setup changes and before any Fault Injection Service experiment.
 - `awssupport` requires a Business or Enterprise support plan; case creation is confirmed with the user first.
+- Read-only on AWS: `aws-mcp` runs with `--read-only` (docs, regional availability, and skills only), and the `aws-mutation-gate` hook denies mutating shell/MCP calls from this agent in Claude Code. Live inspection uses read-only `aws` CLI commands.
 
 ### Automated findings
 
@@ -766,7 +786,7 @@ Sections (click to open at the line range):
 | Server | Launch | Mode | Tool names | Allowlisted | Notes |
 |---|---|---|---|---|---|
 | `aws-mcp` | `uvx mcp-proxy-for-aws-cli==1.7.0 https://aws-mcp.us-east-1.api.aws/mcp --skip-auth --metadata INSTALL_SOURCE=agent-toolkit-core` | any AWS API call, bounded by IAM<br>pinned<br>region hard-coded `us-east-1` | `mcp__plugin_aws-cloud-security-engineer_aws-mcp__*` | ✅ | Managed AWS MCP Server via the toolkit's pinned proxy (aws___call_aws, aws___search_documentation, aws___retrieve_skill, ...). |
-| `iam` | `uvx awslabs.iam-mcp-server@latest` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-cloud-security-engineer_iam__*` | ✅ | Read-only by default (the published server has no --readonly flag). Add --allow-write to enable IAM mutations. |
+| `iam` | `uvx awslabs.iam-mcp-server@latest` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-cloud-security-engineer_iam__*` | ✅ | Read-only by default (the server only mutates with --allow-write). Add --allow-write to allow IAM mutations. |
 | `wa-security` | `uvx awslabs.well-architected-security-mcp-server@latest` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-cloud-security-engineer_wa-security__*` | ✅ | — |
 | `cloudtrail` | `uvx awslabs.cloudtrail-mcp-server@latest` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-cloud-security-engineer_cloudtrail__*` | ✅ | — |
 
@@ -776,8 +796,10 @@ Sections (click to open at the line range):
 |---|---|---|---|---|
 | PreToolUse | `Bash` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
 | PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
+| PreToolUse | `Bash` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
+| PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
 
-Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py`).
+Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py`), `hooks/aws-mutation-gate.py` (from `talkops/hooks/aws-mutation-gate.py`).
 
 ### Rewrites applied to upstream files
 
@@ -790,7 +812,7 @@ Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claud
 
 - Account and service security posture: IAM, secrets, encryption, S3 hardening, WAF, and Shield Advanced.
 - `iam` is read-only (no `--allow-write`). The `aws-secrets-manager` rewrite points the secret-safety hook message at the bundled skill.
-- Code scans, threat models, and pentests are handed off to `aws-devsecops-agent`, which owns the `security-agent` server.
+- Code scans, threat models, and pentests are handed off to `aws-devsecops-agent`, which owns the `security-agent` server (removed from this agent's `.mcp.json`).
 
 ### Automated findings
 
@@ -886,7 +908,7 @@ Sections (click to open at the line range):
 
 | Server | Launch | Mode | Tool names | Allowlisted | Notes |
 |---|---|---|---|---|---|
-| `aws-mcp` | `uvx mcp-proxy-for-aws-cli==1.7.0 https://aws-mcp.us-east-1.api.aws/mcp --skip-auth --metadata INSTALL_SOURCE=agent-toolkit-core` | any AWS API call, bounded by IAM<br>pinned<br>region hard-coded `us-east-1` | `mcp__plugin_aws-finops-agent_aws-mcp__*` | ✅ | Managed AWS MCP Server via the toolkit's pinned proxy (aws___call_aws, aws___search_documentation, aws___retrieve_skill, ...). |
+| `aws-mcp` | `uvx mcp-proxy-for-aws-cli==1.7.0 https://aws-mcp.us-east-1.api.aws/mcp --skip-auth --read-only --metadata INSTALL_SOURCE=agent-toolkit-core` | any AWS API call, bounded by IAM<br>pinned<br>region hard-coded `us-east-1` | `mcp__plugin_aws-finops-agent_aws-mcp__*` | ✅ | Managed AWS MCP Server, read-only: the proxy's --read-only flag drops every tool whose readOnlyHint is not true (aws___call_aws, aws___run_script, aws___get_presigned_url), leaving documentation, regional availability, and skill retrieval. |
 | `billing` | `uvx awslabs.billing-cost-management-mcp-server@latest` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-finops-agent_billing__*` | ✅ | — |
 | `awspricing` | `uvx awslabs.aws-pricing-mcp-server@latest` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-finops-agent_awspricing__*` | ✅ | — |
 
@@ -896,8 +918,10 @@ Sections (click to open at the line range):
 |---|---|---|---|---|
 | PreToolUse | `Bash` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
 | PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
+| PreToolUse | `Bash` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
+| PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
 
-Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py`).
+Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py`), `hooks/aws-mutation-gate.py` (from `talkops/hooks/aws-mutation-gate.py`).
 
 ### Rewrites applied to upstream files
 
@@ -908,6 +932,7 @@ Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claud
 ### Design notes
 
 - Cost analysis, anomalies, budgets, commitments, and right-sizing via the Billing and Cost Management and Pricing servers. Implementation of savings is handed off.
+- Read-only on AWS: `aws-mcp` runs with `--read-only` (docs, regional availability, and skills only), and the `aws-mutation-gate` hook denies mutating shell/MCP calls from this agent in Claude Code. Live inspection uses read-only `aws` CLI commands.
 
 ### Automated findings
 
@@ -1010,7 +1035,7 @@ Sections (click to open at the line range):
 
 | Server | Launch | Mode | Tool names | Allowlisted | Notes |
 |---|---|---|---|---|---|
-| `aws-mcp` | `uvx mcp-proxy-for-aws-cli==1.7.0 https://aws-mcp.us-east-1.api.aws/mcp --skip-auth --metadata INSTALL_SOURCE=agent-toolkit-core` | any AWS API call, bounded by IAM<br>pinned<br>region hard-coded `us-east-1` | `mcp__plugin_aws-solutions-architect_aws-mcp__*` | ✅ | Managed AWS MCP Server via the toolkit's pinned proxy (aws___call_aws, aws___search_documentation, aws___retrieve_skill, ...). |
+| `aws-mcp` | `uvx mcp-proxy-for-aws-cli==1.7.0 https://aws-mcp.us-east-1.api.aws/mcp --skip-auth --read-only --metadata INSTALL_SOURCE=agent-toolkit-core` | any AWS API call, bounded by IAM<br>pinned<br>region hard-coded `us-east-1` | `mcp__plugin_aws-solutions-architect_aws-mcp__*` | ✅ | Managed AWS MCP Server, read-only: the proxy's --read-only flag drops every tool whose readOnlyHint is not true (aws___call_aws, aws___run_script, aws___get_presigned_url), leaving documentation, regional availability, and skill retrieval. |
 | `awsknowledge` | `http https://knowledge-mcp.global.api.aws` | no write flags | `mcp__plugin_aws-solutions-architect_awsknowledge__*` | ✅ | — |
 | `awspricing` | `uvx awslabs.aws-pricing-mcp-server@latest` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-solutions-architect_awspricing__*` | ✅ | — |
 
@@ -1020,8 +1045,10 @@ Sections (click to open at the line range):
 |---|---|---|---|---|
 | PreToolUse | `Bash` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
 | PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
+| PreToolUse | `Bash` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
+| PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
 
-Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py`).
+Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py`), `hooks/aws-mutation-gate.py` (from `talkops/hooks/aws-mutation-gate.py`).
 
 ### Rewrites applied to upstream files
 
@@ -1032,6 +1059,7 @@ Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claud
 ### Design notes
 
 - Architecture design, service selection, Well-Architected reviews, and pricing estimates. Read-mostly by design: it hands implementation to IaC, AgentCore, SageMaker, security, and FinOps agents.
+- Read-only on AWS: `aws-mcp` runs with `--read-only` (docs, regional availability, and skills only), and the `aws-mutation-gate` hook denies mutating shell/MCP calls from this agent in Claude Code. Live inspection uses read-only `aws` CLI commands.
 
 ### Automated findings
 
@@ -1139,6 +1167,23 @@ Sections (click to open at the line range):
 | `awsknowledge` | `http https://knowledge-mcp.global.api.aws` | no write flags | `mcp__plugin_aws-agentcore-engineer_awsknowledge__*` | ✅ | — |
 | `agentcore` | `uvx awslabs.amazon-bedrock-agentcore-mcp-server@latest` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-agentcore-engineer_agentcore__*` | ✅ | — |
 
+### Hooks
+
+| Event | Matcher | Type | Action | Origin |
+|---|---|---|---|---|
+| PreToolUse | `Bash` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
+| PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
+| PreToolUse | `Bash` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
+| PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
+
+Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py`), `hooks/aws-mutation-gate.py` (from `talkops/hooks/aws-mutation-gate.py`).
+
+### Rewrites applied to upstream files
+
+| File | Find | Replace | Origin |
+|---|---|---|---|
+| `hooks/secret-safety.py` | Run /aws-secrets-manager for details. | See the aws-secrets-manager skill (aws-security-identity or aws-cloud-security-engineer plugin) for… | `hook` |
+
 ### Design notes
 
 - Built from toolkit `aws-agents` (Bedrock AgentCore build, deploy, harden, debug) with the `agentcore` and AWS Knowledge servers. It does not bundle `aws-mcp`; confirm that AgentCore work never needs generic AWS API calls.
@@ -1153,6 +1198,8 @@ Sections (click to open at the line range):
 - [ ] Every bundled skill belongs in this plugin's scope; nothing important for the scope is missing.
 - [ ] Skill sources and variant choices are right (see *Source* and *Also in* columns).
 - [ ] Every MCP server is needed, starts with valid credentials, and its mode (read-only / write) is intended.
+- [ ] Hooks behave as intended, are fast, and fail safe.
+- [ ] Rewrites still make sense and leave the upstream file coherent.
 - [ ] Agent `description` triggers delegation for the right requests and excludes neighbours' work.
 - [ ] Workflow is correct and uses the bundled skills and servers by their real names.
 - [ ] Hand-offs are complete and point at the right agents.
@@ -1273,8 +1320,10 @@ Sections (click to open at the line range):
 |---|---|---|---|---|
 | PreToolUse | `Bash` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
 | PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
+| PreToolUse | `Bash` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
+| PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
 
-Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py`).
+Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py`), `hooks/aws-mutation-gate.py` (from `talkops/hooks/aws-mutation-gate.py`).
 
 ### Rewrites applied to upstream files
 
@@ -1339,7 +1388,7 @@ File: [`agents/aws-devsecops-agent.md`](../../plugins/agent-plugins/aws-devsecop
 | `name` | `aws-devsecops-agent` |
 | `description` (delegation trigger) | Drives the managed AWS DevOps Agent and AWS Security Agent services. Runs deep incident root-cause investigations and quick conversational analyses (cost, topology, runbooks), coordinates multiple AgentSpaces, performs pre-merge release-readiness reviews and automated UI/API release tests, runs full and diff code security scans, threat-models design docs, executes penetration tests against live apps, and drives remediation of Security Agent findings. Use when the user wants AWS DevOps Agent or AWS Security Agent involved. Not for manual CloudWatch-based troubleshooting (aws-sre-agent) or IAM policy design (aws-cloud-security-engineer). |
 | Built-in tools | `Read`, `Grep`, `Glob`, `Bash`, `Write`, `Edit`, `Skill`, `TodoWrite`, `WebFetch` |
-| MCP tools | `mcp__plugin_aws-devsecops-agent_aws-devops-agent__*`<br>`mcp__plugin_aws-devsecops-agent_security-agent__*` |
+| MCP tools | `mcp__plugin_aws-devsecops-agent_aws-devops-agent__*` |
 | Hands off to | [`aws-cloud-security-engineer`](#aws-cloud-security-engineer), [`aws-iac-engineer`](#aws-iac-engineer), [`aws-sre-agent`](#aws-sre-agent) |
 
 Sections (click to open at the line range):
@@ -1413,7 +1462,23 @@ Sections (click to open at the line range):
 | Server | Launch | Mode | Tool names | Allowlisted | Notes |
 |---|---|---|---|---|---|
 | `aws-devops-agent` | `http https://connect.aidevops.${DEVOPS_AGENT_REGION:-us-east-1}.api.aws/mcp` | no write flags<br>needs env `DEVOPS_AGENT_REGION`, `DEVOPS_AGENT_TOKEN` | `mcp__plugin_aws-devsecops-agent_aws-devops-agent__*` | ✅ | — |
-| `security-agent` | `uvx awslabs.security-agent-mcp-server@latest` | ⚠️ no read-only mode<br>unpinned `@latest` | `mcp__plugin_aws-devsecops-agent_security-agent__*` | ✅ | AWS Security Agent scans and pentests. No read-only mode: first use may provision an agent space and IAM role, so confirm before running. |
+
+### Hooks
+
+| Event | Matcher | Type | Action | Origin |
+|---|---|---|---|---|
+| PreToolUse | `Bash` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
+| PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
+| PreToolUse | `Bash` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
+| PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
+
+Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py`), `hooks/aws-mutation-gate.py` (from `talkops/hooks/aws-mutation-gate.py`).
+
+### Rewrites applied to upstream files
+
+| File | Find | Replace | Origin |
+|---|---|---|---|
+| `hooks/secret-safety.py` | Run /aws-secrets-manager for details. | See the aws-secrets-manager skill (aws-security-identity or aws-cloud-security-engineer plugin) for… | `hook` |
 
 ### Design notes
 
@@ -1422,7 +1487,7 @@ Sections (click to open at the line range):
 
 ### Automated findings
 
-- MCP `security-agent`: no read-only mode.
+- None.
 
 ### Audit checklist
 
@@ -1430,6 +1495,8 @@ Sections (click to open at the line range):
 - [ ] Every bundled skill belongs in this plugin's scope; nothing important for the scope is missing.
 - [ ] Skill sources and variant choices are right (see *Source* and *Also in* columns).
 - [ ] Every MCP server is needed, starts with valid credentials, and its mode (read-only / write) is intended.
+- [ ] Hooks behave as intended, are fast, and fail safe.
+- [ ] Rewrites still make sense and leave the upstream file coherent.
 - [ ] Agent `description` triggers delegation for the right requests and excludes neighbours' work.
 - [ ] Workflow is correct and uses the bundled skills and servers by their real names.
 - [ ] Hand-offs are complete and point at the right agents.
@@ -1558,9 +1625,21 @@ Support directories copied with the skills (no `SKILL.md`; shared by other skill
 
 | Event | Matcher | Type | Action | Origin |
 |---|---|---|---|---|
+| PreToolUse | `Bash` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
+| PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
+| PreToolUse | `Bash` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
+| PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
 | SessionStart | `*` | command | cat "${CLAUDE_PLUGIN_ROOT}/hooks/offer-context.txt" 2>/dev/null \|\| true | `inline` |
 | SessionStart | `*` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0" 2>/dev/null \|\| true' "${CLAUDE_PLUGIN_ROOT}/scripts/telemetry/consent/session_st… | `inline` |
 | PostToolUse | `Skill` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0" 2>/dev/null \|\| true' "${CLAUDE_PLUGIN_ROOT}/scripts/telemetry/metric_emission/sk… | `inline` |
+
+Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py`), `hooks/aws-mutation-gate.py` (from `talkops/hooks/aws-mutation-gate.py`).
+
+### Rewrites applied to upstream files
+
+| File | Find | Replace | Origin |
+|---|---|---|---|
+| `hooks/secret-safety.py` | Run /aws-secrets-manager for details. | See the aws-secrets-manager skill (aws-security-identity or aws-cloud-security-engineer plugin) for… | `hook` |
 
 ### Design notes
 
@@ -1578,6 +1657,7 @@ Support directories copied with the skills (no `SKILL.md`; shared by other skill
 - [ ] Skill sources and variant choices are right (see *Source* and *Also in* columns).
 - [ ] Every MCP server is needed, starts with valid credentials, and its mode (read-only / write) is intended.
 - [ ] Hooks behave as intended, are fast, and fail safe.
+- [ ] Rewrites still make sense and leave the upstream file coherent.
 - [ ] Agent `description` triggers delegation for the right requests and excludes neighbours' work.
 - [ ] Workflow is correct and uses the bundled skills and servers by their real names.
 - [ ] Hand-offs are complete and point at the right agents.
@@ -1663,6 +1743,23 @@ Sections (click to open at the line range):
 | `aws-mcp` | `uvx mcp-proxy-for-aws@latest https://aws-mcp.us-east-1.api.aws/mcp` | any AWS API call, bounded by IAM<br>unpinned `@latest`<br>region hard-coded `us-east-1` | `mcp__plugin_aws-location-engineer_aws-mcp__*` | ✅ | Managed AWS MCP Server via the proxy used by awslabs/agent-plugins. |
 | `awslocation` | `uvx awslabs.aws-location-mcp-server@latest` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-location-engineer_awslocation__*` | ✅ | — |
 
+### Hooks
+
+| Event | Matcher | Type | Action | Origin |
+|---|---|---|---|---|
+| PreToolUse | `Bash` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
+| PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
+| PreToolUse | `Bash` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
+| PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
+
+Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py`), `hooks/aws-mutation-gate.py` (from `talkops/hooks/aws-mutation-gate.py`).
+
+### Rewrites applied to upstream files
+
+| File | Find | Replace | Origin |
+|---|---|---|---|
+| `hooks/secret-safety.py` | Run /aws-secrets-manager for details. | See the aws-secrets-manager skill (aws-security-identity or aws-cloud-security-engineer plugin) for… | `hook` |
+
 ### Design notes
 
 - Amazon Location Service maps, places, routes, and geofences. Uses the agent-plugins proxy variant of `aws-mcp` (`aws-mcp-legacy-proxy`) to stay identical to upstream.
@@ -1677,6 +1774,8 @@ Sections (click to open at the line range):
 - [ ] Every bundled skill belongs in this plugin's scope; nothing important for the scope is missing.
 - [ ] Skill sources and variant choices are right (see *Source* and *Also in* columns).
 - [ ] Every MCP server is needed, starts with valid credentials, and its mode (read-only / write) is intended.
+- [ ] Hooks behave as intended, are fast, and fail safe.
+- [ ] Rewrites still make sense and leave the upstream file coherent.
 - [ ] Agent `description` triggers delegation for the right requests and excludes neighbours' work.
 - [ ] Workflow is correct and uses the bundled skills and servers by their real names.
 - [ ] Hand-offs are complete and point at the right agents.
@@ -1762,6 +1861,23 @@ Sections (click to open at the line range):
 | `aws-mcp` | `uvx mcp-proxy-for-aws@latest https://aws-mcp.us-east-1.api.aws/mcp` | any AWS API call, bounded by IAM<br>unpinned `@latest`<br>region hard-coded `us-east-1` | `mcp__plugin_aws-amplify-engineer_aws-mcp__*` | ✅ | Managed AWS MCP Server via the proxy used by awslabs/agent-plugins. |
 | `appsync` | `uvx awslabs.aws-appsync-mcp-server@latest` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-amplify-engineer_appsync__*` | ✅ | AWS AppSync APIs, read-only by default. Add --allow-write to create APIs, data sources, and resolvers. |
 
+### Hooks
+
+| Event | Matcher | Type | Action | Origin |
+|---|---|---|---|---|
+| PreToolUse | `Bash` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
+| PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
+| PreToolUse | `Bash` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
+| PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
+
+Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py`), `hooks/aws-mutation-gate.py` (from `talkops/hooks/aws-mutation-gate.py`).
+
+### Rewrites applied to upstream files
+
+| File | Find | Replace | Origin |
+|---|---|---|---|
+| `hooks/secret-safety.py` | Run /aws-secrets-manager for details. | See the aws-secrets-manager skill (aws-security-identity or aws-cloud-security-engineer plugin) for… | `hook` |
+
 ### Design notes
 
 - Amplify Gen 2 full-stack apps from agent-plugins `aws-amplify`. Phase 2 added the read-only `appsync` server. Uses the legacy proxy variant of `aws-mcp`.
@@ -1776,6 +1892,8 @@ Sections (click to open at the line range):
 - [ ] Every bundled skill belongs in this plugin's scope; nothing important for the scope is missing.
 - [ ] Skill sources and variant choices are right (see *Source* and *Also in* columns).
 - [ ] Every MCP server is needed, starts with valid credentials, and its mode (read-only / write) is intended.
+- [ ] Hooks behave as intended, are fast, and fail safe.
+- [ ] Rewrites still make sense and leave the upstream file coherent.
 - [ ] Agent `description` triggers delegation for the right requests and excludes neighbours' work.
 - [ ] Workflow is correct and uses the bundled skills and servers by their real names.
 - [ ] Hand-offs are complete and point at the right agents.
@@ -1896,12 +2014,19 @@ User-added servers documented in [CONNECTORS.md](../../plugins/agent-plugins/aws
 
 | Event | Matcher | Type | Action | Origin |
 |---|---|---|---|---|
+| PreToolUse | `Bash` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
+| PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
+| PreToolUse | `Bash` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
+| PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
 | PostToolUse | `Edit\|Write` | command | bash "${CLAUDE_PLUGIN_ROOT}/scripts/validate-template.sh" | `inline` |
+
+Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py`), `hooks/aws-mutation-gate.py` (from `talkops/hooks/aws-mutation-gate.py`).
 
 ### Rewrites applied to upstream files
 
 | File | Find | Replace | Origin |
 |---|---|---|---|
+| `hooks/secret-safety.py` | Run /aws-secrets-manager for details. | See the aws-secrets-manager skill (aws-security-identity or aws-cloud-security-engineer plugin) for… | `hook` |
 | `skills/aws-lambda/SKILL.md` | use deploy-on-aws plugin instead | use the aws-deployment-agent plugin instead | `inline` |
 | `skills/aws-serverless-deployment/SKILL.md` | use deploy-on-aws plugin instead | use the aws-deployment-agent plugin instead | `inline` |
 
@@ -2010,6 +2135,23 @@ Sections (click to open at the line range):
 |---|---|---|---|---|---|
 | `aws-transform-mcp` | `uvx awslabs.aws-transform-mcp-server@latest` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-modernization-agent_aws-transform-mcp__*` | ✅ | — |
 
+### Hooks
+
+| Event | Matcher | Type | Action | Origin |
+|---|---|---|---|---|
+| PreToolUse | `Bash` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
+| PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
+| PreToolUse | `Bash` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
+| PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
+
+Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py`), `hooks/aws-mutation-gate.py` (from `talkops/hooks/aws-mutation-gate.py`).
+
+### Rewrites applied to upstream files
+
+| File | Find | Replace | Origin |
+|---|---|---|---|
+| `hooks/secret-safety.py` | Run /aws-secrets-manager for details. | See the aws-secrets-manager skill (aws-security-identity or aws-cloud-security-engineer plugin) for… | `hook` |
+
 ### Design notes
 
 - AWS Transform modernization (.NET, mainframe, VMware, SQL Server, language and SDK upgrades) plus `dms-schema-conversion` for heterogeneous database migration.
@@ -2024,6 +2166,8 @@ Sections (click to open at the line range):
 - [ ] Every bundled skill belongs in this plugin's scope; nothing important for the scope is missing.
 - [ ] Skill sources and variant choices are right (see *Source* and *Also in* columns).
 - [ ] Every MCP server is needed, starts with valid credentials, and its mode (read-only / write) is intended.
+- [ ] Hooks behave as intended, are fast, and fail safe.
+- [ ] Rewrites still make sense and leave the upstream file coherent.
 - [ ] Agent `description` triggers delegation for the right requests and excludes neighbours' work.
 - [ ] Workflow is correct and uses the bundled skills and servers by their real names.
 - [ ] Hand-offs are complete and point at the right agents.
@@ -2108,10 +2252,22 @@ Sections (click to open at the line range):
 | `awsknowledge` | `http https://knowledge-mcp.global.api.aws` | no write flags | `mcp__plugin_aws-codebase-documentor_awsknowledge__*` | ✅ | — |
 | `awsiac` | `uvx awslabs.aws-iac-mcp-server@latest` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-codebase-documentor_awsiac__*` | ✅ | — |
 
+### Hooks
+
+| Event | Matcher | Type | Action | Origin |
+|---|---|---|---|---|
+| PreToolUse | `Bash` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
+| PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
+| PreToolUse | `Bash` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
+| PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
+
+Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py`), `hooks/aws-mutation-gate.py` (from `talkops/hooks/aws-mutation-gate.py`).
+
 ### Rewrites applied to upstream files
 
 | File | Find | Replace | Origin |
 |---|---|---|---|
+| `hooks/secret-safety.py` | Run /aws-secrets-manager for details. | See the aws-secrets-manager skill (aws-security-identity or aws-cloud-security-engineer plugin) for… | `hook` |
 | `skills/document-service/SKILL.md` | (part of the `deploy-on-aws` plugin) | (part of the `aws-deployment-agent` plugin) | `inline` |
 | `skills/document-service/references/error-scenarios.md` | When the `deploy-on-aws` plugin | When the `aws-deployment-agent` plugin | `inline` |
 
@@ -2129,6 +2285,7 @@ Sections (click to open at the line range):
 - [ ] Every bundled skill belongs in this plugin's scope; nothing important for the scope is missing.
 - [ ] Skill sources and variant choices are right (see *Source* and *Also in* columns).
 - [ ] Every MCP server is needed, starts with valid credentials, and its mode (read-only / write) is intended.
+- [ ] Hooks behave as intended, are fast, and fail safe.
 - [ ] Rewrites still make sense and leave the upstream file coherent.
 - [ ] Agent `description` triggers delegation for the right requests and excludes neighbours' work.
 - [ ] Workflow is correct and uses the bundled skills and servers by their real names.
@@ -2268,8 +2425,10 @@ User-added servers documented in [CONNECTORS.md](../../plugins/agent-plugins/aws
 | PreToolUse | `Bash` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
 | PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
 | PostToolUse | `mcp__.*aurora-dsql.*__transact` | prompt | A DSQL transact operation completed. Verify the result: if it was a DDL change, confirm the schema looks correct using get_schema. If it was a DML change, conf… | `dsql-verify` |
+| PreToolUse | `Bash` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
+| PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
 
-Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py`).
+Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py`), `hooks/aws-mutation-gate.py` (from `talkops/hooks/aws-mutation-gate.py`).
 
 ### Rewrites applied to upstream files
 
@@ -2394,7 +2553,19 @@ Sections (click to open at the line range):
 
 | Event | Matcher | Type | Action | Origin |
 |---|---|---|---|---|
+| PreToolUse | `Bash` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
+| PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
+| PreToolUse | `Bash` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
+| PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
 | PostToolUse | `Edit\|Write` | command | bash "${CLAUDE_PLUGIN_ROOT}/scripts/validate-drawio.sh" | `inline` |
+
+Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py`), `hooks/aws-mutation-gate.py` (from `talkops/hooks/aws-mutation-gate.py`).
+
+### Rewrites applied to upstream files
+
+| File | Find | Replace | Origin |
+|---|---|---|---|
+| `hooks/secret-safety.py` | Run /aws-secrets-manager for details. | See the aws-secrets-manager skill (aws-security-identity or aws-cloud-security-engineer plugin) for… | `hook` |
 
 ### Design notes
 
@@ -2411,6 +2582,7 @@ Sections (click to open at the line range):
 - [ ] Skill sources and variant choices are right (see *Source* and *Also in* columns).
 - [ ] Every MCP server is needed, starts with valid credentials, and its mode (read-only / write) is intended.
 - [ ] Hooks behave as intended, are fast, and fail safe.
+- [ ] Rewrites still make sense and leave the upstream file coherent.
 - [ ] Agent `description` triggers delegation for the right requests and excludes neighbours' work.
 - [ ] Workflow is correct and uses the bundled skills and servers by their real names.
 - [ ] Hand-offs are complete and point at the right agents.
@@ -2517,6 +2689,23 @@ Sections (click to open at the line range):
 | `aws-mcp` | `uvx mcp-proxy-for-aws@latest https://aws-mcp.us-east-1.api.aws/mcp` | any AWS API call, bounded by IAM<br>unpinned `@latest`<br>region hard-coded `us-east-1` | `mcp__plugin_aws-sagemaker-engineer_aws-mcp__*` | ✅ | Managed AWS MCP Server via the proxy used by awslabs/agent-plugins. |
 | `sagemaker` | `uvx awslabs.sagemaker-ai-mcp-server@latest` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-sagemaker-engineer_sagemaker__*` | ✅ | Read-only by default. Add --allow-write / --allow-sensitive-data-access to enable mutations. |
 
+### Hooks
+
+| Event | Matcher | Type | Action | Origin |
+|---|---|---|---|---|
+| PreToolUse | `Bash` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
+| PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py" | `secret-safety` |
+| PreToolUse | `Bash` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
+| PreToolUse | `use_aws\|mcp__aws.*\|mcp__plugin_.*aws-mcp.*` | command | sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/… | `aws-mutation-gate` |
+
+Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py`), `hooks/aws-mutation-gate.py` (from `talkops/hooks/aws-mutation-gate.py`).
+
+### Rewrites applied to upstream files
+
+| File | Find | Replace | Origin |
+|---|---|---|---|
+| `hooks/secret-safety.py` | Run /aws-secrets-manager for details. | See the aws-secrets-manager skill (aws-security-identity or aws-cloud-security-engineer plugin) for… | `hook` |
+
 ### Design notes
 
 - SageMaker AI training, tuning, evaluation, hosting, and HyperPod. `sagemaker` is read-only by default; uses the legacy proxy variant of `aws-mcp`.
@@ -2531,6 +2720,8 @@ Sections (click to open at the line range):
 - [ ] Every bundled skill belongs in this plugin's scope; nothing important for the scope is missing.
 - [ ] Skill sources and variant choices are right (see *Source* and *Also in* columns).
 - [ ] Every MCP server is needed, starts with valid credentials, and its mode (read-only / write) is intended.
+- [ ] Hooks behave as intended, are fast, and fail safe.
+- [ ] Rewrites still make sense and leave the upstream file coherent.
 - [ ] Agent `description` triggers delegation for the right requests and excludes neighbours' work.
 - [ ] Workflow is correct and uses the bundled skills and servers by their real names.
 - [ ] Hand-offs are complete and point at the right agents.

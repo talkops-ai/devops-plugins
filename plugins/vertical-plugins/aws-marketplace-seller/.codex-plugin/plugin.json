@@ -13,5 +13,20 @@
     "marketplace",
     "metering",
     "saas"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "interface": {
+    "displayName": "AWS Marketplace Seller",
+    "shortDescription": "AWS Marketplace seller skills for the main agent",
+    "longDescription": "AWS Marketplace seller skills for the main agent: integrating SaaS, container, and AMI products with AWS Marketplace metering.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/vertical-plugins/aws-marketplace-seller",
+    "brandColor": "#FF9900"
+  }
 }

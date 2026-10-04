@@ -683,6 +683,32 @@
         "quantum",
         "braket"
       ]
+    },
+    {
+      "name": "terraform",
+      "displayName": "Terraform (HashiCorp)",
+      "source": "./plugins/partner-built/terraform",
+      "description": "HashiCorp's official Terraform skills: HCL style, module refactoring, Terraform tests, search and bulk import, Stacks, Terraform policy (including Sentinel conversion), Azure Verified Modules, and provider development with the Plugin Framework (resources, actions, ephemeral resources, configuration, SDKv2 migration, docs, and acceptance tests).",
+      "version": "1.0.0",
+      "category": "infrastructure-as-code",
+      "keywords": [
+        "terraform",
+        "hcl",
+        "hashicorp",
+        "iac",
+        "modules",
+        "provider",
+        "terraform-stacks",
+        "terraform-test",
+        "policy"
+      ],
+      "author": {
+        "name": "HashiCorp",
+        "url": "https://github.com/hashicorp"
+      },
+      "homepage": "https://developer.hashicorp.com/terraform",
+      "repository": "https://github.com/hashicorp/agent-skills",
+      "license": "MPL-2.0"
     }
   ]
 }

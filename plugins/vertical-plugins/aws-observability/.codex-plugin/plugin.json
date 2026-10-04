@@ -17,5 +17,20 @@
     "x-ray",
     "prometheus",
     "troubleshooting"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "interface": {
+    "displayName": "AWS Observability",
+    "shortDescription": "Observability skills for the main agent",
+    "longDescription": "Observability skills for the main agent: CloudWatch metrics, logs, alarms and notifications, Application Signals, X-Ray, multi-Region CloudTrail, and application-failure troubleshooting, with CloudWatch, Application Signals, CloudTrail, and Prometheus MCP servers.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/vertical-plugins/aws-observability",
+    "brandColor": "#FF9900"
+  }
 }

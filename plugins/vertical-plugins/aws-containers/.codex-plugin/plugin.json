@@ -17,5 +17,20 @@
     "ecr",
     "kubernetes",
     "finch"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "interface": {
+    "displayName": "AWS Containers",
+    "shortDescription": "Container skills for the main agent",
+    "longDescription": "Container skills for the main agent: EKS, ECS, Fargate, ECR, and App Runner design and troubleshooting, with the EKS and ECS MCP servers (read-only) and Finch for building and pushing images.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/vertical-plugins/aws-containers",
+    "brandColor": "#FF9900"
+  }
 }

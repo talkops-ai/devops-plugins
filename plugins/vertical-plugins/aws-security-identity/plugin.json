@@ -1,0 +1,22 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "aws-security-identity",
+  "version": "0.1.0",
+  "description": "Security and identity skills for the main agent: least-privilege IAM, Security Hub/GuardDuty/Inspector findings, Cognito authentication, and Secrets Manager best practices, with read-only IAM, Well-Architected security, and AWS Security Agent MCP servers and the secret-safety hook.",
+  "author": {
+    "name": "TalkOps AI"
+  },
+  "homepage": "https://github.com/talkops-ai/devops-plugins",
+  "repository": "https://github.com/talkops-ai/devops-plugins",
+  "license": "Apache-2.0",
+  "keywords": [
+    "aws",
+    "security",
+    "iam",
+    "secrets-manager",
+    "cognito",
+    "security-hub",
+    "guardduty",
+    "least-privilege"
+  ]
+}

@@ -1,0 +1,3217 @@
+{
+  "$comment": "Source-of-truth mapping from upstream AWS skill repos (under reference/) to TalkOps agent and vertical plugins. Consumed by scripts/sync_aws_plugins.py. Hand-authored files (agents/<name>.md in agent plugins, commands/*.md in vertical plugins) are never overwritten by the sync.",
+  "marketplace": {
+    "name": "talkops-devops-plugins",
+    "owner": {
+      "name": "TalkOps AI",
+      "url": "https://github.com/talkops-ai"
+    },
+    "metadata": {
+      "description": "DevOps and cloud-operations plugins for AI agents. Agent plugins bind skills, commands, hooks, and MCP servers to a named specialist agent; vertical plugins apply skills to the main agent; partner-built plugins wrap third-party integrations.",
+      "version": "0.1.0"
+    }
+  },
+  "defaults": {
+    "version": "0.1.0",
+    "author": {
+      "name": "TalkOps AI"
+    },
+    "homepage": "https://github.com/talkops-ai/devops-plugins",
+    "repository": "https://github.com/talkops-ai/devops-plugins",
+    "license": "Apache-2.0"
+  },
+  "hosts": {
+    "$comment": "Per-host packaging. The sync always writes the Claude Code layout (.claude-plugin/plugin.json, .mcp.json, agents/, hooks/hooks.json) and the portable Agent Plugins 1.0.0 layout (plugin.json, mcp.json, skills/) plus the Codex overlay (.codex-plugin/plugin.json) and the Codex marketplace (.agents/plugins/marketplace.json).",
+    "codex": {
+      "developerName": "TalkOps AI",
+      "category": "Cloud",
+      "websiteURL": "https://github.com/talkops-ai/devops-plugins",
+      "brandColor": "#FF9900",
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "marketplaceDisplayName": "TalkOps DevOps Plugins"
+    }
+  },
+  "sources": {
+    "toolkit": {
+      "path": "reference/agent-toolkit-for-aws/plugins",
+      "upstream": "https://github.com/aws/agent-toolkit-for-aws"
+    },
+    "agent-plugins": {
+      "path": "reference/agent-plugins/plugins",
+      "upstream": "https://github.com/awslabs/agent-plugins"
+    },
+    "toolkit-skills": {
+      "path": "reference/agent-toolkit-for-aws/skills",
+      "upstream": "https://github.com/aws/agent-toolkit-for-aws",
+      "flat": true
+    },
+    "hashicorp": {
+      "path": "reference/hashicorp-agent-skills/plugins",
+      "upstream": "https://github.com/hashicorp/agent-skills",
+      "license": "MPL-2.0"
+    },
+    "talkops": {
+      "path": "src",
+      "upstream": "https://github.com/talkops-ai/devops-plugins"
+    }
+  },
+  "exclude": [
+    ".codex-plugin",
+    ".cursor-plugin",
+    ".claude-plugin",
+    "plugin.json",
+    "mcp.json",
+    ".mcp.json",
+    "tests",
+    "__pycache__",
+    ".DS_Store",
+    ".pytest_cache"
+  ],
+  "mcp_catalog": {
+    "aws-mcp": {
+      "$comment": "Managed AWS MCP Server via the toolkit's pinned proxy (aws___call_aws, aws___search_documentation, aws___retrieve_skill, ...).",
+      "command": "uvx",
+      "args": [
+        "mcp-proxy-for-aws-cli==1.7.0",
+        "https://aws-mcp.us-east-1.api.aws/mcp",
+        "--skip-auth",
+        "--metadata",
+        "INSTALL_SOURCE=agent-toolkit-core"
+      ]
+    },
+    "aws-mcp-legacy-proxy": {
+      "$comment": "Managed AWS MCP Server via the proxy used by awslabs/agent-plugins.",
+      "command": "uvx",
+      "args": [
+        "mcp-proxy-for-aws@latest",
+        "https://aws-mcp.us-east-1.api.aws/mcp"
+      ]
+    },
+    "awsknowledge": {
+      "type": "http",
+      "url": "https://knowledge-mcp.global.api.aws"
+    },
+    "awsiac": {
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-iac-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      }
+    },
+    "awspricing": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-pricing-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      },
+      "timeout": 120000
+    },
+    "cloudwatch": {
+      "command": "uvx",
+      "args": [
+        "awslabs.cloudwatch-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "appsignals": {
+      "command": "uvx",
+      "args": [
+        "awslabs.cloudwatch-applicationsignals-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "cloudtrail": {
+      "command": "uvx",
+      "args": [
+        "awslabs.cloudtrail-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "prometheus": {
+      "command": "uvx",
+      "args": [
+        "awslabs.prometheus-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "awssupport": {
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-support-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "iam": {
+      "$comment": "Read-only by default (the server only mutates with --allow-write). Add --allow-write to allow IAM mutations.",
+      "command": "uvx",
+      "args": [
+        "awslabs.iam-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "wa-security": {
+      "command": "uvx",
+      "args": [
+        "awslabs.well-architected-security-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "billing": {
+      "command": "uvx",
+      "args": [
+        "awslabs.billing-cost-management-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "eks": {
+      "$comment": "Read-only by default. Add --allow-write / --allow-sensitive-data-access to enable mutations and pod logs/secrets.",
+      "command": "uvx",
+      "args": [
+        "awslabs.eks-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "ecs": {
+      "$comment": "Read-only by default. Set ALLOW_WRITE / ALLOW_SENSITIVE_DATA to true to enable mutations. fastmcp<4 pin: upstream needs fastmcp>=3.2 and is not yet compatible with fastmcp 4.",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "awslabs-ecs-mcp-server@latest",
+        "--with",
+        "fastmcp<4",
+        "ecs-mcp-server"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}",
+        "ALLOW_WRITE": "false",
+        "ALLOW_SENSITIVE_DATA": "false"
+      }
+    },
+    "awsnetwork": {
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-network-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "dynamodb": {
+      "command": "uvx",
+      "args": [
+        "awslabs.dynamodb-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      }
+    },
+    "agentcore": {
+      "command": "uvx",
+      "args": [
+        "awslabs.amazon-bedrock-agentcore-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      }
+    },
+    "dataprocessing": {
+      "$comment": "Read-only by default. Add --allow-write to let the agent create/modify Glue, EMR, and Athena resources.",
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-dataprocessing-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "redshift": {
+      "command": "uvx",
+      "args": [
+        "awslabs.redshift-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_DEFAULT_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "s3tables": {
+      "$comment": "Read-only by default. Add --allow-write to enable table creation and appends.",
+      "command": "uvx",
+      "args": [
+        "awslabs.s3-tables-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "awslocation": {
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-location-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "sagemaker": {
+      "$comment": "Read-only by default. Add --allow-write / --allow-sensitive-data-access to enable mutations.",
+      "command": "uvx",
+      "args": [
+        "awslabs.sagemaker-ai-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "sns-sqs": {
+      "$comment": "Manages SNS topics and SQS queues. Creating topics/queues is off by default (add --allow-resource-creation).",
+      "command": "uvx",
+      "args": [
+        "awslabs.amazon-sns-sqs-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "mq": {
+      "$comment": "Manages Amazon MQ (RabbitMQ/ActiveMQ) brokers. Broker creation is off by default (add --allow-resource-creation).",
+      "command": "uvx",
+      "args": [
+        "awslabs.amazon-mq-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "elasticache": {
+      "$comment": "ElastiCache control plane, read-only. Remove --readonly to allow create/modify/delete.",
+      "command": "uvx",
+      "args": [
+        "awslabs.elasticache-mcp-server@latest",
+        "--readonly"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "postgres": {
+      "$comment": "Aurora/RDS PostgreSQL, read-only (no --allow_write_query). Pick the cluster at runtime with the connect_to_database tool; use a read-only database role.",
+      "command": "uvx",
+      "args": [
+        "awslabs.postgres-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "mysql": {
+      "$comment": "Aurora/RDS MySQL, read-only (no --allow_write_query). Pick the cluster at runtime with the connect_to_database tool; use a read-only database user.",
+      "command": "uvx",
+      "args": [
+        "awslabs.mysql-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "finch": {
+      "$comment": "Builds and pushes container images with the local Finch CLI. ECR repository creation is off by default (add --enable-aws-resource-write).",
+      "command": "uvx",
+      "args": [
+        "awslabs.finch-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "appsync": {
+      "$comment": "AWS AppSync APIs, read-only by default. Add --allow-write to create APIs, data sources, and resolvers.",
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-appsync-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "aws-serverless-mcp": {
+      "$comment": "SAM/Lambda/ESM guidance and inspection, read-only. Add --allow-write to deploy and --allow-sensitive-data-access for logs.",
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-serverless-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "timeout": 120000
+    },
+    "aws-transform-mcp": {
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-transform-mcp-server@latest"
+      ]
+    },
+    "spark-troubleshooting": {
+      "$comment": "Managed remote MCP (SageMaker Unified Studio) that diagnoses failed Spark jobs on EMR, Glue, and SageMaker notebooks. Uses your AWS credentials via SigV4.",
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "mcp-proxy-for-aws@latest",
+        "https://sagemaker-unified-studio-mcp.us-east-1.api.aws/spark-troubleshooting/mcp",
+        "--service",
+        "sagemaker-unified-studio-mcp",
+        "--region",
+        "us-east-1",
+        "--read-timeout",
+        "180"
+      ],
+      "timeout": 180000
+    },
+    "spark-upgrade": {
+      "$comment": "Managed remote MCP (SageMaker Unified Studio) that plans and validates Spark version upgrades on EMR. Uses your AWS credentials via SigV4.",
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "mcp-proxy-for-aws@latest",
+        "https://sagemaker-unified-studio-mcp.us-east-1.api.aws/spark-upgrade/mcp",
+        "--service",
+        "sagemaker-unified-studio-mcp",
+        "--region",
+        "us-east-1",
+        "--read-timeout",
+        "180"
+      ],
+      "timeout": 180000
+    },
+    "aws-mcp-read-only": {
+      "$comment": "Managed AWS MCP Server, read-only: the proxy's --read-only flag drops every tool whose readOnlyHint is not true (aws___call_aws, aws___run_script, aws___get_presigned_url), leaving documentation, regional availability, and skill retrieval.",
+      "command": "uvx",
+      "args": [
+        "mcp-proxy-for-aws-cli==1.7.0",
+        "https://aws-mcp.us-east-1.api.aws/mcp",
+        "--skip-auth",
+        "--read-only",
+        "--metadata",
+        "INSTALL_SOURCE=agent-toolkit-core"
+      ]
+    }
+  },
+  "connector_catalog": {
+    "aurora-dsql": {
+      "package": "awslabs.aurora-dsql-mcp-server",
+      "docs": "https://github.com/awslabs/mcp/tree/main/src/aurora-dsql-mcp-server",
+      "purpose": "Schema inspection, read-only queries, and (opt-in) transactions on one Aurora DSQL cluster.",
+      "command": "uvx",
+      "args": [
+        "awslabs.aurora-dsql-mcp-server@latest",
+        "--cluster_endpoint",
+        "<cluster-id>.dsql.<region>.on.aws",
+        "--region",
+        "<region>",
+        "--database_user",
+        "<user>"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "notes": "Read-only by default; append `--allow-writes` to enable `transact`. The `dsql` skill's scripts work without this connector."
+    },
+    "documentdb": {
+      "package": "awslabs.documentdb-mcp-server",
+      "docs": "https://github.com/awslabs/mcp/tree/main/src/documentdb-mcp-server",
+      "purpose": "Query and inspect Amazon DocumentDB collections.",
+      "command": "uvx",
+      "args": [
+        "awslabs.documentdb-mcp-server@latest",
+        "--connection-string",
+        "mongodb://<user>:<password>@<cluster>.docdb.amazonaws.com:27017/?tls=true&tlsCAFile=global-bundle.pem&retryWrites=false"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "notes": "Read-only unless you add `--allow-write`. Keep the connection string out of shared project config."
+    },
+    "keyspaces": {
+      "package": "awslabs.amazon-keyspaces-mcp-server",
+      "docs": "https://github.com/awslabs/mcp/tree/main/src/amazon-keyspaces-mcp-server",
+      "purpose": "Explore keyspaces/tables and run CQL against Amazon Keyspaces or Apache Cassandra.",
+      "setup": "mkdir -p ~/.keyspaces-mcp && printf 'DB_USE_KEYSPACES=true\\nDB_KEYSPACES_REGION=<region>\\n' > ~/.keyspaces-mcp/env",
+      "command": "uvx",
+      "args": [
+        "awslabs.amazon-keyspaces-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "notes": "Connection settings live in `~/.keyspaces-mcp/env` (see upstream docs for Cassandra and TLS options)."
+    },
+    "neptune": {
+      "package": "awslabs.amazon-neptune-mcp-server",
+      "docs": "https://github.com/awslabs/mcp/tree/main/src/amazon-neptune-mcp-server",
+      "purpose": "Status, schema, and openCypher/Gremlin queries on Neptune Database or Neptune Analytics.",
+      "command": "uvx",
+      "args": [
+        "awslabs.amazon-neptune-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "NEPTUNE_ENDPOINT": "neptune-db://<cluster-endpoint>"
+      },
+      "notes": "Use `neptune-graph://<graph-id>` for Neptune Analytics."
+    },
+    "valkey": {
+      "package": "awslabs.valkey-mcp-server",
+      "docs": "https://github.com/awslabs/mcp/tree/main/src/valkey-mcp-server",
+      "purpose": "Read (and opt-in write) data in an ElastiCache/MemoryDB Valkey or Redis OSS cache.",
+      "command": "uvx",
+      "args": [
+        "awslabs.valkey-mcp-server@latest",
+        "--readonly"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "VALKEY_HOST": "<endpoint>",
+        "VALKEY_PORT": "6379"
+      },
+      "notes": "Drop `--readonly` only for caches you are allowed to mutate."
+    },
+    "memcached": {
+      "package": "awslabs.memcached-mcp-server",
+      "docs": "https://github.com/awslabs/mcp/tree/main/src/memcached-mcp-server",
+      "purpose": "Read (and opt-in write) data in an ElastiCache Memcached cluster.",
+      "command": "uvx",
+      "args": [
+        "awslabs.memcached-mcp-server@latest",
+        "--readonly"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "MEMCACHED_HOST": "<endpoint>",
+        "MEMCACHED_PORT": "11211"
+      },
+      "notes": "Set `MEMCACHED_USE_TLS=true` for in-transit encryption."
+    },
+    "mssql": {
+      "package": "awslabs.mssql-mcp-server",
+      "docs": "https://github.com/awslabs/mcp/tree/main/src/mssql-mcp-server",
+      "purpose": "Schema inspection and queries on one RDS for SQL Server instance.",
+      "command": "uvx",
+      "args": [
+        "awslabs.mssql-mcp-server@latest",
+        "--connection_method",
+        "MSSQL_PASSWORD",
+        "--instance_identifier",
+        "<instance>",
+        "--db_endpoint",
+        "<endpoint>",
+        "--region",
+        "<region>",
+        "--database",
+        "master",
+        "--secret_arn",
+        "<read-only-user-secret-arn>"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "notes": "Bind a Secrets Manager secret for a read-only login with `--secret_arn`."
+    },
+    "oracle": {
+      "package": "awslabs.oracle-mcp-server",
+      "docs": "https://github.com/awslabs/mcp/tree/main/src/oracle-mcp-server",
+      "purpose": "Schema inspection and queries on RDS for Oracle or Oracle Database@AWS.",
+      "command": "uvx",
+      "args": [
+        "awslabs.oracle-mcp-server@latest",
+        "--connection_method",
+        "ORACLE_PASSWORD",
+        "--instance_identifier",
+        "<instance>",
+        "--db_endpoint",
+        "<endpoint>",
+        "--region",
+        "<region>",
+        "--database",
+        "ORCL",
+        "--service_name",
+        "ORCL",
+        "--secret_arn",
+        "<read-only-user-secret-arn>"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "notes": "Default TCPS port is 2484; see upstream docs for Autonomous Database and Exadata."
+    },
+    "timestream-influxdb": {
+      "package": "awslabs.timestream-for-influxdb-mcp-server",
+      "docs": "https://github.com/awslabs/mcp/tree/main/src/timestream-for-influxdb-mcp-server",
+      "purpose": "Manage Timestream for InfluxDB instances and query/write InfluxDB data.",
+      "command": "uvx",
+      "args": [
+        "awslabs.timestream-for-influxdb-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "<region>",
+        "INFLUXDB_URL": "https://<endpoint>:8086",
+        "INFLUXDB_TOKEN": "<read-only-token>",
+        "INFLUXDB_ORG": "<org>"
+      },
+      "notes": "Read-only unless `ALLOW_WRITE=true`."
+    },
+    "lambda-tool": {
+      "package": "awslabs.lambda-tool-mcp-server",
+      "docs": "https://github.com/awslabs/mcp/tree/main/src/lambda-tool-mcp-server",
+      "purpose": "Expose selected Lambda functions as MCP tools the agent can invoke.",
+      "command": "uvx",
+      "args": [
+        "awslabs.lambda-tool-mcp-server@latest"
+      ],
+      "env": {
+        "AWS_REGION": "<region>",
+        "FUNCTION_PREFIX": "<prefix>"
+      },
+      "notes": "Always scope with `FUNCTION_PREFIX`, `FUNCTION_LIST`, or `FUNCTION_TAG_KEY`/`FUNCTION_TAG_VALUE`; unfiltered it exposes every function in the account."
+    },
+    "stepfunctions-tool": {
+      "package": "awslabs.stepfunctions-tool-mcp-server",
+      "docs": "https://github.com/awslabs/mcp/tree/main/src/stepfunctions-tool-mcp-server",
+      "purpose": "Expose selected Step Functions state machines as MCP tools the agent can start.",
+      "command": "uvx",
+      "args": [
+        "awslabs.stepfunctions-tool-mcp-server@latest"
+      ],
+      "env": {
+        "AWS_REGION": "<region>",
+        "STATE_MACHINE_PREFIX": "<prefix>"
+      },
+      "notes": "Always scope with `STATE_MACHINE_PREFIX`, `STATE_MACHINE_LIST`, or a tag filter."
+    },
+    "terraform": {
+      "package": "hashicorp/terraform-mcp-server",
+      "docs": "https://github.com/hashicorp/terraform-mcp-server",
+      "purpose": "Live Terraform Registry lookups: provider resource/data-source docs, module search and inputs, and Sentinel/policy libraries.",
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "hashicorp/terraform-mcp-server"
+      ],
+      "notes": "Needs Docker (or swap in the release binary: `terraform-mcp-server stdio`). Without `TFE_TOKEN` it exposes only public-registry lookups, which is all the agent needs. Do not add `ENABLE_TF_OPERATIONS=true`: the agent runs `terraform plan`/`apply` itself so every change goes through the approval gate."
+    }
+  },
+  "mcp_upstream_index": {
+    "$comment": "Every server directory in awslabs/mcp (reference/mcp/src) mapped to the mcp_catalog/connector_catalog key that uses it, or a reason it is not used. scripts/sync_aws_plugins.py renders docs/mcp-server-coverage.md from this and fails if a directory is unmapped.",
+    "path": "reference/mcp/src",
+    "upstream": "https://github.com/awslabs/mcp",
+    "servers": {
+      "amazon-bedrock-agentcore-mcp-server": {
+        "key": "agentcore"
+      },
+      "amazon-kendra-index-mcp-server": {
+        "skip": "Retrieval over a specific Kendra index; application-level, not cloud operations."
+      },
+      "amazon-keyspaces-mcp-server": {
+        "key": "keyspaces"
+      },
+      "amazon-mq-mcp-server": {
+        "key": "mq"
+      },
+      "amazon-neptune-mcp-server": {
+        "key": "neptune"
+      },
+      "amazon-qbusiness-anonymous-mcp-server": {
+        "skip": "Queries a Q Business application for end-user knowledge; not cloud operations."
+      },
+      "amazon-qindex-mcp-server": {
+        "skip": "Q index access for ISVs; not cloud operations."
+      },
+      "amazon-sns-sqs-mcp-server": {
+        "key": "sns-sqs"
+      },
+      "amazon-translate-mcp-server": {
+        "skip": "Language translation; not cloud operations."
+      },
+      "aurora-dsql-mcp-server": {
+        "key": "aurora-dsql"
+      },
+      "aws-api-mcp-server": {
+        "skip": "Superseded by the managed AWS MCP Server (`aws-mcp`: `aws___call_aws` with sandboxing and audit logging)."
+      },
+      "aws-appsync-mcp-server": {
+        "key": "appsync"
+      },
+      "aws-bedrock-custom-model-import-mcp-server": {
+        "skip": "Niche model-import workflow; Bedrock work goes through `aws-mcp` and the Bedrock skills."
+      },
+      "aws-dataprocessing-mcp-server": {
+        "key": "dataprocessing"
+      },
+      "aws-documentation-mcp-server": {
+        "skip": "Superseded by the AWS Knowledge MCP server (`awsknowledge`) and `aws___search_documentation`."
+      },
+      "aws-for-sap-management-mcp-server": {
+        "skip": "SAP-specific operations; candidate for a future SAP vertical or partner plugin."
+      },
+      "aws-healthomics-mcp-server": {
+        "skip": "Healthcare and life-sciences domain server; out of scope for cloud operations."
+      },
+      "aws-iac-mcp-server": {
+        "key": "awsiac"
+      },
+      "aws-iot-sitewise-mcp-server": {
+        "skip": "Industrial IoT domain server; out of scope for cloud operations."
+      },
+      "aws-knowledge-mcp-server": {
+        "key": "awsknowledge"
+      },
+      "aws-location-mcp-server": {
+        "key": "awslocation"
+      },
+      "aws-network-mcp-server": {
+        "key": "awsnetwork"
+      },
+      "aws-pricing-mcp-server": {
+        "key": "awspricing"
+      },
+      "aws-serverless-mcp-server": {
+        "key": "aws-serverless-mcp"
+      },
+      "aws-support-mcp-server": {
+        "key": "awssupport"
+      },
+      "aws-transform-mcp-server": {
+        "key": "aws-transform-mcp"
+      },
+      "bedrock-kb-retrieval-mcp-server": {
+        "skip": "Queries a specific Bedrock knowledge base; application-level and needs KB IDs."
+      },
+      "billing-cost-management-mcp-server": {
+        "key": "billing"
+      },
+      "ccapi-mcp-server": {
+        "skip": "Deprecated upstream in favour of aws-iac-mcp-server (`awsiac`)."
+      },
+      "cloudtrail-mcp-server": {
+        "key": "cloudtrail"
+      },
+      "cloudwatch-applicationsignals-mcp-server": {
+        "key": "appsignals"
+      },
+      "cloudwatch-mcp-server": {
+        "key": "cloudwatch"
+      },
+      "document-loader-mcp-server": {
+        "skip": "Generic document parsing (PDF, Office); not AWS operations."
+      },
+      "documentdb-mcp-server": {
+        "key": "documentdb"
+      },
+      "dynamodb-mcp-server": {
+        "key": "dynamodb"
+      },
+      "ecs-mcp-server": {
+        "key": "ecs"
+      },
+      "eks-mcp-server": {
+        "key": "eks"
+      },
+      "elasticache-mcp-server": {
+        "key": "elasticache"
+      },
+      "finch-mcp-server": {
+        "key": "finch"
+      },
+      "healthimaging-mcp-server": {
+        "skip": "Healthcare and life-sciences domain server; out of scope for cloud operations."
+      },
+      "healthlake-mcp-server": {
+        "skip": "Healthcare and life-sciences domain server; out of scope for cloud operations."
+      },
+      "iam-mcp-server": {
+        "key": "iam"
+      },
+      "lambda-tool-mcp-server": {
+        "key": "lambda-tool"
+      },
+      "mcp-lambda-handler": {
+        "skip": "Python library for hosting MCP servers on Lambda, not a server."
+      },
+      "memcached-mcp-server": {
+        "key": "memcached"
+      },
+      "mssql-mcp-server": {
+        "key": "mssql"
+      },
+      "mysql-mcp-server": {
+        "key": "mysql"
+      },
+      "openapi-mcp-server": {
+        "skip": "Generic OpenAPI-to-MCP bridge that needs a target API spec; candidate for partner-built plugins."
+      },
+      "oracle-mcp-server": {
+        "key": "oracle"
+      },
+      "postgres-mcp-server": {
+        "key": "postgres"
+      },
+      "prometheus-mcp-server": {
+        "key": "prometheus"
+      },
+      "redshift-mcp-server": {
+        "key": "redshift"
+      },
+      "roda-mcp-server": {
+        "skip": "Discovers public datasets in the Registry of Open Data on AWS; not cloud operations."
+      },
+      "s3-tables-mcp-server": {
+        "key": "s3tables"
+      },
+      "sagemaker-ai-mcp-server": {
+        "key": "sagemaker"
+      },
+      "sagemaker-unified-studio-spark-troubleshooting-mcp-server": {
+        "key": "spark-troubleshooting"
+      },
+      "sagemaker-unified-studio-spark-upgrade-mcp-server": {
+        "key": "spark-upgrade"
+      },
+      "security-agent-mcp-server": {
+        "skip": "AWS Security Agent is not allowlisted for the DevOps Plugins scope."
+      },
+      "stepfunctions-tool-mcp-server": {
+        "key": "stepfunctions-tool"
+      },
+      "timestream-for-influxdb-mcp-server": {
+        "key": "timestream-influxdb"
+      },
+      "valkey-mcp-server": {
+        "key": "valkey"
+      },
+      "well-architected-security-mcp-server": {
+        "key": "wa-security"
+      }
+    }
+  },
+  "rewrites_catalog": {
+    "router-networking": [
+      {
+        "path": "skills/aws-networking/SKILL.md",
+        "find": "4. Load the target skill: if the AWS MCP server is available, use `aws___retrieve_skill(skill_name=\"<skill>\")`; otherwise retrieve the skill document from this repository at `skills/<skill>/SKILL.md`.",
+        "replace": "4. Load the target skill: invoke it with the Skill tool if it is installed locally (bundled with this plugin); otherwise, if the AWS MCP server is available, use `aws___retrieve_skill(skill_name=\"<skill>\")`."
+      },
+      {
+        "path": "skills/aws-networking/SKILL.md",
+        "find": "tell the user that service is not available in this skill set rather than routing to the closest listed skill.",
+        "replace": "first check whether a bundled task skill covers it (for example `creating-production-vpc-multi-az`, `configuring-vpc-endpoints-for-private-aws-service-access`, `connecting-vpcs-with-peering`, `enabling-lambda-vpc-internet-access`, or `routing-traffic-with-route53-and-cloudfront`) and use it; otherwise tell the user that service is not available in this skill set rather than routing to the closest listed skill."
+      }
+    ],
+    "router-messaging": [
+      {
+        "path": "skills/aws-messaging-and-streaming/SKILL.md",
+        "find": "To load it, use `aws___retrieve_skill(skill_name=\"<skill>\")` with the exact name from the table when the AWS MCP server is available, or read the skill document from the Agent Toolkit at `skills/<skill>/SKILL.md`.",
+        "replace": "To load it, invoke it with the Skill tool if it is installed locally (bundled with this plugin); otherwise, if the AWS MCP server is available, use `aws___retrieve_skill(skill_name=\"<skill>\")` with the exact name from the table."
+      }
+    ],
+    "database-dsql-handoff": [
+      {
+        "path": "skills/aws-database/SKILL.md",
+        "find": "| Aurora DSQL | `assets/aurora-dsql.md` | `aurora-dsql` |",
+        "replace": "| Aurora DSQL | `assets/aurora-dsql.md` | `dsql` |"
+      }
+    ]
+  },
+  "hooks_catalog": {
+    "secret-safety": {
+      "files": {
+        "toolkit/aws-core/com.anthropic.claude-code/hooks/secret-safety.py": "hooks/secret-safety.py"
+      },
+      "hooks": {
+        "PreToolUse": [
+          {
+            "matcher": "Bash",
+            "hooks": [
+              {
+                "type": "command",
+                "command": "sh -c 'python3 \"$0\" 2>/dev/null || python \"$0\" 2>/dev/null || py -3 \"$0\"' \"${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py\"",
+                "timeout": 5
+              }
+            ]
+          },
+          {
+            "matcher": "use_aws|mcp__aws.*|mcp__plugin_.*aws-mcp.*",
+            "hooks": [
+              {
+                "type": "command",
+                "command": "sh -c 'python3 \"$0\" 2>/dev/null || python \"$0\" 2>/dev/null || py -3 \"$0\"' \"${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py\"",
+                "timeout": 5
+              }
+            ]
+          }
+        ]
+      },
+      "rewrites": [
+        {
+          "path": "hooks/secret-safety.py",
+          "find": "Run /aws-secrets-manager for details.",
+          "replace": "See the aws-secrets-manager skill (aws-security-identity or aws-cloud-security-engineer plugin) for details."
+        }
+      ]
+    },
+    "dsql-verify": {
+      "hooks": {
+        "PostToolUse": [
+          {
+            "matcher": "mcp__.*aurora-dsql.*__transact",
+            "hooks": [
+              {
+                "type": "prompt",
+                "prompt": "A DSQL transact operation completed. Verify the result: if it was a DDL change, confirm the schema looks correct using get_schema. If it was a DML change, confirm the affected row count is expected. If it was an EXPLAIN operation, follow up on Query Plan Explainability within the DSQL skill"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "aws-mutation-gate": {
+      "$comment": "Classifies AWS-mutating shell commands (aws, terraform, cdk, sam, eksctl, kubectl, helm) and aws___call_aws/aws___run_script calls. Claude Code: deny for aws_read_only agents, ask otherwise. Codex (no agent identity in hook input): adds a warning to the model context. TALKOPS_AWS_MUTATION_GATE=off|warn|ask|deny overrides the default.",
+      "files": {
+        "talkops/hooks/aws-mutation-gate.py": "hooks/aws-mutation-gate.py"
+      },
+      "hooks": {
+        "PreToolUse": [
+          {
+            "matcher": "Bash",
+            "hooks": [
+              {
+                "type": "command",
+                "command": "sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 \"$0\"; command -v python >/dev/null 2>&1 && exec python \"$0\"; exec py -3 \"$0\"' \"${CLAUDE_PLUGIN_ROOT}/hooks/aws-mutation-gate.py\"",
+                "timeout": 5
+              }
+            ]
+          },
+          {
+            "matcher": "use_aws|mcp__aws.*|mcp__plugin_.*aws-mcp.*",
+            "hooks": [
+              {
+                "type": "command",
+                "command": "sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 \"$0\"; command -v python >/dev/null 2>&1 && exec python \"$0\"; exec py -3 \"$0\"' \"${CLAUDE_PLUGIN_ROOT}/hooks/aws-mutation-gate.py\"",
+                "timeout": 5
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "plugins": [
+    {
+      "name": "aws-iac-engineer",
+      "displayName": "AWS IaC Engineer",
+      "category": "infrastructure-as-code",
+      "description": "Authors, validates, deploys, and troubleshoots AWS infrastructure-as-code: CDK, CloudFormation, AWS Blocks, and CodePipeline/CodeBuild/CodeDeploy CI/CD, with cfn-lint/cfn-guard validation and stack failure diagnosis.",
+      "keywords": [
+        "aws",
+        "iac",
+        "cdk",
+        "cloudformation",
+        "codepipeline",
+        "cicd",
+        "aws-blocks"
+      ],
+      "upstream": [
+        {
+          "source": "toolkit",
+          "plugin": "aws-core"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit/aws-core",
+          "names": [
+            "aws-cdk",
+            "aws-cloudformation",
+            "aws-deployment",
+            "aws-blocks",
+            "launch-with-aws",
+            "signing-in-to-aws"
+          ]
+        }
+      ],
+      "mcp": [
+        "aws-mcp",
+        "awsiac"
+      ],
+      "hooks": [
+        "secret-safety",
+        "aws-mutation-gate"
+      ]
+    },
+    {
+      "name": "aws-platform-engineer",
+      "displayName": "AWS Platform Engineer",
+      "category": "platform",
+      "description": "Provisions and operates the AWS runtime platform: EC2 and Auto Scaling, EKS/ECS/Fargate containers, VPC and edge networking, storage, serverless compute, and messaging/streaming services.",
+      "keywords": [
+        "aws",
+        "ec2",
+        "eks",
+        "ecs",
+        "fargate",
+        "vpc",
+        "networking",
+        "s3",
+        "lambda",
+        "sqs",
+        "kinesis"
+      ],
+      "upstream": [
+        {
+          "source": "toolkit",
+          "plugin": "aws-core"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/ec2-skills"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/networking-and-content-delivery-skills"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/operations-skills"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/storage-skills"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit/aws-core",
+          "names": [
+            "aws-compute",
+            "aws-containers",
+            "aws-networking",
+            "aws-storage",
+            "aws-serverless",
+            "aws-messaging-and-streaming",
+            "signing-in-to-aws"
+          ]
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/ec2-skills",
+          "names": "*"
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/networking-and-content-delivery-skills",
+          "names": "*"
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/operations-skills",
+          "names": [
+            "aws-network-monitoring"
+          ]
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/storage-skills",
+          "names": [
+            "troubleshooting-efs",
+            "troubleshooting-s3-files"
+          ]
+        }
+      ],
+      "mcp": [
+        "aws-mcp",
+        "eks",
+        "ecs",
+        "awsnetwork",
+        "finch",
+        "sns-sqs",
+        "mq"
+      ],
+      "hooks": [
+        "secret-safety",
+        "aws-mutation-gate"
+      ],
+      "rewrites": [
+        "router-networking",
+        "router-messaging"
+      ]
+    },
+    {
+      "name": "aws-sre-agent",
+      "displayName": "AWS SRE Agent",
+      "category": "observability",
+      "description": "Site-reliability agent for AWS workloads: CloudWatch metrics, logs, alarms and Logs Insights, Application Signals SLOs, X-Ray/ADOT traces, CloudTrail change history, Amazon Managed Prometheus, and AWS Support case escalation.",
+      "keywords": [
+        "aws",
+        "sre",
+        "observability",
+        "cloudwatch",
+        "x-ray",
+        "cloudtrail",
+        "prometheus",
+        "incident-response",
+        "slo"
+      ],
+      "upstream": [
+        {
+          "source": "toolkit",
+          "plugin": "aws-core"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/operations-skills"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/resilience-skills"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/system-table-skills"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit/aws-core",
+          "names": [
+            "aws-observability",
+            "signing-in-to-aws"
+          ]
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/operations-skills",
+          "names": [
+            "setting-up-cloudtrail-multi-region",
+            "setting-up-cloudwatch-alarm-notifications",
+            "setting-up-cloudwatch-observability",
+            "troubleshooting-application-failures"
+          ]
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/resilience-skills",
+          "names": "*"
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/system-table-skills",
+          "names": [
+            "querying-aws-cloudwatch"
+          ]
+        }
+      ],
+      "mcp": [
+        {
+          "aws-mcp": {
+            "$ref": "aws-mcp-read-only"
+          }
+        },
+        "cloudwatch",
+        "appsignals",
+        "cloudtrail",
+        "prometheus",
+        "awssupport"
+      ],
+      "hooks": [
+        "secret-safety",
+        "aws-mutation-gate"
+      ],
+      "aws_read_only": true
+    },
+    {
+      "name": "aws-cloud-security-engineer",
+      "displayName": "AWS Cloud Security Engineer",
+      "category": "security",
+      "description": "Cloud security and identity engineer: IAM policies, roles and trust relationships, Security Hub/GuardDuty/Inspector/Macie findings, Secrets Manager safe-handling, Cognito authentication, and Well-Architected security posture checks.",
+      "keywords": [
+        "aws",
+        "security",
+        "iam",
+        "security-hub",
+        "guardduty",
+        "inspector",
+        "secrets-manager",
+        "cognito",
+        "compliance"
+      ],
+      "upstream": [
+        {
+          "source": "toolkit",
+          "plugin": "aws-core"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/security-and-identity-skills"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/storage-skills"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/networking-and-content-delivery-skills"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit/aws-core",
+          "names": [
+            "aws-iam",
+            "aws-security",
+            "aws-secrets-manager",
+            "aws-auth",
+            "signing-in-to-aws"
+          ]
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/security-and-identity-skills",
+          "names": [
+            "creating-secrets-using-best-practices"
+          ]
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/storage-skills",
+          "names": [
+            "securing-s3-buckets"
+          ]
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/networking-and-content-delivery-skills",
+          "names": [
+            "waf",
+            "shieldadvanced"
+          ]
+        }
+      ],
+      "mcp": [
+        "aws-mcp",
+        "iam",
+        "wa-security",
+        "cloudtrail"
+      ],
+      "hooks": [
+        "secret-safety",
+        "aws-mutation-gate"
+      ],
+      "rewrites": [
+        {
+          "path": "skills/aws-secrets-manager/SKILL.md",
+          "find": "The hook is defined at `plugins/aws-core/com.anthropic.claude-code/hooks/hooks.json`",
+          "replace": "The hook is defined at `hooks/hooks.json` in the aws-cloud-security-engineer plugin (and every other TalkOps AWS plugin derived from aws-core)"
+        }
+      ]
+    },
+    {
+      "name": "aws-finops-agent",
+      "displayName": "AWS FinOps Agent",
+      "category": "finops",
+      "description": "Cloud financial-operations agent: cost and usage analysis, anomaly detection, budgets, Savings Plans and Reserved Instance evaluation, Compute Optimizer right-sizing, CUR queries, and service pricing estimates.",
+      "keywords": [
+        "aws",
+        "finops",
+        "cost-optimization",
+        "billing",
+        "savings-plans",
+        "budgets",
+        "right-sizing",
+        "pricing"
+      ],
+      "upstream": [
+        {
+          "source": "toolkit",
+          "plugin": "aws-core"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit/aws-core",
+          "names": [
+            "aws-billing-and-cost-management",
+            "signing-in-to-aws"
+          ]
+        }
+      ],
+      "mcp": [
+        {
+          "aws-mcp": {
+            "$ref": "aws-mcp-read-only"
+          }
+        },
+        "billing",
+        "awspricing"
+      ],
+      "hooks": [
+        "secret-safety",
+        "aws-mutation-gate"
+      ],
+      "aws_read_only": true
+    },
+    {
+      "name": "aws-solutions-architect",
+      "displayName": "AWS Solutions Architect",
+      "category": "architecture",
+      "description": "Solutions architect for AWS: evidence-backed Well-Architected Framework reviews across all six pillars, generative-AI and ML architectures on Bedrock and SageMaker, and correct AWS SDK usage (boto3, JS v3, Swift).",
+      "keywords": [
+        "aws",
+        "architecture",
+        "well-architected",
+        "bedrock",
+        "sagemaker",
+        "boto3",
+        "aws-sdk"
+      ],
+      "upstream": [
+        {
+          "source": "toolkit",
+          "plugin": "aws-core"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit/aws-core",
+          "names": [
+            "aws-well-architected-review",
+            "amazon-bedrock",
+            "aws-ai-ml",
+            "aws-sdk-python-usage",
+            "aws-sdk-js-v3-usage",
+            "aws-sdk-swift-usage",
+            "signing-in-to-aws"
+          ]
+        }
+      ],
+      "mcp": [
+        {
+          "aws-mcp": {
+            "$ref": "aws-mcp-read-only"
+          }
+        },
+        "awsknowledge",
+        "awspricing"
+      ],
+      "hooks": [
+        "secret-safety",
+        "aws-mutation-gate"
+      ],
+      "aws_read_only": true
+    },
+    {
+      "name": "aws-agentcore-engineer",
+      "displayName": "AWS AgentCore Engineer",
+      "category": "ai-agents",
+      "description": "Builds, deploys, and operates AI agents on Amazon Bedrock AgentCore: Strands/LangGraph scaffolding, Gateway and MCP tools, memory, Cedar policies, evaluations, trace debugging, and production hardening.",
+      "keywords": [
+        "aws",
+        "agentcore",
+        "bedrock",
+        "ai-agents",
+        "strands",
+        "langgraph",
+        "mcp",
+        "a2a",
+        "cedar"
+      ],
+      "upstream": [
+        {
+          "source": "toolkit",
+          "plugin": "aws-agents"
+        },
+        {
+          "source": "toolkit",
+          "plugin": "aws-core"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit/aws-agents",
+          "names": "*"
+        },
+        {
+          "from": "toolkit/aws-core",
+          "names": [
+            "signing-in-to-aws"
+          ]
+        }
+      ],
+      "mcp": [
+        "awsknowledge",
+        "agentcore"
+      ],
+      "hooks": [
+        "secret-safety",
+        "aws-mutation-gate"
+      ]
+    },
+    {
+      "name": "aws-data-engineer",
+      "displayName": "AWS Data Engineer",
+      "category": "data-analytics",
+      "description": "Data-lake and analytics engineer: S3 Tables/Iceberg, Glue connections and Data Catalog, Athena and Redshift queries, ingestion pipelines, S3 Vectors, OpenSearch, and MWAA (Airflow) authoring, testing, debugging, and upgrades.",
+      "keywords": [
+        "aws",
+        "data-lake",
+        "glue",
+        "athena",
+        "redshift",
+        "s3-tables",
+        "iceberg",
+        "opensearch",
+        "mwaa",
+        "airflow"
+      ],
+      "upstream": [
+        {
+          "source": "toolkit",
+          "plugin": "aws-data-analytics"
+        },
+        {
+          "source": "toolkit",
+          "plugin": "aws-core"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/analytics-skills"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/system-table-skills"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit/aws-data-analytics",
+          "names": "*"
+        },
+        {
+          "from": "toolkit/aws-core",
+          "names": [
+            "signing-in-to-aws"
+          ]
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/analytics-skills",
+          "names": [
+            "aws-cleanrooms",
+            "migrating-to-amazon-redshift",
+            "developing-applications-on-managed-service-for-apache-flink",
+            "managing-amazon-kinesis-data-streams",
+            "managing-amazon-msk",
+            "migrate-to-msk"
+          ]
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/system-table-skills",
+          "names": [
+            "querying-aws-redshift",
+            "querying-aws-s3",
+            "querying-aws-sagemaker-catalog"
+          ]
+        }
+      ],
+      "mcp": [
+        {
+          "aws-mcp": {
+            "command": "uvx",
+            "args": [
+              "mcp-proxy-for-aws-cli==1.7.0",
+              "https://aws-mcp.us-east-1.api.aws/mcp",
+              "--skip-auth",
+              "--metadata",
+              "INSTALL_SOURCE=agent-toolkit-data-analytics"
+            ]
+          }
+        },
+        "dataprocessing",
+        "redshift",
+        "s3tables",
+        "spark-troubleshooting",
+        "spark-upgrade"
+      ],
+      "hooks": [
+        "secret-safety",
+        "aws-mutation-gate"
+      ]
+    },
+    {
+      "name": "aws-devsecops-agent",
+      "displayName": "AWS DevSecOps Agent",
+      "category": "devsecops",
+      "description": "Drives AWS DevOps Agent and AWS Security Agent: incident root-cause investigations, release-readiness reviews and UAT, code and diff security scans, threat modeling, penetration tests, and finding remediation.",
+      "keywords": [
+        "aws",
+        "devsecops",
+        "devops-agent",
+        "security-agent",
+        "incident",
+        "pentest",
+        "release-readiness",
+        "threat-model"
+      ],
+      "upstream": [
+        {
+          "source": "toolkit",
+          "plugin": "aws-agents-for-devsecops"
+        },
+        {
+          "source": "toolkit",
+          "plugin": "aws-core"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit/aws-agents-for-devsecops",
+          "names": "*"
+        },
+        {
+          "from": "toolkit/aws-core",
+          "names": [
+            "signing-in-to-aws"
+          ]
+        }
+      ],
+      "copy": [
+        {
+          "from": "toolkit/aws-agents-for-devsecops",
+          "paths": [
+            "commands",
+            "examples"
+          ]
+        }
+      ],
+      "mcp": [
+        {
+          "aws-devops-agent": {
+            "type": "http",
+            "url": "https://connect.aidevops.${DEVOPS_AGENT_REGION:-us-east-1}.api.aws/mcp",
+            "headers": {
+              "Authorization": "Bearer ${DEVOPS_AGENT_TOKEN}"
+            },
+            "timeout": 120000
+          }
+        }
+      ],
+      "hooks": [
+        "secret-safety",
+        "aws-mutation-gate"
+      ]
+    },
+    {
+      "name": "aws-startup-advisor",
+      "displayName": "AWS Startup Advisor",
+      "category": "startup",
+      "description": "Stage-aware AWS guidance for startups: architecture and cost advice, project scaffolding, Azure/GCP/Heroku-to-AWS migrations, LLM SDK rewrites to Bedrock, agent runtime selection, DevOps Agent operations, and AWS Activate offers.",
+      "keywords": [
+        "aws",
+        "startups",
+        "migration",
+        "gcp-to-aws",
+        "azure-to-aws",
+        "heroku-to-aws",
+        "bedrock",
+        "terraform",
+        "activate"
+      ],
+      "upstream": [
+        {
+          "source": "toolkit",
+          "plugin": "aws-startup-advisor"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit/aws-startup-advisor",
+          "names": "*"
+        }
+      ],
+      "copy": [
+        {
+          "from": "toolkit/aws-startup-advisor",
+          "paths": [
+            "agents",
+            "commands",
+            "scripts",
+            "fixtures"
+          ]
+        },
+        {
+          "from": "toolkit/aws-startup-advisor",
+          "paths": {
+            "com.anthropic.claude-code/hooks/offer-context.txt": "hooks/offer-context.txt"
+          }
+        }
+      ],
+      "mcp": [
+        {
+          "aws-mcp": {
+            "command": "uvx",
+            "args": [
+              "mcp-proxy-for-aws-cli==1.7.0",
+              "https://aws-mcp.us-east-1.api.aws/mcp",
+              "--skip-auth",
+              "--metadata",
+              "INSTALL_SOURCE=agent-toolkit-startup-advisor"
+            ]
+          }
+        }
+      ],
+      "hooks_inline": {
+        "SessionStart": [
+          {
+            "hooks": [
+              {
+                "type": "command",
+                "command": "cat \"${CLAUDE_PLUGIN_ROOT}/hooks/offer-context.txt\" 2>/dev/null || true",
+                "timeout": 5
+              }
+            ]
+          },
+          {
+            "hooks": [
+              {
+                "type": "command",
+                "command": "sh -c 'python3 \"$0\" 2>/dev/null || python \"$0\" 2>/dev/null || py -3 \"$0\" 2>/dev/null || true' \"${CLAUDE_PLUGIN_ROOT}/scripts/telemetry/consent/session_start.py\"",
+                "timeout": 5
+              }
+            ]
+          }
+        ],
+        "PostToolUse": [
+          {
+            "matcher": "Skill",
+            "hooks": [
+              {
+                "type": "command",
+                "command": "sh -c 'python3 \"$0\" 2>/dev/null || python \"$0\" 2>/dev/null || py -3 \"$0\" 2>/dev/null || true' \"${CLAUDE_PLUGIN_ROOT}/scripts/telemetry/metric_emission/skill_invoked.py\"",
+                "timeout": 5
+              }
+            ]
+          }
+        ]
+      },
+      "hooks": [
+        "secret-safety",
+        "aws-mutation-gate"
+      ]
+    },
+    {
+      "name": "aws-location-engineer",
+      "displayName": "AWS Location Engineer",
+      "category": "location",
+      "description": "Adds geospatial features with Amazon Location Service: maps, geocoding and reverse geocoding, routing and service areas, places search, authentication setup, and SDK integration.",
+      "keywords": [
+        "aws",
+        "location",
+        "maps",
+        "geocoding",
+        "routing",
+        "geospatial"
+      ],
+      "upstream": [
+        {
+          "source": "agent-plugins",
+          "plugin": "amazon-location-service"
+        }
+      ],
+      "skills": [
+        {
+          "from": "agent-plugins/amazon-location-service",
+          "names": "*"
+        }
+      ],
+      "mcp": [
+        {
+          "aws-mcp": {
+            "$ref": "aws-mcp-legacy-proxy"
+          }
+        },
+        "awslocation"
+      ],
+      "hooks": [
+        "secret-safety",
+        "aws-mutation-gate"
+      ]
+    },
+    {
+      "name": "aws-amplify-engineer",
+      "displayName": "AWS Amplify Engineer",
+      "category": "fullstack",
+      "description": "Builds and deploys full-stack web and mobile apps with AWS Amplify Gen 2: Cognito auth, AppSync/DynamoDB data models, S3 storage, functions, and the Amplify AI Kit.",
+      "keywords": [
+        "aws",
+        "amplify",
+        "fullstack",
+        "cognito",
+        "appsync",
+        "react",
+        "nextjs"
+      ],
+      "upstream": [
+        {
+          "source": "agent-plugins",
+          "plugin": "aws-amplify"
+        }
+      ],
+      "skills": [
+        {
+          "from": "agent-plugins/aws-amplify",
+          "names": "*"
+        }
+      ],
+      "mcp": [
+        {
+          "aws-mcp": {
+            "$ref": "aws-mcp-legacy-proxy"
+          }
+        },
+        "appsync"
+      ],
+      "hooks": [
+        "secret-safety",
+        "aws-mutation-gate"
+      ]
+    },
+    {
+      "name": "aws-serverless-engineer",
+      "displayName": "AWS Serverless Engineer",
+      "category": "serverless",
+      "description": "Designs, builds, deploys, and debugs serverless applications: Lambda (incl. durable functions, managed instances, MicroVMs), API Gateway, Step Functions, and SAM/CDK deployment with template validation.",
+      "keywords": [
+        "aws",
+        "serverless",
+        "lambda",
+        "api-gateway",
+        "step-functions",
+        "sam",
+        "cdk",
+        "eventbridge"
+      ],
+      "upstream": [
+        {
+          "source": "agent-plugins",
+          "plugin": "aws-serverless"
+        },
+        {
+          "source": "toolkit",
+          "plugin": "aws-core"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/serverless-skills"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/networking-and-content-delivery-skills"
+        }
+      ],
+      "skills": [
+        {
+          "from": "agent-plugins/aws-serverless",
+          "names": "*",
+          "except": [
+            "aws-lambda-durable-functions",
+            "aws-lambda-managed-instances",
+            "aws-lambda-microvms",
+            "aws-step-functions"
+          ]
+        },
+        {
+          "from": "toolkit/aws-core",
+          "names": [
+            "signing-in-to-aws"
+          ]
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/serverless-skills",
+          "names": [
+            "aws-lambda-durable-functions",
+            "aws-lambda-managed-instances",
+            "aws-lambda-microvms",
+            "aws-step-functions",
+            "amazon-eventbridge-event-bus",
+            "connecting-lambda-to-api-gateway",
+            "connecting-lambda-to-dynamodb",
+            "creating-api-gateway-stage",
+            "debugging-lambda-timeouts",
+            "deploying-custom-domain-rest-api",
+            "processing-s3-uploads-with-step-functions"
+          ]
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/networking-and-content-delivery-skills",
+          "names": [
+            "enabling-lambda-vpc-internet-access"
+          ]
+        }
+      ],
+      "copy": [
+        {
+          "from": "agent-plugins/aws-serverless",
+          "paths": [
+            "scripts"
+          ]
+        }
+      ],
+      "mcp": [
+        {
+          "aws-serverless-mcp": {
+            "command": "uvx",
+            "args": [
+              "awslabs.aws-serverless-mcp-server@latest",
+              "--allow-write"
+            ],
+            "env": {
+              "FASTMCP_LOG_LEVEL": "ERROR"
+            },
+            "timeout": 120000
+          }
+        }
+      ],
+      "hooks_inline": {
+        "PostToolUse": [
+          {
+            "matcher": "Edit|Write",
+            "hooks": [
+              {
+                "type": "command",
+                "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/validate-template.sh\"",
+                "timeout": 120
+              }
+            ]
+          }
+        ]
+      },
+      "rewrites": [
+        {
+          "path": "skills/aws-lambda/SKILL.md",
+          "find": "use deploy-on-aws plugin instead",
+          "replace": "use the aws-deployment-agent plugin instead"
+        },
+        {
+          "path": "skills/aws-serverless-deployment/SKILL.md",
+          "find": "use deploy-on-aws plugin instead",
+          "replace": "use the aws-deployment-agent plugin instead"
+        }
+      ],
+      "connectors": [
+        "lambda-tool",
+        "stepfunctions-tool"
+      ],
+      "hooks": [
+        "secret-safety",
+        "aws-mutation-gate"
+      ]
+    },
+    {
+      "name": "aws-modernization-agent",
+      "displayName": "AWS Modernization Agent",
+      "category": "migration",
+      "description": "Migrates and modernizes codebases with AWS Transform: .NET Framework to .NET 8/10, mainframe COBOL to Java, VMware to EC2, SQL Server to Aurora, language and AWS SDK upgrades, and continuous tech-debt remediation.",
+      "keywords": [
+        "aws",
+        "transform",
+        "modernization",
+        "migration",
+        "dotnet",
+        "mainframe",
+        "java-upgrade"
+      ],
+      "upstream": [
+        {
+          "source": "agent-plugins",
+          "plugin": "aws-transform"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/migration-and-modernization-skills"
+        }
+      ],
+      "skills": [
+        {
+          "from": "agent-plugins/aws-transform",
+          "names": "*"
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/migration-and-modernization-skills",
+          "names": [
+            "dms-schema-conversion"
+          ]
+        }
+      ],
+      "mcp": [
+        "aws-transform-mcp"
+      ],
+      "hooks": [
+        "secret-safety",
+        "aws-mutation-gate"
+      ]
+    },
+    {
+      "name": "aws-codebase-documentor",
+      "displayName": "AWS Codebase Documentor",
+      "category": "documentation",
+      "description": "Analyzes codebases and generates structured technical documentation with source-of-truth citations and architecture views, optimized for AWS workloads built with CDK, CloudFormation, and Terraform.",
+      "keywords": [
+        "aws",
+        "documentation",
+        "architecture",
+        "onboarding",
+        "cdk",
+        "terraform"
+      ],
+      "upstream": [
+        {
+          "source": "agent-plugins",
+          "plugin": "codebase-documentor-for-aws"
+        }
+      ],
+      "skills": [
+        {
+          "from": "agent-plugins/codebase-documentor-for-aws",
+          "names": "*"
+        }
+      ],
+      "mcp": [
+        "awsknowledge",
+        "awsiac"
+      ],
+      "rewrites": [
+        {
+          "path": "skills/document-service/SKILL.md",
+          "find": "(part of the `deploy-on-aws` plugin)",
+          "replace": "(part of the `aws-deployment-agent` plugin)"
+        },
+        {
+          "path": "skills/document-service/references/error-scenarios.md",
+          "find": "When the `deploy-on-aws` plugin",
+          "replace": "When the `aws-deployment-agent` plugin"
+        }
+      ],
+      "hooks": [
+        "secret-safety",
+        "aws-mutation-gate"
+      ]
+    },
+    {
+      "name": "aws-database-engineer",
+      "displayName": "AWS Database Engineer",
+      "category": "database",
+      "description": "Database engineer for the AWS portfolio: chooses the right engine, designs schemas, runs queries and migrations, and operates Aurora DSQL, Aurora/RDS, DynamoDB, DocumentDB, ElastiCache/MemoryDB, Neptune, Keyspaces, and Timestream.",
+      "keywords": [
+        "aws",
+        "database",
+        "aurora",
+        "dsql",
+        "rds",
+        "dynamodb",
+        "postgresql",
+        "schema",
+        "migration"
+      ],
+      "upstream": [
+        {
+          "source": "agent-plugins",
+          "plugin": "databases-on-aws"
+        },
+        {
+          "source": "toolkit",
+          "plugin": "aws-core"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/database-skills"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/migration-and-modernization-skills"
+        }
+      ],
+      "skills": [
+        {
+          "from": "agent-plugins/databases-on-aws",
+          "names": "*"
+        },
+        {
+          "from": "toolkit/aws-core",
+          "names": [
+            "aws-database",
+            "signing-in-to-aws"
+          ]
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/database-skills",
+          "names": "*",
+          "except": [
+            "aurora-dsql"
+          ]
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/migration-and-modernization-skills",
+          "names": [
+            "dms-schema-conversion"
+          ]
+        }
+      ],
+      "copy": [
+        {
+          "from": "agent-plugins/databases-on-aws",
+          "paths": [
+            "scripts",
+            ".gitignore"
+          ]
+        }
+      ],
+      "mcp": [
+        "awsknowledge",
+        "aws-mcp",
+        "dynamodb",
+        "cloudwatch",
+        "postgres",
+        "mysql",
+        "elasticache"
+      ],
+      "hooks": [
+        "secret-safety",
+        "dsql-verify",
+        "aws-mutation-gate"
+      ],
+      "connectors": [
+        "aurora-dsql",
+        "documentdb",
+        "keyspaces",
+        "neptune",
+        "valkey",
+        "memcached",
+        "mssql",
+        "oracle",
+        "timestream-influxdb"
+      ],
+      "rewrites": [
+        "database-dsql-handoff"
+      ]
+    },
+    {
+      "name": "aws-deployment-agent",
+      "displayName": "AWS Deployment Agent",
+      "category": "deployment",
+      "description": "Takes an application from code to running on AWS: analyzes the codebase, recommends an architecture with cost estimates, generates and deploys IaC (incl. Elastic Beanstalk), and produces validated draw.io architecture diagrams.",
+      "keywords": [
+        "aws",
+        "deploy",
+        "infrastructure",
+        "cdk",
+        "elastic-beanstalk",
+        "architecture-diagram",
+        "cost-estimate"
+      ],
+      "upstream": [
+        {
+          "source": "agent-plugins",
+          "plugin": "deploy-on-aws"
+        },
+        {
+          "source": "toolkit",
+          "plugin": "aws-core"
+        }
+      ],
+      "skills": [
+        {
+          "from": "agent-plugins/deploy-on-aws",
+          "names": "*"
+        },
+        {
+          "from": "toolkit/aws-core",
+          "names": [
+            "signing-in-to-aws"
+          ]
+        }
+      ],
+      "copy": [
+        {
+          "from": "agent-plugins/deploy-on-aws",
+          "paths": [
+            "scripts"
+          ]
+        }
+      ],
+      "mcp": [
+        "awsiac",
+        "awsknowledge",
+        "awspricing"
+      ],
+      "hooks_inline": {
+        "PostToolUse": [
+          {
+            "matcher": "Edit|Write",
+            "hooks": [
+              {
+                "type": "command",
+                "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/validate-drawio.sh\"",
+                "timeout": 30
+              }
+            ]
+          }
+        ]
+      },
+      "hooks": [
+        "secret-safety",
+        "aws-mutation-gate"
+      ]
+    },
+    {
+      "name": "aws-sagemaker-engineer",
+      "displayName": "AWS SageMaker Engineer",
+      "category": "ai-ml",
+      "description": "End-to-end Amazon SageMaker AI engineer: use-case planning, model selection, dataset evaluation and transformation, SFT/DPO/RLVR/RLAIF fine-tuning, evaluation, deployment, and HyperPod cluster, node, NCCL, and performance debugging.",
+      "keywords": [
+        "aws",
+        "sagemaker",
+        "machine-learning",
+        "fine-tuning",
+        "hyperpod",
+        "model-deployment",
+        "generative-ai"
+      ],
+      "upstream": [
+        {
+          "source": "agent-plugins",
+          "plugin": "sagemaker-ai"
+        },
+        {
+          "source": "toolkit",
+          "plugin": "aws-core"
+        }
+      ],
+      "skills": [
+        {
+          "from": "agent-plugins/sagemaker-ai",
+          "names": "*"
+        },
+        {
+          "from": "toolkit/aws-core",
+          "names": [
+            "signing-in-to-aws"
+          ]
+        }
+      ],
+      "mcp": [
+        {
+          "aws-mcp": {
+            "$ref": "aws-mcp-legacy-proxy"
+          }
+        },
+        "sagemaker"
+      ],
+      "hooks": [
+        "secret-safety",
+        "aws-mutation-gate"
+      ]
+    },
+    {
+      "name": "aws-essentials",
+      "kind": "vertical",
+      "displayName": "AWS Essentials",
+      "category": "foundation",
+      "description": "Foundation skills for any AWS work on the main agent: sign-in and credential setup, correct AWS SDK usage for Python (boto3), JavaScript v3, and Swift, plus the managed AWS MCP server and AWS Knowledge documentation search.",
+      "keywords": [
+        "aws",
+        "sign-in",
+        "credentials",
+        "boto3",
+        "aws-sdk",
+        "documentation"
+      ],
+      "agents": [
+        "aws-solutions-architect"
+      ],
+      "upstream": [
+        {
+          "source": "toolkit-skills",
+          "plugin": "core-skills"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit-skills/core-skills",
+          "names": [
+            "signing-in-to-aws",
+            "aws-sdk-python-usage",
+            "aws-sdk-js-v3-usage",
+            "aws-sdk-swift-usage"
+          ]
+        }
+      ],
+      "mcp": [
+        "aws-mcp",
+        "awsknowledge"
+      ],
+      "hooks": [
+        "secret-safety"
+      ]
+    },
+    {
+      "name": "aws-infrastructure-as-code",
+      "kind": "vertical",
+      "displayName": "AWS Infrastructure as Code",
+      "category": "infrastructure-as-code",
+      "description": "Author, validate, deploy, and troubleshoot AWS infrastructure as code directly in the main agent: CDK, CloudFormation (cfn-lint/cfn-guard), AWS Blocks, CodePipeline/CodeBuild/CodeDeploy CI/CD, and guided launches.",
+      "keywords": [
+        "aws",
+        "iac",
+        "cdk",
+        "cloudformation",
+        "cicd",
+        "aws-blocks"
+      ],
+      "agents": [
+        "aws-iac-engineer",
+        "aws-deployment-agent"
+      ],
+      "upstream": [
+        {
+          "source": "toolkit-skills",
+          "plugin": "core-skills"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit-skills/core-skills",
+          "names": [
+            "aws-cdk",
+            "aws-cloudformation",
+            "aws-blocks",
+            "aws-deployment",
+            "launch-with-aws"
+          ]
+        }
+      ],
+      "mcp": [
+        "aws-mcp",
+        "awsiac"
+      ]
+    },
+    {
+      "name": "aws-compute",
+      "kind": "vertical",
+      "displayName": "AWS Compute",
+      "category": "compute",
+      "description": "EC2 skills for the main agent: choosing compute, launching instances with best practices, instance profiles, Auto Scaling, and EC2 Image Builder pipelines.",
+      "keywords": [
+        "aws",
+        "ec2",
+        "auto-scaling",
+        "image-builder",
+        "instance-profile"
+      ],
+      "agents": [
+        "aws-platform-engineer"
+      ],
+      "upstream": [
+        {
+          "source": "toolkit-skills",
+          "plugin": "core-skills"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/ec2-skills"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit-skills/core-skills",
+          "names": [
+            "aws-compute"
+          ]
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/ec2-skills",
+          "names": "*"
+        }
+      ],
+      "mcp": [
+        "aws-mcp"
+      ]
+    },
+    {
+      "name": "aws-containers",
+      "kind": "vertical",
+      "displayName": "AWS Containers",
+      "category": "containers",
+      "description": "Container skills for the main agent: EKS, ECS, Fargate, ECR, and App Runner design and troubleshooting, with the EKS and ECS MCP servers (read-only) and Finch for building and pushing images.",
+      "keywords": [
+        "aws",
+        "containers",
+        "eks",
+        "ecs",
+        "fargate",
+        "ecr",
+        "kubernetes",
+        "finch"
+      ],
+      "agents": [
+        "aws-platform-engineer"
+      ],
+      "upstream": [
+        {
+          "source": "toolkit-skills",
+          "plugin": "core-skills"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit-skills/core-skills",
+          "names": [
+            "aws-containers"
+          ]
+        }
+      ],
+      "mcp": [
+        "aws-mcp",
+        "eks",
+        "ecs",
+        "finch"
+      ]
+    },
+    {
+      "name": "aws-networking",
+      "kind": "vertical",
+      "displayName": "AWS Networking",
+      "category": "networking",
+      "description": "Networking and content-delivery skills for the main agent: production VPCs, endpoints, peering, Transit Gateway, Site-to-Site VPN, Direct Connect, Route 53, CloudFront, WAF, Shield Advanced, and network monitoring, with the AWS Network MCP server.",
+      "keywords": [
+        "aws",
+        "networking",
+        "vpc",
+        "transit-gateway",
+        "route53",
+        "cloudfront",
+        "waf",
+        "shield",
+        "vpn",
+        "direct-connect"
+      ],
+      "agents": [
+        "aws-platform-engineer"
+      ],
+      "upstream": [
+        {
+          "source": "toolkit-skills",
+          "plugin": "core-skills"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/networking-and-content-delivery-skills"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/operations-skills"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit-skills/core-skills",
+          "names": [
+            "aws-networking"
+          ]
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/networking-and-content-delivery-skills",
+          "names": "*"
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/operations-skills",
+          "names": [
+            "aws-network-monitoring"
+          ]
+        }
+      ],
+      "mcp": [
+        "aws-mcp",
+        "awsnetwork"
+      ],
+      "rewrites": [
+        "router-networking"
+      ]
+    },
+    {
+      "name": "aws-storage",
+      "kind": "vertical",
+      "displayName": "AWS Storage",
+      "category": "storage",
+      "description": "Storage skills for the main agent: choosing between S3, EBS, EFS, FSx, and S3 Files, securing S3 buckets, and troubleshooting EFS and S3 Files mounts and performance.",
+      "keywords": [
+        "aws",
+        "storage",
+        "s3",
+        "efs",
+        "ebs",
+        "fsx",
+        "s3-security"
+      ],
+      "agents": [
+        "aws-platform-engineer"
+      ],
+      "upstream": [
+        {
+          "source": "toolkit-skills",
+          "plugin": "core-skills"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/storage-skills"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit-skills/core-skills",
+          "names": [
+            "aws-storage"
+          ]
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/storage-skills",
+          "names": [
+            "securing-s3-buckets",
+            "troubleshooting-efs",
+            "troubleshooting-s3-files"
+          ]
+        }
+      ],
+      "mcp": [
+        "aws-mcp"
+      ]
+    },
+    {
+      "name": "aws-databases",
+      "kind": "vertical",
+      "displayName": "AWS Databases",
+      "category": "database",
+      "description": "Database skills for the main agent: engine selection and service-specific guidance for Aurora (PostgreSQL, MySQL, DSQL), RDS (open source, Oracle, SQL Server, Db2), DynamoDB, DocumentDB, ElastiCache, Keyspaces, Neptune, and Timestream for InfluxDB, with read-only database MCP servers and opt-in connectors.",
+      "keywords": [
+        "aws",
+        "database",
+        "aurora",
+        "dsql",
+        "rds",
+        "dynamodb",
+        "postgresql",
+        "mysql",
+        "elasticache"
+      ],
+      "agents": [
+        "aws-database-engineer"
+      ],
+      "upstream": [
+        {
+          "source": "toolkit-skills",
+          "plugin": "core-skills"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/database-skills"
+        },
+        {
+          "source": "agent-plugins",
+          "plugin": "databases-on-aws"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit-skills/core-skills",
+          "names": [
+            "aws-database"
+          ]
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/database-skills",
+          "names": "*",
+          "except": [
+            "aurora-dsql"
+          ]
+        },
+        {
+          "from": "agent-plugins/databases-on-aws",
+          "names": [
+            "dsql"
+          ]
+        }
+      ],
+      "mcp": [
+        "aws-mcp",
+        "awsknowledge",
+        "dynamodb",
+        "postgres",
+        "mysql",
+        "elasticache"
+      ],
+      "copy": [
+        {
+          "from": "agent-plugins/databases-on-aws",
+          "paths": [
+            "scripts"
+          ]
+        }
+      ],
+      "connectors": [
+        "aurora-dsql",
+        "documentdb",
+        "keyspaces",
+        "neptune",
+        "valkey",
+        "memcached",
+        "mssql",
+        "oracle",
+        "timestream-influxdb"
+      ],
+      "hooks": [
+        "dsql-verify"
+      ],
+      "rewrites": [
+        "database-dsql-handoff"
+      ]
+    },
+    {
+      "name": "aws-serverless",
+      "kind": "vertical",
+      "displayName": "AWS Serverless",
+      "category": "serverless",
+      "description": "Serverless skills for the main agent: Lambda (durable functions, managed instances, MicroVMs, timeouts, VPC egress), API Gateway stages and custom domains, Step Functions, and EventBridge, with the read-only AWS Serverless MCP server.",
+      "keywords": [
+        "aws",
+        "serverless",
+        "lambda",
+        "api-gateway",
+        "step-functions",
+        "eventbridge",
+        "sam"
+      ],
+      "agents": [
+        "aws-serverless-engineer"
+      ],
+      "upstream": [
+        {
+          "source": "toolkit-skills",
+          "plugin": "core-skills"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/serverless-skills"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/networking-and-content-delivery-skills"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit-skills/core-skills",
+          "names": [
+            "aws-serverless"
+          ]
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/serverless-skills",
+          "names": "*"
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/networking-and-content-delivery-skills",
+          "names": [
+            "enabling-lambda-vpc-internet-access"
+          ]
+        }
+      ],
+      "mcp": [
+        "aws-mcp",
+        "aws-serverless-mcp"
+      ],
+      "connectors": [
+        "lambda-tool",
+        "stepfunctions-tool"
+      ]
+    },
+    {
+      "name": "aws-messaging-and-streaming",
+      "kind": "vertical",
+      "displayName": "AWS Messaging and Streaming",
+      "category": "messaging",
+      "description": "Messaging and streaming skills for the main agent: SQS, SNS, EventBridge, Amazon MQ, Kinesis Data Streams, MSK (incl. migrations), Managed Service for Apache Flink, and customer messaging with SES, SMS/voice, and WhatsApp, plus the SNS/SQS and Amazon MQ MCP servers.",
+      "keywords": [
+        "aws",
+        "messaging",
+        "sqs",
+        "sns",
+        "kinesis",
+        "msk",
+        "kafka",
+        "flink",
+        "ses",
+        "amazon-mq"
+      ],
+      "agents": [
+        "aws-platform-engineer",
+        "aws-data-engineer"
+      ],
+      "upstream": [
+        {
+          "source": "toolkit-skills",
+          "plugin": "core-skills"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/messaging-and-streaming-skills"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/analytics-skills"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit-skills/core-skills",
+          "names": [
+            "aws-messaging-and-streaming"
+          ]
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/messaging-and-streaming-skills",
+          "names": "*"
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/analytics-skills",
+          "names": [
+            "developing-applications-on-managed-service-for-apache-flink",
+            "managing-amazon-kinesis-data-streams",
+            "managing-amazon-msk",
+            "migrate-to-msk"
+          ]
+        }
+      ],
+      "mcp": [
+        "aws-mcp",
+        "sns-sqs",
+        "mq"
+      ],
+      "rewrites": [
+        "router-messaging"
+      ]
+    },
+    {
+      "name": "aws-analytics",
+      "kind": "vertical",
+      "displayName": "AWS Analytics",
+      "category": "data-analytics",
+      "description": "Analytics skills for the main agent: data lakes on S3 Tables/Iceberg, Glue Data Catalog and connections, Athena and Redshift (incl. migrations), OpenSearch, S3 Vectors, Clean Rooms, MWAA (Airflow), and system-table queries, with data-processing, Redshift, S3 Tables, and Spark troubleshooting/upgrade MCP servers.",
+      "keywords": [
+        "aws",
+        "analytics",
+        "data-lake",
+        "glue",
+        "athena",
+        "redshift",
+        "s3-tables",
+        "opensearch",
+        "mwaa",
+        "spark"
+      ],
+      "agents": [
+        "aws-data-engineer"
+      ],
+      "upstream": [
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/analytics-skills"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/storage-skills"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/system-table-skills"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit-skills/specialized-skills/analytics-skills",
+          "names": "*",
+          "except": [
+            "developing-applications-on-managed-service-for-apache-flink",
+            "managing-amazon-kinesis-data-streams",
+            "managing-amazon-msk",
+            "migrate-to-msk"
+          ]
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/storage-skills",
+          "names": [
+            "creating-data-lake-table",
+            "storing-and-querying-vectors"
+          ]
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/system-table-skills",
+          "names": "*"
+        }
+      ],
+      "mcp": [
+        "aws-mcp",
+        "dataprocessing",
+        "redshift",
+        "s3tables",
+        "spark-troubleshooting",
+        "spark-upgrade"
+      ]
+    },
+    {
+      "name": "aws-observability",
+      "kind": "vertical",
+      "displayName": "AWS Observability",
+      "category": "observability",
+      "description": "Observability skills for the main agent: CloudWatch metrics, logs, alarms and notifications, Application Signals, X-Ray, multi-Region CloudTrail, and application-failure troubleshooting, with CloudWatch, Application Signals, CloudTrail, and Prometheus MCP servers.",
+      "keywords": [
+        "aws",
+        "observability",
+        "cloudwatch",
+        "alarms",
+        "cloudtrail",
+        "x-ray",
+        "prometheus",
+        "troubleshooting"
+      ],
+      "agents": [
+        "aws-sre-agent"
+      ],
+      "upstream": [
+        {
+          "source": "toolkit-skills",
+          "plugin": "core-skills"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/operations-skills"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/system-table-skills"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit-skills/core-skills",
+          "names": [
+            "aws-observability"
+          ]
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/operations-skills",
+          "names": [
+            "setting-up-cloudtrail-multi-region",
+            "setting-up-cloudwatch-alarm-notifications",
+            "setting-up-cloudwatch-observability",
+            "troubleshooting-application-failures"
+          ]
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/system-table-skills",
+          "names": [
+            "querying-aws-cloudwatch"
+          ]
+        }
+      ],
+      "mcp": [
+        "aws-mcp",
+        "cloudwatch",
+        "appsignals",
+        "cloudtrail",
+        "prometheus"
+      ]
+    },
+    {
+      "name": "aws-security-identity",
+      "kind": "vertical",
+      "displayName": "AWS Security and Identity",
+      "category": "security",
+      "description": "Security and identity skills for the main agent: least-privilege IAM, Security Hub/GuardDuty/Inspector findings, Cognito authentication, and Secrets Manager best practices, with read-only IAM, Well-Architected security, and AWS Security Agent MCP servers and the secret-safety hook.",
+      "keywords": [
+        "aws",
+        "security",
+        "iam",
+        "secrets-manager",
+        "cognito",
+        "security-hub",
+        "guardduty",
+        "least-privilege"
+      ],
+      "agents": [
+        "aws-cloud-security-engineer",
+        "aws-devsecops-agent"
+      ],
+      "upstream": [
+        {
+          "source": "toolkit-skills",
+          "plugin": "core-skills"
+        },
+        {
+          "source": "toolkit",
+          "plugin": "aws-core"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/security-and-identity-skills"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit-skills/core-skills",
+          "names": [
+            "aws-iam",
+            "aws-security",
+            "aws-auth"
+          ]
+        },
+        {
+          "from": "toolkit/aws-core",
+          "names": [
+            "aws-secrets-manager"
+          ]
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/security-and-identity-skills",
+          "names": "*"
+        }
+      ],
+      "mcp": [
+        "aws-mcp",
+        "iam",
+        "wa-security"
+      ],
+      "hooks": [
+        "secret-safety"
+      ],
+      "rewrites": [
+        {
+          "path": "skills/aws-secrets-manager/SKILL.md",
+          "find": "The hook is defined at `plugins/aws-core/com.anthropic.claude-code/hooks/hooks.json`",
+          "replace": "The hook is defined at `hooks/hooks.json` in the aws-security-identity plugin (and the other TalkOps AWS plugins that ship the secret-safety hook)"
+        }
+      ]
+    },
+    {
+      "name": "aws-resilience",
+      "kind": "vertical",
+      "displayName": "AWS Resilience",
+      "category": "resilience",
+      "description": "Resilience skills for the main agent: Resilience Hub assessments (single and multi-account), Fault Injection Service experiments, ARC Region switch and recovery controller, resilience lifecycle, and resilience program design.",
+      "keywords": [
+        "aws",
+        "resilience",
+        "resilience-hub",
+        "fis",
+        "chaos-engineering",
+        "disaster-recovery",
+        "arc"
+      ],
+      "agents": [
+        "aws-sre-agent"
+      ],
+      "upstream": [
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/resilience-skills"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit-skills/specialized-skills/resilience-skills",
+          "names": "*"
+        }
+      ],
+      "mcp": [
+        "aws-mcp",
+        "awsknowledge"
+      ]
+    },
+    {
+      "name": "aws-cost-optimization",
+      "kind": "vertical",
+      "displayName": "AWS Cost Optimization",
+      "category": "finops",
+      "description": "Cost skills for the main agent: Cost Explorer analysis, anomalies, budgets, Savings Plans and Reserved Instances, Compute Optimizer right-sizing, and pricing estimates, with the Billing and Cost Management and Pricing MCP servers.",
+      "keywords": [
+        "aws",
+        "finops",
+        "cost-optimization",
+        "billing",
+        "pricing",
+        "savings-plans",
+        "budgets"
+      ],
+      "agents": [
+        "aws-finops-agent"
+      ],
+      "upstream": [
+        {
+          "source": "toolkit-skills",
+          "plugin": "core-skills"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit-skills/core-skills",
+          "names": [
+            "aws-billing-and-cost-management"
+          ]
+        }
+      ],
+      "mcp": [
+        "aws-mcp",
+        "billing",
+        "awspricing"
+      ]
+    },
+    {
+      "name": "aws-ai-ml",
+      "kind": "vertical",
+      "displayName": "AWS AI and ML",
+      "category": "ai-ml",
+      "description": "Generative AI and ML skills for the main agent: Amazon Bedrock models, agents, knowledge bases, and guardrails, plus AWS AI/ML service selection and SageMaker AI, with the read-only SageMaker AI MCP server.",
+      "keywords": [
+        "aws",
+        "ai",
+        "ml",
+        "bedrock",
+        "sagemaker",
+        "generative-ai"
+      ],
+      "agents": [
+        "aws-sagemaker-engineer",
+        "aws-agentcore-engineer",
+        "aws-solutions-architect"
+      ],
+      "upstream": [
+        {
+          "source": "toolkit-skills",
+          "plugin": "core-skills"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit-skills/core-skills",
+          "names": [
+            "amazon-bedrock",
+            "aws-ai-ml"
+          ]
+        }
+      ],
+      "mcp": [
+        "aws-mcp",
+        "sagemaker"
+      ]
+    },
+    {
+      "name": "aws-well-architected",
+      "kind": "vertical",
+      "displayName": "AWS Well-Architected",
+      "category": "architecture",
+      "description": "Evidence-backed AWS Well-Architected Framework reviews across all six pillars on the main agent, with AWS Knowledge and the Well-Architected security MCP server.",
+      "keywords": [
+        "aws",
+        "well-architected",
+        "architecture-review",
+        "best-practices"
+      ],
+      "agents": [
+        "aws-solutions-architect"
+      ],
+      "upstream": [
+        {
+          "source": "toolkit-skills",
+          "plugin": "core-skills"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit-skills/core-skills",
+          "names": [
+            "aws-well-architected-review"
+          ]
+        }
+      ],
+      "mcp": [
+        "aws-mcp",
+        "awsknowledge",
+        "wa-security"
+      ]
+    },
+    {
+      "name": "aws-migration",
+      "kind": "vertical",
+      "displayName": "AWS Migration and Modernization",
+      "category": "migration",
+      "description": "Migration skills for the main agent: AWS Transform modernization (.NET, mainframe, VMware, SQL Server, language and SDK upgrades) and DMS Schema Conversion for heterogeneous database migrations.",
+      "keywords": [
+        "aws",
+        "migration",
+        "modernization",
+        "transform",
+        "dms",
+        "schema-conversion"
+      ],
+      "agents": [
+        "aws-modernization-agent"
+      ],
+      "upstream": [
+        {
+          "source": "agent-plugins",
+          "plugin": "aws-transform"
+        },
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/migration-and-modernization-skills"
+        }
+      ],
+      "skills": [
+        {
+          "from": "agent-plugins/aws-transform",
+          "names": [
+            "aws-transform"
+          ]
+        },
+        {
+          "from": "toolkit-skills/specialized-skills/migration-and-modernization-skills",
+          "names": [
+            "dms-schema-conversion"
+          ]
+        }
+      ],
+      "mcp": [
+        "aws-mcp",
+        "aws-transform-mcp"
+      ]
+    },
+    {
+      "name": "aws-web-and-mobile",
+      "kind": "vertical",
+      "displayName": "AWS Web and Mobile",
+      "category": "fullstack",
+      "description": "Full-stack web and mobile skills for the main agent: AWS Amplify Gen 2 apps (auth, data, storage, functions, hosting), with the read-only AWS AppSync MCP server.",
+      "keywords": [
+        "aws",
+        "amplify",
+        "appsync",
+        "fullstack",
+        "web",
+        "mobile"
+      ],
+      "agents": [
+        "aws-amplify-engineer"
+      ],
+      "upstream": [
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/web-and-mobile-development"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit-skills/specialized-skills/web-and-mobile-development",
+          "names": "*"
+        }
+      ],
+      "mcp": [
+        "aws-mcp",
+        "appsync"
+      ]
+    },
+    {
+      "name": "aws-marketplace-seller",
+      "kind": "vertical",
+      "displayName": "AWS Marketplace Seller",
+      "category": "marketplace",
+      "description": "AWS Marketplace seller skills for the main agent: integrating SaaS, container, and AMI products with AWS Marketplace metering.",
+      "keywords": [
+        "aws",
+        "marketplace",
+        "metering",
+        "saas"
+      ],
+      "agents": [],
+      "upstream": [
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/aws-marketplace-skills"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit-skills/specialized-skills/aws-marketplace-skills",
+          "names": "*"
+        }
+      ],
+      "mcp": [
+        "aws-mcp"
+      ]
+    },
+    {
+      "name": "aws-end-user-computing",
+      "kind": "vertical",
+      "displayName": "AWS End User Computing",
+      "category": "end-user-computing",
+      "description": "Amazon WorkSpaces skills for the main agent: setting up and operating agent access to WorkSpaces desktops.",
+      "keywords": [
+        "aws",
+        "workspaces",
+        "end-user-computing",
+        "vdi"
+      ],
+      "agents": [],
+      "upstream": [
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/end-user-computing-skills"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit-skills/specialized-skills/end-user-computing-skills",
+          "names": "*"
+        }
+      ],
+      "mcp": [
+        "aws-mcp"
+      ]
+    },
+    {
+      "name": "aws-quantum-computing",
+      "kind": "vertical",
+      "displayName": "AWS Quantum Computing",
+      "category": "quantum",
+      "description": "Amazon Braket skills for the main agent: building, simulating, and running quantum circuits and hybrid jobs on Braket devices.",
+      "keywords": [
+        "aws",
+        "quantum",
+        "braket"
+      ],
+      "agents": [],
+      "upstream": [
+        {
+          "source": "toolkit-skills",
+          "plugin": "specialized-skills/quantum-computing-skills"
+        }
+      ],
+      "skills": [
+        {
+          "from": "toolkit-skills/specialized-skills/quantum-computing-skills",
+          "names": "*"
+        }
+      ],
+      "mcp": [
+        "aws-mcp"
+      ]
+    },
+    {
+      "name": "terraform",
+      "kind": "partner",
+      "displayName": "Terraform (HashiCorp)",
+      "category": "infrastructure-as-code",
+      "description": "HashiCorp's official Terraform skills: HCL style, module refactoring, Terraform tests, search and bulk import, Stacks, Terraform policy (including Sentinel conversion), Azure Verified Modules, and provider development with the Plugin Framework (resources, actions, ephemeral resources, configuration, SDKv2 migration, docs, and acceptance tests).",
+      "keywords": [
+        "terraform",
+        "hcl",
+        "hashicorp",
+        "iac",
+        "modules",
+        "provider",
+        "terraform-stacks",
+        "terraform-test",
+        "policy"
+      ],
+      "version": "1.0.0",
+      "author": {
+        "name": "HashiCorp",
+        "url": "https://github.com/hashicorp"
+      },
+      "homepage": "https://developer.hashicorp.com/terraform",
+      "repository": "https://github.com/hashicorp/agent-skills",
+      "license": "MPL-2.0",
+      "codex_interface": {
+        "developerName": "HashiCorp",
+        "category": "Developer Tools",
+        "brandColor": "#7B42BC",
+        "websiteURL": "https://developer.hashicorp.com/terraform"
+      },
+      "defaultPrompt": [
+        "Review this Terraform configuration against HashiCorp's style guide.",
+        "Write Terraform tests for this module.",
+        "Import these existing resources into Terraform."
+      ],
+      "upstream": [
+        {
+          "source": "hashicorp",
+          "plugin": "terraform"
+        }
+      ],
+      "skills": [
+        {
+          "from": "hashicorp/terraform",
+          "names": "*"
+        }
+      ],
+      "connectors": [
+        "terraform"
+      ]
+    }
+  ]
+}

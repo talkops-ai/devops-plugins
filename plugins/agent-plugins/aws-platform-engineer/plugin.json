@@ -1,0 +1,25 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "aws-platform-engineer",
+  "version": "0.1.0",
+  "description": "Provisions and operates the AWS runtime platform: EC2 and Auto Scaling, EKS/ECS/Fargate containers, VPC and edge networking, storage, serverless compute, and messaging/streaming services.",
+  "author": {
+    "name": "TalkOps AI"
+  },
+  "homepage": "https://github.com/talkops-ai/devops-plugins",
+  "repository": "https://github.com/talkops-ai/devops-plugins",
+  "license": "Apache-2.0",
+  "keywords": [
+    "aws",
+    "ec2",
+    "eks",
+    "ecs",
+    "fargate",
+    "vpc",
+    "networking",
+    "s3",
+    "lambda",
+    "sqs",
+    "kinesis"
+  ]
+}

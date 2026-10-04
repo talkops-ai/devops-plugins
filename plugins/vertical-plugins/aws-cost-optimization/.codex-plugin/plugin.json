@@ -16,5 +16,20 @@
     "pricing",
     "savings-plans",
     "budgets"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "interface": {
+    "displayName": "AWS Cost Optimization",
+    "shortDescription": "Cost skills for the main agent",
+    "longDescription": "Cost skills for the main agent: Cost Explorer analysis, anomalies, budgets, Savings Plans and Reserved Instances, Compute Optimizer right-sizing, and pricing estimates, with the Billing and Cost Management and Pricing MCP servers.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/vertical-plugins/aws-cost-optimization",
+    "brandColor": "#FF9900"
+  }
 }

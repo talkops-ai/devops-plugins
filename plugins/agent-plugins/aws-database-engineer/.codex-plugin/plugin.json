@@ -18,5 +18,21 @@
     "postgresql",
     "schema",
     "migration"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "AWS Database Engineer",
+    "shortDescription": "Database engineer for the AWS portfolio",
+    "longDescription": "Database engineer for the AWS portfolio: chooses the right engine, designs schemas, runs queries and migrations, and operates Aurora DSQL, Aurora/RDS, DynamoDB, DocumentDB, ElastiCache/MemoryDB, Neptune, Keyspaces, and Timestream.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/agent-plugins/aws-database-engineer",
+    "brandColor": "#FF9900"
+  }
 }

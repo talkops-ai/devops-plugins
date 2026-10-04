@@ -4,12 +4,19 @@
 
 Networking and content-delivery skills for the main agent: production VPCs, endpoints, peering, Transit Gateway, Site-to-Site VPN, Direct Connect, Route 53, CloudFront, WAF, Shield Advanced, and network monitoring, with the AWS Network MCP server.
 
+## Install
+
+| Host | How |
+|---|---|
+| Claude Code | `/plugin marketplace add talkops-ai/devops-plugins`, then `/plugin install aws-networking@talkops-devops-plugins` |
+| Codex | `codex plugin marketplace add talkops-ai/devops-plugins`, then install from the Plugins Directory |
+| Other Agent Plugins hosts | Load this directory; [`plugin.json`](./plugin.json), `skills/`, and [`mcp.json`](./mcp.json) follow the portable [Agent Plugins](https://agent-plugins.org) format |
+
 ## How it works
 
 This is a **vertical plugin**: its skills, commands, and MCP servers attach directly to your main agent, with no sub-agent hand-off. Prefer the [`aws-platform-engineer`](../../agent-plugins/aws-platform-engineer) agent plugin when you want an isolated specialist instead.
 
-- Install: `claude plugin install aws-networking@talkops-devops-plugins`
-- Skills activate from their descriptions; invoke one explicitly with `/aws-networking:<skill>`
+- Skills activate from their descriptions; in Claude Code invoke one explicitly with `/aws-networking:<skill>`
 
 ## Skills
 
@@ -41,19 +48,19 @@ This is a **vertical plugin**: its skills, commands, and MCP servers attach dire
 
 ## MCP servers
 
-Declared in [`.mcp.json`](./.mcp.json); started when the plugin is enabled and available to the main agent.
+Declared in [`.mcp.json`](./.mcp.json) (Claude Code) and [`mcp.json`](./mcp.json) (portable); started when the plugin is enabled and available to the main agent.
 
-| Server | Transport | Launch | Tool names | Notes |
+| Server | Transport | Launch | Claude Code tool names | Notes |
 |---|---|---|---|---|
 | `aws-mcp` | stdio | `uvx mcp-proxy-for-aws-cli==1.7.0` `--skip-auth --metadata` | `mcp__plugin_aws-networking_aws-mcp__*` | Managed AWS MCP Server via the toolkit's pinned proxy (aws___call_aws, aws___search_documentation, aws___retrieve_skill, ...). |
 | `awsnetwork` | stdio | `uvx awslabs.aws-network-mcp-server@latest` | `mcp__plugin_aws-networking_awsnetwork__*` |  |
 
-AWS credentials are inherited from the host environment (`AWS_PROFILE`, SSO, or instance role). `AWS_REGION` defaults to `us-east-1` when unset. Toggle any server off per project in `/mcp`.
+AWS credentials are inherited from the host environment (`AWS_PROFILE`, SSO, or instance role). In Claude Code `AWS_REGION` defaults to `us-east-1` when unset; the portable `mcp.json` can't express that default, so set `AWS_REGION` in your environment on other hosts. Codex starts MCP servers with a minimal environment: if a server can't see your profile, set `AWS_PROFILE`/`AWS_REGION` for it in `~/.codex/config.toml`.
 
 ## Upstream
 
-Derived from the following Apache-2.0 sources (see the repository `NOTICE`):
+Derived from the following open-source sources (see the repository `NOTICE`):
 
-- [`core-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws)
-- [`specialized-skills/networking-and-content-delivery-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws)
-- [`specialized-skills/operations-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws)
+- [`core-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws, Apache-2.0)
+- [`specialized-skills/networking-and-content-delivery-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws, Apache-2.0)
+- [`specialized-skills/operations-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws, Apache-2.0)

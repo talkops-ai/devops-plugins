@@ -14,5 +14,20 @@
     "auto-scaling",
     "image-builder",
     "instance-profile"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "interface": {
+    "displayName": "AWS Compute",
+    "shortDescription": "EC2 skills for the main agent",
+    "longDescription": "EC2 skills for the main agent: choosing compute, launching instances with best practices, instance profiles, Auto Scaling, and EC2 Image Builder pipelines.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/vertical-plugins/aws-compute",
+    "brandColor": "#FF9900"
+  }
 }

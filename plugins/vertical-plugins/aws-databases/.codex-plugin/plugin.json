@@ -18,5 +18,21 @@
     "postgresql",
     "mysql",
     "elasticache"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "AWS Databases",
+    "shortDescription": "Database skills for the main agent",
+    "longDescription": "Database skills for the main agent: engine selection and service-specific guidance for Aurora (PostgreSQL, MySQL, DSQL), RDS (open source, Oracle, SQL Server, Db2), DynamoDB, DocumentDB, ElastiCache, Keyspaces, Neptune, and Timestream for InfluxDB, with read-only database MCP servers and opt-in connectors.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/vertical-plugins/aws-databases",
+    "brandColor": "#FF9900"
+  }
 }

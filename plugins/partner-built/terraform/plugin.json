@@ -1,0 +1,24 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "terraform",
+  "version": "1.0.0",
+  "description": "HashiCorp's official Terraform skills: HCL style, module refactoring, Terraform tests, search and bulk import, Stacks, Terraform policy (including Sentinel conversion), Azure Verified Modules, and provider development with the Plugin Framework (resources, actions, ephemeral resources, configuration, SDKv2 migration, docs, and acceptance tests).",
+  "author": {
+    "name": "HashiCorp",
+    "url": "https://github.com/hashicorp"
+  },
+  "homepage": "https://developer.hashicorp.com/terraform",
+  "repository": "https://github.com/hashicorp/agent-skills",
+  "license": "MPL-2.0",
+  "keywords": [
+    "terraform",
+    "hcl",
+    "hashicorp",
+    "iac",
+    "modules",
+    "provider",
+    "terraform-stacks",
+    "terraform-test",
+    "policy"
+  ]
+}

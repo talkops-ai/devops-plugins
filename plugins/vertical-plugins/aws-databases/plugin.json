@@ -1,0 +1,23 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "aws-databases",
+  "version": "0.1.0",
+  "description": "Database skills for the main agent: engine selection and service-specific guidance for Aurora (PostgreSQL, MySQL, DSQL), RDS (open source, Oracle, SQL Server, Db2), DynamoDB, DocumentDB, ElastiCache, Keyspaces, Neptune, and Timestream for InfluxDB, with read-only database MCP servers and opt-in connectors.",
+  "author": {
+    "name": "TalkOps AI"
+  },
+  "homepage": "https://github.com/talkops-ai/devops-plugins",
+  "repository": "https://github.com/talkops-ai/devops-plugins",
+  "license": "Apache-2.0",
+  "keywords": [
+    "aws",
+    "database",
+    "aurora",
+    "dsql",
+    "rds",
+    "dynamodb",
+    "postgresql",
+    "mysql",
+    "elasticache"
+  ]
+}

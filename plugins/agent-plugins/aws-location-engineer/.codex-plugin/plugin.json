@@ -15,5 +15,21 @@
     "geocoding",
     "routing",
     "geospatial"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "AWS Location Engineer",
+    "shortDescription": "Adds geospatial features with Amazon Location Service",
+    "longDescription": "Adds geospatial features with Amazon Location Service: maps, geocoding and reverse geocoding, routing and service areas, places search, authentication setup, and SDK integration.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/agent-plugins/aws-location-engineer",
+    "brandColor": "#FF9900"
+  }
 }

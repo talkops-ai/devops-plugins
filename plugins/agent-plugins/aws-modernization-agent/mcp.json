@@ -1,0 +1,12 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "aws-transform-mcp": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-transform-mcp-server@latest"
+      ]
+    }
+  }
+}

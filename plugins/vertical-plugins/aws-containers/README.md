@@ -4,12 +4,19 @@
 
 Container skills for the main agent: EKS, ECS, Fargate, ECR, and App Runner design and troubleshooting, with the EKS and ECS MCP servers (read-only) and Finch for building and pushing images.
 
+## Install
+
+| Host | How |
+|---|---|
+| Claude Code | `/plugin marketplace add talkops-ai/devops-plugins`, then `/plugin install aws-containers@talkops-devops-plugins` |
+| Codex | `codex plugin marketplace add talkops-ai/devops-plugins`, then install from the Plugins Directory |
+| Other Agent Plugins hosts | Load this directory; [`plugin.json`](./plugin.json), `skills/`, and [`mcp.json`](./mcp.json) follow the portable [Agent Plugins](https://agent-plugins.org) format |
+
 ## How it works
 
 This is a **vertical plugin**: its skills, commands, and MCP servers attach directly to your main agent, with no sub-agent hand-off. Prefer the [`aws-platform-engineer`](../../agent-plugins/aws-platform-engineer) agent plugin when you want an isolated specialist instead.
 
-- Install: `claude plugin install aws-containers@talkops-devops-plugins`
-- Skills activate from their descriptions; invoke one explicitly with `/aws-containers:<skill>`
+- Skills activate from their descriptions; in Claude Code invoke one explicitly with `/aws-containers:<skill>`
 
 ## Skills
 
@@ -27,19 +34,19 @@ This is a **vertical plugin**: its skills, commands, and MCP servers attach dire
 
 ## MCP servers
 
-Declared in [`.mcp.json`](./.mcp.json); started when the plugin is enabled and available to the main agent.
+Declared in [`.mcp.json`](./.mcp.json) (Claude Code) and [`mcp.json`](./mcp.json) (portable); started when the plugin is enabled and available to the main agent.
 
-| Server | Transport | Launch | Tool names | Notes |
+| Server | Transport | Launch | Claude Code tool names | Notes |
 |---|---|---|---|---|
 | `aws-mcp` | stdio | `uvx mcp-proxy-for-aws-cli==1.7.0` `--skip-auth --metadata` | `mcp__plugin_aws-containers_aws-mcp__*` | Managed AWS MCP Server via the toolkit's pinned proxy (aws___call_aws, aws___search_documentation, aws___retrieve_skill, ...). |
 | `eks` | stdio | `uvx awslabs.eks-mcp-server@latest` | `mcp__plugin_aws-containers_eks__*` | Read-only by default. Add --allow-write / --allow-sensitive-data-access to enable mutations and pod logs/secrets. |
-| `ecs` | stdio | `uvx awslabs-ecs-mcp-server@latest` `--with` | `mcp__plugin_aws-containers_ecs__*` | Read-only by default. Set ALLOW_WRITE / ALLOW_SENSITIVE_DATA to true to enable mutations. fastmcp<4 works around an upstream incompatibility (add_tool_transformation was removed in fastmcp 4). |
+| `ecs` | stdio | `uvx awslabs-ecs-mcp-server@latest` `--with` | `mcp__plugin_aws-containers_ecs__*` | Read-only by default. Set ALLOW_WRITE / ALLOW_SENSITIVE_DATA to true to enable mutations. fastmcp<4 pin: upstream needs fastmcp>=3.2 and is not yet compatible with fastmcp 4. |
 | `finch` | stdio | `uvx awslabs.finch-mcp-server@latest` | `mcp__plugin_aws-containers_finch__*` | Builds and pushes container images with the local Finch CLI. ECR repository creation is off by default (add --enable-aws-resource-write). |
 
-AWS credentials are inherited from the host environment (`AWS_PROFILE`, SSO, or instance role). `AWS_REGION` defaults to `us-east-1` when unset. Toggle any server off per project in `/mcp`.
+AWS credentials are inherited from the host environment (`AWS_PROFILE`, SSO, or instance role). In Claude Code `AWS_REGION` defaults to `us-east-1` when unset; the portable `mcp.json` can't express that default, so set `AWS_REGION` in your environment on other hosts. Codex starts MCP servers with a minimal environment: if a server can't see your profile, set `AWS_PROFILE`/`AWS_REGION` for it in `~/.codex/config.toml`.
 
 ## Upstream
 
-Derived from the following Apache-2.0 sources (see the repository `NOTICE`):
+Derived from the following open-source sources (see the repository `NOTICE`):
 
-- [`core-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws)
+- [`core-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws, Apache-2.0)

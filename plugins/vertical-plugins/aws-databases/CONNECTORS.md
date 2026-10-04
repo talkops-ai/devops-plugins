@@ -2,9 +2,11 @@
 
 # Optional connectors: AWS Databases
 
-These MCP servers need a connection target (cluster endpoint, host, or credentials secret) that only you know, so the plugin does **not** start them. Add the ones you need to your own Claude Code configuration with the exact key shown; the key determines the tool names (`mcp__<key>__*`).
+These MCP servers need a connection target (cluster endpoint, host, credentials, or a local runtime such as Docker) that only you can supply, so the plugin does **not** start them. Add the ones you need to your own agent host configuration with the exact key shown; the key determines the tool names (`mcp__<key>__*`).
 
-AWS credentials are inherited from your environment. Prefer least-privilege, read-only database users and keep write flags off unless you need them.
+Each connector below has a Claude Code command, a Codex command, and the equivalent `~/.codex/config.toml` block. Other MCP hosts take the same `command`, `args`, and `env`.
+
+AWS credentials are inherited from your environment. Prefer least-privilege, read-only database users and keep write flags off unless you need them. Codex starts MCP servers with a minimal environment; if a server can't find your AWS profile, add `AWS_PROFILE` and `AWS_REGION` to its `env`.
 
 ## Connectors
 
@@ -22,88 +24,231 @@ AWS credentials are inherited from your environment. Prefer least-privilege, rea
 
 ### `aurora-dsql`
 
+Claude Code:
+
 ```bash
-claude mcp add --env FASTMCP_LOG_LEVEL=ERROR aurora-dsql -- \
-  uvx awslabs.aurora-dsql-mcp-server@latest \
-  --cluster_endpoint <cluster-id>.dsql.<region>.on.aws --region <region> --database_user <user>
+claude mcp add --scope user --env FASTMCP_LOG_LEVEL=ERROR aurora-dsql -- uvx awslabs.aurora-dsql-mcp-server@latest --cluster_endpoint '<cluster-id>.dsql.<region>.on.aws' --region '<region>' --database_user '<user>'
+```
+
+Codex:
+
+```bash
+codex mcp add aurora-dsql --env FASTMCP_LOG_LEVEL=ERROR -- uvx awslabs.aurora-dsql-mcp-server@latest --cluster_endpoint '<cluster-id>.dsql.<region>.on.aws' --region '<region>' --database_user '<user>'
+```
+
+Codex `config.toml`:
+
+```toml
+[mcp_servers.aurora-dsql]
+command = "uvx"
+args = ["awslabs.aurora-dsql-mcp-server@latest", "--cluster_endpoint", "<cluster-id>.dsql.<region>.on.aws", "--region", "<region>", "--database_user", "<user>"]
+env = { FASTMCP_LOG_LEVEL = "ERROR" }
 ```
 
 Read-only by default; append `--allow-writes` to enable `transact`. The `dsql` skill's scripts work without this connector.
 
 ### `documentdb`
 
+Claude Code:
+
 ```bash
-claude mcp add --env FASTMCP_LOG_LEVEL=ERROR documentdb -- \
-  uvx awslabs.documentdb-mcp-server@latest \
-  --connection-string 'mongodb://<user>:<password>@<cluster>.docdb.amazonaws.com:27017/?tls=true&tlsCAFile=global-bundle.pem&retryWrites=false'
+claude mcp add --scope user --env FASTMCP_LOG_LEVEL=ERROR documentdb -- uvx awslabs.documentdb-mcp-server@latest --connection-string 'mongodb://<user>:<password>@<cluster>.docdb.amazonaws.com:27017/?tls=true&tlsCAFile=global-bundle.pem&retryWrites=false'
+```
+
+Codex:
+
+```bash
+codex mcp add documentdb --env FASTMCP_LOG_LEVEL=ERROR -- uvx awslabs.documentdb-mcp-server@latest --connection-string 'mongodb://<user>:<password>@<cluster>.docdb.amazonaws.com:27017/?tls=true&tlsCAFile=global-bundle.pem&retryWrites=false'
+```
+
+Codex `config.toml`:
+
+```toml
+[mcp_servers.documentdb]
+command = "uvx"
+args = ["awslabs.documentdb-mcp-server@latest", "--connection-string", "mongodb://<user>:<password>@<cluster>.docdb.amazonaws.com:27017/?tls=true&tlsCAFile=global-bundle.pem&retryWrites=false"]
+env = { FASTMCP_LOG_LEVEL = "ERROR" }
 ```
 
 Read-only unless you add `--allow-write`. Keep the connection string out of shared project config.
 
 ### `keyspaces`
 
+One-time setup:
+
 ```bash
 mkdir -p ~/.keyspaces-mcp && printf 'DB_USE_KEYSPACES=true\nDB_KEYSPACES_REGION=<region>\n' > ~/.keyspaces-mcp/env
-claude mcp add --env FASTMCP_LOG_LEVEL=ERROR keyspaces -- uvx awslabs.amazon-keyspaces-mcp-server@latest
+```
+
+Claude Code:
+
+```bash
+claude mcp add --scope user --env FASTMCP_LOG_LEVEL=ERROR keyspaces -- uvx awslabs.amazon-keyspaces-mcp-server@latest
+```
+
+Codex:
+
+```bash
+codex mcp add keyspaces --env FASTMCP_LOG_LEVEL=ERROR -- uvx awslabs.amazon-keyspaces-mcp-server@latest
+```
+
+Codex `config.toml`:
+
+```toml
+[mcp_servers.keyspaces]
+command = "uvx"
+args = ["awslabs.amazon-keyspaces-mcp-server@latest"]
+env = { FASTMCP_LOG_LEVEL = "ERROR" }
 ```
 
 Connection settings live in `~/.keyspaces-mcp/env` (see upstream docs for Cassandra and TLS options).
 
 ### `neptune`
 
+Claude Code:
+
 ```bash
-claude mcp add --env FASTMCP_LOG_LEVEL=ERROR --env NEPTUNE_ENDPOINT=neptune-db://<cluster-endpoint> neptune -- \
-  uvx awslabs.amazon-neptune-mcp-server@latest
+claude mcp add --scope user --env FASTMCP_LOG_LEVEL=ERROR --env 'NEPTUNE_ENDPOINT=neptune-db://<cluster-endpoint>' neptune -- uvx awslabs.amazon-neptune-mcp-server@latest
+```
+
+Codex:
+
+```bash
+codex mcp add neptune --env FASTMCP_LOG_LEVEL=ERROR --env 'NEPTUNE_ENDPOINT=neptune-db://<cluster-endpoint>' -- uvx awslabs.amazon-neptune-mcp-server@latest
+```
+
+Codex `config.toml`:
+
+```toml
+[mcp_servers.neptune]
+command = "uvx"
+args = ["awslabs.amazon-neptune-mcp-server@latest"]
+env = { FASTMCP_LOG_LEVEL = "ERROR", NEPTUNE_ENDPOINT = "neptune-db://<cluster-endpoint>" }
 ```
 
 Use `neptune-graph://<graph-id>` for Neptune Analytics.
 
 ### `valkey`
 
+Claude Code:
+
 ```bash
-claude mcp add --env FASTMCP_LOG_LEVEL=ERROR --env VALKEY_HOST=<endpoint> --env VALKEY_PORT=6379 valkey -- \
-  uvx awslabs.valkey-mcp-server@latest --readonly
+claude mcp add --scope user --env FASTMCP_LOG_LEVEL=ERROR --env 'VALKEY_HOST=<endpoint>' --env VALKEY_PORT=6379 valkey -- uvx awslabs.valkey-mcp-server@latest --readonly
+```
+
+Codex:
+
+```bash
+codex mcp add valkey --env FASTMCP_LOG_LEVEL=ERROR --env 'VALKEY_HOST=<endpoint>' --env VALKEY_PORT=6379 -- uvx awslabs.valkey-mcp-server@latest --readonly
+```
+
+Codex `config.toml`:
+
+```toml
+[mcp_servers.valkey]
+command = "uvx"
+args = ["awslabs.valkey-mcp-server@latest", "--readonly"]
+env = { FASTMCP_LOG_LEVEL = "ERROR", VALKEY_HOST = "<endpoint>", VALKEY_PORT = "6379" }
 ```
 
 Drop `--readonly` only for caches you are allowed to mutate.
 
 ### `memcached`
 
+Claude Code:
+
 ```bash
-claude mcp add --env FASTMCP_LOG_LEVEL=ERROR --env MEMCACHED_HOST=<endpoint> --env MEMCACHED_PORT=11211 memcached -- \
-  uvx awslabs.memcached-mcp-server@latest --readonly
+claude mcp add --scope user --env FASTMCP_LOG_LEVEL=ERROR --env 'MEMCACHED_HOST=<endpoint>' --env MEMCACHED_PORT=11211 memcached -- uvx awslabs.memcached-mcp-server@latest --readonly
+```
+
+Codex:
+
+```bash
+codex mcp add memcached --env FASTMCP_LOG_LEVEL=ERROR --env 'MEMCACHED_HOST=<endpoint>' --env MEMCACHED_PORT=11211 -- uvx awslabs.memcached-mcp-server@latest --readonly
+```
+
+Codex `config.toml`:
+
+```toml
+[mcp_servers.memcached]
+command = "uvx"
+args = ["awslabs.memcached-mcp-server@latest", "--readonly"]
+env = { FASTMCP_LOG_LEVEL = "ERROR", MEMCACHED_HOST = "<endpoint>", MEMCACHED_PORT = "11211" }
 ```
 
 Set `MEMCACHED_USE_TLS=true` for in-transit encryption.
 
 ### `mssql`
 
+Claude Code:
+
 ```bash
-claude mcp add --env FASTMCP_LOG_LEVEL=ERROR mssql -- \
-  uvx awslabs.mssql-mcp-server@latest --connection_method MSSQL_PASSWORD \
-  --instance_identifier <instance> --db_endpoint <endpoint> --region <region> --database master \
-  --secret_arn <read-only-user-secret-arn>
+claude mcp add --scope user --env FASTMCP_LOG_LEVEL=ERROR mssql -- uvx awslabs.mssql-mcp-server@latest --connection_method MSSQL_PASSWORD --instance_identifier '<instance>' --db_endpoint '<endpoint>' --region '<region>' --database master --secret_arn '<read-only-user-secret-arn>'
+```
+
+Codex:
+
+```bash
+codex mcp add mssql --env FASTMCP_LOG_LEVEL=ERROR -- uvx awslabs.mssql-mcp-server@latest --connection_method MSSQL_PASSWORD --instance_identifier '<instance>' --db_endpoint '<endpoint>' --region '<region>' --database master --secret_arn '<read-only-user-secret-arn>'
+```
+
+Codex `config.toml`:
+
+```toml
+[mcp_servers.mssql]
+command = "uvx"
+args = ["awslabs.mssql-mcp-server@latest", "--connection_method", "MSSQL_PASSWORD", "--instance_identifier", "<instance>", "--db_endpoint", "<endpoint>", "--region", "<region>", "--database", "master", "--secret_arn", "<read-only-user-secret-arn>"]
+env = { FASTMCP_LOG_LEVEL = "ERROR" }
 ```
 
 Bind a Secrets Manager secret for a read-only login with `--secret_arn`.
 
 ### `oracle`
 
+Claude Code:
+
 ```bash
-claude mcp add --env FASTMCP_LOG_LEVEL=ERROR oracle -- \
-  uvx awslabs.oracle-mcp-server@latest --connection_method ORACLE_PASSWORD \
-  --instance_identifier <instance> --db_endpoint <endpoint> --region <region> \
-  --database ORCL --service_name ORCL --secret_arn <read-only-user-secret-arn>
+claude mcp add --scope user --env FASTMCP_LOG_LEVEL=ERROR oracle -- uvx awslabs.oracle-mcp-server@latest --connection_method ORACLE_PASSWORD --instance_identifier '<instance>' --db_endpoint '<endpoint>' --region '<region>' --database ORCL --service_name ORCL --secret_arn '<read-only-user-secret-arn>'
+```
+
+Codex:
+
+```bash
+codex mcp add oracle --env FASTMCP_LOG_LEVEL=ERROR -- uvx awslabs.oracle-mcp-server@latest --connection_method ORACLE_PASSWORD --instance_identifier '<instance>' --db_endpoint '<endpoint>' --region '<region>' --database ORCL --service_name ORCL --secret_arn '<read-only-user-secret-arn>'
+```
+
+Codex `config.toml`:
+
+```toml
+[mcp_servers.oracle]
+command = "uvx"
+args = ["awslabs.oracle-mcp-server@latest", "--connection_method", "ORACLE_PASSWORD", "--instance_identifier", "<instance>", "--db_endpoint", "<endpoint>", "--region", "<region>", "--database", "ORCL", "--service_name", "ORCL", "--secret_arn", "<read-only-user-secret-arn>"]
+env = { FASTMCP_LOG_LEVEL = "ERROR" }
 ```
 
 Default TCPS port is 2484; see upstream docs for Autonomous Database and Exadata.
 
 ### `timestream-influxdb`
 
+Claude Code:
+
 ```bash
-claude mcp add --env FASTMCP_LOG_LEVEL=ERROR --env AWS_REGION=<region> \
-  --env INFLUXDB_URL=https://<endpoint>:8086 --env INFLUXDB_TOKEN=<read-only-token> --env INFLUXDB_ORG=<org> \
-  timestream-influxdb -- uvx awslabs.timestream-for-influxdb-mcp-server@latest
+claude mcp add --scope user --env FASTMCP_LOG_LEVEL=ERROR --env 'AWS_REGION=<region>' --env 'INFLUXDB_URL=https://<endpoint>:8086' --env 'INFLUXDB_TOKEN=<read-only-token>' --env 'INFLUXDB_ORG=<org>' timestream-influxdb -- uvx awslabs.timestream-for-influxdb-mcp-server@latest
+```
+
+Codex:
+
+```bash
+codex mcp add timestream-influxdb --env FASTMCP_LOG_LEVEL=ERROR --env 'AWS_REGION=<region>' --env 'INFLUXDB_URL=https://<endpoint>:8086' --env 'INFLUXDB_TOKEN=<read-only-token>' --env 'INFLUXDB_ORG=<org>' -- uvx awslabs.timestream-for-influxdb-mcp-server@latest
+```
+
+Codex `config.toml`:
+
+```toml
+[mcp_servers.timestream-influxdb]
+command = "uvx"
+args = ["awslabs.timestream-for-influxdb-mcp-server@latest"]
+env = { FASTMCP_LOG_LEVEL = "ERROR", AWS_REGION = "<region>", INFLUXDB_URL = "https://<endpoint>:8086", INFLUXDB_TOKEN = "<read-only-token>", INFLUXDB_ORG = "<org>" }
 ```
 
 Read-only unless `ALLOW_WRITE=true`.

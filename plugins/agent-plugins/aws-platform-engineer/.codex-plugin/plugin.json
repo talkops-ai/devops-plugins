@@ -20,5 +20,21 @@
     "lambda",
     "sqs",
     "kinesis"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "AWS Platform Engineer",
+    "shortDescription": "Provisions and operates the AWS runtime platform",
+    "longDescription": "Provisions and operates the AWS runtime platform: EC2 and Auto Scaling, EKS/ECS/Fargate containers, VPC and edge networking, storage, serverless compute, and messaging/streaming services.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/agent-plugins/aws-platform-engineer",
+    "brandColor": "#FF9900"
+  }
 }

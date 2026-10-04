@@ -18,5 +18,21 @@
     "secrets-manager",
     "cognito",
     "compliance"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "AWS Cloud Security Engineer",
+    "shortDescription": "Cloud security and identity engineer",
+    "longDescription": "Cloud security and identity engineer: IAM policies, roles and trust relationships, Security Hub/GuardDuty/Inspector/Macie findings, Secrets Manager safe-handling, Cognito authentication, and Well-Architected security posture checks.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/agent-plugins/aws-cloud-security-engineer",
+    "brandColor": "#FF9900"
+  }
 }

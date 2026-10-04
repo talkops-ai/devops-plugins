@@ -2,7 +2,7 @@
 
 # Handover: Vertical plugins
 
-Audit handbook for the **21 vertical plugins** in the `talkops-devops-plugins` marketplace (117 skill copies, 1 automated findings). Companion document: [agent-plugins.md](./agent-plugins.md). MCP server usage across both kinds: [mcp-server-coverage.md](../mcp-server-coverage.md).
+Audit handbook for the **21 vertical plugins** in the `talkops-devops-plugins` marketplace (117 skill copies, 0 automated findings). Companion document: [agent-plugins.md](./agent-plugins.md). MCP server usage across both kinds: [mcp-server-coverage.md](../mcp-server-coverage.md).
 
 Generated 2026-10-04.
 
@@ -53,19 +53,23 @@ plugins/vertical-plugins/<name>/
 | `toolkit` | `reference/agent-toolkit-for-aws/plugins` | https://github.com/aws/agent-toolkit-for-aws | `d00d03a (2026-10-03)` |
 | `agent-plugins` | `reference/agent-plugins/plugins` | https://github.com/awslabs/agent-plugins | `e32b05b (2026-10-02)` |
 | `toolkit-skills` | `reference/agent-toolkit-for-aws/skills` | https://github.com/aws/agent-toolkit-for-aws | `d00d03a (2026-10-03)` |
+| `hashicorp` | `reference/hashicorp-agent-skills/plugins` | https://github.com/hashicorp/agent-skills | `f706481 (2026-09-28)` |
+| `talkops` | `src` | https://github.com/talkops-ai/devops-plugins | `a64b3bc (2026-10-04)` |
 | MCP servers | `reference/mcp/src` | https://github.com/awslabs/mcp | `b7d641a7 (2026-10-03)` |
 
 ## Cross-cutting decisions
 
 - **Marketplace model.** The repository mirrors Anthropic's financial-services marketplace: one `.claude-plugin/marketplace.json` plus `plugins/agent-plugins/`, `plugins/vertical-plugins/`, and `plugins/partner-built/` (empty for now).
 - **Single source of truth.** `scripts/aws-plugin-map.json` declares every plugin. `scripts/sync_aws_plugins.py` copies upstream content and generates manifests, `.mcp.json`, hooks, `CONNECTORS.md`, and READMEs. Only `agents/<name>.md` (agent plugins) and `commands/*.md` (vertical plugins) are hand-authored, and the sync never touches them.
+- **TalkOps-authored sources.** Files that are not from an upstream (the `aws-mutation-gate` hook) live under `src/` and are copied by the sync through the `talkops` source, the same way as upstream content.
 - **Copy, not symlink.** `reference/` is gitignored, so upstream content is copied into each plugin. The upstream commits used for this snapshot are listed in the Sources table; re-sync after pulling upstream.
 - **Rewrites fail loudly.** Text rewrites applied to upstream files (renamed plugins, local-first routing) abort the sync if their anchor text disappears upstream, so drift cannot pass silently.
 - **No `"disabled"` MCP entries.** Claude Code ignores `"disabled": true` in a plugin's `.mcp.json` and starts the server anyway. Servers that need a connection target (endpoint, host, secret) are therefore documented as *connectors* in `CONNECTORS.md` instead of being bundled. The sync and validator reject `"disabled"`.
-- **Read-only by default.** Bundled MCP servers run without write flags wherever the server supports a read-only mode; the *Mode* column says `no write flags` for these. Exceptions are called out per plugin under *Automated findings*. The managed AWS MCP server (`aws-mcp`) is different: it has no read-only switch and can run any AWS API call (including mutations) that the caller's IAM permissions allow, so IAM is its real boundary.
-- **Credentials and region.** No `AWS_PROFILE` is hard-coded; credentials come from the host environment (profile, SSO, or instance role). Servers that take a region use `AWS_REGION=${AWS_REGION:-us-east-1}`.
-- **Claude Code only.** Only `.claude-plugin` manifests are shipped. Codex, Kiro, and other host manifests from upstream are excluded through the map's `exclude` list.
+- **Read-only by default.** Bundled MCP servers run without write flags wherever the server supports a read-only mode; the *Mode* column says `no write flags` for these. Exceptions are called out per plugin under *Automated findings*. The managed AWS MCP server (`aws-mcp`) can run any AWS API call the caller's IAM permissions allow, unless its proxy runs with `--read-only`. That flag drops every tool not annotated read-only (`aws___call_aws`, `aws___run_script`, `aws___get_presigned_url`, `aws___recommend`, and others). Agents marked `aws_read_only` in the map (SRE, FinOps, Solutions Architect) use that variant.
+- **Credentials and region.** No `AWS_PROFILE` is hard-coded; credentials come from the host environment (profile, SSO, or instance role). In `.mcp.json`, servers that take a region use `AWS_REGION=${AWS_REGION:-us-east-1}`. The portable `mcp.json` can expand only `${PLUGIN_ROOT}`/`${PLUGIN_DATA}`, so that default is dropped there and the host environment supplies the region. Remote servers that need env expansion in the URL or headers (`aws-devops-agent`) are omitted from `mcp.json`.
+- **Multi-host packaging.** Each plugin ships three layers generated from the same map: the Claude Code layout (`.claude-plugin/plugin.json`, `.mcp.json`, `agents/`, `hooks/hooks.json`); the portable [Agent Plugins 1.0.0](https://agent-plugins.org) layout (`plugin.json`, `mcp.json`, `skills/`), which Codex, Cursor, Copilot, and other adopters read; and the Codex overlay (`.codex-plugin/plugin.json` with the Plugins Directory `interface` card, skills, MCP, and hooks paths). The Codex repo marketplace is `.agents/plugins/marketplace.json`. Codex does not read a root `.codex-plugin/marketplace.json`, so none is shipped. Host support: **Claude Code** runs agents, skills, commands, hooks, and MCP. **Codex** runs skills, MCP, and hooks (after the user trusts them); plugins can't bundle agents, so each agent plugin also ships `codex/agents/<name>.toml` for the user to copy into `~/.codex/agents/`. **Other Agent Plugins hosts** get skills and MCP. Claude-only features (sub-agent tool allowlists, slash commands, prompt hooks) are enhancements, never the only safety mechanism.
 - **MCP tool naming.** Claude Code exposes plugin MCP tools as `mcp__plugin_<plugin>_<server>__<tool>`. User-added connectors are `mcp__<key>__<tool>`.
+- **Layered read-only enforcement.** (1) Server side: `--read-only` on `aws-mcp` for read-only agents, and read-only defaults on the other servers; this works on every host. (2) The `aws-mutation-gate` PreToolUse hook (`src/hooks/aws-mutation-gate.py`, bundled in every agent plugin) classifies mutating `aws`, `terraform`/`tofu`, `cdk`, `sam`, `eksctl`, `kubectl`, `helm`, `copilot`, and `amplify` commands and AWS MCP calls. In Claude Code it denies them for read-only agents and asks for confirmation otherwise; in Codex, whose hook input has no agent identity, it adds a warning to the model context and Codex's approval policy applies. `TALKOPS_AWS_MUTATION_GATE=off|warn|ask|deny` overrides it. (3) IAM: read-only roles, as described in `docs/iam-guardrails.md`, are the real boundary.
 - **Upstream config bugs fixed here.** `iam` no longer passes `--readonly` (the published server rejects it and is read-only by default). `wa-security` uses the correct executable `awslabs.well-architected-security-mcp-server`. `ecs` runs with `--with fastmcp<4` because the published server breaks on fastmcp 4.
 - **Startup smoke test.** Every unique stdio server was launched and completed an MCP `initialize` handshake. A server that rejects a flag fails at startup, so this also validates the flags. `prometheus` and the two Spark proxies could not be confirmed because the test machine's AWS credentials were invalid.
 - **Verticals attach to the main agent.** There is no sub-agent and no `tools:` allowlist. Skills activate from their descriptions, commands are invoked as `/<plugin>:<command>`, and every bundled MCP server is available to the main agent once the plugin is enabled.
@@ -77,13 +81,16 @@ plugins/vertical-plugins/<name>/
 
 ## Known gaps and open questions
 
-- **IAM is the boundary for `aws-mcp`.** Every vertical and most agents bundle `aws-mcp`, which can perform mutating AWS API calls. Agents and commands gate changes behind approval, but recommend that users run with least-privilege or read-only IAM roles by default.
+- **IAM is the boundary for `aws-mcp`.** Every vertical and most agents bundle the full `aws-mcp`, which can perform mutating AWS API calls. Agents, commands, and the mutation-gate hook gate changes behind approval, but users should still run with least-privilege or read-only IAM roles by default (see `docs/iam-guardrails.md`).
 - **Unpinned servers.** awslabs servers run as `@latest`, while the managed AWS MCP proxy is pinned (`mcp-proxy-for-aws-cli==1.7.0`). Decide whether to pin versions for reproducibility and supply-chain review.
 - **Region-pinned endpoints.** The managed AWS MCP endpoint and both Spark proxies hard-code `us-east-1` in the URL and ignore `AWS_REGION`. Confirm this is acceptable for non-US accounts.
 - **Credential-dependent servers unverified.** `prometheus`, `spark-troubleshooting`, and `spark-upgrade` still need a handshake test with valid AWS credentials.
 - **Structural validation only.** `scripts/validate_plugins.py` checks manifests, frontmatter, links, tool allowlists, and connector bindings. It does not judge the accuracy of skill content, which needs SME review.
-- **Licensing.** All upstream content is Apache-2.0 and attributed in `NOTICE`. Legal should confirm the attribution format before publishing.
-- **Partner-built plugins.** `plugins/partner-built/` is empty. Candidates noted in the MCP coverage doc (for example the generic OpenAPI bridge) are not yet planned.
+- **Licensing.** Upstream AWS content is Apache-2.0. The HashiCorp Terraform skills in the `terraform` partner plugin are MPL-2.0 (file-level copyleft: keep them unmodified, or publish modifications to those files). Both are attributed in `NOTICE`. Legal should confirm the attribution format before publishing.
+- **Partner-built plugins.** `plugins/partner-built/terraform` ships all 16 HashiCorp Terraform skills unmodified (MPL-2.0) from the same map (`"kind": "partner"`), with the Terraform registry MCP server as a connector. It is the only Terraform offering: no TalkOps agent covers Terraform, so Terraform work runs in the main agent without a specialist's approval gates (the hooks are AWS-plugin only). Decide whether a Terraform agent plugin is needed later. The handbooks cover only the AWS agent and vertical plugins. Other candidates from the MCP coverage doc (for example the generic OpenAPI bridge) are not yet planned.
+- **Codex not smoke-tested.** Codex layouts follow the published spec and the AWS toolkit's layout, and are validated structurally, but no `codex` CLI was available to install them end to end. Check `codex plugin marketplace add`, hook trust prompts, and MCP startup before announcing Codex support.
+- **Codex MCP environment.** Codex starts stdio MCP servers with a minimal environment, so `AWS_PROFILE`/`AWS_REGION` may not reach them. READMEs tell users to set them per server in `~/.codex/config.toml`; confirm this and consider documenting a shell profile or SSO default.
+- **Prompt hooks are Claude-only.** `dsql-verify` (aws-database-engineer, aws-databases) is a `prompt` hook. Codex currently runs only `command` hooks, so it is skipped there.
 - **Commands need SME review.** The 63 commands are new content; review each for accuracy, sensible defaults, and the safety gate.
 - **No agent counterpart.** aws-marketplace-seller, aws-end-user-computing, and aws-quantum-computing exist only as verticals. Decide whether they need agent plugins.
 - **Duplicate `aws-mcp`.** Consider a shared base plugin (for example aws-essentials) that owns `aws-mcp`, with other verticals depending on it, once Claude Code supports plugin dependencies.
@@ -103,7 +110,7 @@ plugins/vertical-plugins/<name>/
 | [`aws-messaging-and-streaming`](#aws-messaging-and-streaming) | messaging | 8 | 4 | 3 | 0 | — | aws-platform-engineer, aws-data-engineer | 0 |
 | [`aws-analytics`](#aws-analytics) | data-analytics | 19 | 5 | 6 | 0 | — | aws-data-engineer | 0 |
 | [`aws-observability`](#aws-observability) | observability | 6 | 4 | 5 | 0 | — | aws-sre-agent | 0 |
-| [`aws-security-identity`](#aws-security-identity) | security | 5 | 5 | 4 | 0 | secret-safety | aws-cloud-security-engineer, aws-devsecops-agent | 1 |
+| [`aws-security-identity`](#aws-security-identity) | security | 5 | 4 | 3 | 0 | secret-safety | aws-cloud-security-engineer, aws-devsecops-agent | 0 |
 | [`aws-resilience`](#aws-resilience) | resilience | 8 | 3 | 2 | 0 | — | aws-sre-agent | 0 |
 | [`aws-cost-optimization`](#aws-cost-optimization) | finops | 1 | 3 | 3 | 0 | — | aws-finops-agent | 0 |
 | [`aws-ai-ml`](#aws-ai-ml) | ai-ml | 2 | 2 | 2 | 0 | — | aws-sagemaker-engineer, aws-agentcore-engineer, aws-solutions-architect | 0 |
@@ -146,7 +153,6 @@ Every distinct launch configuration, once. Plugin sections refer back here.
 | `redshift` | `redshift-mcp-server` | `uvx awslabs.redshift-mcp-server@latest` | `FASTMCP_LOG_LEVEL=ERROR`<br>`AWS_DEFAULT_REGION=${AWS_REGION:-us-east-1}` | no write flags<br>unpinned `@latest` | [`aws-analytics`](#aws-analytics) |
 | `s3tables` | `s3-tables-mcp-server` | `uvx awslabs.s3-tables-mcp-server@latest` | `FASTMCP_LOG_LEVEL=ERROR`<br>`AWS_REGION=${AWS_REGION:-us-east-1}` | no write flags<br>unpinned `@latest` | [`aws-analytics`](#aws-analytics) |
 | `sagemaker` | `sagemaker-ai-mcp-server` | `uvx awslabs.sagemaker-ai-mcp-server@latest` | `FASTMCP_LOG_LEVEL=ERROR`<br>`AWS_REGION=${AWS_REGION:-us-east-1}` | no write flags<br>unpinned `@latest` | [`aws-ai-ml`](#aws-ai-ml) |
-| `security-agent` | `security-agent-mcp-server` | `uvx awslabs.security-agent-mcp-server@latest` | `FASTMCP_LOG_LEVEL=ERROR`<br>`AWS_REGION=${AWS_REGION:-us-east-1}` | ⚠️ no read-only mode<br>unpinned `@latest` | [`aws-security-identity`](#aws-security-identity) |
 | `sns-sqs` | `amazon-sns-sqs-mcp-server` | `uvx awslabs.amazon-sns-sqs-mcp-server@latest` | `FASTMCP_LOG_LEVEL=ERROR`<br>`AWS_REGION=${AWS_REGION:-us-east-1}` | no write flags<br>unpinned `@latest` | [`aws-messaging-and-streaming`](#aws-messaging-and-streaming) |
 | `spark-troubleshooting` | `sagemaker-unified-studio-spark-troubleshooting-mcp-server` | `uvx mcp-proxy-for-aws@latest https://sagemaker-unified-studio-mcp.us-east-1.api.aws/spark-troubleshooting/mcp --service sagemaker-unified-studio-mcp --region us-east-1 --read-timeout 180` | — | no write flags<br>unpinned `@latest`<br>region hard-coded `us-east-1` | [`aws-analytics`](#aws-analytics) |
 | `spark-upgrade` | `sagemaker-unified-studio-spark-upgrade-mcp-server` | `uvx mcp-proxy-for-aws@latest https://sagemaker-unified-studio-mcp.us-east-1.api.aws/spark-upgrade/mcp --service sagemaker-unified-studio-mcp --region us-east-1 --read-timeout 180` | — | no write flags<br>unpinned `@latest`<br>region hard-coded `us-east-1` | [`aws-analytics`](#aws-analytics) |
@@ -460,7 +466,7 @@ Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claud
 |---|---|---|---|---|
 | `aws-mcp` | `uvx mcp-proxy-for-aws-cli==1.7.0 https://aws-mcp.us-east-1.api.aws/mcp --skip-auth --metadata INSTALL_SOURCE=agent-toolkit-core` | any AWS API call, bounded by IAM<br>pinned<br>region hard-coded `us-east-1` | `mcp__plugin_aws-containers_aws-mcp__*` | Managed AWS MCP Server via the toolkit's pinned proxy (aws___call_aws, aws___search_documentation, aws___retrieve_skill, ...). |
 | `eks` | `uvx awslabs.eks-mcp-server@latest` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-containers_eks__*` | Read-only by default. Add --allow-write / --allow-sensitive-data-access to enable mutations and pod logs/secrets. |
-| `ecs` | `uvx --from awslabs-ecs-mcp-server@latest --with fastmcp<4 ecs-mcp-server` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-containers_ecs__*` | Read-only by default. Set ALLOW_WRITE / ALLOW_SENSITIVE_DATA to true to enable mutations. fastmcp<4 works around an upstream incompatibility (add_tool_transformation was removed in fastmcp 4). |
+| `ecs` | `uvx --from awslabs-ecs-mcp-server@latest --with fastmcp<4 ecs-mcp-server` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-containers_ecs__*` | Read-only by default. Set ALLOW_WRITE / ALLOW_SENSITIVE_DATA to true to enable mutations. fastmcp<4 pin: upstream needs fastmcp>=3.2 and is not yet compatible with fastmcp 4. |
 | `finch` | `uvx awslabs.finch-mcp-server@latest` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-containers_finch__*` | Builds and pushes container images with the local Finch CLI. ECR repository creation is off by default (add --enable-aws-resource-write). |
 
 ### Design notes
@@ -1135,14 +1141,13 @@ Excluded from wildcard sources: `developing-applications-on-managed-service-for-
 - `toolkit/aws-core`: https://github.com/aws/agent-toolkit-for-aws/tree/main/plugins/aws-core
 - `toolkit-skills/specialized-skills/security-and-identity-skills`: https://github.com/aws/agent-toolkit-for-aws/tree/main/skills/specialized-skills/security-and-identity-skills
 
-### Commands (5, hand-authored)
+### Commands (4, hand-authored)
 
 | Command | Arguments | Description | Skills used | MCP named | Safety gate |
 |---|---|---|---|---|---|
 | [`/aws-security-identity:access-denied`](../../plugins/vertical-plugins/aws-security-identity/commands/access-denied.md) | `<principal> <action> <resource>` | Explain why an AWS API call was denied | `aws-iam` | `iam` | ✅ |
 | [`/aws-security-identity:create-secret`](../../plugins/vertical-plugins/aws-security-identity/commands/create-secret.md) | `<secret purpose>` | Create a secret in Secrets Manager the right way | `aws-secrets-manager`, `creating-secrets-using-best-practices` | — | ✅ |
 | [`/aws-security-identity:least-privilege-policy`](../../plugins/vertical-plugins/aws-security-identity/commands/least-privilege-policy.md) | `<code path, Terraform plan, or description>` | Generate a least-privilege IAM policy | `aws-iam` | — | ✅ |
-| [`/aws-security-identity:scan-code`](../../plugins/vertical-plugins/aws-security-identity/commands/scan-code.md) | `[path or git ref for diff scan]` | Run an AWS Security Agent code scan on the repository | — | `security-agent` | ✅ |
 | [`/aws-security-identity:security-findings`](../../plugins/vertical-plugins/aws-security-identity/commands/security-findings.md) | `[severity or resource filter]` | Triage Security Hub, GuardDuty, and Inspector findings | `aws-security` | `wa-security` | ✅ |
 
 **Skill overlap with [`aws-cloud-security-engineer`](./agent-plugins.md#aws-cloud-security-engineer)**: 5 shared, 0 only here, 4 only in the agent.
@@ -1166,9 +1171,8 @@ Excluded from wildcard sources: `developing-applications-on-managed-service-for-
 | Server | Launch | Mode | Tool names | Notes |
 |---|---|---|---|---|
 | `aws-mcp` | `uvx mcp-proxy-for-aws-cli==1.7.0 https://aws-mcp.us-east-1.api.aws/mcp --skip-auth --metadata INSTALL_SOURCE=agent-toolkit-core` | any AWS API call, bounded by IAM<br>pinned<br>region hard-coded `us-east-1` | `mcp__plugin_aws-security-identity_aws-mcp__*` | Managed AWS MCP Server via the toolkit's pinned proxy (aws___call_aws, aws___search_documentation, aws___retrieve_skill, ...). |
-| `iam` | `uvx awslabs.iam-mcp-server@latest` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-security-identity_iam__*` | Read-only by default (the published server has no --readonly flag). Add --allow-write to enable IAM mutations. |
+| `iam` | `uvx awslabs.iam-mcp-server@latest` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-security-identity_iam__*` | Read-only by default (the server only mutates with --allow-write). Add --allow-write to allow IAM mutations. |
 | `wa-security` | `uvx awslabs.well-architected-security-mcp-server@latest` | no write flags<br>unpinned `@latest` | `mcp__plugin_aws-security-identity_wa-security__*` | — |
-| `security-agent` | `uvx awslabs.security-agent-mcp-server@latest` | ⚠️ no read-only mode<br>unpinned `@latest` | `mcp__plugin_aws-security-identity_security-agent__*` | AWS Security Agent scans and pentests. No read-only mode: first use may provision an agent space and IAM role, so confirm before running. |
 
 ### Hooks
 
@@ -1192,7 +1196,7 @@ Hook files: `hooks/secret-safety.py` (from `toolkit/aws-core/com.anthropic.claud
 
 ### Automated findings
 
-- MCP `security-agent`: no read-only mode.
+- None.
 
 ### Audit checklist
 

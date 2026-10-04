@@ -6,6 +6,7 @@
         "mcp-proxy-for-aws-cli==1.7.0",
         "https://aws-mcp.us-east-1.api.aws/mcp",
         "--skip-auth",
+        "--read-only",
         "--metadata",
         "INSTALL_SOURCE=agent-toolkit-core"
       ]

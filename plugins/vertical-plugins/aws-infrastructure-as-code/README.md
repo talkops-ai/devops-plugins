@@ -4,12 +4,19 @@
 
 Author, validate, deploy, and troubleshoot AWS infrastructure as code directly in the main agent: CDK, CloudFormation (cfn-lint/cfn-guard), AWS Blocks, CodePipeline/CodeBuild/CodeDeploy CI/CD, and guided launches.
 
+## Install
+
+| Host | How |
+|---|---|
+| Claude Code | `/plugin marketplace add talkops-ai/devops-plugins`, then `/plugin install aws-infrastructure-as-code@talkops-devops-plugins` |
+| Codex | `codex plugin marketplace add talkops-ai/devops-plugins`, then install from the Plugins Directory |
+| Other Agent Plugins hosts | Load this directory; [`plugin.json`](./plugin.json), `skills/`, and [`mcp.json`](./mcp.json) follow the portable [Agent Plugins](https://agent-plugins.org) format |
+
 ## How it works
 
 This is a **vertical plugin**: its skills, commands, and MCP servers attach directly to your main agent, with no sub-agent hand-off. Prefer the [`aws-iac-engineer`](../../agent-plugins/aws-iac-engineer) or [`aws-deployment-agent`](../../agent-plugins/aws-deployment-agent) agent plugin when you want an isolated specialist instead.
 
-- Install: `claude plugin install aws-infrastructure-as-code@talkops-devops-plugins`
-- Skills activate from their descriptions; invoke one explicitly with `/aws-infrastructure-as-code:<skill>`
+- Skills activate from their descriptions; in Claude Code invoke one explicitly with `/aws-infrastructure-as-code:<skill>`
 
 ## Skills
 
@@ -32,17 +39,17 @@ This is a **vertical plugin**: its skills, commands, and MCP servers attach dire
 
 ## MCP servers
 
-Declared in [`.mcp.json`](./.mcp.json); started when the plugin is enabled and available to the main agent.
+Declared in [`.mcp.json`](./.mcp.json) (Claude Code) and [`mcp.json`](./mcp.json) (portable); started when the plugin is enabled and available to the main agent.
 
-| Server | Transport | Launch | Tool names | Notes |
+| Server | Transport | Launch | Claude Code tool names | Notes |
 |---|---|---|---|---|
 | `aws-mcp` | stdio | `uvx mcp-proxy-for-aws-cli==1.7.0` `--skip-auth --metadata` | `mcp__plugin_aws-infrastructure-as-code_aws-mcp__*` | Managed AWS MCP Server via the toolkit's pinned proxy (aws___call_aws, aws___search_documentation, aws___retrieve_skill, ...). |
 | `awsiac` | stdio | `uvx awslabs.aws-iac-mcp-server@latest` | `mcp__plugin_aws-infrastructure-as-code_awsiac__*` |  |
 
-AWS credentials are inherited from the host environment (`AWS_PROFILE`, SSO, or instance role). `AWS_REGION` defaults to `us-east-1` when unset. Toggle any server off per project in `/mcp`.
+AWS credentials are inherited from the host environment (`AWS_PROFILE`, SSO, or instance role). In Claude Code `AWS_REGION` defaults to `us-east-1` when unset; the portable `mcp.json` can't express that default, so set `AWS_REGION` in your environment on other hosts. Codex starts MCP servers with a minimal environment: if a server can't see your profile, set `AWS_PROFILE`/`AWS_REGION` for it in `~/.codex/config.toml`.
 
 ## Upstream
 
-Derived from the following Apache-2.0 sources (see the repository `NOTICE`):
+Derived from the following open-source sources (see the repository `NOTICE`):
 
-- [`core-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws)
+- [`core-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws, Apache-2.0)

@@ -16,5 +16,21 @@
     "dotnet",
     "mainframe",
     "java-upgrade"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "AWS Modernization Agent",
+    "shortDescription": "Migrates and modernizes codebases with AWS Transform",
+    "longDescription": "Migrates and modernizes codebases with AWS Transform: .NET Framework to .NET 8/10, mainframe COBOL to Java, VMware to EC2, SQL Server to Aurora, language and AWS SDK upgrades, and continuous tech-debt remediation.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/agent-plugins/aws-modernization-agent",
+    "brandColor": "#FF9900"
+  }
 }

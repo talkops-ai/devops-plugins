@@ -15,5 +15,21 @@
     "boto3",
     "aws-sdk",
     "documentation"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "AWS Essentials",
+    "shortDescription": "Foundation skills for any AWS work on the main agent",
+    "longDescription": "Foundation skills for any AWS work on the main agent: sign-in and credential setup, correct AWS SDK usage for Python (boto3), JavaScript v3, and Swift, plus the managed AWS MCP server and AWS Knowledge documentation search.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/vertical-plugins/aws-essentials",
+    "brandColor": "#FF9900"
+  }
 }

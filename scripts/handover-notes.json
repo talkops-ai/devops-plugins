@@ -1,0 +1,201 @@
+{
+  "$comment": "Curated context for docs/handover/*.md, rendered by scripts/render_handover_docs.py. Everything else in those documents is computed from scripts/aws-plugin-map.json and the synced plugin directories. Edit this file for rationale and known gaps, then re-run the renderer.",
+  "common": {
+    "decisions": [
+      "**Marketplace model.** The repository mirrors Anthropic's financial-services marketplace: one `.claude-plugin/marketplace.json` plus `plugins/agent-plugins/`, `plugins/vertical-plugins/`, and `plugins/partner-built/` (empty for now).",
+      "**Single source of truth.** `scripts/aws-plugin-map.json` declares every plugin. `scripts/sync_aws_plugins.py` copies upstream content and generates manifests, `.mcp.json`, hooks, `CONNECTORS.md`, and READMEs. Only `agents/<name>.md` (agent plugins) and `commands/*.md` (vertical plugins) are hand-authored, and the sync never touches them.",
+      "**TalkOps-authored sources.** Files that are not from an upstream (the `aws-mutation-gate` hook) live under `src/` and are copied by the sync through the `talkops` source, the same way as upstream content.",
+      "**Copy, not symlink.** `reference/` is gitignored, so upstream content is copied into each plugin. The upstream commits used for this snapshot are listed in the Sources table; re-sync after pulling upstream.",
+      "**Rewrites fail loudly.** Text rewrites applied to upstream files (renamed plugins, local-first routing) abort the sync if their anchor text disappears upstream, so drift cannot pass silently.",
+      "**No `\"disabled\"` MCP entries.** Claude Code ignores `\"disabled\": true` in a plugin's `.mcp.json` and starts the server anyway. Servers that need a connection target (endpoint, host, secret) are therefore documented as *connectors* in `CONNECTORS.md` instead of being bundled. The sync and validator reject `\"disabled\"`.",
+      "**Read-only by default.** Bundled MCP servers run without write flags wherever the server supports a read-only mode; the *Mode* column says `no write flags` for these. Exceptions are called out per plugin under *Automated findings*. The managed AWS MCP server (`aws-mcp`) can run any AWS API call the caller's IAM permissions allow, unless its proxy runs with `--read-only`. That flag drops every tool not annotated read-only (`aws___call_aws`, `aws___run_script`, `aws___get_presigned_url`, `aws___recommend`, and others). Agents marked `aws_read_only` in the map (SRE, FinOps, Solutions Architect) use that variant.",
+      "**Credentials and region.** No `AWS_PROFILE` is hard-coded; credentials come from the host environment (profile, SSO, or instance role). In `.mcp.json`, servers that take a region use `AWS_REGION=${AWS_REGION:-us-east-1}`. The portable `mcp.json` can expand only `${PLUGIN_ROOT}`/`${PLUGIN_DATA}`, so that default is dropped there and the host environment supplies the region. Remote servers that need env expansion in the URL or headers (`aws-devops-agent`) are omitted from `mcp.json`.",
+      "**Multi-host packaging.** Each plugin ships three layers generated from the same map: the Claude Code layout (`.claude-plugin/plugin.json`, `.mcp.json`, `agents/`, `hooks/hooks.json`); the portable [Agent Plugins 1.0.0](https://agent-plugins.org) layout (`plugin.json`, `mcp.json`, `skills/`), which Codex, Cursor, Copilot, and other adopters read; and the Codex overlay (`.codex-plugin/plugin.json` with the Plugins Directory `interface` card, skills, MCP, and hooks paths). The Codex repo marketplace is `.agents/plugins/marketplace.json`. Codex does not read a root `.codex-plugin/marketplace.json`, so none is shipped. Host support: **Claude Code** runs agents, skills, commands, hooks, and MCP. **Codex** runs skills, MCP, and hooks (after the user trusts them); plugins can't bundle agents, so each agent plugin also ships `codex/agents/<name>.toml` for the user to copy into `~/.codex/agents/`. **Other Agent Plugins hosts** get skills and MCP. Claude-only features (sub-agent tool allowlists, slash commands, prompt hooks) are enhancements, never the only safety mechanism.",
+      "**MCP tool naming.** Claude Code exposes plugin MCP tools as `mcp__plugin_<plugin>_<server>__<tool>`. User-added connectors are `mcp__<key>__<tool>`.",
+      "**Layered read-only enforcement.** (1) Server side: `--read-only` on `aws-mcp` for read-only agents, and read-only defaults on the other servers; this works on every host. (2) The `aws-mutation-gate` PreToolUse hook (`src/hooks/aws-mutation-gate.py`, bundled in every agent plugin) classifies mutating `aws`, `terraform`/`tofu`, `cdk`, `sam`, `eksctl`, `kubectl`, `helm`, `copilot`, and `amplify` commands and AWS MCP calls. In Claude Code it denies them for read-only agents and asks for confirmation otherwise; in Codex, whose hook input has no agent identity, it adds a warning to the model context and Codex's approval policy applies. `TALKOPS_AWS_MUTATION_GATE=off|warn|ask|deny` overrides it. (3) IAM: read-only roles, as described in `docs/iam-guardrails.md`, are the real boundary.",
+      "**Upstream config bugs fixed here.** `iam` no longer passes `--readonly` (the published server rejects it and is read-only by default). `wa-security` uses the correct executable `awslabs.well-architected-security-mcp-server`. `ecs` runs with `--with fastmcp<4` because the published server breaks on fastmcp 4.",
+      "**Startup smoke test.** Every unique stdio server was launched and completed an MCP `initialize` handshake. A server that rejects a flag fails at startup, so this also validates the flags. `prometheus` and the two Spark proxies could not be confirmed because the test machine's AWS credentials were invalid."
+    ],
+    "gaps": [
+      "**IAM is the boundary for `aws-mcp`.** Every vertical and most agents bundle the full `aws-mcp`, which can perform mutating AWS API calls. Agents, commands, and the mutation-gate hook gate changes behind approval, but users should still run with least-privilege or read-only IAM roles by default (see `docs/iam-guardrails.md`).",
+      "**Unpinned servers.** awslabs servers run as `@latest`, while the managed AWS MCP proxy is pinned (`mcp-proxy-for-aws-cli==1.7.0`). Decide whether to pin versions for reproducibility and supply-chain review.",
+      "**Region-pinned endpoints.** The managed AWS MCP endpoint and both Spark proxies hard-code `us-east-1` in the URL and ignore `AWS_REGION`. Confirm this is acceptable for non-US accounts.",
+      "**Credential-dependent servers unverified.** `prometheus`, `spark-troubleshooting`, and `spark-upgrade` still need a handshake test with valid AWS credentials.",
+      "**Structural validation only.** `scripts/validate_plugins.py` checks manifests, frontmatter, links, tool allowlists, and connector bindings. It does not judge the accuracy of skill content, which needs SME review.",
+      "**Licensing.** Upstream AWS content is Apache-2.0. The HashiCorp Terraform skills in the `terraform` partner plugin are MPL-2.0 (file-level copyleft: keep them unmodified, or publish modifications to those files). Both are attributed in `NOTICE`. Legal should confirm the attribution format before publishing.",
+      "**Partner-built plugins.** `plugins/partner-built/terraform` ships all 16 HashiCorp Terraform skills unmodified (MPL-2.0) from the same map (`\"kind\": \"partner\"`), with the Terraform registry MCP server as a connector. It is the only Terraform offering: no TalkOps agent covers Terraform, so Terraform work runs in the main agent without a specialist's approval gates (the hooks are AWS-plugin only). Decide whether a Terraform agent plugin is needed later. The handbooks cover only the AWS agent and vertical plugins. Other candidates from the MCP coverage doc (for example the generic OpenAPI bridge) are not yet planned.",
+      "**Codex not smoke-tested.** Codex layouts follow the published spec and the AWS toolkit's layout, and are validated structurally, but no `codex` CLI was available to install them end to end. Check `codex plugin marketplace add`, hook trust prompts, and MCP startup before announcing Codex support.",
+      "**Codex MCP environment.** Codex starts stdio MCP servers with a minimal environment, so `AWS_PROFILE`/`AWS_REGION` may not reach them. READMEs tell users to set them per server in `~/.codex/config.toml`; confirm this and consider documenting a shell profile or SSO default.",
+      "**Prompt hooks are Claude-only.** `dsql-verify` (aws-database-engineer, aws-databases) is a `prompt` hook. Codex currently runs only `command` hooks, so it is skipped there."
+    ]
+  },
+  "agent": {
+    "decisions": [
+      "**Agent plugins bind everything to one sub-agent.** Skills, commands, hooks, and MCP servers are reached through the primary agent in `agents/<name>.md`, which the host spawns as a dynamic sub-agent. The agent's `tools:` allowlist is the binding: an MCP server the agent does not allowlist is unusable by it.",
+      "**Required agent sections.** Every agent file has *What you produce*, *Workflow*, *MCP servers bound to this agent*, *Hand-offs*, *Skills this agent uses*, and *Guardrails*. The validator checks that every listed skill is bundled and every MCP server is allowlisted.",
+      "**Sub-agents cannot ask mid-run.** Guardrails instruct agents to return missing inputs to the caller as a question list instead of pausing.",
+      "**Phase 2 enrichment.** Specialized toolkit skills were added to the matching agents (platform, SRE, security, database, data, serverless, modernization), and newly mapped MCP servers were bound to agents as well as verticals.",
+      "**Security Agent placement.** The `security-agent` MCP server is bound to `aws-devsecops-agent` only, because the agent descriptions assign code scans, threat models, and pentests to devsecops. `aws-cloud-security-engineer` hands those off.",
+      "**Codex custom agents.** Codex plugins can't contain agents. The sync renders `codex/agents/<name>.toml` (`name`, `description`, `developer_instructions`) from each hand-authored `agents/<name>.md`, adding a short preamble that maps Claude tool names to Codex. Worker agents (aws-startup-advisor) are not rendered. Read-only agents get an explicit read-only instruction, because Codex has no per-agent tool allowlist; `sandbox_mode` is deliberately left unset, since `read-only` would also block local file writes and shell network access."
+    ],
+    "gaps": [
+      "**Telemetry in aws-startup-advisor.** The upstream plugin ships consent and skill-invocation telemetry hooks (`scripts/telemetry/...`). These run on SessionStart and after every Skill call. Review against TalkOps privacy policy, and remove them through the map if needed.",
+      "**Write-enabled serverless server.** `aws-serverless-engineer` overrides `aws-serverless-mcp` with `--allow-write`, matching the upstream aws-serverless plugin so the agent can deploy SAM apps. Confirm this is wanted. The vertical uses the read-only catalog entry.",
+      "**DevOps Agent token.** `aws-devsecops-agent` connects to the managed AWS DevOps Agent over HTTP with `DEVOPS_AGENT_TOKEN`. Without it the server fails to connect; document the onboarding step for users.",
+      "**Overlap when installing both kinds.** If a user installs an agent plugin and its matching vertical, the same skills load twice (once in the main agent, once in the sub-agent). This is harmless but adds context; it is noted in the READMEs.",
+      "**`awssupport` in a read-only agent.** `aws-sre-agent` is marked `aws_read_only`, but its `awssupport` server can create and update support cases. The prompt requires user confirmation; decide whether case creation should move to a write-capable agent."
+    ]
+  },
+  "vertical": {
+    "decisions": [
+      "**Verticals attach to the main agent.** There is no sub-agent and no `tools:` allowlist. Skills activate from their descriptions, commands are invoked as `/<plugin>:<command>`, and every bundled MCP server is available to the main agent once the plugin is enabled.",
+      "**Grouped by domain.** Toolkit `core-skills` and `specialized-skills/*` were merged into 21 domain plugins instead of one plugin per upstream folder. Each vertical lists the agent plugin(s) to use instead when an isolated specialist is preferred.",
+      "**Hand-authored commands.** 63 commands (about three per vertical) were written for TalkOps; they are not upstream content. Each one names the skill it drives, and each ends with either a read-only statement or an explicit approval gate before any change.",
+      "**Variant choices where upstreams overlap.** Serverless uses the toolkit skills (newer). Migration uses agent-plugins `aws-transform` (a superset). Web and mobile uses toolkit `aws-amplify`. DSQL uses agent-plugins `dsql` plus its scripts; toolkit `aurora-dsql` is excluded everywhere to avoid two competing DSQL skills.",
+      "**Hooks apply session-wide.** Because verticals attach to the main agent, their hooks fire for the whole session: `secret-safety` in aws-essentials and aws-security-identity, `dsql-verify` in aws-databases.",
+      "**Each vertical ships `aws-mcp`.** This keeps every vertical usable on its own. With several installed, users get duplicate copies and should switch the extras off in `/mcp`."
+    ],
+    "gaps": [
+      "**Commands need SME review.** The 63 commands are new content; review each for accuracy, sensible defaults, and the safety gate.",
+      "**No agent counterpart.** aws-marketplace-seller, aws-end-user-computing, and aws-quantum-computing exist only as verticals. Decide whether they need agent plugins.",
+      "**Duplicate `aws-mcp`.** Consider a shared base plugin (for example aws-essentials) that owns `aws-mcp`, with other verticals depending on it, once Claude Code supports plugin dependencies."
+    ]
+  },
+  "plugins": {
+    "aws-iac-engineer": [
+      "Scope: authoring and validating CDK, CloudFormation, AWS Blocks, and CodePipeline/CodeBuild/CodeDeploy. End-to-end application deployment belongs to `aws-deployment-agent`.",
+      "Terraform is out of scope. The description routes it away (\"Not for Terraform\"), and the hand-offs point to the `terraform` partner plugin (HashiCorp's official skills).",
+      "`awsiac` provides cfn-lint/cfn-guard validation and stack-failure diagnosis; `aws-mcp` covers everything else."
+    ],
+    "aws-platform-engineer": [
+      "Broadest agent: compute, containers, networking, storage, and messaging runtime work. Phase 2 added EC2, networking task skills, network monitoring, and EFS/S3 Files troubleshooting.",
+      "The `router-networking` and `router-messaging` rewrites make the toolkit router skills load bundled task skills first, falling back to `aws___retrieve_skill` only when a skill is not installed.",
+      "Container image builds use `finch` (local CLI). SNS/SQS and Amazon MQ resource creation is off by default."
+    ],
+    "aws-sre-agent": [
+      "Observability plus resilience: CloudWatch, Application Signals, CloudTrail, Prometheus, AWS Support, and Phase 2 resilience skills (Resilience Hub, FIS, ARC).",
+      "A guardrail requires approval before setup changes and before any Fault Injection Service experiment.",
+      "`awssupport` requires a Business or Enterprise support plan; case creation is confirmed with the user first.",
+      "Read-only on AWS: `aws-mcp` runs with `--read-only` (docs, regional availability, and skills only), and the `aws-mutation-gate` hook denies mutating shell/MCP calls from this agent in Claude Code. Live inspection uses read-only `aws` CLI commands."
+    ],
+    "aws-cloud-security-engineer": [
+      "Account and service security posture: IAM, secrets, encryption, S3 hardening, WAF, and Shield Advanced.",
+      "`iam` is read-only (no `--allow-write`). The `aws-secrets-manager` rewrite points the secret-safety hook message at the bundled skill.",
+      "Code scans, threat models, and pentests are handed off to `aws-devsecops-agent`, which owns the `security-agent` server (removed from this agent's `.mcp.json`)."
+    ],
+    "aws-finops-agent": [
+      "Cost analysis, anomalies, budgets, commitments, and right-sizing via the Billing and Cost Management and Pricing servers. Implementation of savings is handed off.",
+      "Read-only on AWS: `aws-mcp` runs with `--read-only` (docs, regional availability, and skills only), and the `aws-mutation-gate` hook denies mutating shell/MCP calls from this agent in Claude Code. Live inspection uses read-only `aws` CLI commands."
+    ],
+    "aws-solutions-architect": [
+      "Architecture design, service selection, Well-Architected reviews, and pricing estimates. Read-mostly by design: it hands implementation to IaC, AgentCore, SageMaker, security, and FinOps agents.",
+      "Read-only on AWS: `aws-mcp` runs with `--read-only` (docs, regional availability, and skills only), and the `aws-mutation-gate` hook denies mutating shell/MCP calls from this agent in Claude Code. Live inspection uses read-only `aws` CLI commands."
+    ],
+    "aws-agentcore-engineer": [
+      "Built from toolkit `aws-agents` (Bedrock AgentCore build, deploy, harden, debug) with the `agentcore` and AWS Knowledge servers. It does not bundle `aws-mcp`; confirm that AgentCore work never needs generic AWS API calls."
+    ],
+    "aws-data-engineer": [
+      "Lakehouse and analytics: Glue, EMR, Athena, Redshift, S3 Tables, plus Phase 2 streaming (Kinesis, MSK, Flink), Clean Rooms, Redshift migration, and system-table query skills.",
+      "Uses an inline `aws-mcp` with its own `INSTALL_SOURCE` metadata (from the upstream data-analytics plugin). The Spark troubleshooting/upgrade servers are managed remote endpoints reached through the SigV4 proxy."
+    ],
+    "aws-devsecops-agent": [
+      "Wraps the managed AWS DevOps Agent (investigations, release readiness, testing) and AWS Security Agent (scans, pentests). Upstream commands and examples are copied as-is.",
+      "`security-agent` has no read-only mode; first use may provision an agent space and IAM role, so the agent confirms before running it."
+    ],
+    "aws-startup-advisor": [
+      "Copied from the toolkit startup-advisor plugin with its worker agents, commands, scripts, and fixtures. The worker agents are dispatched by skills and are not meant for direct conversation.",
+      "Ships upstream SessionStart and PostToolUse hooks, including telemetry. See Known gaps."
+    ],
+    "aws-location-engineer": [
+      "Amazon Location Service maps, places, routes, and geofences. Uses the agent-plugins proxy variant of `aws-mcp` (`aws-mcp-legacy-proxy`) to stay identical to upstream."
+    ],
+    "aws-amplify-engineer": [
+      "Amplify Gen 2 full-stack apps from agent-plugins `aws-amplify`. Phase 2 added the read-only `appsync` server. Uses the legacy proxy variant of `aws-mcp`."
+    ],
+    "aws-serverless-engineer": [
+      "Phase 2 swapped four skills (durable functions, managed instances, microVMs, Step Functions) to the newer toolkit versions and added seven serverless task skills plus Lambda VPC internet access.",
+      "`lambda-tool` and `stepfunctions-tool` are connectors because they must be scoped to specific functions or state machines.",
+      "A PostToolUse hook runs `scripts/validate-template.sh` after edits. `aws-serverless-mcp` is write-enabled here; see Known gaps."
+    ],
+    "aws-modernization-agent": [
+      "AWS Transform modernization (.NET, mainframe, VMware, SQL Server, language and SDK upgrades) plus `dms-schema-conversion` for heterogeneous database migration."
+    ],
+    "aws-codebase-documentor": [
+      "Generates architecture documentation from a codebase. Two rewrites adjust upstream references in `document-service` to TalkOps plugin names."
+    ],
+    "aws-database-engineer": [
+      "Rewritten in Phase 2: 14 toolkit database skills on top of agent-plugins `databases-on-aws`, with `postgres`, `mysql`, `elasticache`, `dynamodb`, and `cloudwatch` bundled read-only.",
+      "Nine connection-bound servers (DSQL, DocumentDB, Keyspaces, Neptune, Valkey, Memcached, SQL Server, Oracle, Timestream for InfluxDB) are connectors, replacing the old ineffective `disabled` entries.",
+      "Toolkit `aurora-dsql` is excluded in favour of the canonical `dsql` skill. The `database-dsql-handoff` rewrite repoints the router to `dsql`, and the `dsql-verify` hook prompts a check after DSQL transactions."
+    ],
+    "aws-deployment-agent": [
+      "End-to-end application deployment from agent-plugins `deploy-on-aws`, including architecture diagrams. A PostToolUse hook validates draw.io files after edits."
+    ],
+    "aws-sagemaker-engineer": [
+      "SageMaker AI training, tuning, evaluation, hosting, and HyperPod. `sagemaker` is read-only by default; uses the legacy proxy variant of `aws-mcp`."
+    ],
+    "aws-essentials": [
+      "Starter vertical: `signing-in-to-aws` plus the AWS SDK usage skills for Python (boto3), JavaScript v3, and Swift, with the `secret-safety` hook. A good default for any user of the marketplace."
+    ],
+    "aws-infrastructure-as-code": [
+      "Core IaC skills (CDK, CloudFormation, deployment, AWS Blocks) with `awsiac` validation. Agent counterparts: `aws-iac-engineer` and `aws-deployment-agent`."
+    ],
+    "aws-compute": [
+      "EC2 skills from the toolkit specialized folder plus the core compute skill."
+    ],
+    "aws-containers": [
+      "Core containers skill with the `eks`, `ecs`, and `finch` servers. EKS and ECS are read-only by default."
+    ],
+    "aws-networking": [
+      "All networking and content-delivery task skills plus network monitoring, with the `awsnetwork` server. The `router-networking` rewrite makes the router prefer bundled skills."
+    ],
+    "aws-storage": [
+      "Core storage skill plus three storage task skills (S3 hardening and EFS/S3 Files troubleshooting)."
+    ],
+    "aws-databases": [
+      "Same database scope as `aws-database-engineer`, without the sub-agent. Includes the `dsql` skill and scripts, the `dsql-verify` hook, and the same nine connectors."
+    ],
+    "aws-serverless": [
+      "Toolkit serverless skills (newer than agent-plugins) with the read-only `aws-serverless-mcp`. Connectors for scoped Lambda and Step Functions tools."
+    ],
+    "aws-messaging-and-streaming": [
+      "Router skill `aws-messaging-and-streaming`, the messaging task skills (SES, SMS and voice, social messaging), and four streaming skills borrowed from the analytics folder (Kinesis, MSK, MSK migration, Flink). SNS/SQS and Amazon MQ are covered by the `sns-sqs` and `mq` servers. The `router-messaging` rewrite prefers bundled skills."
+    ],
+    "aws-analytics": [
+      "Analytics skills except the four streaming ones (those live in aws-messaging-and-streaming), plus two storage skills (data-lake tables, S3 Vectors) and all four system-table query skills. Bundles the data-processing, Redshift, S3 Tables, and Spark servers."
+    ],
+    "aws-observability": [
+      "CloudWatch, Application Signals, CloudTrail, and Prometheus with four operations skills and the CloudWatch system-table skill."
+    ],
+    "aws-security-identity": [
+      "Core security skills (`aws-iam`, `aws-security`, `aws-auth`), `aws-secrets-manager` from toolkit aws-core, and the one security-and-identity task skill (creating secrets with best practices). Bundles `iam`, `wa-security`, and `security-agent`. `security-agent` has no read-only mode."
+    ],
+    "aws-resilience": [
+      "All resilience skills (Resilience Hub, FIS, ARC, lifecycle, program design). Commands must gate FIS experiments behind approval."
+    ],
+    "aws-cost-optimization": [
+      "Core cost skill with the Billing and Cost Management and Pricing servers."
+    ],
+    "aws-ai-ml": [
+      "Core Bedrock and AI/ML selection skills with the read-only `sagemaker` server. Agent counterparts: SageMaker, AgentCore, and Solutions Architect."
+    ],
+    "aws-well-architected": [
+      "Well-Architected reviews across all six pillars with AWS Knowledge and the Well-Architected security server."
+    ],
+    "aws-migration": [
+      "Uses agent-plugins `aws-transform` (superset of the toolkit version) plus `dms-schema-conversion`, with the `aws-transform-mcp` server."
+    ],
+    "aws-web-and-mobile": [
+      "Toolkit web-and-mobile skills (`aws-amplify`) with the read-only `appsync` server."
+    ],
+    "aws-marketplace-seller": [
+      "AWS Marketplace seller integration (SaaS, container, AMI metering). No agent counterpart."
+    ],
+    "aws-end-user-computing": [
+      "Amazon WorkSpaces agent access. No agent counterpart."
+    ],
+    "aws-quantum-computing": [
+      "Amazon Braket circuits and hybrid jobs. No agent counterpart."
+    ]
+  }
+}

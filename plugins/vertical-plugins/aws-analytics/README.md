@@ -4,12 +4,19 @@
 
 Analytics skills for the main agent: data lakes on S3 Tables/Iceberg, Glue Data Catalog and connections, Athena and Redshift (incl. migrations), OpenSearch, S3 Vectors, Clean Rooms, MWAA (Airflow), and system-table queries, with data-processing, Redshift, S3 Tables, and Spark troubleshooting/upgrade MCP servers.
 
+## Install
+
+| Host | How |
+|---|---|
+| Claude Code | `/plugin marketplace add talkops-ai/devops-plugins`, then `/plugin install aws-analytics@talkops-devops-plugins` |
+| Codex | `codex plugin marketplace add talkops-ai/devops-plugins`, then install from the Plugins Directory |
+| Other Agent Plugins hosts | Load this directory; [`plugin.json`](./plugin.json), `skills/`, and [`mcp.json`](./mcp.json) follow the portable [Agent Plugins](https://agent-plugins.org) format |
+
 ## How it works
 
 This is a **vertical plugin**: its skills, commands, and MCP servers attach directly to your main agent, with no sub-agent hand-off. Prefer the [`aws-data-engineer`](../../agent-plugins/aws-data-engineer) agent plugin when you want an isolated specialist instead.
 
-- Install: `claude plugin install aws-analytics@talkops-devops-plugins`
-- Skills activate from their descriptions; invoke one explicitly with `/aws-analytics:<skill>`
+- Skills activate from their descriptions; in Claude Code invoke one explicitly with `/aws-analytics:<skill>`
 
 ## Skills
 
@@ -47,9 +54,9 @@ This is a **vertical plugin**: its skills, commands, and MCP servers attach dire
 
 ## MCP servers
 
-Declared in [`.mcp.json`](./.mcp.json); started when the plugin is enabled and available to the main agent.
+Declared in [`.mcp.json`](./.mcp.json) (Claude Code) and [`mcp.json`](./mcp.json) (portable); started when the plugin is enabled and available to the main agent.
 
-| Server | Transport | Launch | Tool names | Notes |
+| Server | Transport | Launch | Claude Code tool names | Notes |
 |---|---|---|---|---|
 | `aws-mcp` | stdio | `uvx mcp-proxy-for-aws-cli==1.7.0` `--skip-auth --metadata` | `mcp__plugin_aws-analytics_aws-mcp__*` | Managed AWS MCP Server via the toolkit's pinned proxy (aws___call_aws, aws___search_documentation, aws___retrieve_skill, ...). |
 | `dataprocessing` | stdio | `uvx awslabs.aws-dataprocessing-mcp-server@latest` | `mcp__plugin_aws-analytics_dataprocessing__*` | Read-only by default. Add --allow-write to let the agent create/modify Glue, EMR, and Athena resources. |
@@ -58,12 +65,12 @@ Declared in [`.mcp.json`](./.mcp.json); started when the plugin is enabled and a
 | `spark-troubleshooting` | stdio | `uvx mcp-proxy-for-aws@latest` `--service --region --read-timeout` | `mcp__plugin_aws-analytics_spark-troubleshooting__*` | Managed remote MCP (SageMaker Unified Studio) that diagnoses failed Spark jobs on EMR, Glue, and SageMaker notebooks. Uses your AWS credentials via SigV4. |
 | `spark-upgrade` | stdio | `uvx mcp-proxy-for-aws@latest` `--service --region --read-timeout` | `mcp__plugin_aws-analytics_spark-upgrade__*` | Managed remote MCP (SageMaker Unified Studio) that plans and validates Spark version upgrades on EMR. Uses your AWS credentials via SigV4. |
 
-AWS credentials are inherited from the host environment (`AWS_PROFILE`, SSO, or instance role). `AWS_REGION` defaults to `us-east-1` when unset. Toggle any server off per project in `/mcp`.
+AWS credentials are inherited from the host environment (`AWS_PROFILE`, SSO, or instance role). In Claude Code `AWS_REGION` defaults to `us-east-1` when unset; the portable `mcp.json` can't express that default, so set `AWS_REGION` in your environment on other hosts. Codex starts MCP servers with a minimal environment: if a server can't see your profile, set `AWS_PROFILE`/`AWS_REGION` for it in `~/.codex/config.toml`.
 
 ## Upstream
 
-Derived from the following Apache-2.0 sources (see the repository `NOTICE`):
+Derived from the following open-source sources (see the repository `NOTICE`):
 
-- [`specialized-skills/analytics-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws)
-- [`specialized-skills/storage-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws)
-- [`specialized-skills/system-table-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws)
+- [`specialized-skills/analytics-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws, Apache-2.0)
+- [`specialized-skills/storage-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws, Apache-2.0)
+- [`specialized-skills/system-table-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws, Apache-2.0)

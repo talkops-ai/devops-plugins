@@ -1,0 +1,19 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "aws-compute",
+  "version": "0.1.0",
+  "description": "EC2 skills for the main agent: choosing compute, launching instances with best practices, instance profiles, Auto Scaling, and EC2 Image Builder pipelines.",
+  "author": {
+    "name": "TalkOps AI"
+  },
+  "homepage": "https://github.com/talkops-ai/devops-plugins",
+  "repository": "https://github.com/talkops-ai/devops-plugins",
+  "license": "Apache-2.0",
+  "keywords": [
+    "aws",
+    "ec2",
+    "auto-scaling",
+    "image-builder",
+    "instance-profile"
+  ]
+}

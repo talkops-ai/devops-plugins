@@ -16,5 +16,21 @@
     "hyperpod",
     "model-deployment",
     "generative-ai"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "AWS SageMaker Engineer",
+    "shortDescription": "End-to-end Amazon SageMaker AI engineer",
+    "longDescription": "End-to-end Amazon SageMaker AI engineer: use-case planning, model selection, dataset evaluation and transformation, SFT/DPO/RLVR/RLAIF fine-tuning, evaluation, deployment, and HyperPod cluster, node, NCCL, and performance debugging.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/agent-plugins/aws-sagemaker-engineer",
+    "brandColor": "#FF9900"
+  }
 }

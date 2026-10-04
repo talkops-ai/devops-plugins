@@ -4,12 +4,21 @@
 
 Drives AWS DevOps Agent and AWS Security Agent: incident root-cause investigations, release-readiness reviews and UAT, code and diff security scans, threat modeling, penetration tests, and finding remediation.
 
+## Install
+
+| Host | How |
+|---|---|
+| Claude Code | `/plugin marketplace add talkops-ai/devops-plugins`, then `/plugin install aws-devsecops-agent@talkops-devops-plugins` |
+| Codex | `codex plugin marketplace add talkops-ai/devops-plugins`, then install from the Plugins Directory; for the agent persona, copy [`codex/agents/aws-devsecops-agent.toml`](./codex/agents/aws-devsecops-agent.toml) to `~/.codex/agents/` |
+| Other Agent Plugins hosts | Load this directory; [`plugin.json`](./plugin.json), `skills/`, and [`mcp.json`](./mcp.json) follow the portable [Agent Plugins](https://agent-plugins.org) format |
+
 ## Agent
 
 This is an **agent plugin**: every skill, command, hook, and MCP server below is bound to the [`aws-devsecops-agent`](./agents/aws-devsecops-agent.md) agent, which the host runtime spawns as a dynamic sub-agent.
 
 - Claude Code: `@agent-aws-devsecops-agent:aws-devsecops-agent` or let Claude delegate based on the agent description
 - Headless: `claude --agent aws-devsecops-agent:aws-devsecops-agent`
+- Codex: install the custom agent above, then ask Codex to spawn `aws-devsecops-agent`. Codex plugins can't bundle agents, so without it the skills and MCP servers attach to the main agent.
 
 ## Skills
 
@@ -46,18 +55,24 @@ This is an **agent plugin**: every skill, command, hook, and MCP server below is
 
 ## MCP servers
 
-Declared in [`.mcp.json`](./.mcp.json) and bound to the agent through its `tools:` allowlist.
+Declared in [`.mcp.json`](./.mcp.json) (Claude Code) and [`mcp.json`](./mcp.json) (portable). In Claude Code they are bound to the agent through its `tools:` allowlist.
 
-| Server | Transport | Launch | Agent tool pattern | Notes |
+| Server | Transport | Launch | Claude Code tool pattern | Notes |
 |---|---|---|---|---|
 | `aws-devops-agent` | http | `https://connect.aidevops.${DEVOPS_AGENT_REGION:-us-east-1}.api.aws/mcp` | `mcp__plugin_aws-devsecops-agent_aws-devops-agent__*` |  |
-| `security-agent` | stdio | `uvx awslabs.security-agent-mcp-server@latest` | `mcp__plugin_aws-devsecops-agent_security-agent__*` | AWS Security Agent scans and pentests. No read-only mode: first use may provision an agent space and IAM role, so confirm before running. |
 
-AWS credentials are inherited from the host environment (`AWS_PROFILE`, SSO, or instance role). `AWS_REGION` defaults to `us-east-1` when unset. Toggle any server off per project in `/mcp`.
+AWS credentials are inherited from the host environment (`AWS_PROFILE`, SSO, or instance role). In Claude Code `AWS_REGION` defaults to `us-east-1` when unset; the portable `mcp.json` can't express that default, so set `AWS_REGION` in your environment on other hosts. Codex starts MCP servers with a minimal environment: if a server can't see your profile, set `AWS_PROFILE`/`AWS_REGION` for it in `~/.codex/config.toml`.
+
+## Hooks
+
+- **PreToolUse** `Bash` — command: `sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py"`
+- **PreToolUse** `use_aws|mcp__aws.*|mcp__plugin_.*aws-mcp.*` — command: `sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py"`
+- **PreToolUse** `Bash` — command: `sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${…`
+- **PreToolUse** `use_aws|mcp__aws.*|mcp__plugin_.*aws-mcp.*` — command: `sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${…`
 
 ## Upstream
 
-Derived from the following Apache-2.0 sources (see the repository `NOTICE`):
+Derived from the following open-source sources (see the repository `NOTICE`):
 
-- [`aws-agents-for-devsecops`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws)
-- [`aws-core`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws)
+- [`aws-agents-for-devsecops`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws, Apache-2.0)
+- [`aws-core`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws, Apache-2.0)

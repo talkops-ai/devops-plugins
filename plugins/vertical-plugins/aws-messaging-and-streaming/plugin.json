@@ -1,0 +1,24 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "aws-messaging-and-streaming",
+  "version": "0.1.0",
+  "description": "Messaging and streaming skills for the main agent: SQS, SNS, EventBridge, Amazon MQ, Kinesis Data Streams, MSK (incl. migrations), Managed Service for Apache Flink, and customer messaging with SES, SMS/voice, and WhatsApp, plus the SNS/SQS and Amazon MQ MCP servers.",
+  "author": {
+    "name": "TalkOps AI"
+  },
+  "homepage": "https://github.com/talkops-ai/devops-plugins",
+  "repository": "https://github.com/talkops-ai/devops-plugins",
+  "license": "Apache-2.0",
+  "keywords": [
+    "aws",
+    "messaging",
+    "sqs",
+    "sns",
+    "kinesis",
+    "msk",
+    "kafka",
+    "flink",
+    "ses",
+    "amazon-mq"
+  ]
+}

@@ -16,5 +16,21 @@
     "elastic-beanstalk",
     "architecture-diagram",
     "cost-estimate"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "AWS Deployment Agent",
+    "shortDescription": "Takes an application from code to running on AWS",
+    "longDescription": "Takes an application from code to running on AWS: analyzes the codebase, recommends an architecture with cost estimates, generates and deploys IaC (incl. Elastic Beanstalk), and produces validated draw.io architecture diagrams.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/agent-plugins/aws-deployment-agent",
+    "brandColor": "#FF9900"
+  }
 }

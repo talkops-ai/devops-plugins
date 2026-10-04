@@ -1,0 +1,24 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "aws-networking",
+  "version": "0.1.0",
+  "description": "Networking and content-delivery skills for the main agent: production VPCs, endpoints, peering, Transit Gateway, Site-to-Site VPN, Direct Connect, Route 53, CloudFront, WAF, Shield Advanced, and network monitoring, with the AWS Network MCP server.",
+  "author": {
+    "name": "TalkOps AI"
+  },
+  "homepage": "https://github.com/talkops-ai/devops-plugins",
+  "repository": "https://github.com/talkops-ai/devops-plugins",
+  "license": "Apache-2.0",
+  "keywords": [
+    "aws",
+    "networking",
+    "vpc",
+    "transit-gateway",
+    "route53",
+    "cloudfront",
+    "waf",
+    "shield",
+    "vpn",
+    "direct-connect"
+  ]
+}

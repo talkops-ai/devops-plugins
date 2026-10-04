@@ -4,12 +4,22 @@
 
 Solutions architect for AWS: evidence-backed Well-Architected Framework reviews across all six pillars, generative-AI and ML architectures on Bedrock and SageMaker, and correct AWS SDK usage (boto3, JS v3, Swift).
 
+## Install
+
+| Host | How |
+|---|---|
+| Claude Code | `/plugin marketplace add talkops-ai/devops-plugins`, then `/plugin install aws-solutions-architect@talkops-devops-plugins` |
+| Codex | `codex plugin marketplace add talkops-ai/devops-plugins`, then install from the Plugins Directory; for the agent persona, copy [`codex/agents/aws-solutions-architect.toml`](./codex/agents/aws-solutions-architect.toml) to `~/.codex/agents/` |
+| Other Agent Plugins hosts | Load this directory; [`plugin.json`](./plugin.json), `skills/`, and [`mcp.json`](./mcp.json) follow the portable [Agent Plugins](https://agent-plugins.org) format |
+
 ## Agent
 
 This is an **agent plugin**: every skill, command, hook, and MCP server below is bound to the [`aws-solutions-architect`](./agents/aws-solutions-architect.md) agent, which the host runtime spawns as a dynamic sub-agent.
 
 - Claude Code: `@agent-aws-solutions-architect:aws-solutions-architect` or let Claude delegate based on the agent description
 - Headless: `claude --agent aws-solutions-architect:aws-solutions-architect`
+- Codex: install the custom agent above, then ask Codex to spawn `aws-solutions-architect`. Codex plugins can't bundle agents, so without it the skills and MCP servers attach to the main agent.
+- **Read-only on AWS.** `aws-mcp` runs with `--read-only`, and the `aws-mutation-gate` hook denies mutating shell/MCP calls from this agent in Claude Code. Pair it with a read-only AWS profile.
 
 ## Skills
 
@@ -25,23 +35,25 @@ This is an **agent plugin**: every skill, command, hook, and MCP server below is
 
 ## MCP servers
 
-Declared in [`.mcp.json`](./.mcp.json) and bound to the agent through its `tools:` allowlist.
+Declared in [`.mcp.json`](./.mcp.json) (Claude Code) and [`mcp.json`](./mcp.json) (portable). In Claude Code they are bound to the agent through its `tools:` allowlist.
 
-| Server | Transport | Launch | Agent tool pattern | Notes |
+| Server | Transport | Launch | Claude Code tool pattern | Notes |
 |---|---|---|---|---|
-| `aws-mcp` | stdio | `uvx mcp-proxy-for-aws-cli==1.7.0` `--skip-auth --metadata` | `mcp__plugin_aws-solutions-architect_aws-mcp__*` | Managed AWS MCP Server via the toolkit's pinned proxy (aws___call_aws, aws___search_documentation, aws___retrieve_skill, ...). |
+| `aws-mcp` | stdio | `uvx mcp-proxy-for-aws-cli==1.7.0` `--skip-auth --read-only --metadata` | `mcp__plugin_aws-solutions-architect_aws-mcp__*` | Managed AWS MCP Server, read-only: the proxy's --read-only flag drops every tool whose readOnlyHint is not true (aws___call_aws, aws___run_script, aws___get_presigned_url), leaving documentation, regional availability, and skill retrieval. |
 | `awsknowledge` | http | `https://knowledge-mcp.global.api.aws` | `mcp__plugin_aws-solutions-architect_awsknowledge__*` |  |
 | `awspricing` | stdio | `uvx awslabs.aws-pricing-mcp-server@latest` | `mcp__plugin_aws-solutions-architect_awspricing__*` |  |
 
-AWS credentials are inherited from the host environment (`AWS_PROFILE`, SSO, or instance role). `AWS_REGION` defaults to `us-east-1` when unset. Toggle any server off per project in `/mcp`.
+AWS credentials are inherited from the host environment (`AWS_PROFILE`, SSO, or instance role). In Claude Code `AWS_REGION` defaults to `us-east-1` when unset; the portable `mcp.json` can't express that default, so set `AWS_REGION` in your environment on other hosts. Codex starts MCP servers with a minimal environment: if a server can't see your profile, set `AWS_PROFILE`/`AWS_REGION` for it in `~/.codex/config.toml`.
 
 ## Hooks
 
 - **PreToolUse** `Bash` — command: `sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py"`
 - **PreToolUse** `use_aws|mcp__aws.*|mcp__plugin_.*aws-mcp.*` — command: `sh -c 'python3 "$0" 2>/dev/null \|\| python "$0" 2>/dev/null \|\| py -3 "$0"' "${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py"`
+- **PreToolUse** `Bash` — command: `sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${…`
+- **PreToolUse** `use_aws|mcp__aws.*|mcp__plugin_.*aws-mcp.*` — command: `sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 "$0"; command -v python >/dev/null 2>&1 && exec python "$0"; exec py -3 "$0"' "${…`
 
 ## Upstream
 
-Derived from the following Apache-2.0 sources (see the repository `NOTICE`):
+Derived from the following open-source sources (see the repository `NOTICE`):
 
-- [`aws-core`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws)
+- [`aws-core`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws, Apache-2.0)

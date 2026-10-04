@@ -16,5 +16,21 @@
     "appsync",
     "react",
     "nextjs"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "AWS Amplify Engineer",
+    "shortDescription": "Builds and deploys full-stack web and mobile apps with AWS Amplify Gen 2",
+    "longDescription": "Builds and deploys full-stack web and mobile apps with AWS Amplify Gen 2: Cognito auth, AppSync/DynamoDB data models, S3 storage, functions, and the Amplify AI Kit.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/agent-plugins/aws-amplify-engineer",
+    "brandColor": "#FF9900"
+  }
 }

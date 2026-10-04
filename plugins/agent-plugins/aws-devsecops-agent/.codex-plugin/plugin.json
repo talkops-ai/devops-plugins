@@ -17,5 +17,20 @@
     "pentest",
     "release-readiness",
     "threat-model"
-  ]
+  ],
+  "skills": "./skills/",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "AWS DevSecOps Agent",
+    "shortDescription": "Drives AWS DevOps Agent and AWS Security Agent",
+    "longDescription": "Drives AWS DevOps Agent and AWS Security Agent: incident root-cause investigations, release-readiness reviews and UAT, code and diff security scans, threat modeling, penetration tests, and finding remediation.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/agent-plugins/aws-devsecops-agent",
+    "brandColor": "#FF9900"
+  }
 }

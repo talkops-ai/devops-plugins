@@ -15,5 +15,20 @@
     "bedrock",
     "sagemaker",
     "generative-ai"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "interface": {
+    "displayName": "AWS AI and ML",
+    "shortDescription": "Generative AI and ML skills for the main agent",
+    "longDescription": "Generative AI and ML skills for the main agent: Amazon Bedrock models, agents, knowledge bases, and guardrails, plus AWS AI/ML service selection and SageMaker AI, with the read-only SageMaker AI MCP server.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/vertical-plugins/aws-ai-ml",
+    "brandColor": "#FF9900"
+  }
 }

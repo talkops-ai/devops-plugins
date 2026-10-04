@@ -1,0 +1,42 @@
+{
+  "name": "terraform",
+  "version": "1.0.0",
+  "description": "HashiCorp's official Terraform skills: HCL style, module refactoring, Terraform tests, search and bulk import, Stacks, Terraform policy (including Sentinel conversion), Azure Verified Modules, and provider development with the Plugin Framework (resources, actions, ephemeral resources, configuration, SDKv2 migration, docs, and acceptance tests).",
+  "author": {
+    "name": "HashiCorp",
+    "url": "https://github.com/hashicorp"
+  },
+  "homepage": "https://developer.hashicorp.com/terraform",
+  "repository": "https://github.com/hashicorp/agent-skills",
+  "license": "MPL-2.0",
+  "keywords": [
+    "terraform",
+    "hcl",
+    "hashicorp",
+    "iac",
+    "modules",
+    "provider",
+    "terraform-stacks",
+    "terraform-test",
+    "policy"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Terraform (HashiCorp)",
+    "shortDescription": "HashiCorp's official Terraform skills",
+    "longDescription": "HashiCorp's official Terraform skills: HCL style, module refactoring, Terraform tests, search and bulk import, Stacks, Terraform policy (including Sentinel conversion), Azure Verified Modules, and provider development with the Plugin Framework (resources, actions, ephemeral resources, configuration, SDKv2 migration, docs, and acceptance tests).",
+    "developerName": "HashiCorp",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://developer.hashicorp.com/terraform",
+    "brandColor": "#7B42BC",
+    "defaultPrompt": [
+      "Review this Terraform configuration against HashiCorp's style guide.",
+      "Write Terraform tests for this module.",
+      "Import these existing resources into Terraform."
+    ]
+  }
+}

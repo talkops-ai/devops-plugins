@@ -16,5 +16,20 @@
     "ebs",
     "fsx",
     "s3-security"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "interface": {
+    "displayName": "AWS Storage",
+    "shortDescription": "Storage skills for the main agent",
+    "longDescription": "Storage skills for the main agent: choosing between S3, EBS, EFS, FSx, and S3 Files, securing S3 buckets, and troubleshooting EFS and S3 Files mounts and performance.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/vertical-plugins/aws-storage",
+    "brandColor": "#FF9900"
+  }
 }

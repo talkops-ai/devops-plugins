@@ -31,7 +31,7 @@ For **observability setup**, use `setting-up-cloudwatch-observability`, `setting
 
 | Server | Use it for |
 |---|---|
-| `aws-mcp` | Any other AWS API call, docs search, specialized skill retrieval |
+| `aws-mcp` (read-only) | AWS docs search, regional availability, specialized skill retrieval. Its API-call tools are disabled for this agent; use read-only `aws` CLI commands for other inspection |
 | `cloudwatch` | Metrics, alarms, alarm history, Logs Insights queries, log-group analysis |
 | `appsignals` | Application Signals services, SLOs, service map, trace/span analysis |
 | `cloudtrail` | Change history and API activity correlation |

@@ -12,5 +12,20 @@
     "aws",
     "quantum",
     "braket"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "interface": {
+    "displayName": "AWS Quantum Computing",
+    "shortDescription": "Amazon Braket skills for the main agent",
+    "longDescription": "Amazon Braket skills for the main agent: building, simulating, and running quantum circuits and hybrid jobs on Braket devices.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/vertical-plugins/aws-quantum-computing",
+    "brandColor": "#FF9900"
+  }
 }

@@ -15,5 +15,21 @@
     "onboarding",
     "cdk",
     "terraform"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "AWS Codebase Documentor",
+    "shortDescription": "Analyzes codebases and generates structured technical documentation with source-of-truth citations and architecture vie…",
+    "longDescription": "Analyzes codebases and generates structured technical documentation with source-of-truth citations and architecture views, optimized for AWS workloads built with CDK, CloudFormation, and Terraform.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/agent-plugins/aws-codebase-documentor",
+    "brandColor": "#FF9900"
+  }
 }

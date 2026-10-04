@@ -16,5 +16,21 @@
     "codepipeline",
     "cicd",
     "aws-blocks"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "AWS IaC Engineer",
+    "shortDescription": "Authors, validates, deploys, and troubleshoots AWS infrastructure-as-code",
+    "longDescription": "Authors, validates, deploys, and troubleshoots AWS infrastructure-as-code: CDK, CloudFormation, AWS Blocks, and CodePipeline/CodeBuild/CodeDeploy CI/CD, with cfn-lint/cfn-guard validation and stack failure diagnosis.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/agent-plugins/aws-iac-engineer",
+    "brandColor": "#FF9900"
+  }
 }

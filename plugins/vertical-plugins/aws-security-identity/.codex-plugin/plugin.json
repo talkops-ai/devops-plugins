@@ -17,5 +17,21 @@
     "security-hub",
     "guardduty",
     "least-privilege"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "AWS Security and Identity",
+    "shortDescription": "Security and identity skills for the main agent",
+    "longDescription": "Security and identity skills for the main agent: least-privilege IAM, Security Hub/GuardDuty/Inspector findings, Cognito authentication, and Secrets Manager best practices, with read-only IAM, Well-Architected security, and AWS Security Agent MCP servers and the secret-safety hook.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/vertical-plugins/aws-security-identity",
+    "brandColor": "#FF9900"
+  }
 }

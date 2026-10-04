@@ -16,5 +16,20 @@
     "step-functions",
     "eventbridge",
     "sam"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "interface": {
+    "displayName": "AWS Serverless",
+    "shortDescription": "Serverless skills for the main agent",
+    "longDescription": "Serverless skills for the main agent: Lambda (durable functions, managed instances, MicroVMs, timeouts, VPC egress), API Gateway stages and custom domains, Step Functions, and EventBridge, with the read-only AWS Serverless MCP server.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/vertical-plugins/aws-serverless",
+    "brandColor": "#FF9900"
+  }
 }

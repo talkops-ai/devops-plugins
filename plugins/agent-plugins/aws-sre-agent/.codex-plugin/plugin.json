@@ -18,5 +18,20 @@
     "prometheus",
     "incident-response",
     "slo"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "AWS SRE Agent",
+    "shortDescription": "Site-reliability agent for AWS workloads",
+    "longDescription": "Site-reliability agent for AWS workloads: CloudWatch metrics, logs, alarms and Logs Insights, Application Signals SLOs, X-Ray/ADOT traces, CloudTrail change history, Amazon Managed Prometheus, and AWS Support case escalation.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/agent-plugins/aws-sre-agent",
+    "brandColor": "#FF9900"
+  }
 }

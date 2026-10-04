@@ -17,5 +17,21 @@
     "sam",
     "cdk",
     "eventbridge"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "AWS Serverless Engineer",
+    "shortDescription": "Designs, builds, deploys, and debugs serverless applications",
+    "longDescription": "Designs, builds, deploys, and debugs serverless applications: Lambda (incl. durable functions, managed instances, MicroVMs), API Gateway, Step Functions, and SAM/CDK deployment with template validation.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/agent-plugins/aws-serverless-engineer",
+    "brandColor": "#FF9900"
+  }
 }

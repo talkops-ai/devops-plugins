@@ -15,5 +15,20 @@
     "transform",
     "dms",
     "schema-conversion"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "interface": {
+    "displayName": "AWS Migration and Modernization",
+    "shortDescription": "Migration skills for the main agent",
+    "longDescription": "Migration skills for the main agent: AWS Transform modernization (.NET, mainframe, VMware, SQL Server, language and SDK upgrades) and DMS Schema Conversion for heterogeneous database migrations.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/vertical-plugins/aws-migration",
+    "brandColor": "#FF9900"
+  }
 }

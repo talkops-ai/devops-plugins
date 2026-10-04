@@ -19,5 +19,20 @@
     "opensearch",
     "mwaa",
     "spark"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "interface": {
+    "displayName": "AWS Analytics",
+    "shortDescription": "Analytics skills for the main agent",
+    "longDescription": "Analytics skills for the main agent: data lakes on S3 Tables/Iceberg, Glue Data Catalog and connections, Athena and Redshift (incl. migrations), OpenSearch, S3 Vectors, Clean Rooms, MWAA (Airflow), and system-table queries, with data-processing, Redshift, S3 Tables, and Spark troubleshooting/upgrade MCP servers.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/vertical-plugins/aws-analytics",
+    "brandColor": "#FF9900"
+  }
 }

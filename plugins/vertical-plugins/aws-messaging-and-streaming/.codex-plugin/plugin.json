@@ -19,5 +19,20 @@
     "flink",
     "ses",
     "amazon-mq"
-  ]
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "interface": {
+    "displayName": "AWS Messaging and Streaming",
+    "shortDescription": "Messaging and streaming skills for the main agent",
+    "longDescription": "Messaging and streaming skills for the main agent: SQS, SNS, EventBridge, Amazon MQ, Kinesis Data Streams, MSK (incl. migrations), Managed Service for Apache Flink, and customer messaging with SES, SMS/voice, and WhatsApp, plus the SNS/SQS and Amazon MQ MCP servers.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/vertical-plugins/aws-messaging-and-streaming",
+    "brandColor": "#FF9900"
+  }
 }
