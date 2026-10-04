@@ -1,0 +1,19 @@
+{
+  "name": "aws-infrastructure-as-code",
+  "version": "0.1.0",
+  "description": "Author, validate, deploy, and troubleshoot AWS infrastructure as code directly in the main agent: CDK, CloudFormation (cfn-lint/cfn-guard), AWS Blocks, CodePipeline/CodeBuild/CodeDeploy CI/CD, and guided launches.",
+  "author": {
+    "name": "TalkOps AI"
+  },
+  "homepage": "https://github.com/talkops-ai/devops-plugins",
+  "repository": "https://github.com/talkops-ai/devops-plugins",
+  "license": "Apache-2.0",
+  "keywords": [
+    "aws",
+    "iac",
+    "cdk",
+    "cloudformation",
+    "cicd",
+    "aws-blocks"
+  ]
+}

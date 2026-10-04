@@ -1,0 +1,34 @@
+TalkOps DevOps Plugins
+Copyright TalkOps AI and contributors.
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+The AWS agent plugins under plugins/agent-plugins/ include skills, commands,
+scripts, hooks, sub-agent definitions, and MCP server configurations copied and
+adapted from the following Apache-2.0 licensed projects. Files were reorganized
+into agent plugins, manifests and MCP configurations were regenerated, and
+selected files were modified (e.g. hook paths, cross-plugin references). The
+agent definitions (agents/<plugin>.md) and repository tooling are original work.
+
+--------------------------------------------------------------------------------
+Agent Toolkit for AWS
+https://github.com/aws/agent-toolkit-for-aws
+Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+Licensed under the Apache License, Version 2.0.
+
+--------------------------------------------------------------------------------
+Agent Plugins for AWS
+https://github.com/awslabs/agent-plugins
+Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+Licensed under the Apache License, Version 2.0.
+
+--------------------------------------------------------------------------------
+AWS MCP Servers (referenced and launched via uvx; not vendored)
+https://github.com/awslabs/mcp
+Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+Licensed under the Apache License, Version 2.0.
+
+--------------------------------------------------------------------------------
+Marketplace structure inspired by Claude for Financial Services
+https://github.com/anthropics/financial-services
+Licensed under the Apache License, Version 2.0.

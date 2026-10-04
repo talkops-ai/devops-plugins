@@ -1,0 +1,688 @@
+{
+  "name": "talkops-devops-plugins",
+  "owner": {
+    "name": "TalkOps AI",
+    "url": "https://github.com/talkops-ai"
+  },
+  "metadata": {
+    "description": "DevOps and cloud-operations plugins for AI agents. Agent plugins bind skills, commands, hooks, and MCP servers to a named specialist agent; vertical plugins apply skills to the main agent; partner-built plugins wrap third-party integrations.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "aws-iac-engineer",
+      "displayName": "AWS IaC Engineer",
+      "source": "./plugins/agent-plugins/aws-iac-engineer",
+      "description": "Authors, validates, deploys, and troubleshoots AWS infrastructure-as-code: CDK, CloudFormation, AWS Blocks, and CodePipeline/CodeBuild/CodeDeploy CI/CD, with cfn-lint/cfn-guard validation and stack failure diagnosis.",
+      "version": "0.1.0",
+      "category": "infrastructure-as-code",
+      "keywords": [
+        "aws",
+        "iac",
+        "cdk",
+        "cloudformation",
+        "codepipeline",
+        "cicd",
+        "aws-blocks"
+      ]
+    },
+    {
+      "name": "aws-platform-engineer",
+      "displayName": "AWS Platform Engineer",
+      "source": "./plugins/agent-plugins/aws-platform-engineer",
+      "description": "Provisions and operates the AWS runtime platform: EC2 and Auto Scaling, EKS/ECS/Fargate containers, VPC and edge networking, storage, serverless compute, and messaging/streaming services.",
+      "version": "0.1.0",
+      "category": "platform",
+      "keywords": [
+        "aws",
+        "ec2",
+        "eks",
+        "ecs",
+        "fargate",
+        "vpc",
+        "networking",
+        "s3",
+        "lambda",
+        "sqs",
+        "kinesis"
+      ]
+    },
+    {
+      "name": "aws-sre-agent",
+      "displayName": "AWS SRE Agent",
+      "source": "./plugins/agent-plugins/aws-sre-agent",
+      "description": "Site-reliability agent for AWS workloads: CloudWatch metrics, logs, alarms and Logs Insights, Application Signals SLOs, X-Ray/ADOT traces, CloudTrail change history, Amazon Managed Prometheus, and AWS Support case escalation.",
+      "version": "0.1.0",
+      "category": "observability",
+      "keywords": [
+        "aws",
+        "sre",
+        "observability",
+        "cloudwatch",
+        "x-ray",
+        "cloudtrail",
+        "prometheus",
+        "incident-response",
+        "slo"
+      ]
+    },
+    {
+      "name": "aws-cloud-security-engineer",
+      "displayName": "AWS Cloud Security Engineer",
+      "source": "./plugins/agent-plugins/aws-cloud-security-engineer",
+      "description": "Cloud security and identity engineer: IAM policies, roles and trust relationships, Security Hub/GuardDuty/Inspector/Macie findings, Secrets Manager safe-handling, Cognito authentication, and Well-Architected security posture checks.",
+      "version": "0.1.0",
+      "category": "security",
+      "keywords": [
+        "aws",
+        "security",
+        "iam",
+        "security-hub",
+        "guardduty",
+        "inspector",
+        "secrets-manager",
+        "cognito",
+        "compliance"
+      ]
+    },
+    {
+      "name": "aws-finops-agent",
+      "displayName": "AWS FinOps Agent",
+      "source": "./plugins/agent-plugins/aws-finops-agent",
+      "description": "Cloud financial-operations agent: cost and usage analysis, anomaly detection, budgets, Savings Plans and Reserved Instance evaluation, Compute Optimizer right-sizing, CUR queries, and service pricing estimates.",
+      "version": "0.1.0",
+      "category": "finops",
+      "keywords": [
+        "aws",
+        "finops",
+        "cost-optimization",
+        "billing",
+        "savings-plans",
+        "budgets",
+        "right-sizing",
+        "pricing"
+      ]
+    },
+    {
+      "name": "aws-solutions-architect",
+      "displayName": "AWS Solutions Architect",
+      "source": "./plugins/agent-plugins/aws-solutions-architect",
+      "description": "Solutions architect for AWS: evidence-backed Well-Architected Framework reviews across all six pillars, generative-AI and ML architectures on Bedrock and SageMaker, and correct AWS SDK usage (boto3, JS v3, Swift).",
+      "version": "0.1.0",
+      "category": "architecture",
+      "keywords": [
+        "aws",
+        "architecture",
+        "well-architected",
+        "bedrock",
+        "sagemaker",
+        "boto3",
+        "aws-sdk"
+      ]
+    },
+    {
+      "name": "aws-agentcore-engineer",
+      "displayName": "AWS AgentCore Engineer",
+      "source": "./plugins/agent-plugins/aws-agentcore-engineer",
+      "description": "Builds, deploys, and operates AI agents on Amazon Bedrock AgentCore: Strands/LangGraph scaffolding, Gateway and MCP tools, memory, Cedar policies, evaluations, trace debugging, and production hardening.",
+      "version": "0.1.0",
+      "category": "ai-agents",
+      "keywords": [
+        "aws",
+        "agentcore",
+        "bedrock",
+        "ai-agents",
+        "strands",
+        "langgraph",
+        "mcp",
+        "a2a",
+        "cedar"
+      ]
+    },
+    {
+      "name": "aws-data-engineer",
+      "displayName": "AWS Data Engineer",
+      "source": "./plugins/agent-plugins/aws-data-engineer",
+      "description": "Data-lake and analytics engineer: S3 Tables/Iceberg, Glue connections and Data Catalog, Athena and Redshift queries, ingestion pipelines, S3 Vectors, OpenSearch, and MWAA (Airflow) authoring, testing, debugging, and upgrades.",
+      "version": "0.1.0",
+      "category": "data-analytics",
+      "keywords": [
+        "aws",
+        "data-lake",
+        "glue",
+        "athena",
+        "redshift",
+        "s3-tables",
+        "iceberg",
+        "opensearch",
+        "mwaa",
+        "airflow"
+      ]
+    },
+    {
+      "name": "aws-devsecops-agent",
+      "displayName": "AWS DevSecOps Agent",
+      "source": "./plugins/agent-plugins/aws-devsecops-agent",
+      "description": "Drives AWS DevOps Agent and AWS Security Agent: incident root-cause investigations, release-readiness reviews and UAT, code and diff security scans, threat modeling, penetration tests, and finding remediation.",
+      "version": "0.1.0",
+      "category": "devsecops",
+      "keywords": [
+        "aws",
+        "devsecops",
+        "devops-agent",
+        "security-agent",
+        "incident",
+        "pentest",
+        "release-readiness",
+        "threat-model"
+      ]
+    },
+    {
+      "name": "aws-startup-advisor",
+      "displayName": "AWS Startup Advisor",
+      "source": "./plugins/agent-plugins/aws-startup-advisor",
+      "description": "Stage-aware AWS guidance for startups: architecture and cost advice, project scaffolding, Azure/GCP/Heroku-to-AWS migrations, LLM SDK rewrites to Bedrock, agent runtime selection, DevOps Agent operations, and AWS Activate offers.",
+      "version": "0.1.0",
+      "category": "startup",
+      "keywords": [
+        "aws",
+        "startups",
+        "migration",
+        "gcp-to-aws",
+        "azure-to-aws",
+        "heroku-to-aws",
+        "bedrock",
+        "terraform",
+        "activate"
+      ]
+    },
+    {
+      "name": "aws-location-engineer",
+      "displayName": "AWS Location Engineer",
+      "source": "./plugins/agent-plugins/aws-location-engineer",
+      "description": "Adds geospatial features with Amazon Location Service: maps, geocoding and reverse geocoding, routing and service areas, places search, authentication setup, and SDK integration.",
+      "version": "0.1.0",
+      "category": "location",
+      "keywords": [
+        "aws",
+        "location",
+        "maps",
+        "geocoding",
+        "routing",
+        "geospatial"
+      ]
+    },
+    {
+      "name": "aws-amplify-engineer",
+      "displayName": "AWS Amplify Engineer",
+      "source": "./plugins/agent-plugins/aws-amplify-engineer",
+      "description": "Builds and deploys full-stack web and mobile apps with AWS Amplify Gen 2: Cognito auth, AppSync/DynamoDB data models, S3 storage, functions, and the Amplify AI Kit.",
+      "version": "0.1.0",
+      "category": "fullstack",
+      "keywords": [
+        "aws",
+        "amplify",
+        "fullstack",
+        "cognito",
+        "appsync",
+        "react",
+        "nextjs"
+      ]
+    },
+    {
+      "name": "aws-serverless-engineer",
+      "displayName": "AWS Serverless Engineer",
+      "source": "./plugins/agent-plugins/aws-serverless-engineer",
+      "description": "Designs, builds, deploys, and debugs serverless applications: Lambda (incl. durable functions, managed instances, MicroVMs), API Gateway, Step Functions, and SAM/CDK deployment with template validation.",
+      "version": "0.1.0",
+      "category": "serverless",
+      "keywords": [
+        "aws",
+        "serverless",
+        "lambda",
+        "api-gateway",
+        "step-functions",
+        "sam",
+        "cdk",
+        "eventbridge"
+      ]
+    },
+    {
+      "name": "aws-modernization-agent",
+      "displayName": "AWS Modernization Agent",
+      "source": "./plugins/agent-plugins/aws-modernization-agent",
+      "description": "Migrates and modernizes codebases with AWS Transform: .NET Framework to .NET 8/10, mainframe COBOL to Java, VMware to EC2, SQL Server to Aurora, language and AWS SDK upgrades, and continuous tech-debt remediation.",
+      "version": "0.1.0",
+      "category": "migration",
+      "keywords": [
+        "aws",
+        "transform",
+        "modernization",
+        "migration",
+        "dotnet",
+        "mainframe",
+        "java-upgrade"
+      ]
+    },
+    {
+      "name": "aws-codebase-documentor",
+      "displayName": "AWS Codebase Documentor",
+      "source": "./plugins/agent-plugins/aws-codebase-documentor",
+      "description": "Analyzes codebases and generates structured technical documentation with source-of-truth citations and architecture views, optimized for AWS workloads built with CDK, CloudFormation, and Terraform.",
+      "version": "0.1.0",
+      "category": "documentation",
+      "keywords": [
+        "aws",
+        "documentation",
+        "architecture",
+        "onboarding",
+        "cdk",
+        "terraform"
+      ]
+    },
+    {
+      "name": "aws-database-engineer",
+      "displayName": "AWS Database Engineer",
+      "source": "./plugins/agent-plugins/aws-database-engineer",
+      "description": "Database engineer for the AWS portfolio: chooses the right engine, designs schemas, runs queries and migrations, and operates Aurora DSQL, Aurora/RDS, DynamoDB, DocumentDB, ElastiCache/MemoryDB, Neptune, Keyspaces, and Timestream.",
+      "version": "0.1.0",
+      "category": "database",
+      "keywords": [
+        "aws",
+        "database",
+        "aurora",
+        "dsql",
+        "rds",
+        "dynamodb",
+        "postgresql",
+        "schema",
+        "migration"
+      ]
+    },
+    {
+      "name": "aws-deployment-agent",
+      "displayName": "AWS Deployment Agent",
+      "source": "./plugins/agent-plugins/aws-deployment-agent",
+      "description": "Takes an application from code to running on AWS: analyzes the codebase, recommends an architecture with cost estimates, generates and deploys IaC (incl. Elastic Beanstalk), and produces validated draw.io architecture diagrams.",
+      "version": "0.1.0",
+      "category": "deployment",
+      "keywords": [
+        "aws",
+        "deploy",
+        "infrastructure",
+        "cdk",
+        "elastic-beanstalk",
+        "architecture-diagram",
+        "cost-estimate"
+      ]
+    },
+    {
+      "name": "aws-sagemaker-engineer",
+      "displayName": "AWS SageMaker Engineer",
+      "source": "./plugins/agent-plugins/aws-sagemaker-engineer",
+      "description": "End-to-end Amazon SageMaker AI engineer: use-case planning, model selection, dataset evaluation and transformation, SFT/DPO/RLVR/RLAIF fine-tuning, evaluation, deployment, and HyperPod cluster, node, NCCL, and performance debugging.",
+      "version": "0.1.0",
+      "category": "ai-ml",
+      "keywords": [
+        "aws",
+        "sagemaker",
+        "machine-learning",
+        "fine-tuning",
+        "hyperpod",
+        "model-deployment",
+        "generative-ai"
+      ]
+    },
+    {
+      "name": "aws-essentials",
+      "displayName": "AWS Essentials",
+      "source": "./plugins/vertical-plugins/aws-essentials",
+      "description": "Foundation skills for any AWS work on the main agent: sign-in and credential setup, correct AWS SDK usage for Python (boto3), JavaScript v3, and Swift, plus the managed AWS MCP server and AWS Knowledge documentation search.",
+      "version": "0.1.0",
+      "category": "foundation",
+      "keywords": [
+        "aws",
+        "sign-in",
+        "credentials",
+        "boto3",
+        "aws-sdk",
+        "documentation"
+      ]
+    },
+    {
+      "name": "aws-infrastructure-as-code",
+      "displayName": "AWS Infrastructure as Code",
+      "source": "./plugins/vertical-plugins/aws-infrastructure-as-code",
+      "description": "Author, validate, deploy, and troubleshoot AWS infrastructure as code directly in the main agent: CDK, CloudFormation (cfn-lint/cfn-guard), AWS Blocks, CodePipeline/CodeBuild/CodeDeploy CI/CD, and guided launches.",
+      "version": "0.1.0",
+      "category": "infrastructure-as-code",
+      "keywords": [
+        "aws",
+        "iac",
+        "cdk",
+        "cloudformation",
+        "cicd",
+        "aws-blocks"
+      ]
+    },
+    {
+      "name": "aws-compute",
+      "displayName": "AWS Compute",
+      "source": "./plugins/vertical-plugins/aws-compute",
+      "description": "EC2 skills for the main agent: choosing compute, launching instances with best practices, instance profiles, Auto Scaling, and EC2 Image Builder pipelines.",
+      "version": "0.1.0",
+      "category": "compute",
+      "keywords": [
+        "aws",
+        "ec2",
+        "auto-scaling",
+        "image-builder",
+        "instance-profile"
+      ]
+    },
+    {
+      "name": "aws-containers",
+      "displayName": "AWS Containers",
+      "source": "./plugins/vertical-plugins/aws-containers",
+      "description": "Container skills for the main agent: EKS, ECS, Fargate, ECR, and App Runner design and troubleshooting, with the EKS and ECS MCP servers (read-only) and Finch for building and pushing images.",
+      "version": "0.1.0",
+      "category": "containers",
+      "keywords": [
+        "aws",
+        "containers",
+        "eks",
+        "ecs",
+        "fargate",
+        "ecr",
+        "kubernetes",
+        "finch"
+      ]
+    },
+    {
+      "name": "aws-networking",
+      "displayName": "AWS Networking",
+      "source": "./plugins/vertical-plugins/aws-networking",
+      "description": "Networking and content-delivery skills for the main agent: production VPCs, endpoints, peering, Transit Gateway, Site-to-Site VPN, Direct Connect, Route 53, CloudFront, WAF, Shield Advanced, and network monitoring, with the AWS Network MCP server.",
+      "version": "0.1.0",
+      "category": "networking",
+      "keywords": [
+        "aws",
+        "networking",
+        "vpc",
+        "transit-gateway",
+        "route53",
+        "cloudfront",
+        "waf",
+        "shield",
+        "vpn",
+        "direct-connect"
+      ]
+    },
+    {
+      "name": "aws-storage",
+      "displayName": "AWS Storage",
+      "source": "./plugins/vertical-plugins/aws-storage",
+      "description": "Storage skills for the main agent: choosing between S3, EBS, EFS, FSx, and S3 Files, securing S3 buckets, and troubleshooting EFS and S3 Files mounts and performance.",
+      "version": "0.1.0",
+      "category": "storage",
+      "keywords": [
+        "aws",
+        "storage",
+        "s3",
+        "efs",
+        "ebs",
+        "fsx",
+        "s3-security"
+      ]
+    },
+    {
+      "name": "aws-databases",
+      "displayName": "AWS Databases",
+      "source": "./plugins/vertical-plugins/aws-databases",
+      "description": "Database skills for the main agent: engine selection and service-specific guidance for Aurora (PostgreSQL, MySQL, DSQL), RDS (open source, Oracle, SQL Server, Db2), DynamoDB, DocumentDB, ElastiCache, Keyspaces, Neptune, and Timestream for InfluxDB, with read-only database MCP servers and opt-in connectors.",
+      "version": "0.1.0",
+      "category": "database",
+      "keywords": [
+        "aws",
+        "database",
+        "aurora",
+        "dsql",
+        "rds",
+        "dynamodb",
+        "postgresql",
+        "mysql",
+        "elasticache"
+      ]
+    },
+    {
+      "name": "aws-serverless",
+      "displayName": "AWS Serverless",
+      "source": "./plugins/vertical-plugins/aws-serverless",
+      "description": "Serverless skills for the main agent: Lambda (durable functions, managed instances, MicroVMs, timeouts, VPC egress), API Gateway stages and custom domains, Step Functions, and EventBridge, with the read-only AWS Serverless MCP server.",
+      "version": "0.1.0",
+      "category": "serverless",
+      "keywords": [
+        "aws",
+        "serverless",
+        "lambda",
+        "api-gateway",
+        "step-functions",
+        "eventbridge",
+        "sam"
+      ]
+    },
+    {
+      "name": "aws-messaging-and-streaming",
+      "displayName": "AWS Messaging and Streaming",
+      "source": "./plugins/vertical-plugins/aws-messaging-and-streaming",
+      "description": "Messaging and streaming skills for the main agent: SQS, SNS, EventBridge, Amazon MQ, Kinesis Data Streams, MSK (incl. migrations), Managed Service for Apache Flink, and customer messaging with SES, SMS/voice, and WhatsApp, plus the SNS/SQS and Amazon MQ MCP servers.",
+      "version": "0.1.0",
+      "category": "messaging",
+      "keywords": [
+        "aws",
+        "messaging",
+        "sqs",
+        "sns",
+        "kinesis",
+        "msk",
+        "kafka",
+        "flink",
+        "ses",
+        "amazon-mq"
+      ]
+    },
+    {
+      "name": "aws-analytics",
+      "displayName": "AWS Analytics",
+      "source": "./plugins/vertical-plugins/aws-analytics",
+      "description": "Analytics skills for the main agent: data lakes on S3 Tables/Iceberg, Glue Data Catalog and connections, Athena and Redshift (incl. migrations), OpenSearch, S3 Vectors, Clean Rooms, MWAA (Airflow), and system-table queries, with data-processing, Redshift, S3 Tables, and Spark troubleshooting/upgrade MCP servers.",
+      "version": "0.1.0",
+      "category": "data-analytics",
+      "keywords": [
+        "aws",
+        "analytics",
+        "data-lake",
+        "glue",
+        "athena",
+        "redshift",
+        "s3-tables",
+        "opensearch",
+        "mwaa",
+        "spark"
+      ]
+    },
+    {
+      "name": "aws-observability",
+      "displayName": "AWS Observability",
+      "source": "./plugins/vertical-plugins/aws-observability",
+      "description": "Observability skills for the main agent: CloudWatch metrics, logs, alarms and notifications, Application Signals, X-Ray, multi-Region CloudTrail, and application-failure troubleshooting, with CloudWatch, Application Signals, CloudTrail, and Prometheus MCP servers.",
+      "version": "0.1.0",
+      "category": "observability",
+      "keywords": [
+        "aws",
+        "observability",
+        "cloudwatch",
+        "alarms",
+        "cloudtrail",
+        "x-ray",
+        "prometheus",
+        "troubleshooting"
+      ]
+    },
+    {
+      "name": "aws-security-identity",
+      "displayName": "AWS Security and Identity",
+      "source": "./plugins/vertical-plugins/aws-security-identity",
+      "description": "Security and identity skills for the main agent: least-privilege IAM, Security Hub/GuardDuty/Inspector findings, Cognito authentication, and Secrets Manager best practices, with read-only IAM, Well-Architected security, and AWS Security Agent MCP servers and the secret-safety hook.",
+      "version": "0.1.0",
+      "category": "security",
+      "keywords": [
+        "aws",
+        "security",
+        "iam",
+        "secrets-manager",
+        "cognito",
+        "security-hub",
+        "guardduty",
+        "least-privilege"
+      ]
+    },
+    {
+      "name": "aws-resilience",
+      "displayName": "AWS Resilience",
+      "source": "./plugins/vertical-plugins/aws-resilience",
+      "description": "Resilience skills for the main agent: Resilience Hub assessments (single and multi-account), Fault Injection Service experiments, ARC Region switch and recovery controller, resilience lifecycle, and resilience program design.",
+      "version": "0.1.0",
+      "category": "resilience",
+      "keywords": [
+        "aws",
+        "resilience",
+        "resilience-hub",
+        "fis",
+        "chaos-engineering",
+        "disaster-recovery",
+        "arc"
+      ]
+    },
+    {
+      "name": "aws-cost-optimization",
+      "displayName": "AWS Cost Optimization",
+      "source": "./plugins/vertical-plugins/aws-cost-optimization",
+      "description": "Cost skills for the main agent: Cost Explorer analysis, anomalies, budgets, Savings Plans and Reserved Instances, Compute Optimizer right-sizing, and pricing estimates, with the Billing and Cost Management and Pricing MCP servers.",
+      "version": "0.1.0",
+      "category": "finops",
+      "keywords": [
+        "aws",
+        "finops",
+        "cost-optimization",
+        "billing",
+        "pricing",
+        "savings-plans",
+        "budgets"
+      ]
+    },
+    {
+      "name": "aws-ai-ml",
+      "displayName": "AWS AI and ML",
+      "source": "./plugins/vertical-plugins/aws-ai-ml",
+      "description": "Generative AI and ML skills for the main agent: Amazon Bedrock models, agents, knowledge bases, and guardrails, plus AWS AI/ML service selection and SageMaker AI, with the read-only SageMaker AI MCP server.",
+      "version": "0.1.0",
+      "category": "ai-ml",
+      "keywords": [
+        "aws",
+        "ai",
+        "ml",
+        "bedrock",
+        "sagemaker",
+        "generative-ai"
+      ]
+    },
+    {
+      "name": "aws-well-architected",
+      "displayName": "AWS Well-Architected",
+      "source": "./plugins/vertical-plugins/aws-well-architected",
+      "description": "Evidence-backed AWS Well-Architected Framework reviews across all six pillars on the main agent, with AWS Knowledge and the Well-Architected security MCP server.",
+      "version": "0.1.0",
+      "category": "architecture",
+      "keywords": [
+        "aws",
+        "well-architected",
+        "architecture-review",
+        "best-practices"
+      ]
+    },
+    {
+      "name": "aws-migration",
+      "displayName": "AWS Migration and Modernization",
+      "source": "./plugins/vertical-plugins/aws-migration",
+      "description": "Migration skills for the main agent: AWS Transform modernization (.NET, mainframe, VMware, SQL Server, language and SDK upgrades) and DMS Schema Conversion for heterogeneous database migrations.",
+      "version": "0.1.0",
+      "category": "migration",
+      "keywords": [
+        "aws",
+        "migration",
+        "modernization",
+        "transform",
+        "dms",
+        "schema-conversion"
+      ]
+    },
+    {
+      "name": "aws-web-and-mobile",
+      "displayName": "AWS Web and Mobile",
+      "source": "./plugins/vertical-plugins/aws-web-and-mobile",
+      "description": "Full-stack web and mobile skills for the main agent: AWS Amplify Gen 2 apps (auth, data, storage, functions, hosting), with the read-only AWS AppSync MCP server.",
+      "version": "0.1.0",
+      "category": "fullstack",
+      "keywords": [
+        "aws",
+        "amplify",
+        "appsync",
+        "fullstack",
+        "web",
+        "mobile"
+      ]
+    },
+    {
+      "name": "aws-marketplace-seller",
+      "displayName": "AWS Marketplace Seller",
+      "source": "./plugins/vertical-plugins/aws-marketplace-seller",
+      "description": "AWS Marketplace seller skills for the main agent: integrating SaaS, container, and AMI products with AWS Marketplace metering.",
+      "version": "0.1.0",
+      "category": "marketplace",
+      "keywords": [
+        "aws",
+        "marketplace",
+        "metering",
+        "saas"
+      ]
+    },
+    {
+      "name": "aws-end-user-computing",
+      "displayName": "AWS End User Computing",
+      "source": "./plugins/vertical-plugins/aws-end-user-computing",
+      "description": "Amazon WorkSpaces skills for the main agent: setting up and operating agent access to WorkSpaces desktops.",
+      "version": "0.1.0",
+      "category": "end-user-computing",
+      "keywords": [
+        "aws",
+        "workspaces",
+        "end-user-computing",
+        "vdi"
+      ]
+    },
+    {
+      "name": "aws-quantum-computing",
+      "displayName": "AWS Quantum Computing",
+      "source": "./plugins/vertical-plugins/aws-quantum-computing",
+      "description": "Amazon Braket skills for the main agent: building, simulating, and running quantum circuits and hybrid jobs on Braket devices.",
+      "version": "0.1.0",
+      "category": "quantum",
+      "keywords": [
+        "aws",
+        "quantum",
+        "braket"
+      ]
+    }
+  ]
+}

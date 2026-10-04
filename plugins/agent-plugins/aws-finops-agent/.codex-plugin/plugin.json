@@ -1,0 +1,21 @@
+{
+  "name": "aws-finops-agent",
+  "version": "0.1.0",
+  "description": "Cloud financial-operations agent: cost and usage analysis, anomaly detection, budgets, Savings Plans and Reserved Instance evaluation, Compute Optimizer right-sizing, CUR queries, and service pricing estimates.",
+  "author": {
+    "name": "TalkOps AI"
+  },
+  "homepage": "https://github.com/talkops-ai/devops-plugins",
+  "repository": "https://github.com/talkops-ai/devops-plugins",
+  "license": "Apache-2.0",
+  "keywords": [
+    "aws",
+    "finops",
+    "cost-optimization",
+    "billing",
+    "savings-plans",
+    "budgets",
+    "right-sizing",
+    "pricing"
+  ]
+}

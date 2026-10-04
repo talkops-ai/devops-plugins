@@ -1,0 +1,17 @@
+{
+  "name": "aws-well-architected",
+  "version": "0.1.0",
+  "description": "Evidence-backed AWS Well-Architected Framework reviews across all six pillars on the main agent, with AWS Knowledge and the Well-Architected security MCP server.",
+  "author": {
+    "name": "TalkOps AI"
+  },
+  "homepage": "https://github.com/talkops-ai/devops-plugins",
+  "repository": "https://github.com/talkops-ai/devops-plugins",
+  "license": "Apache-2.0",
+  "keywords": [
+    "aws",
+    "well-architected",
+    "architecture-review",
+    "best-practices"
+  ]
+}

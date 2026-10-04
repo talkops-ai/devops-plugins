@@ -1,0 +1,21 @@
+{
+  "name": "aws-serverless-engineer",
+  "version": "0.1.0",
+  "description": "Designs, builds, deploys, and debugs serverless applications: Lambda (incl. durable functions, managed instances, MicroVMs), API Gateway, Step Functions, and SAM/CDK deployment with template validation.",
+  "author": {
+    "name": "TalkOps AI"
+  },
+  "homepage": "https://github.com/talkops-ai/devops-plugins",
+  "repository": "https://github.com/talkops-ai/devops-plugins",
+  "license": "Apache-2.0",
+  "keywords": [
+    "aws",
+    "serverless",
+    "lambda",
+    "api-gateway",
+    "step-functions",
+    "sam",
+    "cdk",
+    "eventbridge"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "name": "aws-essentials",
+  "version": "0.1.0",
+  "description": "Foundation skills for any AWS work on the main agent: sign-in and credential setup, correct AWS SDK usage for Python (boto3), JavaScript v3, and Swift, plus the managed AWS MCP server and AWS Knowledge documentation search.",
+  "author": {
+    "name": "TalkOps AI"
+  },
+  "homepage": "https://github.com/talkops-ai/devops-plugins",
+  "repository": "https://github.com/talkops-ai/devops-plugins",
+  "license": "Apache-2.0",
+  "keywords": [
+    "aws",
+    "sign-in",
+    "credentials",
+    "boto3",
+    "aws-sdk",
+    "documentation"
+  ]
+}

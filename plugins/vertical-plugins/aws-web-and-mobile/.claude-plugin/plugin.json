@@ -1,0 +1,19 @@
+{
+  "name": "aws-web-and-mobile",
+  "version": "0.1.0",
+  "description": "Full-stack web and mobile skills for the main agent: AWS Amplify Gen 2 apps (auth, data, storage, functions, hosting), with the read-only AWS AppSync MCP server.",
+  "author": {
+    "name": "TalkOps AI"
+  },
+  "homepage": "https://github.com/talkops-ai/devops-plugins",
+  "repository": "https://github.com/talkops-ai/devops-plugins",
+  "license": "Apache-2.0",
+  "keywords": [
+    "aws",
+    "amplify",
+    "appsync",
+    "fullstack",
+    "web",
+    "mobile"
+  ]
+}

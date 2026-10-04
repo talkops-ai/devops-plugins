@@ -1,0 +1,22 @@
+{
+  "name": "aws-agentcore-engineer",
+  "version": "0.1.0",
+  "description": "Builds, deploys, and operates AI agents on Amazon Bedrock AgentCore: Strands/LangGraph scaffolding, Gateway and MCP tools, memory, Cedar policies, evaluations, trace debugging, and production hardening.",
+  "author": {
+    "name": "TalkOps AI"
+  },
+  "homepage": "https://github.com/talkops-ai/devops-plugins",
+  "repository": "https://github.com/talkops-ai/devops-plugins",
+  "license": "Apache-2.0",
+  "keywords": [
+    "aws",
+    "agentcore",
+    "bedrock",
+    "ai-agents",
+    "strands",
+    "langgraph",
+    "mcp",
+    "a2a",
+    "cedar"
+  ]
+}

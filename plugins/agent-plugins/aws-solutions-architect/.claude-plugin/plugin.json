@@ -1,0 +1,20 @@
+{
+  "name": "aws-solutions-architect",
+  "version": "0.1.0",
+  "description": "Solutions architect for AWS: evidence-backed Well-Architected Framework reviews across all six pillars, generative-AI and ML architectures on Bedrock and SageMaker, and correct AWS SDK usage (boto3, JS v3, Swift).",
+  "author": {
+    "name": "TalkOps AI"
+  },
+  "homepage": "https://github.com/talkops-ai/devops-plugins",
+  "repository": "https://github.com/talkops-ai/devops-plugins",
+  "license": "Apache-2.0",
+  "keywords": [
+    "aws",
+    "architecture",
+    "well-architected",
+    "bedrock",
+    "sagemaker",
+    "boto3",
+    "aws-sdk"
+  ]
+}

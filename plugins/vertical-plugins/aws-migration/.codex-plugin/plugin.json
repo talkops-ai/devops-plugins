@@ -1,0 +1,19 @@
+{
+  "name": "aws-migration",
+  "version": "0.1.0",
+  "description": "Migration skills for the main agent: AWS Transform modernization (.NET, mainframe, VMware, SQL Server, language and SDK upgrades) and DMS Schema Conversion for heterogeneous database migrations.",
+  "author": {
+    "name": "TalkOps AI"
+  },
+  "homepage": "https://github.com/talkops-ai/devops-plugins",
+  "repository": "https://github.com/talkops-ai/devops-plugins",
+  "license": "Apache-2.0",
+  "keywords": [
+    "aws",
+    "migration",
+    "modernization",
+    "transform",
+    "dms",
+    "schema-conversion"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "name": "aws-analytics",
+  "version": "0.1.0",
+  "description": "Analytics skills for the main agent: data lakes on S3 Tables/Iceberg, Glue Data Catalog and connections, Athena and Redshift (incl. migrations), OpenSearch, S3 Vectors, Clean Rooms, MWAA (Airflow), and system-table queries, with data-processing, Redshift, S3 Tables, and Spark troubleshooting/upgrade MCP servers.",
+  "author": {
+    "name": "TalkOps AI"
+  },
+  "homepage": "https://github.com/talkops-ai/devops-plugins",
+  "repository": "https://github.com/talkops-ai/devops-plugins",
+  "license": "Apache-2.0",
+  "keywords": [
+    "aws",
+    "analytics",
+    "data-lake",
+    "glue",
+    "athena",
+    "redshift",
+    "s3-tables",
+    "opensearch",
+    "mwaa",
+    "spark"
+  ]
+}
