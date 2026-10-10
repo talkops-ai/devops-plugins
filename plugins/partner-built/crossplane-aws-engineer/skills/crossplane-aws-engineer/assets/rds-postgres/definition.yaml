@@ -1,0 +1,68 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xpostgresdatabases.aws.platform.example.org
+spec:
+  group: aws.platform.example.org
+  names:
+    kind: XPostgresDatabase
+    plural: xpostgresdatabases
+  claimNames:
+    kind: PostgresDatabase
+    plural: postgresdatabases
+  connectionSecretKeys: [username, password, endpoint, port]
+  defaultCompositionRef:
+    name: postgres-aws-standalone
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          required: [spec]
+          properties:
+            spec:
+              type: object
+              required: [parameters]
+              properties:
+                parameters:
+                  type: object
+                  required: [region, storageGB, subnetIds, vpcId]
+                  properties:
+                    region:
+                      type: string
+                      description: AWS region for the database.
+                      pattern: '^[a-z]{2}(-gov|-isob|-iso)?-[a-z]+-[0-9]+$'
+                    storageGB:
+                      type: integer
+                      description: Allocated storage in GiB.
+                      minimum: 20
+                      maximum: 2000
+                    instanceClass:
+                      type: string
+                      description: RDS DB instance class approved by the platform team.
+                      default: db.t4g.medium
+                    databaseName:
+                      type: string
+                      description: Initial database name.
+                      default: appdb
+                      pattern: '^[a-zA-Z][a-zA-Z0-9_]{0,62}$'
+                    vpcId:
+                      type: string
+                      description: VPC identifier containing the database subnets.
+                      pattern: '^vpc-[a-f0-9]+$'
+                    subnetIds:
+                      type: array
+                      description: At least two subnets in distinct AZs.
+                      minItems: 2
+                      items: {type: string, pattern: '^subnet-[a-f0-9]+$'}
+                    deletionProtection:
+                      type: boolean
+                      description: Prevent AWS-side deletion of the DB instance.
+                      default: true
+            status:
+              type: object
+              properties:
+                endpoint: {type: string}
+                port: {type: string}

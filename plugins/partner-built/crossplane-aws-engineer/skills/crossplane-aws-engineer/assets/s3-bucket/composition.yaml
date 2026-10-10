@@ -1,0 +1,85 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: s3-bucket-secure
+  labels:
+    crossplane.io/xrd: xstoragebuckets.aws.platform.example.org
+spec:
+  compositeTypeRef:
+    apiVersion: aws.platform.example.org/v1alpha1
+    kind: XStorageBucket
+  mode: Pipeline
+  pipeline:
+    - step: patch-and-transform
+      functionRef:
+        name: function-patch-and-transform
+      input:
+        apiVersion: pt.fn.crossplane.io/v1beta1
+        kind: Resources
+        resources:
+          - name: bucket
+            base:
+              apiVersion: s3.aws.upbound.io/v1beta1
+              kind: Bucket
+              spec:
+                deletionPolicy: Orphan
+                providerConfigRef: {name: default}
+                forProvider:
+                  tags: {ManagedBy: Crossplane, ComplianceStatus: Secure}
+            patches:
+              - {type: FromCompositeFieldPath, fromFieldPath: spec.parameters.region, toFieldPath: spec.forProvider.region}
+              - type: FromCompositeFieldPath
+                fromFieldPath: metadata.name
+                toFieldPath: spec.forProvider.tags[Name]
+                transforms: [{type: string, string: {fmt: '%s-bucket'}}]
+              - {type: ToCompositeFieldPath, fromFieldPath: status.atProvider.arn, toFieldPath: status.arn}
+              - {type: ToCompositeFieldPath, fromFieldPath: status.atProvider.bucketDomainName, toFieldPath: status.bucketDomainName}
+          - name: public-access-block
+            base:
+              apiVersion: s3.aws.upbound.io/v1beta1
+              kind: BucketPublicAccessBlock
+              spec:
+                providerConfigRef: {name: default}
+                forProvider:
+                  blockPublicAcls: true
+                  blockPublicPolicy: true
+                  ignorePublicAcls: true
+                  restrictPublicBuckets: true
+                  bucketSelector: {matchControllerRef: true}
+            patches:
+              - {type: FromCompositeFieldPath, fromFieldPath: spec.parameters.region, toFieldPath: spec.forProvider.region}
+          - name: encryption
+            base:
+              apiVersion: s3.aws.upbound.io/v1beta1
+              kind: BucketServerSideEncryptionConfiguration
+              spec:
+                providerConfigRef: {name: default}
+                forProvider:
+                  rule:
+                    - applyServerSideEncryptionByDefault: {sseAlgorithm: AES256}
+                  bucketSelector: {matchControllerRef: true}
+            patches:
+              - {type: FromCompositeFieldPath, fromFieldPath: spec.parameters.region, toFieldPath: spec.forProvider.region}
+          - name: versioning
+            base:
+              apiVersion: s3.aws.upbound.io/v1beta1
+              kind: BucketVersioning
+              spec:
+                providerConfigRef: {name: default}
+                forProvider:
+                  versioningConfiguration: [{status: Suspended}]
+                  bucketSelector: {matchControllerRef: true}
+            patches:
+              - {type: FromCompositeFieldPath, fromFieldPath: spec.parameters.region, toFieldPath: spec.forProvider.region}
+              - type: FromCompositeFieldPath
+                fromFieldPath: spec.parameters.versioning
+                toFieldPath: spec.forProvider.versioningConfiguration[0].status
+                transforms:
+                  - type: match
+                    match:
+                      patterns:
+                        - {type: literal, literal: 'true', result: Enabled}
+                        - {type: literal, literal: 'false', result: Suspended}
+    - step: auto-ready
+      functionRef:
+        name: function-auto-ready

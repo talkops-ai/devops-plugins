@@ -685,6 +685,29 @@
       ]
     },
     {
+      "name": "crossplane-aws-engineer",
+      "displayName": "Crossplane AWS Platform Engineer",
+      "source": "./plugins/partner-built/crossplane-aws-engineer",
+      "description": "Crossplane platform engineering skills for AWS using XRDs, Pipeline Compositions, Upbound providers, and GitOps.",
+      "version": "1.0.0",
+      "category": "platform-engineering",
+      "keywords": [
+        "crossplane",
+        "aws",
+        "kubernetes",
+        "platform-engineering",
+        "upbound",
+        "gitops"
+      ],
+      "author": {
+        "name": "TalkOps",
+        "url": "https://github.com/talkops-ai/devops-plugins"
+      },
+      "homepage": "https://www.crossplane.io/",
+      "repository": "https://github.com/talkops-ai/devops-plugins",
+      "license": "Apache-2.0"
+    },
+    {
       "name": "terraform",
       "displayName": "Terraform (HashiCorp)",
       "source": "./plugins/partner-built/terraform",

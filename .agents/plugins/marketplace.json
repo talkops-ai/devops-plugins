@@ -473,6 +473,18 @@
       "category": "Cloud"
     },
     {
+      "name": "crossplane-aws-engineer",
+      "source": {
+        "source": "local",
+        "path": "./plugins/partner-built/crossplane-aws-engineer"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
       "name": "terraform",
       "source": {
         "source": "local",

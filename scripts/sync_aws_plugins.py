@@ -605,6 +605,14 @@ def sync_plugin(cfg: dict, plugin: dict, dry_run: bool) -> list[str]:
     ignore = make_ignore(cfg["exclude"])
     log: list[str] = []
 
+    # Some partner plugins are authored in this repository rather than mirrored
+    # from an upstream source. Keep their hand-authored package intact while
+    # still registering them in both generated marketplace catalogs.
+    if kind == "partner" and plugin.get("local"):
+        if not target.is_dir():
+            raise SyncError(f"{name}: local partner plugin not found at {target}")
+        return [f"{name} ({kind}): local package preserved"]
+
     if dry_run:
         for spec in plugin["skills"]:
             skills_root(cfg, spec["from"])

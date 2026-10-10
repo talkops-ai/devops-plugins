@@ -1,0 +1,9 @@
+apiVersion: aws.platform.example.org/v1alpha1
+kind: StorageBucket
+metadata:
+  name: application-assets
+  namespace: analytics-prod
+spec:
+  parameters:
+    region: us-east-1
+    versioning: true
