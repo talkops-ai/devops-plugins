@@ -1175,7 +1175,7 @@
       "name": "aws-cloud-security-engineer",
       "displayName": "AWS Cloud Security Engineer",
       "category": "security",
-      "description": "Cloud security and identity engineer: IAM policies, roles and trust relationships, Security Hub/GuardDuty/Inspector/Macie findings, Secrets Manager safe-handling, Cognito authentication, and Well-Architected security posture checks.",
+      "description": "Cloud security and identity engineer: IAM policies, roles and trust relationships, AWS Config/KMS/VPC/WAF audits, Security Hub/GuardDuty/Inspector/Macie/Detective/Security Lake findings, CloudTrail correlation, Secrets Manager safe-handling, Cognito authentication, and Well-Architected security posture checks.",
       "keywords": [
         "aws",
         "security",
@@ -1183,6 +1183,11 @@
         "security-hub",
         "guardduty",
         "inspector",
+        "config",
+        "kms",
+        "vpc",
+        "waf",
+        "cloudtrail",
         "secrets-manager",
         "cognito",
         "compliance"

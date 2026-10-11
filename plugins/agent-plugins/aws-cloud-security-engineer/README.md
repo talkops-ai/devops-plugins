@@ -2,7 +2,7 @@
 
 # AWS Cloud Security Engineer
 
-Cloud security and identity engineer: IAM policies, roles and trust relationships, Security Hub/GuardDuty/Inspector/Macie findings, Secrets Manager safe-handling, Cognito authentication, and Well-Architected security posture checks.
+Cloud security and identity engineer: IAM policies, roles and trust relationships, AWS Config/KMS/VPC/WAF audits, Security Hub/GuardDuty/Inspector/Macie/Detective/Security Lake findings, CloudTrail correlation, Secrets Manager safe-handling, Cognito authentication, and Well-Architected security posture checks.
 
 ## Install
 
@@ -25,6 +25,11 @@ This is an **agent plugin**: every skill, command, hook, and MCP server below is
 | Skill | What it does |
 |---|---|
 | `aws-auth` | Adds user authentication to web and mobile apps with Amazon Cognito (user pools and identity pools) and the AWS Amplify client auth libraries. |
+| `security-incident-triage` | Daily threat triage, attack-sequence prioritization, CloudTrail actor correlation, and incident timelines. |
+| `security-identity-governance` | Access-key hygiene, IAM Access Analyzer, cross-account trust, SCP guardrails, and toxic privilege-path analysis. |
+| `security-network-perimeter` | Security-group, NACL, route, VPC Flow Log, WAF association, and public administration-path audits. |
+| `security-posture-audit` | AWS Config, Security Hub CSPM, KMS, Well-Architected, CIS/FSBP, and multi-region posture auditing. |
+| `security-remediation-governance` | Approval-gated remediation proposals with blast radius, rollback, and verification contracts. |
 | `aws-iam` | Provides verified corrections for IAM behaviors that AI agents frequently get wrong — policy evaluation edge cases, trust policy gotchas, STS session limits, Organizations quirks, and SAML/MFA specifics. |
 | `aws-secrets-manager` | Secret safety for AWS Secrets Manager, secret management, credentials, API keys, tokens, and passwords. |
 | `aws-security` | Covers AWS security services and workflows — Security Hub V2 (OCSF) findings, connectors, aggregators, automation rules, and security posture summaries; Security Hub CSPM (V1/ASFF) controls and compliance standards; Gua… |
