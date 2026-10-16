@@ -1,7 +1,7 @@
 {
   "name": "aws-well-architected",
-  "version": "0.1.0",
-  "description": "Evidence-backed AWS Well-Architected Framework reviews across all six pillars on the main agent, with AWS Knowledge and the Well-Architected security MCP server.",
+  "version": "0.2.0",
+  "description": "Principal Solutions Architecture toolkit for the main agent: AWS Well-Architected Six-Pillar reviews, MADR 3.0 Architecture Decision Records (ADRs), Draw.io & Mermaid architecture diagrams, STRIDE threat modeling, multi-account Landing Zone design, and multi-region DR architecture.",
   "author": {
     "name": "TalkOps AI"
   },
@@ -11,7 +11,11 @@
   "keywords": [
     "aws",
     "well-architected",
-    "architecture-review",
-    "best-practices"
+    "architecture",
+    "adr",
+    "drawio",
+    "threat-modeling",
+    "landing-zone",
+    "disaster-recovery"
   ]
 }

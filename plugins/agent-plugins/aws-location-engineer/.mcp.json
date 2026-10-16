@@ -5,9 +5,11 @@
       "args": [
         "mcp-proxy-for-aws@latest",
         "https://aws-mcp.us-east-1.api.aws/mcp"
-      ]
+      ],
+      "type": "stdio"
     },
     "awslocation": {
+      "type": "stdio",
       "command": "uvx",
       "args": [
         "awslabs.aws-location-mcp-server@latest"

@@ -1,6 +1,6 @@
 ---
 name: aws-serverless-deployment
-description: "AWS SAM and AWS CDK deployment for serverless applications. Triggers on phrases like: use SAM, SAM template, SAM init, SAM deploy, CDK serverless, CDK Lambda construct, NodejsFunction, PythonFunction, SAM and CDK together, serverless CI/CD pipeline. For general app deployment with service selection, use the aws-deployment-agent plugin instead."
+description: "AWS SAM and AWS CDK deployment for serverless applications. Triggers on phrases like: use SAM, SAM template, SAM init, SAM deploy, CDK serverless, CDK Lambda construct, NodejsFunction, PythonFunction, SAM and CDK together, serverless CI/CD pipeline. For general app deployment with service selection, use the aws-deployment-engineer plugin instead."
 argument-hint: "[what are you deploying?]"
 ---
 
@@ -62,9 +62,7 @@ This skill requires that AWS credentials are configured on the host machine:
 
 ### AWS Serverless MCP Server
 
-**Write access is enabled by default.** The plugin ships with `--allow-write` in `.mcp.json`, so the MCP server can create projects, generate IaC, and deploy on behalf of the user.
-
-Access to sensitive data (like Lambda and API Gateway logs) is **not** enabled by default. To grant it, add `--allow-sensitive-data-access` to `.mcp.json`.
+**Write access and log/metrics inspection (`--allow-write` and `--allow-sensitive-data-access`) are enabled in `.mcp.json`.** This allows `sam_logs`, `get_metrics`, `sam_build`, `sam_local_invoke`, and `sam_deploy` to work seamlessly out of the box, while mutating cloud operations are guarded by the plugin's `PreToolUse` safety hooks (`aws-mutation-gate.py` and `secret-safety.py`).
 
 ### SAM Template Validation Hook
 

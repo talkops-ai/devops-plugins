@@ -49,6 +49,20 @@
         "FASTMCP_LOG_LEVEL": "ERROR",
         "AWS_REGION": "${AWS_REGION:-us-east-1}"
       }
+    },
+    "awssupport": {
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-support-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "awsknowledge": {
+      "type": "http",
+      "url": "https://knowledge-mcp.global.api.aws"
     }
   }
 }

@@ -173,6 +173,7 @@ Stage 3 reads gcp-to-aws artifacts ONLY via this recorded path, never by re-glob
 | `references/phases/migration-plan/migration-plan.md` | Stage 2: full migration plan via the sibling gcp-to-aws engine                                                 |
 | `references/decision-refs/temporal.md`               | Temporal rules: Tier 1/2 tables, adapter, runbooks, commercials (consumed by discover/clarify/design/generate) |
 | `references/decision-refs/poc-shapes.md`             | Per-runtime POC deploy shapes (ECS/EKS/Lambda/MicroVMs/Temporal)                                               |
+| `references/decision-refs/agentcore-patterns.md`     | AgentCore Identity (OAuth2/OIDC 3LO token vault), Memory migration (Short-Term/Long-Term), and Code/Browser sandboxes |
 | `references/decision-refs/*.md`                      | Runtime service cards, model defaults, freshness                                                               |
 | `references/decision-refs/workload-classes.md`       | Deterministic verdicts for non-agent workload units (batch/service/io)                                         |
 | `references/runtimes/*.json`                         | Runtime registry (read by scoring.py)                                                                          |

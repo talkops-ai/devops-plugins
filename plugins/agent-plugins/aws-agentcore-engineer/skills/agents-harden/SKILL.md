@@ -460,24 +460,48 @@ Every MB of deployment package adds to cold-start time.
 - **For CodeZip builds:** prune dev dependencies from `pyproject.toml` / `requirements.txt`. Don't ship `tests/`, `docs/`, `.git/`, local caches.
 - **Audit regularly:** `pip list` (Python) or `npm ls` (Node) will show you what's actually installed. Remove anything you're not using.
 
-### Defer heavy initialization
+### MicroVM 15-Minute Warm-Pool Singletons vs. Per-Request `MCPClient`
 
-Don't load large models, connect to databases, or initialize MCP clients at module import time. Every second spent in module import is a second the agent can't respond to requests.
+AgentCore Runtime microVMs stay warm for 15 minutes (`idleRuntimeSessionTimeout = 900s`) after serving a request. Initialize `BedrockModel`, boto3 clients, and database connection pools as **module-level singletons** outside `@app.entrypoint` so every warm turn reuses the initialized clients with zero overhead.
+
+**Critical Exception — Per-Request `MCPClient` for User JWT Forwarding:**
+When your agent forwards the caller's inbound `Authorization` header (`context.request_headers`) to an AgentCore Gateway (e.g., for Two-Step On-Behalf-Of token exchange), you MUST instantiate `MCPClient` **inside `@app.entrypoint` per request** so user bearer tokens are never cached or leaked across sessions:
 
 ```python
-# ❌ Slow — runs at import time, before the agent can handle requests
-import heavy_library
-client = heavy_library.Client(config)
+import os
+from strands import Agent
+from strands.models import BedrockModel
+from strands.tools.mcp import MCPClient
+from mcp.client.streamable_http import streamablehttp_client
+from bedrock_agentcore.runtime import BedrockAgentCoreApp, RequestContext
 
-# ✅ Fast — defers until first request
-_client = None
-def get_client():
-    global _client
-    if _client is None:
-        import heavy_library
-        _client = heavy_library.Client(config)
-    return _client
+app = BedrockAgentCoreApp()
+
+# ✅ Module-level singleton: cached across the 15-minute microVM warm pool
+MODEL = BedrockModel(model_id="us.anthropic.claude-sonnet-4-20250514-v1:0")
+GATEWAY_URL = os.getenv("AGENTCORE_GATEWAY_MYGATEWAY_URL")
+
+
+@app.entrypoint
+def invoke(payload: dict, context: RequestContext):
+    headers = getattr(context, "request_headers", {}) or {}
+    user_auth = headers.get("authorization") or headers.get("Authorization")
+
+    # ✅ Per-request MCPClient: binds the caller's JWT and MCP-Protocol-Version header safely
+    req_headers = {"MCP-Protocol-Version": "2026-07-28"}
+    if user_auth:
+        req_headers["Authorization"] = user_auth
+
+    with MCPClient(lambda: streamablehttp_client(GATEWAY_URL, headers=req_headers)) as mcp:
+        agent = Agent(model=MODEL, tools=mcp.list_tools_sync())
+        return {"response": str(agent(payload["prompt"]))}
 ```
+
+### Frontend Session Pre-Warming & Elastic Pricing
+
+To eliminate the initial 1.5–4 second microVM cold start for interactive human chats:
+1. **Frontend Session Pre-Warming:** When the user opens the chat widget or focuses the text input, fire an asynchronous background warm-up ping (`{"action": "warmup"}`) with the conversation's `sessionId` so the microVM is already initialized before the user presses Enter.
+2. **Elastic Memory Reclamation vs. Committed Baseline:** Use standard scale-to-zero consumption pricing with elastic memory reclamation for spiky/interactive workloads, or switch to **Committed Baseline Pricing** for steady 24/7 enterprise ambient agents.
 
 ### Choose deployment type based on traffic pattern, not by default
 
@@ -491,6 +515,20 @@ Neither wins universally. Both benefit the same way from session reuse and from 
 ### For Lambda targets behind Gateway
 
 Use provisioned concurrency on the Lambda function to eliminate Lambda cold starts. This is separate from Runtime initialization — it's the Lambda itself that adds latency on first invocation of a cold Lambda.
+
+---
+
+## Encryption at Rest (KMS CMK) & Indirect Prompt Injection Defense
+
+### 1. Customer-Managed KMS Keys (CMK)
+For regulated workloads (HIPAA, PCI-DSS, SOC2, FedRAMP), never rely solely on AWS-owned default encryption keys for stateful agent stores:
+- Configure a **Customer-Managed KMS Key (`encryptionKeyArn`)** on **AgentCore Memory** (`create_memory` / `update_memory`) and on the **AgentCore Identity Token Vault**.
+- Scope the KMS Key Policy so only the specific Runtime execution role and the `bedrock-agentcore.amazonaws.com` service principal (with `kms:ViaService` and `aws:SourceAccount` conditions) can call `kms:Decrypt` and `kms:GenerateDataKey`.
+
+### 2. Indirect Prompt Injection Boundary
+Outputs from `retrieve_memories` (Long-Term Memory) and external Gateway MCP tools may contain untrusted third-party content:
+- Wrap retrieved memory records in explicit XML delimiters (`<retrieved_memory_untrusted>...</retrieved_memory_untrusted>`) and instruct the system prompt never to follow instructions contained inside data blocks.
+- Enforce **Cedar Policy Engine rules in `ENFORCE` mode** at the Gateway edge so that even if an agent's reasoning is hijacked, unauthorized tool calls or parameter values are deterministically blocked before reaching backend APIs.
 
 ---
 
@@ -650,14 +688,18 @@ Generate a checklist specific to the project:
 ```
 Production Readiness Checklist for <AgentName>
 
-IAM
+IAM & Encryption
 [ ] Execution role Bedrock access scoped to specific model ARNs
 [ ] ECR access scoped to specific repository
 [ ] Trust policy scoped to your account ID
+[ ] Customer-Managed KMS Key (CMK) configured for AgentCore Memory & Identity Token Vault
 
-Authentication
+Authentication & Zero-Trust
 [ ] Inbound auth is AWS_IAM or CUSTOM_JWT (not NONE)
-[ ] If CUSTOM_JWT: discovery URL, audience, and client IDs configured
+[ ] If CUSTOM_JWT: discovery URL (or S3/CloudFront OIDC shim), audience, and client IDs configured
+[ ] Two-Step OBO with KMS asymmetric signing configured if downstream APIs require end-user identity
+[ ] Retrieved LTM memories wrapped in <retrieved_memory_untrusted> tags (indirect prompt injection defense)
+[ ] Cedar Policy Engine transitioned from LOG_ONLY to ENFORCE mode
 
 Shell Access (if using InvokeAgentRuntimeCommand)
 [ ] InvokeAgentRuntimeCommand permission granted only to identities that need it
@@ -674,27 +716,29 @@ Code quality
 Observability
 [ ] X-Ray tracing enabled (auto-configured)
 [ ] CloudWatch log retention policy set
-[ ] Eval baseline established
+[ ] Two-Tier CI/CD Evaluation baseline established (Tier 1 Trajectory + Tier 2 LLM-as-a-Judge)
 
 Performance
-[ ] Agent initialization time measured and optimized
+[ ] Module-level singletons used for BedrockModel/DB pools across 15-min warm pool (per-request MCPClient for user JWTs)
+[ ] Frontend session pre-warming configured on chat UI open
+[ ] Elastic memory reclamation vs. Committed Baseline pricing selected
 [ ] Deployment package size under 200 MB (target under 100 MB)
 [ ] Dependencies audited — no unused packages
-[ ] Heavy initialization deferred to request time
 [ ] Session reuse strategy chosen for multi-turn / batch workloads
 [ ] `StopRuntimeSession` called after work completes where applicable
 [ ] `idleRuntimeSessionTimeout` tuned to workload (default 900s)
 [ ] For long-running background tasks: `add_async_task` / `complete_async_task` used
 
 Resources
-[ ] Memory strategies appropriate for use case (if using memory)
-[ ] Gateway auth configured (if using gateway)
-[ ] Policy engine attached (if restricting tool access)
+[ ] Memory strategies appropriate for use case (if using memory) and LTM DLQ monitored
+[ ] Gateway auth and MCP 2026-07-28 supportedVersions configured (if using gateway)
+[ ] Policy engine attached in ENFORCE mode (if restricting tool access)
 
 Testing
+[ ] Unit tests executed with OTEL_SDK_DISABLED=true pytest
 [ ] Agent tested with production-representative inputs
 [ ] Error cases tested (tool failures, model errors)
-[ ] Memory cross-session tested (if using LTM)
+[ ] Memory cross-session tested with poll loop (if using LTM)
 ```
 
 ## Output

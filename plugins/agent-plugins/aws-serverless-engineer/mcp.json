@@ -6,7 +6,60 @@
       "command": "uvx",
       "args": [
         "awslabs.aws-serverless-mcp-server@latest",
-        "--allow-write"
+        "--allow-write",
+        "--allow-sensitive-data-access"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      }
+    },
+    "aws-documentation-mcp": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-documentation-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_DOCUMENTATION_PARTITION": "aws"
+      }
+    },
+    "aws-dynamodb-mcp": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "awslabs.dynamodb-mcp-server>=2.1.6"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      }
+    },
+    "aws-sns-sqs-mcp": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "awslabs.amazon-sns-sqs-mcp-server@latest",
+        "--allow-resource-creation"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      }
+    },
+    "aws-cloudwatch-mcp": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "awslabs.cloudwatch-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      }
+    },
+    "aws-billing-cost-mcp": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "awslabs.billing-cost-management-mcp-server@latest"
       ],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR"

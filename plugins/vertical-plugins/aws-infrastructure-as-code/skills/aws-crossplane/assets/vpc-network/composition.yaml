@@ -1,0 +1,104 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: network-aws-standard
+  labels:
+    crossplane.io/xrd: xnetworks.aws.platform.example.org
+spec:
+  compositeTypeRef:
+    apiVersion: aws.platform.example.org/v1alpha1
+    kind: XNetwork
+  mode: Pipeline
+  pipeline:
+    - step: patch-and-transform
+      functionRef:
+        name: function-patch-and-transform
+      input:
+        apiVersion: pt.fn.crossplane.io/v1beta1
+        kind: Resources
+        resources:
+          - name: vpc
+            base:
+              apiVersion: ec2.aws.upbound.io/v1beta1
+              kind: VPC
+              spec:
+                deletionPolicy: Orphan
+                providerConfigRef:
+                  name: default
+                forProvider:
+                  enableDnsHostnames: true
+                  enableDnsSupport: true
+                  tags:
+                    ManagedBy: Crossplane
+            patches:
+              - {type: FromCompositeFieldPath, fromFieldPath: spec.parameters.cidrBlock, toFieldPath: spec.forProvider.cidrBlock}
+              - {type: FromCompositeFieldPath, fromFieldPath: spec.parameters.region, toFieldPath: spec.forProvider.region}
+              - type: FromCompositeFieldPath
+                fromFieldPath: metadata.name
+                toFieldPath: spec.forProvider.tags[Name]
+                transforms: [{type: string, string: {fmt: '%s-vpc'}}]
+              - {type: ToCompositeFieldPath, fromFieldPath: status.atProvider.id, toFieldPath: status.vpcId}
+          - name: internet-gateway
+            base:
+              apiVersion: ec2.aws.upbound.io/v1beta1
+              kind: InternetGateway
+              spec:
+                providerConfigRef: {name: default}
+                forProvider:
+                  tags: {ManagedBy: Crossplane}
+            patches:
+              - {type: FromCompositeFieldPath, fromFieldPath: spec.parameters.region, toFieldPath: spec.forProvider.region}
+              - {type: FromCompositeFieldPath, fromFieldPath: status.vpcId, toFieldPath: spec.forProvider.vpcId}
+              - {type: ToCompositeFieldPath, fromFieldPath: status.atProvider.id, toFieldPath: status.internetGatewayId}
+          - name: route-table
+            base:
+              apiVersion: ec2.aws.upbound.io/v1beta1
+              kind: RouteTable
+              spec:
+                providerConfigRef: {name: default}
+                forProvider:
+                  tags: {ManagedBy: Crossplane}
+            patches:
+              - {type: FromCompositeFieldPath, fromFieldPath: spec.parameters.region, toFieldPath: spec.forProvider.region}
+              - {type: FromCompositeFieldPath, fromFieldPath: status.vpcId, toFieldPath: spec.forProvider.vpcId}
+              - {type: ToCompositeFieldPath, fromFieldPath: status.atProvider.id, toFieldPath: status.routeTableId}
+          - name: default-route
+            base:
+              apiVersion: ec2.aws.upbound.io/v1beta1
+              kind: Route
+              spec:
+                providerConfigRef: {name: default}
+                forProvider:
+                  destinationCidrBlock: 0.0.0.0/0
+            patches:
+              - {type: FromCompositeFieldPath, fromFieldPath: spec.parameters.region, toFieldPath: spec.forProvider.region}
+              - {type: FromCompositeFieldPath, fromFieldPath: status.routeTableId, toFieldPath: spec.forProvider.routeTableId}
+              - {type: FromCompositeFieldPath, fromFieldPath: status.internetGatewayId, toFieldPath: spec.forProvider.gatewayId}
+          - name: public-subnet
+            base:
+              apiVersion: ec2.aws.upbound.io/v1beta1
+              kind: Subnet
+              spec:
+                providerConfigRef: {name: default}
+                forProvider:
+                  mapPublicIpOnLaunch: true
+                  tags: {ManagedBy: Crossplane, NetworkTier: public}
+            patches:
+              - {type: FromCompositeFieldPath, fromFieldPath: spec.parameters.region, toFieldPath: spec.forProvider.region}
+              - {type: FromCompositeFieldPath, fromFieldPath: status.vpcId, toFieldPath: spec.forProvider.vpcId}
+              - {type: FromCompositeFieldPath, fromFieldPath: spec.parameters.subnetCidrBlock, toFieldPath: spec.forProvider.cidrBlock}
+              - {type: ToCompositeFieldPath, fromFieldPath: status.atProvider.id, toFieldPath: status.subnetId}
+          - name: route-table-association
+            base:
+              apiVersion: ec2.aws.upbound.io/v1beta1
+              kind: RouteTableAssociation
+              spec:
+                providerConfigRef: {name: default}
+                forProvider: {}
+            patches:
+              - {type: FromCompositeFieldPath, fromFieldPath: spec.parameters.region, toFieldPath: spec.forProvider.region}
+              - {type: FromCompositeFieldPath, fromFieldPath: status.routeTableId, toFieldPath: spec.forProvider.routeTableId}
+              - {type: FromCompositeFieldPath, fromFieldPath: status.subnetId, toFieldPath: spec.forProvider.subnetId}
+    - step: auto-ready
+      functionRef:
+        name: function-auto-ready

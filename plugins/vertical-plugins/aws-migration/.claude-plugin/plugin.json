@@ -1,7 +1,7 @@
 {
   "name": "aws-migration",
-  "version": "0.1.0",
-  "description": "Migration skills for the main agent: AWS Transform modernization (.NET, mainframe, VMware, SQL Server, language and SDK upgrades) and DMS Schema Conversion for heterogeneous database migrations.",
+  "version": "0.2.0",
+  "description": "Application, database, and cloud-to-AWS migration skills for the main agent: 7 Rs migration strategy & Strangler Fig decomposition, AWS Transform (.NET, Java, mainframe, SQL), AWS MGN & App2Container, DMS schema conversion & CDC cutover, Babelfish/SQL remediation, and Azure/GCP/Heroku to AWS migrations.",
   "author": {
     "name": "TalkOps AI"
   },
@@ -12,8 +12,12 @@
     "aws",
     "migration",
     "modernization",
-    "transform",
+    "aws-transform",
     "dms",
-    "schema-conversion"
+    "mgn",
+    "mainframe",
+    "strangler-fig",
+    "azure-to-aws",
+    "gcp-to-aws"
   ]
 }

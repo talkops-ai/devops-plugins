@@ -9,7 +9,19 @@ metadata:
 
 Domain expertise for building serverless applications on AWS: Lambda, API Gateway, Step Functions, EventBridge, event source mappings, concurrency, cold starts, deployment, and troubleshooting.
 
-**Works best with** the [AWS MCP server](https://docs.aws.amazon.com/aws-mcp/) — run CLI commands, query CloudWatch, validate configs directly. All guidance also works with standard AWS CLI access.
+**Works best with** the [`serverless` MCP server (`awslabs.aws-serverless-mcp-server`)](https://github.com/awslabs/mcp/tree/main/src/aws-serverless-mcp-server) and the [AWS MCP server](https://docs.aws.amazon.com/aws-mcp/) — enabling native AWS SAM CLI lifecycle automation, Event Source Mapping (ESM) optimization, EventBridge Schema Registry lookups, CloudWatch telemetry, and configuration validation directly. All guidance also works with standard AWS CLI access.
+
+## Serverless MCP Server Orchestration (`serverless` MCP)
+
+When operating within the `aws-platform-engineer` plugin, prefer the bound `serverless` (`mcp__plugin_aws-platform-engineer_serverless__*`) and `sns-sqs` (`mcp__plugin_aws-platform-engineer_sns-sqs__*`) MCP tools over ad-hoc shell commands:
+
+| Capability | `serverless` MCP Tools to Invoke | Platform Engineering Rule |
+|---|---|---|
+| **Architecture & IaC Guidance** | `get_lambda_guidance`, `get_iac_guidance`, `get_serverless_templates`, `get_lambda_event_schemas`, `deploy_serverless_app_help` | Call before authoring new SAM/CDK serverless stacks; default Lambda architecture to **`arm64` (Graviton)** for 20% lower cost and up to 34% better price-performance. |
+| **SAM Build, Local Testing & Deploy** | `sam_init`, `sam_build`, `sam_local_invoke`, `sam_deploy`, `sam_logs` | Validate templates with `aws-iac` (`validate_cloudformation_template` + `check_cloudformation_template_compliance`) and test handlers locally via `sam_local_invoke` before proposing `sam_deploy`. |
+| **Full-Stack Web Apps (Lambda Web Adapter)** | `deploy_webapp`, `update_webapp_frontend`, `configure_domain`, `webapp_deployment_help` | Use for FastAPI, Express, Next.js, or Flask HTTP services running on Lambda with zero-code-change HTTP adapters. |
+| **Event Source Mapping (ESM) & Kafka Tuning** | `esm_guidance`, `esm_optimize` (`analyze`, `validate`, `generate_template`), `esm_kafka_troubleshoot` | Always set `FunctionResponseTypes: [ReportBatchItemFailures]`, configure a DLQ / `OnFailure` destination, and enforce SQS `VisibilityTimeout >= 6 * Lambda Timeout + MaximumBatchingWindowInSeconds`. Never leave Kinesis/DynamoDB Stream `MaximumRetryAttempts` at `-1` (infinite); enable `BisectBatchOnFunctionError: true`. |
+| **EventBridge Schema Registry & Metrics** | `list_registries`, `search_schema`, `describe_schema`, `get_metrics` | Validate event producer/consumer schemas against Schema Registry and correlate `get_metrics` with `cloudwatch` Logs Insights before right-sizing memory (remember `1,769 MB = 1 vCPU`; check whether a function is CPU-bound or I/O-bound before lowering memory). |
 
 ## Specialized skills — check these first
 

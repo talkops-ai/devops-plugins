@@ -1,7 +1,7 @@
 {
   "name": "aws-end-user-computing",
-  "version": "0.1.0",
-  "description": "Amazon WorkSpaces skills for the main agent: setting up and operating agent access to WorkSpaces desktops.",
+  "version": "0.2.0",
+  "description": "AWS End User Computing (EUC) fleet architecture and operations for the main agent: Amazon WorkSpaces Personal & Pools, Active Directory & IAM Identity Center integration, WSP streaming tuning, AutoStop/AlwaysOn cost optimization, Amazon AppStream 2.0 (Elastic, On-Demand, Always-On fleets & Image Builder), WorkSpaces Secure Browser, EUC CloudWatch triage, and WorkSpaces Agent Access.",
   "author": {
     "name": "TalkOps AI"
   },
@@ -10,16 +10,22 @@
   "license": "Apache-2.0",
   "keywords": [
     "aws",
+    "euc",
     "workspaces",
-    "end-user-computing",
-    "vdi"
+    "appstream",
+    "workspaces-web",
+    "vdi",
+    "wsp",
+    "active-directory",
+    "desktop-streaming"
   ],
   "skills": "./skills/",
   "mcpServers": "./mcp.json",
+  "hooks": "./hooks/hooks.json",
   "interface": {
     "displayName": "AWS End User Computing",
-    "shortDescription": "Amazon WorkSpaces skills for the main agent",
-    "longDescription": "Amazon WorkSpaces skills for the main agent: setting up and operating agent access to WorkSpaces desktops.",
+    "shortDescription": "AWS End User Computing (EUC) fleet architecture and operations for the main agent: Amazon WorkSpaces Personal…",
+    "longDescription": "AWS End User Computing (EUC) fleet architecture and operations for the main agent: Amazon WorkSpaces Personal & Pools, Active Directory & IAM Identity Center integration, WSP streaming tuning, AutoStop/AlwaysOn cost optimization, Amazon AppStream 2.0 (Elastic, On-Demand, Always-On fleets & Image Builder), WorkSpaces Secure Browser, EUC CloudWatch triage, and WorkSpaces Agent Access.",
     "developerName": "TalkOps AI",
     "category": "Cloud",
     "capabilities": [

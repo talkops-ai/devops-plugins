@@ -19,6 +19,7 @@ If the user has an ARN, validate it:
 
   ```
   aws sagemaker describe-hub-content --hub-name HUB_NAME --hub-content-type JsonDoc --hub-content-name CONTENT_NAME --hub-content-version VERSION --region REGION
+
   ```
 
   If the call succeeds, `HubContentStatus` is `Available`, and `HubContentSearchKeywords` includes `@evaluatortype:rewardfunction`, the evaluator is valid.
@@ -64,6 +65,7 @@ return {
     "headers": {"Content-Type": "application/json"},
     "body": json.dumps([result])  # body is a JSON STRING
 }
+
 ```
 
 **For Nova models:**
@@ -75,16 +77,14 @@ return {
     "headers": {"Content-Type": "application/json"},
     "body": [result]  # body is a PARSED LIST (not json.dumps)
 }
+
 ```
 
 Each result object has the shape:
 
 ```json
-{
-  "id": "sample_id",
-  "aggregate_reward_score": 0.85,
-  "metrics_list": [{ "name": "metric_name", "value": 0.75, "type": "Metric" }]
-}
+{"id": "sample_id", "aggregate_reward_score": 0.85, "metrics_list": [{"name": "metric_name", "value": 0.75, "type": "Metric"}]}
+
 ```
 
 ### Lambda input format
@@ -99,10 +99,11 @@ The input format depends on the model type:
   "model_response": "model's generated text",
   "query": "the prompt",
   "response": "the gold answer from dataset",
-  "reference_answer": { "text": "the gold answer from dataset" },
+  "reference_answer": {"text": "the gold answer from dataset"},
   "metadata": {},
   "processor_config": {}
 }]
+
 ```
 
 **For Nova models (rft_eval path):**
@@ -111,11 +112,12 @@ The input format depends on the model type:
 [{
   "id": "sample_id",
   "messages": [
-    { "role": "user", "content": "the prompt" },
-    { "role": "assistant", "content": "model's generated output" }
+    {"role": "user", "content": "the prompt"},
+    {"role": "assistant", "content": "model's generated output"}
   ],
   "reference_answer": "the gold answer from dataset"
 }]
+
 ```
 
 To extract the model response from Nova input: read the last message with `role: "assistant"`.
@@ -134,6 +136,7 @@ evaluator = Evaluator.create(
     type=REWARD_FUNCTION
 )
 # Use evaluator.arn as the evaluator parameter
+
 ```
 
 Using a raw Lambda ARN (e.g., `arn:aws:lambda:...`) will fail with `Invalid HubContentArn format`.

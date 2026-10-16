@@ -60,6 +60,7 @@ Ask (or infer from context):
 > 3. Needing to roll back or pin a specific version?"
 
 If the developer needs versioning, rollback, or canary deployment, load [`references/versioning.md`](references/versioning.md) and follow its instructions.
+If the developer needs an **immutable GitHub Actions CI/CD pipeline** (with AWS OIDC federation, ECR build, Amazon Inspector vulnerability scanning, `agentcore deploy -y`, smoke tests, and Two-Tier Evaluation gates) or wants to eject a declarative **AgentCore Harness** (`agentcore export harness`), load [`references/cicd-pipeline.md`](references/cicd-pipeline.md).
 
 ---
 

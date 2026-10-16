@@ -59,6 +59,8 @@ Do NOT use for:
 
 If the developer's issue is about the CLI itself (command not found, prerequisites, environment setup), load [`references/doctor.md`](references/doctor.md) and follow its diagnostic checklist.
 
+If you are triaging a **live production incident, SLO breach, CloudWatch alarm, Gateway `-32022` protocol error, Cedar policy `DENY` spike, or Long-Term Memory Dead-Letter Queue (DLQ) lag**, load [`references/aiops-runbooks.md`](references/aiops-runbooks.md) to correlate signals across the `cloudwatch`, `appsignals`, `cloudtrail`, and `agentcore` MCP servers.
+
 If the issue is about agent behavior (wrong answers, errors, timeouts, tool failures), continue with Step 1 below.
 
 ### Step 1: Verify CLI version

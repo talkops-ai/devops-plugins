@@ -2,7 +2,6 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
   "mcpServers": {
     "aws-mcp": {
-      "type": "stdio",
       "command": "uvx",
       "args": [
         "mcp-proxy-for-aws-cli==1.7.0",
@@ -10,7 +9,44 @@
         "--skip-auth",
         "--metadata",
         "INSTALL_SOURCE=agent-toolkit-core"
-      ]
+      ],
+      "type": "stdio"
+    },
+    "awsknowledge": {
+      "type": "streamable-http",
+      "url": "https://knowledge-mcp.global.api.aws"
+    },
+    "awspricing": {
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-pricing-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "type": "stdio"
+    },
+    "awsiac": {
+      "command": "uvx",
+      "args": [
+        "--with",
+        "fastmcp<4.0.0",
+        "awslabs.aws-iac-mcp-server==0.2.14"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "type": "stdio"
+    },
+    "cloudwatch": {
+      "command": "uvx",
+      "args": [
+        "awslabs.cloudwatch-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "type": "stdio"
     }
   }
 }

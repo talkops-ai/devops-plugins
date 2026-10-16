@@ -20,7 +20,7 @@
       "type": "stdio",
       "command": "uvx",
       "args": [
-        "awslabs.dynamodb-mcp-server@latest"
+        "awslabs.dynamodb-mcp-server>=2.1.6"
       ],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR"
@@ -62,6 +62,16 @@
       "args": [
         "awslabs.elasticache-mcp-server@latest",
         "--readonly"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      }
+    },
+    "awspricing": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-pricing-mcp-server@latest"
       ],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR"

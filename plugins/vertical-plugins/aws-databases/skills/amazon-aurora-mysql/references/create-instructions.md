@@ -44,6 +44,7 @@ If the user creates the cluster and then cannot connect from their local machine
 
 ## Reference files
 
+- [cluster-provisioning.md](cluster-provisioning.md) — sequential `create-db-cluster` + `create-db-instance` + AWS Secrets Manager creation and status polling SOP
 - [../serverless-advisory/instructions.md](serverless-advisory-instructions.md) — ACU sizing for an Aurora serverless MySQL cluster
 - [../io-optimized/instructions.md](io-optimized-instructions.md) — Standard vs I/O-Optimized storage decision
 - [../commitment-pricing/instructions.md](commitment-pricing-instructions.md) — RI vs DSP for a provisioned cluster

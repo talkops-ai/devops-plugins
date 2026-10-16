@@ -1,7 +1,7 @@
 {
   "name": "aws-ai-ml",
-  "version": "0.1.0",
-  "description": "Generative AI and ML skills for the main agent: Amazon Bedrock models, agents, knowledge bases, and guardrails, plus AWS AI/ML service selection and SageMaker AI, with the read-only SageMaker AI MCP server.",
+  "version": "0.2.0",
+  "description": "Production Generative AI, Agentic AI, and ML engineering for the main agent: Amazon Bedrock (Converse API, Knowledge Bases, Guardrails, LLM migration), Amazon Bedrock AgentCore (Build, Connect, Deploy, Harden, Debug, Optimize, Pay) & Strands Agents, and Amazon SageMaker AI (Training, Inference, Fine-Tuning, MLOps Pipelines, Cost Estimation, Endpoint Diagnostics).",
   "author": {
     "name": "TalkOps AI"
   },
@@ -13,15 +13,21 @@
     "ai",
     "ml",
     "bedrock",
+    "agentcore",
+    "strands-agents",
     "sagemaker",
-    "generative-ai"
+    "genai",
+    "rag",
+    "finetuning",
+    "mlops"
   ],
   "skills": "./skills/",
   "mcpServers": "./mcp.json",
+  "hooks": "./hooks/hooks.json",
   "interface": {
-    "displayName": "AWS AI and ML",
-    "shortDescription": "Generative AI and ML skills for the main agent",
-    "longDescription": "Generative AI and ML skills for the main agent: Amazon Bedrock models, agents, knowledge bases, and guardrails, plus AWS AI/ML service selection and SageMaker AI, with the read-only SageMaker AI MCP server.",
+    "displayName": "AWS AI and Machine Learning",
+    "shortDescription": "Production Generative AI, Agentic AI, and ML engineering for the main agent: Amazon Bedrock (Converse API, Kn…",
+    "longDescription": "Production Generative AI, Agentic AI, and ML engineering for the main agent: Amazon Bedrock (Converse API, Knowledge Bases, Guardrails, LLM migration), Amazon Bedrock AgentCore (Build, Connect, Deploy, Harden, Debug, Optimize, Pay) & Strands Agents, and Amazon SageMaker AI (Training, Inference, Fine-Tuning, MLOps Pipelines, Cost Estimation, Endpoint Diagnostics).",
     "developerName": "TalkOps AI",
     "category": "Cloud",
     "capabilities": [

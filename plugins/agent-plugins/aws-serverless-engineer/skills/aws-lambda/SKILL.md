@@ -1,6 +1,6 @@
 ---
 name: aws-lambda
-description: "Design, build, deploy, test, and debug serverless applications with AWS Lambda. Triggers on phrases like: Lambda function, event source, serverless application, API Gateway, EventBridge, Step Functions, serverless API, event-driven architecture, Lambda trigger. For deploying non-serverless apps to AWS, use the aws-deployment-agent plugin instead."
+description: "Design, build, deploy, test, and debug serverless applications with AWS Lambda. Triggers on phrases like: Lambda function, event source, serverless application, API Gateway, EventBridge, Step Functions, serverless API, event-driven architecture, Lambda trigger. For deploying non-serverless apps to AWS, use the aws-deployment-engineer plugin instead."
 argument-hint: "[what are you building?]"
 ---
 
@@ -125,9 +125,7 @@ This skill requires that AWS credentials are configured on the host machine:
 
 ### MCP Server Configuration
 
-**Write access is enabled by default.** The plugin ships with `--allow-write` in `.mcp.json`, so the MCP server can create projects, generate IaC, and deploy on behalf of the user.
-
-Access to sensitive data (like Lambda and API Gateway logs) is **not** enabled by default. To grant it, add `--allow-sensitive-data-access` to `.mcp.json`.
+**Write access and log/metrics inspection (`--allow-write` and `--allow-sensitive-data-access`) are enabled in `.mcp.json`.** This allows `sam_logs`, `get_metrics`, `sam_build`, `sam_local_invoke`, and `sam_deploy` to work seamlessly out of the box, while mutating cloud operations are guarded by the plugin's `PreToolUse` safety hooks (`aws-mutation-gate.py` and `secret-safety.py`).
 
 ### SAM Template Validation Hook
 

@@ -335,6 +335,14 @@ contract). Both are `_kind: sidebar` — off-backbone, trigger-entered, never
 
 **Critical constraint**: Follow each phase reference file's workflow exactly. If unable to complete a step, stop and report the specific issue. Do not fabricate or infer data.
 
+## Application-Code AI & OpenRouter Co-Migration (`ai-to-bedrock` Integration)
+
+When a Heroku application uses external AI/LLM SDKs (`openai`, `anthropic`, `@google/genai`) or multi-upstream AI gateways such as **OpenRouter** (`https://openrouter.ai/api/v1`, `OPENROUTER_API_KEY`, `@openrouter/ai-sdk-provider`) or **LiteLLM**:
+
+1. **Decoupled Discovery & Design Contract**: Keep Heroku infrastructure state in `$MIGRATION_DIR` / `.saws-migrate/aws-design.json` and emit application-code AI discovery/design state to `.saws-migrate/discover-ai.json` and `.saws-migrate/aws-design-ai.json` using [`../ai-to-bedrock/SKILL.md`](../ai-to-bedrock/SKILL.md).
+2. **OpenRouter & Direct Provider Mapping**: Map OpenRouter multi-model routes and direct provider calls to Amazon Bedrock Cross-Region Inference Profiles (`us.anthropic.claude-sonnet-5`, `us.anthropic.claude-haiku-4-5-20251001-v1:0`, `us.amazon.nova-*`) or proprietary GPT-5.x models on `bedrock-mantle` (`global.openai.gpt-5.6-*`), eliminating OpenRouter's ~5.5% pass-through fee and making 100% of token spend eligible for AWS Activate credits.
+3. **IAM & Environment Wiring at Generate**: When `.saws-migrate/aws-design-ai.json` is present during Generate, merge its `iam_policy_statements` (granting `bedrock:InvokeModel*` on both `inference-profile/*` and `foundation-model/*`) into the generated Elastic Beanstalk EC2 instance profile or ECS Fargate task role, and delegate SDK code rewrites to `ai-to-bedrock` / `llm-to-bedrock`.
+
 ## Contextual offers (final step)
 
 > **Before you finish:** your answer is not complete until you have run the **Contextual offers (final step)** below.

@@ -1,0 +1,39 @@
+{
+  "$comment": "Optional stateful data and caching MCP servers for aws-platform-engineer. Merge into .mcp.json when operating DynamoDB, ElastiCache/MemoryDB, or Aurora/RDS PostgreSQL.",
+  "mcpServers": {
+    "dynamodb": {
+      "command": "uvx",
+      "args": [
+        "awslabs.dynamodb-mcp-server>=2.1.6"
+      ],
+      "env": {
+        "DDB-MCP-READONLY": "true",
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "elasticache": {
+      "command": "uvx",
+      "args": [
+        "awslabs.elasticache-mcp-server@latest",
+        "--readonly"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "postgres": {
+      "command": "uvx",
+      "args": [
+        "awslabs.postgres-mcp-server@latest",
+        "--privilege_check",
+        "enforce"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    }
+  }
+}

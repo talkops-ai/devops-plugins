@@ -45,13 +45,9 @@ class CustomMetricDefinition(BaseModel):
     @model_validator(mode="after")
     def check_instructions(self):
         if len(self.instructions) > 5000:
-            raise ValueError(
-                f"Instructions exceed 5000 char limit ({len(self.instructions)})."
-            )
+            raise ValueError(f"Instructions exceed 5000 char limit ({len(self.instructions)}).")
         if "{{prediction}}" not in self.instructions and "{{prompt}}" not in self.instructions:
-            raise ValueError(
-                "Instructions must contain at least {{prompt}} or {{prediction}}."
-            )
+            raise ValueError("Instructions must contain at least {{prompt}} or {{prediction}}.")
         return self
 
     @model_validator(mode="after")

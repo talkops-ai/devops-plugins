@@ -1,0 +1,49 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowSolutionsArchitectFinOpsAndDiscoveryReadOnly",
+      "Effect": "Allow",
+      "Action": [
+        "ce:Get*",
+        "ce:Describe*",
+        "ce:List*",
+        "cost-optimization-hub:Get*",
+        "cost-optimization-hub:List*",
+        "compute-optimizer:Get*",
+        "compute-optimizer:Describe*",
+        "budgets:ViewBudget",
+        "budgets:Describe*",
+        "pricing:GetProducts",
+        "pricing:DescribeServices",
+        "pricing:GetAttributeValues",
+        "s3:GetStorageLensConfiguration*",
+        "s3:ListStorageLensConfigurations"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "EnforceReadOnlyForAWSMCP",
+      "Effect": "Deny",
+      "NotAction": [
+        "*:Get*",
+        "*:Describe*",
+        "*:List*",
+        "*:Search*",
+        "ce:*",
+        "cost-optimization-hub:*",
+        "compute-optimizer:*",
+        "pricing:*",
+        "athena:StartQueryExecution",
+        "athena:GetQueryExecution",
+        "athena:GetQueryResults"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "Bool": {
+          "aws:ViaAWSMCPService": "true"
+        }
+      }
+    }
+  ]
+}

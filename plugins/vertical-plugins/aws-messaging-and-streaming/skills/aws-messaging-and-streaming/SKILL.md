@@ -121,7 +121,7 @@ The two groups are not interchangeable.
 
 Answer two kinds of question directly from this section: which group a workload belongs to, and which service owns a channel.
 For every other customer communication question — setting up a channel, sending through it, or troubleshooting delivery — do not answer from this skill: load the skill named in the table and answer from that.
-To load it, invoke it with the Skill tool if it is installed locally (bundled with this plugin); otherwise, if the AWS MCP server is available, use `aws___retrieve_skill(skill_name="<skill>")` with the exact name from the table.
+To load it, use `aws___retrieve_skill(skill_name="<skill>")` with the exact name from the table when the AWS MCP server is available, or read the skill document from the Agent Toolkit at `skills/<skill>/SKILL.md`.
 Where the table says None, or the named skill cannot be loaded, say so, then answer using the documentation tools (`aws___search_documentation`, `aws___read_documentation`) if available, or the AWS documentation for the named service otherwise.
 
 ## Common Integration Gotchas

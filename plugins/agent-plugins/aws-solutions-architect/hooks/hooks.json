@@ -1,46 +1,70 @@
 {
   "hooks": {
-    "PreToolUse": [
+    "SessionStart": [
       {
-        "matcher": "Bash",
+        "matcher": "startup|resume",
         "hooks": [
           {
             "type": "command",
-            "command": "sh -c 'python3 \"$0\" 2>/dev/null || python \"$0\" 2>/dev/null || py -3 \"$0\"' \"${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py\"",
-            "timeout": 5
-          }
-        ]
-      },
-      {
-        "matcher": "use_aws|mcp__aws.*|mcp__plugin_.*aws-mcp.*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "sh -c 'python3 \"$0\" 2>/dev/null || python \"$0\" 2>/dev/null || py -3 \"$0\"' \"${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py\"",
-            "timeout": 5
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 \"$0\"; command -v python >/dev/null 2>&1 && exec python \"$0\"; exec py -3 \"$0\"' \"${CLAUDE_PLUGIN_ROOT}/hooks/aws-mutation-gate.py\"",
-            "timeout": 5
-          }
-        ]
-      },
-      {
-        "matcher": "use_aws|mcp__aws.*|mcp__plugin_.*aws-mcp.*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 \"$0\"; command -v python >/dev/null 2>&1 && exec python \"$0\"; exec py -3 \"$0\"' \"${CLAUDE_PLUGIN_ROOT}/hooks/aws-mutation-gate.py\"",
+            "command": "sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 \"$0\"; command -v python >/dev/null 2>&1 && exec python \"$0\"; exec py -3 \"$0\"' \"${CLAUDE_PLUGIN_ROOT}/hooks/session-aws-preflight.py\"",
             "timeout": 5
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Write|Edit|MultiEdit|use_aws|mcp__aws.*|mcp__plugin_aws-solutions-architect_.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 \"$0\"; command -v python >/dev/null 2>&1 && exec python \"$0\"; exec py -3 \"$0\"' \"${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py\"",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|use_aws|mcp__aws.*|mcp__plugin_aws-solutions-architect_.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 \"$0\"; command -v python >/dev/null 2>&1 && exec python \"$0\"; exec py -3 \"$0\"' \"${CLAUDE_PLUGIN_ROOT}/hooks/aws-mutation-gate.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 \"$0\"; command -v python >/dev/null 2>&1 && exec python \"$0\"; exec py -3 \"$0\"' \"${CLAUDE_PLUGIN_ROOT}/hooks/iac-post-write-lint.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 \"$0\"; command -v python >/dev/null 2>&1 && exec python \"$0\"; exec py -3 \"$0\"' \"${CLAUDE_PLUGIN_ROOT}/hooks/turn-completion-verifier.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./**/*.pem)",
+      "Read(./**/*.key)",
+      "Read(~/.aws/credentials)"
     ]
   }
 }

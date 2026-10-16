@@ -7,17 +7,42 @@
         "https://aws-mcp.us-east-1.api.aws/mcp",
         "--skip-auth",
         "--metadata",
-        "INSTALL_SOURCE=agent-toolkit-core"
-      ]
+        "INSTALL_SOURCE=agent-toolkit-iac"
+      ],
+      "env": {
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
     },
     "awsiac": {
       "command": "uvx",
       "args": [
-        "awslabs.aws-iac-mcp-server@latest"
+        "--with",
+        "fastmcp<4.0.0",
+        "awslabs.aws-iac-mcp-server==0.2.14"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
       }
+    },
+    "terraform": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "ENABLE_TF_OPERATIONS=false",
+        "-e",
+        "TFE_TOKEN",
+        "-e",
+        "TFE_ADDRESS",
+        "hashicorp/terraform-mcp-server:1"
+      ]
+    },
+    "pulumi": {
+      "type": "http",
+      "url": "https://mcp.ai.pulumi.com/mcp"
     }
   }
 }

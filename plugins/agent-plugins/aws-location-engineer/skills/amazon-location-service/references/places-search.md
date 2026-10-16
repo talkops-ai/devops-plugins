@@ -521,12 +521,14 @@ async function searchWithFallback(query, position) {
 - **Use PlaceId**: Store PlaceId for future GetPlace calls, not full details
 - **Respect Categories**: Use Categories array for filtering and display
 
-### Search Optimization
+### Search Optimization & V2 Behavioral Guardrails
 
 - **Use BiasPosition**: Improves relevance for location-aware searches
 - **Combine filters**: Use Categories + BoundingBox for precise results
 - **Choose right API**: SearchText for queries, SearchNearby for proximity
 - **Prefer SearchNearby**: For "near me" features (faster, more relevant)
+- **V2 `/suggest` Category Filter Limitation**: Unlike legacy V1 endpoints, Places V2 `SuggestCommand` (`/suggest`) does **not** support request-level category filtering. Avoid client-side category filtering on `Suggest` responses (which requires enabling higher-cost `Core`/`AdditionalFeatures` fields and risks returning zero matching items within `MaxResults`). Instead, use a two-step lookup (`Suggest` followed by `GetPlace` on selection) or pivot to `SearchNearbyCommand` with `Filter: { IncludeCategories: [...] }`.
+- **Two-Step Landmark Resolution (MCP & SDK)**: When searching for businesses or POIs near a named landmark or building (e.g., "restaurants near Sapporo Station"), a single-step `SearchText` or `search_places` call can match an unrelated establishment. Always resolve the anchor landmark's `[longitude, latitude]` via `Geocode` (`geocode` MCP tool) first, then pass those coordinates to `SearchNearby` (`search_nearby` MCP tool).
 
 ### Error Handling
 

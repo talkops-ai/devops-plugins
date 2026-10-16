@@ -1,7 +1,7 @@
 {
   "name": "aws-databases",
-  "version": "0.1.0",
-  "description": "Database skills for the main agent: engine selection and service-specific guidance for Aurora (PostgreSQL, MySQL, DSQL), RDS (open source, Oracle, SQL Server, Db2), DynamoDB, DocumentDB, ElastiCache, Keyspaces, Neptune, and Timestream for InfluxDB, with read-only database MCP servers and opt-in connectors.",
+  "version": "0.2.0",
+  "description": "Full-lifecycle AWS database engineering for the main agent: Aurora (PostgreSQL, MySQL, DSQL), RDS (PostgreSQL, MySQL, MariaDB, Oracle, SQL Server, Db2), DynamoDB, DocumentDB, ElastiCache (Valkey/Redis/Memcached), Keyspaces, Neptune, Timestream for InfluxDB, Performance Insights wait-event triage, Blue/Green deployments, and DMS migrations.",
   "author": {
     "name": "TalkOps AI"
   },
@@ -17,15 +17,16 @@
     "dynamodb",
     "postgresql",
     "mysql",
-    "elasticache"
+    "elasticache",
+    "dms"
   ],
   "skills": "./skills/",
   "mcpServers": "./mcp.json",
   "hooks": "./hooks/hooks.json",
   "interface": {
     "displayName": "AWS Databases",
-    "shortDescription": "Database skills for the main agent",
-    "longDescription": "Database skills for the main agent: engine selection and service-specific guidance for Aurora (PostgreSQL, MySQL, DSQL), RDS (open source, Oracle, SQL Server, Db2), DynamoDB, DocumentDB, ElastiCache, Keyspaces, Neptune, and Timestream for InfluxDB, with read-only database MCP servers and opt-in connectors.",
+    "shortDescription": "Full-lifecycle AWS database engineering for the main agent: Aurora (PostgreSQL, MySQL, DSQL), RDS (PostgreSQL…",
+    "longDescription": "Full-lifecycle AWS database engineering for the main agent: Aurora (PostgreSQL, MySQL, DSQL), RDS (PostgreSQL, MySQL, MariaDB, Oracle, SQL Server, Db2), DynamoDB, DocumentDB, ElastiCache (Valkey/Redis/Memcached), Keyspaces, Neptune, Timestream for InfluxDB, Performance Insights wait-event triage, Blue/Green deployments, and DMS migrations.",
     "developerName": "TalkOps AI",
     "category": "Cloud",
     "capabilities": [

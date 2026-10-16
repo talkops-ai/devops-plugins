@@ -1,7 +1,7 @@
 {
   "read_only_agents": [
     "aws-sre-agent",
-    "aws-finops-agent",
+    "aws-finops-engineer",
     "aws-solutions-architect"
   ]
 }

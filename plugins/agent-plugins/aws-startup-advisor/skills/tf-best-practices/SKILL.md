@@ -215,3 +215,21 @@ breaks the tests that assert the failure paths.
 # from skills/tf-best-practices/
 uv run --python 3.12 --with pytest python -m pytest scripts/test_validate_terraform_policy.py -q
 ```
+
+## Part 3 — AWS CDK Synthesis & Policy Gate (When Caller Emits AWS CDK)
+
+When a startup explicitly chooses **AWS CDK** (TypeScript or Python) over Terraform (for example in `start-building-for-startups` or an `agent-advisor` POC), enforce the exact same 7 security posture invariants on the synthesized CloudFormation template (`cdk.out/*.template.json`):
+
+1. **Synthesize Without Deploying**:
+   ```bash
+   npx cdk synth --quiet
+   ```
+2. **Verify the 7 Gate-Enforced Posture Rules on `cdk.out/*.template.json`**:
+   - **ALB TLS**: Every internet-facing `AWS::ElasticLoadBalancingV2::Listener` on port `80` redirects to `HTTPS:443`, and `443` sets `Certificates`.
+   - **RDS Hardening**: Every `AWS::RDS::DBInstance` and `AWS::RDS::DBCluster` sets `PubliclyAccessible: false` and `StorageEncrypted: true`.
+   - **ElastiCache Hardening**: Every `AWS::ElastiCache::ReplicationGroup` sets `AtRestEncryptionEnabled: true` and `TransitEncryptionEnabled: true`.
+   - **Security Group Ingress**: No `AWS::EC2::SecurityGroup` allows `CidrIp: 0.0.0.0/0` or `CidrIpv6: ::/0` on database/admin ports (`22`, `3389`, `5432`, `3306`, `6379`, `27017`).
+   - **Least-Privilege IAM**: No `AWS::IAM::Policy` or `AWS::IAM::Role` grants `Action: "*"` with `Resource: "*"`.
+3. **Optional `cdk-nag` / `cfn-lint` Integration**:
+   - Recommend attaching `AwsSolutionsChecks` from `cdk-nag` in the CDK app entrypoint (`Aspects.of(app).add(new AwsSolutionsChecks())`) before production cutover.
+

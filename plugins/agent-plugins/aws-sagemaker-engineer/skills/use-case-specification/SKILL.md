@@ -1,20 +1,25 @@
 ---
 name: use-case-specification
-description: Creates a reusable use case specification file that defines the business problem, stakeholders, and measurable success criteria for model customization, as recommended by the AWS Responsible AI Lens. Use as the default first step in any model customization plan. Skip only if the user explicitly declines or already has a use case specification to reuse. Captures problem statement, primary users, and LLM-as-a-Judge success tenets.
+description: >-
+  Creates a reusable use case specification file (*_use_case_spec.md) that defines the business
+  problem, stakeholders, measurable success criteria (Success Tenets for fine-tuning), deployment
+  constraints (for base model deployment), and quantitative architectural SLAs (latency, RPS,
+  data modality, budget, compliance) as recommended by the AWS Responsible AI and Well-Architected
+  ML Lenses. Use as the default first step in model customization or deployment plans.
 metadata:
-  version: "1.0.0"
+  version: "2.0.0"
 ---
 
 # Use Case Specification
 
-Multi-turn conversation to gather use case details and produce a use case specification document.
+Multi-turn conversation to gather use case details and produce a structured use case specification document (`[relevant_title]_use_case_spec.md`).
 
 ## Principles
 
 1. **One thing at a time.** Each response advances exactly one decision or collects one piece of information.
 2. **Confirm before proceeding.** Wait for the user to approve the spec before considering this skill complete.
 3. **Infer, don't interrogate.** Use what's already known from the conversation. Only ask when you truly can't infer.
-4. **Do NOT ask about base model selection.** Model selection is handled exclusively by the model-selection skill.
+4. **Do NOT ask about JumpStart base model selection.** Model selection is handled exclusively by the `model-selection` skill (or `sagemaker-solution-architect` for non-LLM modalities).
 
 ## Workflow
 
@@ -22,58 +27,34 @@ Multi-turn conversation to gather use case details and produce a use case specif
 
 Before starting discovery, check if a `*_use_case_spec.md` file already exists in the project. If it does, present it to the user and ask whether they want to reuse it, modify it, or start fresh.
 
-### Phase 1: Discovery (1–3 turns)
+### Step 1: Determine Intent & Modality
 
-Review what is already known from the conversation so far, then identify what is still missing. You need these three things:
+Check the plan (`PLAN.md`), `ARCHITECTURE.md`, or conversation context to determine whether the user wants to:
 
-- **What** is the problem the user is trying to solve with model customization
-- **Who** will use the finetuned model and in what context
-- **Which** success criteria can be used to evaluate how well the custom model performs compared to the base model on a test set. Success criteria must be measurable by an LLM-as-a-Judge (e.g., response accuracy, tone adherence) — not things like latency or throughput.
+- **Fine-tune a Foundation Model** → read `references/spec-for-finetuning.md` and follow it.
+- **Deploy a Base Foundation Model as-is** → read `references/spec-for-deployment.md` and follow it.
+- **Architect / Train / Deploy a Custom ML, Tabular, Time-Series, or Computer Vision Model** → follow `references/spec-for-finetuning.md` to capture the business problem and stakeholders, AND include the **Quantitative SLA & Architecture Constraints** section below so `sagemaker-solution-architect`, `sagemaker-training-architect`, `sagemaker-cost-estimator`, and `sagemaker-inference-architect` have concrete engineering parameters.
 
-**Guidelines**:
+If the intent is ambiguous and not already resolved by the `planning` or `sagemaker-solution-architect` skill, ask:
 
-- Infer as much as possible from what the user has already said
-- If the user gave examples, use them to fill gaps rather than asking again
-- Only ask clarifying questions when you cannot infer the information needed for Phase 2
-- If everything is already clear, say "You've given me a clear picture. I'll put together a use case specification now." and move to Phase 2.
+> "Are you looking to fine-tune a model for your use case, deploy a base model as-is, or train a custom ML/vision/tabular model?"
 
-⏸ Wait for user after each clarifying question.
+⏸ Wait for user response.
 
-### Phase 2: Producing a Use Case Specification Document
+### Optional Architectural SLA Extension (When Applicable)
 
-1. Save all generated artifacts under the project directory structure defined by the directory-management skill, if available.
-2. Synthesize the information you collected from the user into a Markdown document called [relevant_title]_use_case_spec.md containing the following fields (and only these fields):
+Whenever the user has mentioned (or needs production sizing for) latency, traffic, modality, or budget constraints, record an additional `## Quantitative SLA & Architecture Constraints` section in `[relevant_title]_use_case_spec.md` (without breaking the core fields required by `spec-for-finetuning.md` or `spec-for-deployment.md`):
 
-```
-Use case description
-  - Concise problem statement + what the custom model will do
-  - Field name: “Business Problem”
-  - Type: String
+- **Data Modality & Volume**: Text/JSONL, Tabular CSV/Parquet, Time-Series, Image/Video (`Segment Anything` / ViT), Multimodal; dataset size and labeled record count.
+- **Latency & Throughput Targets**: Target p99 latency (ms), peak requests per second (RPS), average input/output payload or token size, and traffic pattern (steady 24/7, spiky/scale-to-zero, async queue, or offline batch).
+- **Budget & Compliance Constraints**: Target monthly compute budget, VPC isolation (`VpcOnly`), KMS customer-managed key requirements, and regulatory boundaries (HIPAA, PCI, FedRAMP).
 
-Key stakeholders
-  - Who uses the model and in what context
-  - Field name: “Primary Users”
-  - Type: String, comma separated if there are multiple 
+## Edit Protocol
 
-Success criteria
-  - A list of 3 criteria (a short name and a description) with which the user measure the success of the custom model. 
-  - Field name: “Success Tenets”
-  - Type: list of name-description pairs
-```
+- If the user requests changes pertaining to any information covered by `use_case_spec.md`, edit it accordingly and ask for confirmation again.
+- The user can edit `use_case_spec.md` directly if they want to. If the user says they've updated the file directly, read it to get the latest in your context.
 
-1. Present the use case specification in a human-readable format as follows:
+## References
 
-I have put together a use case specification and saved it in [relevant_title]_use_case_spec.md.
-
-A use case specification is a design principle recommended by the [AWS Responsible AI Lens](https://docs.aws.amazon.com/wellarchitected/latest/responsible-ai-lens/design-principles.html).
-
-[use case in human-readable format]
-
-Does this match your intent?
-
-⏸ Wait for user approval.
-
-## use_case_specification Edit Protocol
-
-- If the user requests changes pertaining to any information covered by use_case_spec.md, you must edit it accordingly and ask for confirmation again.
-- The user can edit use_case_spec.md directly if they want to. If the user says they've updated the file directly, read it to get the latest in your context.
+- `references/spec-for-finetuning.md` — Discovery and spec generation workflow for fine-tuning (Business Problem, Primary Users, Success Tenets)
+- `references/spec-for-deployment.md` — Discovery and spec generation workflow for base model deployment (Business Problem, Primary Users, Deployment Constraints)

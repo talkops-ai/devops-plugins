@@ -264,6 +264,7 @@ export const data = defineData({
 
 ## Pitfalls
 
+- **Composite primary keys & operation disabling:** Use `.identifier(['tenantId', 'itemId'])` on `a.model()` for custom partition + sort keys, and `.disableOperations(['delete', 'subscriptions'])` to restrict generated GraphQL operations. For RDS PostgreSQL/MySQL integration (`npx ampx generate schema-from-database` + `a.combine()`), see the `amplify-data-appsync` skill.
 - **Missing `ClientSchema` export:** Without `export type Schema =
   ClientSchema<typeof schema>`, frontend `generateClient<Schema>()` has no
   type information and all operations are untyped.

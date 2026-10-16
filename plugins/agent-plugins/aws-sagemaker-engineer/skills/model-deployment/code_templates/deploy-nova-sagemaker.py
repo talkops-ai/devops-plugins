@@ -2,18 +2,18 @@
 
 # Cell 1: Setup
 
-%pip install --upgrade sagemaker>=3.7.1 --quiet  # NOTEBOOK_ONLY
+# %pip install --upgrade 'sagemaker>=3.7.1,<4.0' --quiet  # NOTEBOOK_ONLY
 
 # Cell 2: Configuration
 
-import os
 import json
+import os
 
 os.environ["AWS_DEFAULT_REGION"] = "[REGION]"
 
+from sagemaker.core import Attribution, set_attribution
 from sagemaker.core.resources import TrainingJob
 from sagemaker.serve import ModelBuilder
-from sagemaker.core import Attribution, set_attribution
 
 set_attribution(Attribution.SAGEMAKER_AGENT_PLUGIN)
 
@@ -46,20 +46,29 @@ print(f"Status: {endpoint.endpoint_status}")
 # Cell 5: Test Inference
 
 output = endpoint.invoke(
-    body=json.dumps({
-        "messages": [{"role": "user", "content": "What is the capital of France?"}],
-        "max_tokens": 50,
-    }),
+    body=json.dumps(
+        {
+            "messages": [{"role": "user", "content": "What is the capital of France?"}],
+            "max_tokens": 50,
+        }
+    ),
     content_type="application/json",
 )
 print(f"Response: {json.loads(output.body.read())}")
 
-# Save manifest
+# Cell 6: Save Manifest
+# Save manifest - record output of workflow step for future reference
 from pathlib import Path
+
 manifest_dir = Path("[PROJECT_DIR]") / "manifests"
 manifest_dir.mkdir(parents=True, exist_ok=True)
 manifest_path = manifest_dir / f"deploy-{ENDPOINT_NAME}.json"
-manifest_path.write_text(json.dumps({
-    "endpoint_name": ENDPOINT_NAME,
-}, indent=2))
+manifest_path.write_text(
+    json.dumps(
+        {
+            "endpoint_name": ENDPOINT_NAME,
+        },
+        indent=2,
+    )
+)
 print(f"Manifest saved: {manifest_path}")

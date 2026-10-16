@@ -391,3 +391,52 @@ function showError(message) {
 - **Verify API key**: Test with simple example first
 - **Check network tab**: Verify style descriptor and tile requests succeed
 - **Test validateStyle: true**: During development only, to catch custom style issues
+
+## Static Map Images (`geo-maps:GetStaticMap`)
+
+When an application needs non-interactive map images (for transactional emails, printable delivery manifests, PDF reports, or low-bandwidth thumbnails), use `GetStaticMap` (`@aws-sdk/client-geo-maps`) instead of spinning up a headless browser or MapLibre canvas:
+
+```javascript
+import { GeoMapsClient, GetStaticMapCommand } from "@aws-sdk/client-geo-maps";
+import { withAPIKey } from "@aws/amazon-location-utilities-auth-helper";
+
+const authHelper = withAPIKey(API_KEY, REGION);
+const mapsClient = new GeoMapsClient(authHelper.getClientConfig());
+
+const response = await mapsClient.send(
+  new GetStaticMapCommand({
+    FileName: "delivery-thumbnail",
+    Height: 400,
+    Width: 600,
+    Center: "-97.7431,30.2672", // "longitude,latitude" string
+    Zoom: 14,
+    Style: "Standard", // "Standard" | "Satellite"
+    ScaleBarUnit: "Kilometers", // "Kilometers" | "Miles"
+    // Optional: draw markers, paths, or polygons via CompactOverlay or GeoJsonOverlay
+    GeoJsonOverlay: JSON.stringify({
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          geometry: { type: "Point", coordinates: [-97.7431, 30.2672] },
+          properties: { "marker-color": "#FF0000", "marker-size": "medium" },
+        },
+      ],
+    }),
+  }),
+);
+
+// Convert binary Blob/Uint8Array stream to Data URL or save to disk
+const bytes = await response.Blob.transformToByteArray();
+```
+
+Direct REST URL format (when authorized with an API Key granting `geo-maps:GetStaticMap` on `arn:aws:geo-maps:${REGION}::provider/default`):
+
+```text
+https://maps.geo.${REGION}.amazonaws.com/v2/static/map?center=-97.7431,30.2672&zoom=14&width=600&height=400&style=Standard&key=${API_KEY}
+```
+
+## Geopolitical Views & Regional Coverage
+
+- **Geopolitical View Overrides (`political-view`)**: Pass `&political-view=<ISO-3166-alpha-3>` on the MapLibre style descriptor URL (e.g., `&political-view=IND`, `ARG`, `EGY`, `KEN`, `MAR`, `PAK`, `RUS`, `SDN`, `SRB`, `SUR`, `SYR`, `TUR`, `TZA`, `URY`, `VNM`) or `PoliticalView` in `GetStaticMapCommand` to render disputed boundaries according to a specific country's official cartographic stance.
+- **Southeast Asia Coverage (`ap-southeast-1`)**: When deploying workloads targeting Southeast Asia (Singapore, Malaysia, Thailand, Vietnam, Philippines, Indonesia, Myanmar, Cambodia), deploy in `ap-southeast-1` where Amazon Location integrates hyper-local **GrabMaps** POI and street data.

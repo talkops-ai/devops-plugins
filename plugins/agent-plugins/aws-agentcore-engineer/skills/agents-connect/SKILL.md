@@ -39,6 +39,7 @@ Give your AgentCore agent access to external APIs, tools, and services via the A
 - A gateway connection, tool call, or policy authorization is failing
 
 For adding Cedar policies to control tool access, load [`references/policy.md`](references/policy.md).
+For **MCP `2026-07-28` protocol version negotiation** (`supportedVersions`, `-32022` error handling), **Gateway Request & Response Interceptor Lambdas** (header/claim injection, Redis sliding-window rate limiting, role-based `tools/list` filtering), **Two-Step On-Behalf-Of (OBO) token exchange with KMS asymmetric signing**, and **S3/CloudFront OIDC discovery shims**, load [`references/interceptors-and-obo.md`](references/interceptors-and-obo.md).
 
 ## Input
 

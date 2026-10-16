@@ -11,6 +11,20 @@
         "INSTALL_SOURCE=agent-toolkit-core"
       ]
     },
+    "aws-api": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-api-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}",
+        "READ_OPERATIONS_ONLY": "true",
+        "REQUIRE_MUTATION_CONSENT": "true"
+      },
+      "timeout": 120000
+    },
     "cloudwatch": {
       "command": "uvx",
       "args": [
@@ -31,6 +45,16 @@
         "AWS_REGION": "${AWS_REGION:-us-east-1}"
       }
     },
+    "prometheus": {
+      "command": "uvx",
+      "args": [
+        "awslabs.prometheus-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
     "cloudtrail": {
       "command": "uvx",
       "args": [
@@ -41,10 +65,58 @@
         "AWS_REGION": "${AWS_REGION:-us-east-1}"
       }
     },
-    "prometheus": {
+    "eks": {
       "command": "uvx",
       "args": [
-        "awslabs.prometheus-mcp-server@latest"
+        "awslabs.eks-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "ecs": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "awslabs-ecs-mcp-server@latest",
+        "--with",
+        "fastmcp<4",
+        "ecs-mcp-server"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}",
+        "ALLOW_WRITE": "false",
+        "ALLOW_SENSITIVE_DATA": "false"
+      }
+    },
+    "network": {
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-network-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "iac": {
+      "command": "uvx",
+      "args": [
+        "--with",
+        "fastmcp<4.0.0",
+        "awslabs.aws-iac-mcp-server==0.2.14"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "cost-explorer": {
+      "command": "uvx",
+      "args": [
+        "awslabs.billing-cost-management-mcp-server@latest"
       ],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR",

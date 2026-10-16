@@ -1,5 +1,7 @@
 # Finetuning Strategy Data Requirements
 
+**File format: JSONL only.** Non-JSONL files (parquet, csv, etc.) require transformation regardless of schema match.
+
 **Critical** Nova models have a different set of formats than open weights models. Make sure you refer to the right section based on the user's base model.
 
 ## Open Weights Models Data Format by Strategy (Llama, Qwen, GPT-OSS, etc.)
@@ -13,6 +15,7 @@
   "prompt": "",
   "completion": ""
 }
+
 ```
 
 **What it needs:**
@@ -31,6 +34,7 @@
   "chosen": "",
   "rejected": ""
 }
+
 ```
 
 **What it needs:**
@@ -59,6 +63,7 @@
     "style": ""
   }
 }
+
 ```
 
 **What it needs:**
@@ -94,16 +99,17 @@ RLAIF uses the same base schema as RLVR. The `ability` and `reward_model.style` 
     "ground_truth": ""
   }
 }
+
 ```
 
 #### Built-in Evaluators
 
-| `ability`          | `reward_model.style` | Use case                                             |
-| ------------------ | -------------------- | ---------------------------------------------------- |
-| `pairwise-judging` | `llmj`               | Compare two model responses and pick the better one  |
-| `chain-of-thought` | `llmj-cot`           | Evaluate quality of step-by-step reasoning           |
-| `faithfulness`     | `llmj-faithfulness`  | Check if response stays grounded in provided context |
-| `summarization`    | `llmj-summarization` | Evaluate quality of a generated summary              |
+| `ability` | `reward_model.style` | Use case |
+|---|---|---|
+| `pairwise-judging` | `llmj` | Compare two model responses and pick the better one |
+| `chain-of-thought` | `llmj-cot` | Evaluate quality of step-by-step reasoning |
+| `faithfulness` | `llmj-faithfulness` | Check if response stays grounded in provided context |
+| `summarization` | `llmj-summarization` | Evaluate quality of a generated summary |
 
 **`pairwise-judging` — prompt must include both responses to compare; `ground_truth` is the preferred response index + reasoning.**
 
@@ -128,6 +134,7 @@ Set `reward_model.style` to `llmj-custom` and supply a Jinja2 prompt template. T
     "ground_truth": ""
   }
 }
+
 ```
 
 The custom Jinja prompt is provided separately at training time (not embedded in the dataset). It must instruct the judge to return exactly: `{"score": <0.0-1.0>, ...}`.
@@ -165,6 +172,7 @@ The custom Jinja prompt is provided separately at training time (not embedded in
     }
   ]
 }
+
 ```
 
 ### DPO (Direct Preference Optimization)
@@ -211,6 +219,7 @@ The format is the same as SFT for the first N-1 turns. The final assistant turn 
     }
   ]
 }
+
 ```
 
 ### RLVR
@@ -231,4 +240,5 @@ The format is the same as SFT for the first N-1 turns. The final assistant turn 
     "answer": "49"
   }
 }
+
 ```

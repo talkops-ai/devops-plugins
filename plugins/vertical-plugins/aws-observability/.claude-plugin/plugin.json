@@ -1,7 +1,7 @@
 {
   "name": "aws-observability",
-  "version": "0.1.0",
-  "description": "Observability skills for the main agent: CloudWatch metrics, logs, alarms and notifications, Application Signals, X-Ray, multi-Region CloudTrail, and application-failure troubleshooting, with CloudWatch, Application Signals, CloudTrail, and Prometheus MCP servers.",
+  "version": "0.2.0",
+  "description": "Full-stack AWS observability and SRE incident triage for the main agent: CloudWatch (Metrics, Logs Insights, Alarms, SLOs, Synthetics Canaries), Application Signals APM, X-Ray, Amazon Managed Prometheus (PromQL burn rates) & Grafana, CloudTrail multi-region auditing, GenAI observability, and COE postmortems.",
   "author": {
     "name": "TalkOps AI"
   },
@@ -12,10 +12,12 @@
     "aws",
     "observability",
     "cloudwatch",
-    "alarms",
-    "cloudtrail",
-    "x-ray",
+    "application-signals",
     "prometheus",
-    "troubleshooting"
+    "grafana",
+    "cloudtrail",
+    "synthetics",
+    "sre",
+    "incident-response"
   ]
 }

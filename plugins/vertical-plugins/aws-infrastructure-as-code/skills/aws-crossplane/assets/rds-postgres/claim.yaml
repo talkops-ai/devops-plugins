@@ -1,0 +1,16 @@
+apiVersion: aws.platform.example.org/v1alpha1
+kind: PostgresDatabase
+metadata:
+  name: catalog-db
+  namespace: catalog-service
+spec:
+  parameters:
+    region: us-east-1
+    storageGB: 100
+    instanceClass: db.t4g.medium
+    databaseName: catalog
+    vpcId: vpc-0123456789abcdef0
+    subnetIds: [subnet-0123456789abcdef0, subnet-0fedcba9876543210]
+    deletionProtection: true
+  writeConnectionSecretToRef:
+    name: catalog-db-credentials

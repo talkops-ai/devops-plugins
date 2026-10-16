@@ -185,6 +185,19 @@ Code Interpreter supports VPC — same pattern as Runtime and Browser (service-l
 
 **"Module not found" despite being listed as preinstalled:** The preinstalled list may differ between `python` and `nodejs` runtimes. Verify runtime selection and list matches.
 
+## Sandbox Network Modes, 3-File Structured Uploads & Artifact Export
+
+1. **Isolated `SANDBOX` Default vs. `PUBLIC` Network Mode:**
+   - By default, Code Interpreter runs in an air-gapped **`SANDBOX`** network mode (no outbound internet access; `pip install` or external HTTP calls fail).
+   - Only enable `networkConfiguration={'networkMode': 'PUBLIC'}` on a custom Code Interpreter resource when dynamic package installation or external data fetching is explicitly required and approved.
+2. **Structured 3-File Upload Pattern for Data Analysis:**
+   - Rather than stuffing raw CSV rows into the LLM prompt (burning context tokens), upload three files into the Code Interpreter session via `writeFiles`:
+     1. `data.csv` / `dataset.parquet` — the raw dataset
+     2. `schema.json` — column types, units, and nullability rules
+     3. `instructions.md` — analysis constraints and required output filenames
+3. **Exporting Generated Artifacts (`downloadFiles` / `readFiles`):**
+   - Instruct the sandbox script to write charts, reports, or cleaned datasets to a deterministic relative path (e.g., `output/report.pdf` or `output/chart.png`), then retrieve the binary/text payload via `readFiles` / `downloadFiles` before `stop_code_interpreter_session` terminates the microVM.
+
 ## Output
 
 - Which path fits (Strands tool vs direct SDK vs custom with S3)
@@ -196,4 +209,5 @@ Code Interpreter supports VPC — same pattern as Runtime and Browser (service-l
 - Sessions are always wrapped in a context manager or try/finally — never leaked
 - IAM is scoped to `code-interpreter/*` in the account, not `Resource: "*"`
 - S3 destination buckets are in the same account as the Code Interpreter resource
+- Network mode (`SANDBOX` vs `PUBLIC`) and 3-file upload / `downloadFiles` patterns are used appropriately
 - Language / runtime selection is explicit when the code isn't Python

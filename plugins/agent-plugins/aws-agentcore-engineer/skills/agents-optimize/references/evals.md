@@ -461,26 +461,53 @@ There's no extra cost, and logs don't include the inference region. But if data-
 
 See [cross-region inference](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/cross-region-inference.html) for the current geography/region mapping rather than baking it in here — it expands across releases.
 
-## When to use the dataset runner vs. `agentcore run eval`
+## When to use the dataset runner vs. `agentcore run eval` vs. Batch Evaluation
 
-Two different tools for two different workflows — developers confuse them.
+Three complementary tools for different evaluation workflows:
 
 | You want to... | Tool | Where it runs |
 |---|---|---|
 | Evaluate one session or trace from a recent run | `agentcore run eval --session-id <id>` | CLI, against CloudWatch-ingested spans |
 | Evaluate *everything* from the last N days and track score drift | `agentcore run eval --days 7` | CLI, against CloudWatch |
 | Run a curated benchmark / regression suite (20–500 scenarios, CI/CD) | `OnDemandEvaluationDatasetRunner` (SDK) | Your Python process, orchestrates invoke + wait + evaluate |
+| Run a managed S3 batch evaluation job producing `EvaluationResults.md` | `StartBatchEvaluation` / `agentcore run batch-evaluation` | Managed AgentCore Evaluations control plane writing to S3 |
 | Check that every production invocation meets quality thresholds | `agentcore add online-eval` | Platform, continuous sampling |
 
-**Use `agentcore run eval`** when you're iterating on an evaluator, investigating a specific regression, or running a quality gate against recent traffic. It's fast, cheap, and doesn't invoke the agent itself — it only scores existing traces.
+---
 
-**Use `OnDemandEvaluationDatasetRunner`** when you have a dataset of scenarios with expected responses / trajectories / assertions and you want to run them as a batch. The runner **invokes the agent** for each scenario, waits for telemetry ingestion (default 180 seconds, paid once per run not per scenario), then evaluates. This requires a deployed runtime. Typical use: regression pack in CI before promoting a new version.
+## Two-Tiered CI/CD Evaluation Gating Architecture
 
-**Use online eval** for continuous production monitoring at a sampling rate — not the same as a benchmark.
+Never gate CI/CD deployments on a single-turn LLM-as-a-Judge invocation (non-deterministic judge variance causes flaky pipelines). Always enforce a **Two-Tier Gate**:
+
+### Tier 1: Deterministic Hard Gates (100% Pass Requirement)
+- **Built-in Trajectory Evaluators:**
+  - `Builtin.TrajectoryExactOrderMatch` — verifies the agent called the exact expected sequence of tools.
+  - `Builtin.TrajectoryInOrderMatch` — verifies required tools were called in order (allowing extra diagnostic calls).
+  - `Builtin.TrajectoryAnyOrderMatch` — verifies all required tools were called regardless of order.
+- **Custom Code-Based Lambda Evaluators (`CreateEvaluator`, `schemaVersion: "1.0`):**
+  - Validate strict JSON schema compliance, required citations, or deterministic business rules in Python Lambda (`@custom_code_based_evaluator()`).
+- **Gate Rule:** Any Tier 1 score `< 1.0` immediately fails the CI/CD pipeline.
+
+### Tier 2: LLM-as-a-Judge Aggregate Suite Gates (Golden Dataset `>= 50` Scenarios)
+Compute aggregate mean scores across the entire golden dataset—never fail on a single outlier turn unless it violates safety:
+
+| Built-in / Custom Evaluator | Level | Minimum Suite Pass Threshold |
+| :--- | :--- | :--- |
+| `Builtin.Helpfulness` | `TRACE` | `>= 0.80` |
+| `Builtin.Faithfulness` | `TRACE` | `>= 0.85` |
+| `Builtin.ToolSelectionAccuracy` | `TOOL_CALL` | `>= 0.90` |
+| `Builtin.ToolParameterAccuracy` | `TOOL_CALL` | `>= 0.90` |
+| `Builtin.GoalSuccessRate` | `SESSION` | `>= 0.85` |
+| `Builtin.Harmfulness` | `TRACE` | `== 1.00` (Zero tolerance for harmful outputs) |
+
+### Multi-Agent Explainability Custom Evaluators
+For multi-agent orchestrator/specialist architectures (A2A, Strands Swarms, or Hybrid LangGraph + Strands), register two custom `TRACE`/`SESSION` LLM-as-a-Judge evaluators:
+1. **`Decision_Rationale_Quality`:** Grades whether the orchestrator explicitly justified *why* it routed a task to a specific specialist agent (`--rating-scale 1-5-quality`, threshold `>= 0.80`).
+2. **`Constraint_Articulation`:** Grades whether the orchestrator preserved all user constraints, tenant boundaries, and safety guardrails when formulating the handoff prompt to the specialist agent (`--rating-scale pass-fail`, threshold `>= 0.90`).
 
 ## Output
 
 - CLI commands to run evals or set up monitoring
-- Quality gate script (for CI/CD path)
-- Evaluator config (for custom evaluator path)
+- Two-Tier CI/CD quality gate configuration (Tier 1 deterministic + Tier 2 aggregate LLM-as-a-Judge)
+- Evaluator config (for custom code-based or multi-agent explainability evaluators)
 - Interpretation of scores if reviewing existing results

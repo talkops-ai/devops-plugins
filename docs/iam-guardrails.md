@@ -12,7 +12,7 @@ So configure IAM as if layers 1 and 2 did not exist.
 
 ## 1. Give read-only agents read-only credentials
 
-`aws-sre-agent`, `aws-finops-agent`, and `aws-solutions-architect` are marked `aws_read_only`. Run them with a profile whose role only reads:
+`aws-sre-agent`, `aws-finops-engineer`, and `aws-solutions-architect` are marked `aws_read_only`. Run them with a profile whose role only reads:
 
 - Attach the AWS managed policy `ReadOnlyAccess` (broad) or `ViewOnlyAccess` (metadata only, no data reads), plus `AWSBillingReadOnlyAccess` for FinOps.
 - Add an explicit deny for data that the agents should never see, even when reading. `ReadOnlyAccess` includes `secretsmanager:GetSecretValue`, `ssm:GetParameter*`, and `s3:GetObject`:

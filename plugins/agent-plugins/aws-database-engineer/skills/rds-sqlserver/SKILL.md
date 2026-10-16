@@ -1,10 +1,10 @@
 ---
 name: rds-sqlserver
 version: 1
-description: Provides connectivity, authentication, and troubleshooting guidance for Amazon RDS for SQL Server. Applicable when users ask about SSMS times out connecting from EC2, Cannot generate SSPI context with Windows auth, connect RDS SQL Server from Lambda with pymssql, auth_scheme shows NTLM instead of KERBEROS on ECS Fargate, SSM tunnel to RDS SQL Server from laptop, port 1433 security group, TrustServerCertificate=True for localhost tunnels, SPN MSSQLSvc, AWS Managed Microsoft AD, CNAME not RDS endpoint for Kerberos, tds_version='7.4', encryption='require', port-as-string for pymssql, Secrets Manager credential caching in Lambda, error 18456 login failed. Covers Python (pymssql, pyodbc), .NET (Microsoft.Data.SqlClient), Java (JDBC mssql-jdbc), Node.js (tedious), IAM auth via RDS Proxy, and VPC/ECS/EKS/Lambda deployment.
+description: Full-lifecycle management, administration, and connectivity troubleshooting for Amazon RDS for SQL Server and RDS Custom for SQL Server. Covers Multi-AZ Always On Availability Groups (EE) vs Database Mirroring (SE), native .bak backup and restore to Amazon S3 via msdb.dbo.rds_backup_database and rds_restore_database, Option Groups (SSIS, SSRS, SSAS, TDE, Audit), tempdb contention tuning (PAGELATCH_UP/EX), licensing (License Included vs BYOL), and RDS Custom for SQL Server (OS/sysadmin access, CLR, Linked Servers, Support Perimeter). Also provides connectivity, authentication, and troubleshooting guidance for SSMS timeouts, Cannot generate SSPI context, Lambda with pymssql, auth_scheme NTLM vs KERBEROS on ECS Fargate, SSM tunnels, AWS Managed Microsoft AD, SPNs, RDS Proxy IAM auth, and error 18456.
 ---
 
-# Amazon RDS for SQL Server
+# Amazon RDS for SQL Server & RDS Custom — Lifecycle, Administration & Connectivity
 
 ## Safety guidance
 
@@ -54,7 +54,7 @@ When refusing, explain why and offer the matching assessment workflow:
 
 ## Overview
 
-Amazon RDS for SQL Server is the managed SQL Server service from AWS. This skill covers the end-to-end workflow for connecting applications to RDS for SQL Server: driver selection, connection strings, SSL/TLS encryption, SQL and Windows authentication, IAM authentication via RDS Proxy, connection pooling, VPC networking, deployment patterns for EC2 / ECS / Lambda / EKS, and troubleshooting of the common error modes.
+Amazon RDS for SQL Server is the managed SQL Server service from AWS (with RDS Custom for SQL Server available when host OS or full `sysadmin` access is required). This skill covers both **database lifecycle & administration** (Multi-AZ Always On Availability Groups on Enterprise Edition vs. Database Mirroring on Standard Edition, native `.bak` backup and restore to Amazon S3 via `msdb.dbo.rds_backup_database` and `msdb.dbo.rds_restore_database`, Option Groups for SSIS/SSRS/SSAS/TDE, `tempdb` allocation contention tuning, licensing, and RDS Custom for SQL Server) and the **connection lifecycle** (driver selection, connection strings, SSL/TLS encryption, SQL and Windows/Kerberos authentication, IAM authentication via RDS Proxy, connection pooling, VPC networking, deployment patterns for EC2 / ECS / Lambda / EKS, and troubleshooting).
 
 This skill works with the AWS CLI directly. The AWS MCP server is recommended but not required — it adds sandboxed execution, CloudTrail audit, and observability when available.
 
@@ -72,15 +72,15 @@ Check for required tools and warn the user if any are missing.
 
 ### 2. Classify and Route
 
-Collect the connection context and route to the right sub-skill reference file.
+Collect the connection or administration context and route to the right sub-skill reference file.
 
-Parameters:
+Parameters (for connectivity workflows):
 
-- **language** (required): `python` | `dotnet` | `java` | `nodejs`. Infer from project files (`requirements.txt`/`*.py` → python; `*.csproj` → dotnet; `pom.xml`/`build.gradle` → java; `package.json` → nodejs). Ask only if ambiguous.
-- **runtime** (required): `ec2` | `ecs` | `lambda` | `eks` | `laptop`. Drives networking + secrets pattern.
-- **auth** (required): `sql` | `windows-kerberos` | `windows-ntlm` | `iam-proxy`. Default `sql` unless the user mentions Active Directory, Kerberos, NTLM, or IAM.
+- **language** (required for connectivity): `python` | `dotnet` | `java` | `nodejs`. Infer from project files (`requirements.txt`/`*.py` → python; `*.csproj` → dotnet; `pom.xml`/`build.gradle` → java; `package.json` → nodejs). Ask only if ambiguous.
+- **runtime** (required for connectivity): `ec2` | `ecs` | `lambda` | `eks` | `laptop`. Drives networking + secrets pattern.
+- **auth** (required for connectivity): `sql` | `windows-kerberos` | `windows-ntlm` | `iam-proxy`. Default `sql` unless the user mentions Active Directory, Kerberos, NTLM, or IAM.
 - **region** (required): AWS region, e.g. `us-east-1`.
-- **db_instance_id** (required for troubleshooting): RDS instance identifier.
+- **db_instance_id** (required for troubleshooting/admin): RDS instance identifier.
 
 **Constraints:**
 
@@ -91,10 +91,11 @@ Parameters:
 
 #### Sub-skill routing
 
-Load **exactly one driver** reference plus any relevant topic references:
+Load the matching lifecycle or driver/topic reference files:
 
 | User is doing | Load |
 |---|---|
+| Always On AGs / Mirroring / native `.bak` backup & restore to S3 / `rds_backup_database` / `rds_restore_database` / SSIS / SSRS / SSAS / TDE / `tempdb` contention / licensing / RDS Custom / `sysadmin` | [references/lifecycle-and-admin.md](references/lifecycle-and-admin.md) |
 | Python / pymssql / pyodbc | [references/python.md](references/python.md) |
 | .NET / C# / Microsoft.Data.SqlClient | [references/dotnet.md](references/dotnet.md) |
 | Java / JDBC / mssql-jdbc | [references/java.md](references/java.md) |

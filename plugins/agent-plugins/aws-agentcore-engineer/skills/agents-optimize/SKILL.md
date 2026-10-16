@@ -63,9 +63,9 @@ If `agentcore/agentcore.json` is not found:
 
 | Developer intent | Action |
 |---|---|
-| Measure quality, add evaluator, run eval, CI/CD gate, online monitoring | Load [`references/evals.md`](references/evals.md) and follow its workflow |
-| Set up observability, CloudWatch, X-Ray, logs, metrics, dashboards | Load [`references/observability.md`](references/observability.md) and follow its workflow |
-| Understand or reduce AgentCore costs | Load [`references/cost.md`](references/cost.md) |
+| Measure quality, add evaluator, Two-Tier CI/CD evaluation gating (`Builtin.TrajectoryExactOrderMatch` + LLM-as-a-Judge suite), batch evaluation (`StartBatchEvaluation`), online monitoring | Load [`references/evals.md`](references/evals.md) and follow its workflow |
+| Set up observability, CloudWatch, X-Ray, logs, metrics, dashboards, third-party OTLP export (Langfuse, MLflow, Elastic, Dynatrace) | Load [`references/observability.md`](references/observability.md) and follow its workflow |
+| Understand or reduce AgentCore costs, elastic memory reclamation vs. committed baseline pricing, MCP context pruning (`AGENTCORE_DISABLE_TOOLS`) | Load [`references/cost.md`](references/cost.md) |
 | Both — "I want to understand and improve my agent" | Start with observability setup, then add evals |
 
 ### Step 3: Follow the loaded reference

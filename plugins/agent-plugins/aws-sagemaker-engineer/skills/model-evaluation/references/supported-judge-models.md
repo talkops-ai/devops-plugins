@@ -4,7 +4,7 @@ Reference: [Amazon Bedrock LLM-as-Judge Evaluation](https://docs.aws.amazon.com/
 
 ## Allowed Judge Models
 
-The SageMaker Python SDK validates the judge model against a hardcoded allowlist before submitting the evaluation job. Only these models are accepted:
+The SageMaker Python SDK is the source of truth for which judge models are allowed: when you submit the evaluation job, the SDK validates the judge model and, if it is not supported, raises an error that lists the currently accepted models (and their allowed regions). The table below is a convenience reference that may lag the SDK — do not treat it as exhaustive; rely on the SDK's submit-time validation to confirm a given model is accepted:
 
 | Model                          | Model ID                                    | Regions                                         |
 | ------------------------------ | ------------------------------------------- | ----------------------------------------------- |
@@ -18,11 +18,11 @@ The SageMaker Python SDK validates the judge model against a hardcoded allowlist
 
 This list applies to both built-in and custom metrics — the SDK does not distinguish between them.
 
-Source: `sagemaker.train.constants._ALLOWED_EVALUATOR_MODELS` (sagemaker SDK v3)
+Source: derived from the SageMaker SDK's internal evaluator allowlist (sagemaker SDK v3). This is an SDK internal — do not import or reference it in generated code; the SDK enforces the allowlist itself at job-submission time.
 
 ## Selection Guidance
 
-Verify each candidate is active in the user's region. Use the AWS MCP tool `get-foundation-model` (Bedrock service) with the model identifier and region. Extract `modelDetails.modelLifecycle.status` from the response.
+Verify each candidate is active in the user's region. Run `aws bedrock get-foundation-model --model-identifier <model-id> --region <region>` and extract `modelDetails.modelLifecycle.status` from the response.
 
 Only include models that return `ACTIVE`. Models marked `LEGACY` will fail at evaluation time.
 

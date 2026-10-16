@@ -29,6 +29,59 @@
         "FASTMCP_LOG_LEVEL": "ERROR",
         "AWS_REGION": "${AWS_REGION:-us-east-1}"
       }
+    },
+    "aws-security-agent": {
+      "command": "uvx",
+      "args": [
+        "awslabs.security-agent-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "cloudtrail": {
+      "command": "uvx",
+      "args": [
+        "awslabs.cloudtrail-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "awsiac": {
+      "command": "uvx",
+      "args": [
+        "--with",
+        "fastmcp<4.0.0",
+        "awslabs.aws-iac-mcp-server==0.2.14"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "cloudwatch": {
+      "command": "uvx",
+      "args": [
+        "awslabs.cloudwatch-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "tm": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/awslabs/threat-modeling-mcp-server.git",
+        "threat-modeling-mcp-server"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      }
     }
   }
 }

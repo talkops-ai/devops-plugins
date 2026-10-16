@@ -268,4 +268,4 @@ If a launch fails during analysis with a `failureReason` indicating an unsupport
 
 1. Tell the user: "This app type isn't directly supported by Launch with AWS yet. Let me search for other skills that can help deploy this kind of application."
 
-2. Search for relevant skills based on the app type (e.g. `aws-serverless`, `aws-containers`, `databases-on-aws`, `deploy-on-aws`, `aws-cdk`, `sagemaker-ai`).
+2. Search for relevant skills based on the app type (e.g. `aws-serverless`, `aws-containers`, `aws-database`, `aws-deployment`, `aws-cdk`, `aws-ai-ml`).

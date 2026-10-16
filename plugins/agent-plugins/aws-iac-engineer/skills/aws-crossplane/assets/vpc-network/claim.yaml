@@ -1,0 +1,10 @@
+apiVersion: aws.platform.example.org/v1alpha1
+kind: Network
+metadata:
+  name: platform-vpc-dev
+  namespace: platform-dev
+spec:
+  parameters:
+    cidrBlock: 10.200.0.0/16
+    subnetCidrBlock: 10.200.1.0/24
+    region: us-east-1

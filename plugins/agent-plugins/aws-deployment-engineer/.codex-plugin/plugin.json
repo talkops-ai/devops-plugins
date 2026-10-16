@@ -1,0 +1,47 @@
+{
+  "name": "aws-deployment-engineer",
+  "version": "0.2.0",
+  "description": "Principal AWS Deployment & Release Engineer: preflight account/VPC/quota discovery, codebase analysis, target architecture selection (ECS Fargate, ECS Express Mode, Lambda/SAM, Elastic Beanstalk, S3/CloudFront, Amplify Hosting, EC2 ASGs, AWS Batch), progressive delivery strategies (Blue/Green, Canary, Linear, Rolling, Immutable, CloudFront Continuous Deployment, AWS AppConfig feature flags), CI/CD pipelines (CodePipeline V2, CodeBuild, CodeDeploy, GitHub/GitLab OIDC), live FinOps cost estimation, cfn-guard-validated IaC synthesis, validated draw.io AWS4 architecture diagrams, and post-deploy CloudWatch verification and rollback.",
+  "author": {
+    "name": "TalkOps AI"
+  },
+  "homepage": "https://github.com/talkops-ai/devops-plugins",
+  "repository": "https://github.com/talkops-ai/devops-plugins",
+  "license": "Apache-2.0",
+  "keywords": [
+    "aws",
+    "deploy",
+    "deployment-engineer",
+    "infrastructure",
+    "cdk",
+    "cloudformation",
+    "sam",
+    "terraform",
+    "ecs-fargate",
+    "elastic-beanstalk",
+    "blue-green",
+    "canary",
+    "codepipeline",
+    "codedeploy",
+    "appconfig",
+    "architecture-diagram",
+    "cost-estimate",
+    "rollback"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "AWS Deployment Engineer",
+    "shortDescription": "Principal AWS Deployment & Release Engineer",
+    "longDescription": "Principal AWS Deployment & Release Engineer: preflight account/VPC/quota discovery, codebase analysis, target architecture selection (ECS Fargate, ECS Express Mode, Lambda/SAM, Elastic Beanstalk, S3/CloudFront, Amplify Hosting, EC2 ASGs, AWS Batch), progressive delivery strategies (Blue/Green, Canary, Linear, Rolling, Immutable, CloudFront Continuous Deployment, AWS AppConfig feature flags), CI/CD pipelines (CodePipeline V2, CodeBuild, CodeDeploy, GitHub/GitLab OIDC), live FinOps cost estimation, cfn-guard-validated IaC synthesis, validated draw.io AWS4 architecture diagrams, and post-deploy CloudWatch verification and rollback.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/agent-plugins/aws-deployment-engineer",
+    "brandColor": "#FF9900"
+  }
+}

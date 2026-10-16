@@ -1,0 +1,44 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xstoragebuckets.aws.platform.example.org
+spec:
+  group: aws.platform.example.org
+  names:
+    kind: XStorageBucket
+    plural: xstoragebuckets
+  claimNames:
+    kind: StorageBucket
+    plural: storagebuckets
+  defaultCompositionRef:
+    name: s3-bucket-secure
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          required: [spec]
+          properties:
+            spec:
+              type: object
+              required: [parameters]
+              properties:
+                parameters:
+                  type: object
+                  required: [region]
+                  properties:
+                    region:
+                      type: string
+                      description: AWS region for the bucket configuration.
+                      pattern: '^[a-z]{2}(-gov|-isob|-iso)?-[a-z]+-[0-9]+$'
+                    versioning:
+                      type: boolean
+                      description: Retain prior object versions for recovery.
+                      default: true
+            status:
+              type: object
+              properties:
+                arn: {type: string}
+                bucketDomainName: {type: string}

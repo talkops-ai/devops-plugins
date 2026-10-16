@@ -18,9 +18,9 @@ Read the benchmark descriptions below and identify which 2-3 benchmarks are most
 
 **Criteria for Benchmark Selection:** Picking the most relevant benchmarks is essential, because the user bases their model selection on this. You must think carefully about which benchmarks are really the most fitting. Frequently, intelligence index is the best, so make sure there is a good reason to rank anything else above that. Think about which benchmarks are testing model functionality that is the most relevant to what the user is trying to do.
 
-**Data Source:** Artificial Analysis (artificialanalysis.ai). Independent evaluator, consistent methodology across all models. Data extracted May 2026.
+**Data Source:** Artificial Analysis (artificialanalysis.ai). Independent evaluator, consistent methodology across all models.
 
-#### [Intelligence Index](benchmarks/intelligenceIndex.md)
+#### [Intelligence Index](benchmarks/intelligence-index.md)
 
 Artificial Analysis's composite overall quality score, combining multiple benchmarks into a single ranking. It's an index on AA's own scale where higher is better.
 
@@ -38,11 +38,11 @@ Tests precise control over text output — the model must satisfy unusual, mecha
 
 **Consider this:** For any task requiring tight control over model output, where the user has very specific requirements about features that must be present in the model output. Could be a good proxy for instruction following, although the benchmark is really about _precise_ instruction following in unusually difficult contexts
 
-#### [MMMU-Pro](benchmarks/mmmuPro.md)
+#### [MMMU-Pro](benchmarks/mmmu-pro.md)
 
 College-level multimodal questions requiring both vision and reasoning across six disciplines: Art & Design, Business, Science, Health & Medicine, Humanities & Social Science, and Tech & Engineering. Image types include charts, diagrams, tables, maps, and chemical structures. The "Pro" version filters out questions answerable without the image, so it specifically tests integrated visual-textual understanding.
 
-**Consider this:** For any task combining visual and textual inputs — chart/diagram interpretation, visual reasoning, document understanding. Only relevant if the user's finetuning task involves images.
+**Consider this:** For any task combining visual and textual inputs — chart/diagram interpretation, visual reasoning, document understanding. Also relevant for comparing overall model capability, since VLMs that score well here tend to perform well on text-only tasks too.
 
 #### [τ²-bench](benchmarks/tau2.md)
 
@@ -56,13 +56,13 @@ Simulates multi-turn customer service conversations where both the agent and a s
 
 **Consider this:** For tasks where reasoning, the ability to think logically, and the ability to draw connections between different concepts to form an analysis or conclusion is important. This benchmark may not show a large difference between most models.
 
-#### [Coding Index](benchmarks/codingIndex.md)
+#### [Coding Index](benchmarks/coding-index.md)
 
 Artificial Analysis's composite coding score, combining Terminal-Bench Hard (agentic software engineering, system administration, and data processing in terminal environments) and SciCode (scientist-curated coding problems across 16 scientific disciplines).
 
 **Consider this:** For software engineering tasks, scientific/research computing, system administration automation, any task where the model needs to write and/or execute code .
 
-#### [Agentic Index](benchmarks/agenticIndex.md)
+#### [Agentic Index](benchmarks/agentic-index.md)
 
 Artificial Analysis's composite agentic score, combining GDPval-AA (real-world tasks across 44 occupations and 9 industries, with shell access and web browsing in an agentic loop) and τ²-bench Telecom.
 
@@ -84,7 +84,7 @@ After picking 2-3 relevant benchmarks from the above list (including Intelligenc
 
 ### Presenting Models for Selection
 
-After the user tells you which benchmarks they think are relevant, you need to present the models from the corresponding benchmark file in `/benchmarks`. Present the table exactly as it appears in the benchmark table, skipping any rows for models that are not in the user's list of available models. Double check your work to avoid hallucinations:
+After the user tells you which benchmarks they think are relevant, you need to present the models from the corresponding benchmark file in `/benchmarks`. Present the table exactly as it appears in the benchmark table, skipping any rows for models that are not in the user's list of available models. VLMs MUST be included in all benchmark tables where they have scores — do not filter them out based on the user's task being text-only. Double check your work to avoid hallucinations:
 
 > "[Benchmark 1:]
 > "[table from benchmark file]

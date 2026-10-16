@@ -1,0 +1,44 @@
+{
+  "name": "aws-devsecops-engineer",
+  "version": "0.2.0",
+  "description": "Principal AWS DevSecOps Engineer: native CloudWatch/Application Signals/X-Ray/CloudTrail incident root-cause investigations, Security Hub/GuardDuty/Inspector/Config posture triage, least-privilege IAM & Access Analyzer validation, Terraform/CDK/CloudFormation & VPC/WAFv2/KMS/S3 perimeter hardening, AWS Security Agent SAST code/diff scans, STRIDE threat modeling, DAST penetration testing, finding remediation, 5-gate release-readiness reviews, synthetic UAT testing, ECS/EKS/Lambda operations, FinOps cost optimization, and multi-account orchestration.",
+  "author": {
+    "name": "TalkOps AI"
+  },
+  "homepage": "https://github.com/talkops-ai/devops-plugins",
+  "repository": "https://github.com/talkops-ai/devops-plugins",
+  "license": "Apache-2.0",
+  "keywords": [
+    "aws",
+    "devsecops",
+    "security-agent",
+    "sre",
+    "incident-response",
+    "cloudwatch",
+    "cloudtrail",
+    "iam",
+    "security-hub",
+    "guardduty",
+    "inspector",
+    "pentest",
+    "release-readiness",
+    "threat-model",
+    "finops"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "AWS DevSecOps Engineer",
+    "shortDescription": "Principal AWS DevSecOps Engineer",
+    "longDescription": "Principal AWS DevSecOps Engineer: native CloudWatch/Application Signals/X-Ray/CloudTrail incident root-cause investigations, Security Hub/GuardDuty/Inspector/Config posture triage, least-privilege IAM & Access Analyzer validation, Terraform/CDK/CloudFormation & VPC/WAFv2/KMS/S3 perimeter hardening, AWS Security Agent SAST code/diff scans, STRIDE threat modeling, DAST penetration testing, finding remediation, 5-gate release-readiness reviews, synthetic UAT testing, ECS/EKS/Lambda operations, FinOps cost optimization, and multi-account orchestration.",
+    "developerName": "TalkOps AI",
+    "category": "Cloud",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/talkops-ai/devops-plugins/tree/main/plugins/agent-plugins/aws-devsecops-engineer",
+    "brandColor": "#FF9900"
+  }
+}

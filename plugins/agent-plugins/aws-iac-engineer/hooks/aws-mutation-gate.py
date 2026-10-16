@@ -61,6 +61,8 @@ S3_READ_OPS = {"ls", "presign"}
 # ----------------------------------------------------------- other CLIs
 TF_MUTATING = {"apply", "destroy", "import", "taint", "untaint", "force-unlock", "refresh"}
 TF_STATE_MUTATING = {"rm", "mv", "push", "replace-provider"}
+PULUMI_MUTATING = {"up", "update", "destroy", "import", "refresh", "cancel"}
+PULUMI_STATE_MUTATING = {"delete", "unprotect", "rename", "move"}
 CDK_MUTATING = {"deploy", "destroy", "bootstrap", "import", "migrate", "watch", "rollback", "gc", "refactor"}
 SAM_MUTATING = {"deploy", "delete", "sync", "remote", "publish"}
 EKSCTL_MUTATING = {
@@ -74,6 +76,42 @@ KUBECTL_MUTATING = {
 HELM_MUTATING = {"install", "upgrade", "uninstall", "delete", "rollback", "push"}
 COPILOT_MUTATING = {"deploy", "delete", "init"}
 AMPLIFY_MUTATING = {"push", "publish", "delete"}
+EB_MUTATING = {
+    "create", "deploy", "terminate", "setenv", "scale", "clone", "upgrade", "restore",
+    "abort", "swap", "config",
+}
+AGENTCORE_MUTATING = {"deploy", "remove", "destroy", "pause", "resume"}
+AGENTCORE_CLOUD_UNLESS_LOCAL = {"dev", "invoke", "run"}
+AGENTCORE_MCP_DESTRUCTIVE_PREFIXES = ("delete_", "stop_", "batch_delete_", "clear_")
+AGENTCORE_MCP_BILLABLE_PREFIXES = (
+    "create_", "update_", "invoke_", "start_", "put_", "batch_create_", "batch_update_",
+)
+IAC_MCP_MUTATING_TOOLS = {
+    "create_project",
+    "delete_project",
+    "create_team",
+    "add_team_member",
+    "grant_team_access",
+    "delete_team",
+    "create_workspace",
+    "create_no_code_workspace",
+    "update_workspace",
+    "delete_workspace_safely",
+    "force_unlock_workspace",
+    "create_run",
+    "action_run",
+    "create_workspace_variable",
+    "update_workspace_variable",
+    "create_variable_set",
+    "create_variable_in_variable_set",
+    "delete_variable_in_variable_set",
+    "attach_variable_set_to_workspaces",
+    "detach_variable_set_from_workspaces",
+    "create_workspace_tags",
+    "attach_policy_set_to_workspaces",
+    "neo-bridge",
+    "deploy-to-aws",
+}
 
 WRAPPERS = {"sudo", "env", "time", "nohup", "command", "exec", "nice"}
 RUNNERS = {"npx", "pnpx", "bunx", "pnpm", "yarn", "uvx", "poetry", "uv", "pipx"}
@@ -162,6 +200,14 @@ def classify_segment(toks: list[str]) -> str | None:
         return None
     if prog == "terragrunt":
         return cmd if TF_MUTATING.intersection(pos) else None
+    if prog == "pulumi":
+        if sub in PULUMI_MUTATING:
+            return cmd
+        if sub == "state" and len(pos) > 1 and pos[1] in PULUMI_STATE_MUTATING:
+            return cmd
+        if sub == "stack" and len(pos) > 1 and pos[1] in ("rm", "import"):
+            return cmd
+        return None
     if prog == "cdk":
         return cmd if sub in CDK_MUTATING else None
     if prog == "sam":
@@ -182,6 +228,16 @@ def classify_segment(toks: list[str]) -> str | None:
         return cmd if COPILOT_MUTATING.intersection(pos) else None
     if prog == "amplify":
         return cmd if sub in AMPLIFY_MUTATING else None
+    if prog == "eb":
+        return cmd if sub in EB_MUTATING else None
+    if prog == "agentcore":
+        if any(a in ("--help", "-h", "--version") for a in args):
+            return None
+        if sub in AGENTCORE_MUTATING:
+            return cmd
+        if sub in AGENTCORE_CLOUD_UNLESS_LOCAL and "--local" not in args and "-l" not in args:
+            return cmd
+        return None
     return None
 
 
@@ -223,6 +279,16 @@ def classify_tool(tool_name: str, tool_input) -> str | None:
         service = "s3api" if service == "s3" else service  # API operations, not `aws s3 cp/sync`
         op = str(inp.get("operation_name", "")).replace("_", "-")
         return f"aws {service} {op}" if classify_aws([service, op]) else None
+    if "agentcore" in name:
+        short = name.rsplit("__", 1)[-1]
+        if short.startswith(AGENTCORE_MCP_DESTRUCTIVE_PREFIXES):
+            return f"{short} (WARNING: destructive AgentCore operation)"
+        if short.startswith(AGENTCORE_MCP_BILLABLE_PREFIXES):
+            return f"{short} (COST WARNING: billable AgentCore mutation or invocation)"
+    if name.startswith("mcp__"):
+        short = name.rsplit("__", 1)[-1]
+        if short in IAC_MCP_MUTATING_TOOLS:
+            return f"{short} (remote IaC workspace/cloud mutation)"
     return None
 
 
@@ -292,6 +358,10 @@ def self_test() -> int:
         "terraform -chdir=infra apply tf.plan": True,
         "terraform state list": False,
         "terraform state rm aws_s3_bucket.b": True,
+        "pulumi preview --diff": False,
+        "pulumi up --yes": True,
+        "pulumi destroy": True,
+        "pulumi state delete urn:pulumi:prod::app::aws:s3/bucket:Bucket::b": True,
         "npx cdk diff": False,
         "npx aws-cdk deploy --all": True,
         "sam build && sam validate": False,
@@ -301,6 +371,17 @@ def self_test() -> int:
         "eksctl get clusters": False,
         "echo aws ec2 delete-vpc": False,
         "aws-vault exec prod -- aws ec2 delete-vpc --vpc-id v": True,
+        "agentcore status": False,
+        "agentcore doctor": False,
+        "agentcore invoke --local --prompt hello": False,
+        "agentcore invoke --prompt hello": True,
+        "agentcore deploy -y": True,
+        "agentcore remove memory --name MyMem": True,
+        "eb status": False,
+        "eb health --refresh": False,
+        "eb create prod-env --single": True,
+        "eb deploy prod-env": True,
+        "eb terminate prod-env --force": True,
     }
     bad = [c for c, want in cases.items() if bool(classify_shell(c)) != want]
     mcp = [
@@ -308,6 +389,14 @@ def self_test() -> int:
         ("mcp__plugin_x_aws-mcp__aws___call_aws", {"cli_command": "aws ec2 delete-vpc --vpc-id v"}, True),
         ("mcp__aws-mcp__aws___run_script", {"script": "..."}, True),
         ("use_aws", {"service_name": "s3", "operation_name": "list_buckets"}, False),
+        ("mcp__plugin_aws-agentcore-engineer_agentcore__search_agentcore_docs", {"query": "memory"}, False),
+        ("mcp__plugin_aws-agentcore-engineer_agentcore__get_agent_runtime", {"agentRuntimeId": "r-1"}, False),
+        ("mcp__plugin_aws-agentcore-engineer_agentcore__create_agent_runtime", {"agentRuntimeName": "r"}, True),
+        ("mcp__plugin_aws-agentcore-engineer_agentcore__delete_memory", {"memoryId": "m-1"}, True),
+        ("mcp__plugin_aws-iac-engineer_terraform__search_provider_docs", {"provider_name": "aws", "provider_version": "latest"}, False),
+        ("mcp__plugin_aws-iac-engineer_terraform__get_provider_details", {"provider_doc_id": "8894603"}, False),
+        ("mcp__plugin_aws-iac-engineer_terraform__create_run", {"workspace_name": "prod"}, True),
+        ("mcp__plugin_aws-iac-engineer_pulumi__neo-bridge", {"task": "deploy"}, True),
     ]
     bad += [f"{n} {i}" for n, i, want in mcp if bool(classify_tool(n, i)) != want]
     for b in bad:

@@ -100,6 +100,12 @@ export const handler: S3Handler = async (event) => {
 
 ## Pitfalls
 
+- **4 Strict S3 Path Compiler Rules:**
+  1. Every path string **MUST** end with `/*` and **MUST NOT** start with `/`.
+  2. Only a single level of sub-path nesting is permitted under a shared prefix (`media/*` and `media/albums/*` are valid together, but adding `media/albums/photos/*` fails compilation).
+  3. A generic wildcard `/*` and `{entity_id}/*` **cannot coexist at the same hierarchy level** (`media/*` + `media/{entity_id}/*` fails compilation).
+  4. A wildcard path **cannot be a parent prefix** of another path containing `{entity_id}` (`media/*` + `media/albums/{entity_id}/*` fails compilation).
+- **Lambda access grants & `<NAME>_BUCKET_NAME` env var:** Grant functions access inside `defineStorage` via `allow.resource(myFunc).to(['read', 'write', 'delete'])`, which automatically injects `<STORAGE_NAME>_BUCKET_NAME` into `$amplify/env/<func-name>`.
 - **Paths without `/*`:** A path like `'public'` matches nothing — you
   **MUST** use `'public/*'` to match files under that prefix.
 - **Missing `.to([])`:** Omitting `.to(['read', 'write'])` from an access

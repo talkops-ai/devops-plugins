@@ -1,7 +1,7 @@
 {
   "name": "aws-security-identity",
-  "version": "0.1.0",
-  "description": "Security and identity skills for the main agent: least-privilege IAM, Security Hub/GuardDuty/Inspector findings, Cognito authentication, and Secrets Manager best practices, with read-only IAM, Well-Architected security, and AWS Security Agent MCP servers and the secret-safety hook.",
+  "version": "0.2.0",
+  "description": "Cloud security, identity governance, and incident forensics for the main agent: IAM least-privilege & Access Analyzer, AWS Organizations SCPs/RCPs, KMS & Secrets Manager, Security Hub CSPM (OCSF), GuardDuty & CloudTrail incident triage, WAF/Network Firewall perimeter hardening, container workload security, and STRIDE threat modeling.",
   "author": {
     "name": "TalkOps AI"
   },
@@ -12,19 +12,22 @@
     "aws",
     "security",
     "iam",
+    "scp",
+    "kms",
     "secrets-manager",
-    "cognito",
-    "security-hub",
     "guardduty",
-    "least-privilege"
+    "security-hub",
+    "cloudtrail",
+    "waf",
+    "threat-modeling"
   ],
   "skills": "./skills/",
   "mcpServers": "./mcp.json",
   "hooks": "./hooks/hooks.json",
   "interface": {
     "displayName": "AWS Security and Identity",
-    "shortDescription": "Security and identity skills for the main agent",
-    "longDescription": "Security and identity skills for the main agent: least-privilege IAM, Security Hub/GuardDuty/Inspector findings, Cognito authentication, and Secrets Manager best practices, with read-only IAM, Well-Architected security, and AWS Security Agent MCP servers and the secret-safety hook.",
+    "shortDescription": "Cloud security, identity governance, and incident forensics for the main agent: IAM least-privilege & Access…",
+    "longDescription": "Cloud security, identity governance, and incident forensics for the main agent: IAM least-privilege & Access Analyzer, AWS Organizations SCPs/RCPs, KMS & Secrets Manager, Security Hub CSPM (OCSF), GuardDuty & CloudTrail incident triage, WAF/Network Firewall perimeter hardening, container workload security, and STRIDE threat modeling.",
     "developerName": "TalkOps AI",
     "category": "Cloud",
     "capabilities": [

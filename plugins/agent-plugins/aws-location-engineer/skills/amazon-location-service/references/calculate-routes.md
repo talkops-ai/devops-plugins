@@ -1261,6 +1261,125 @@ async function calculateWalkingRoute() {
 }
 ```
 
+## Related Routes V2 Operations (`CalculateRouteMatrix`, `CalculateIsolines`, `OptimizeWaypoints`, `SnapToRoads`)
+
+### 1. Multi-Origin to Multi-Destination Travel Matrix (`CalculateRouteMatrixCommand`)
+
+In Routes V2 (`@aws-sdk/client-geo-routes`), `CalculateRouteMatrixCommand` **requires** a `RoutingBoundary` (`AutoCircle`, `Circle`, or `Geometry`) defining the allowed routing envelope:
+
+```javascript
+import {
+  GeoRoutesClient,
+  CalculateRouteMatrixCommand,
+} from "@aws-sdk/client-geo-routes";
+
+const matrixResponse = await client.send(
+  new CalculateRouteMatrixCommand({
+    Origins: [
+      { Position: [-97.7431, 30.2672] }, // Warehouse A [lng, lat]
+      { Position: [-97.75, 30.25] }, // Warehouse B [lng, lat]
+    ],
+    Destinations: [
+      { Position: [-97.7723, 30.2672] }, // Customer 1
+      { Position: [-97.72, 30.29] }, // Customer 2
+    ],
+    TravelMode: "Car",
+    // REQUIRED in V2: AutoCircle automatically derives the bounding circle from origins/destinations
+    RoutingBoundary: {
+      AutoCircle: { Margin: 10000 }, // 10km margin around all points
+    },
+  }),
+);
+
+// matrixResponse.RouteMatrix[originIndex][destinationIndex] → { Distance (m), Duration (s), Error }
+matrixResponse.RouteMatrix.forEach((row, originIdx) => {
+  row.forEach((cell, destIdx) => {
+    console.log(
+      `Origin ${originIdx} → Dest ${destIdx}: ${cell.Distance}m, ${cell.Duration}s`,
+    );
+  });
+});
+```
+
+### 2. Service Areas & Reachability Polygons (`CalculateIsolinesCommand`)
+
+Compute time-based or distance-based reachability polygons (isochrones/isodistances) and render them as GeoJSON polygons on MapLibre:
+
+```javascript
+import { CalculateIsolinesCommand } from "@aws-sdk/client-geo-routes";
+
+const isolineResponse = await client.send(
+  new CalculateIsolinesCommand({
+    Origin: [-97.7431, 30.2672], // [lng, lat]
+    TravelMode: "Car",
+    Thresholds: {
+      Time: [600, 1200], // 10-minute (600s) and 20-minute (1200s) service areas
+      // Or Distance: [5000, 10000] (in meters)
+    },
+    IsolineGeometryFormat: "Simple", // Returns ready-to-render Polygon coordinate rings
+  }),
+);
+
+// Render the 10-minute isoline polygon on MapLibre
+const outerRing = isolineResponse.Isolines[0].Geometries[0].Polygon;
+map.addSource("isoline-10m", {
+  type: "geojson",
+  data: {
+    type: "Feature",
+    geometry: { type: "Polygon", coordinates: outerRing },
+  },
+});
+map.addLayer({
+  id: "isoline-10m-fill",
+  type: "fill",
+  source: "isoline-10m",
+  paint: { "fill-color": "#3b82f6", "fill-opacity": 0.25 },
+});
+```
+
+### 3. Traveling Salesman Problem Multi-Stop Ordering (`OptimizeWaypointsCommand`)
+
+```javascript
+import { OptimizeWaypointsCommand } from "@aws-sdk/client-geo-routes";
+
+const optimized = await client.send(
+  new OptimizeWaypointsCommand({
+    Origin: [-97.7431, 30.2672],
+    Destination: [-97.7431, 30.2672], // Round trip back to depot
+    TravelMode: "Truck",
+    Waypoints: [
+      { Id: "stop-a", Position: [-97.7723, 30.2672], ServiceDuration: 300 },
+      { Id: "stop-b", Position: [-97.72, 30.29], ServiceDuration: 600 },
+      { Id: "stop-c", Position: [-97.76, 30.24], ServiceDuration: 300 },
+    ],
+  }),
+);
+// optimized.OptimizedWaypoints → ordered array of { Id, ArrivalTime, DepartureTime, Position }
+// optimized.Distance (meters), optimized.Duration (seconds)
+```
+
+### 4. GPS Telemetry Road Alignment (`SnapToRoadsCommand`)
+
+Align noisy GPS breadcrumbs to the physical road network:
+
+```javascript
+import { SnapToRoadsCommand } from "@aws-sdk/client-geo-routes";
+
+const snapped = await client.send(
+  new SnapToRoadsCommand({
+    TravelMode: "Car",
+    SnappedGeometryFormat: "Simple",
+    TracePoints: [
+      { Position: [-97.7431, 30.2672], Timestamp: "2026-01-15T12:00:00Z" },
+      { Position: [-97.7445, 30.2675], Timestamp: "2026-01-15T12:00:10Z" },
+      { Position: [-97.746, 30.2678], Timestamp: "2026-01-15T12:00:20Z" },
+    ],
+  }),
+);
+// snapped.SnappedGeometry.LineString → road-aligned [lng, lat][] coordinates
+// snapped.SnappedTracePoints → matched points with road speed limits
+```
+
 ## Best Practices
 
 ### Coordinate Precision

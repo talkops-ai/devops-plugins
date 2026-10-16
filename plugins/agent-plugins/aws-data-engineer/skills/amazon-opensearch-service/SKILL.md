@@ -1,6 +1,10 @@
 ---
 name: amazon-opensearch-service
-description: Guides migration, provisioning, search, log-analytics, trace-analytics, and Agentic AI Assistant workflows for Amazon OpenSearch Service and Serverless across six capabilities — migration (Solr/ES/self-managed into AOS/AOSS, schema/query translation, sizing, cutover); provisioning (domain + AOSS lifecycle, upgrades, FGAC, monitoring); search (vector / semantic / hybrid / RAG with Bedrock); log-analytics (PPL, OSI, anomaly detection, Dashboards); trace-analytics (OTel spans, service maps, Data Prepper); ai-assistant (natural language data exploration, incident investigation, root cause analysis). Triggers on OpenSearch, AOS, AOSS, Elasticsearch, Solr, vector/k-NN/semantic/hybrid search, RAG, log analytics, PPL, trace analytics, ISM, FAISS, HNSW, Migration Assistant, UltraWarm, OR1, query my data, analyze logs, investigate errors, root cause analysis.
+description: >-
+  Guides OpenSearch Ingestion (OSIS), Index State Management (ISM) hot-warm-cold tiering, PPL log
+  analytics, OpenTelemetry trace analytics, k-NN vector/hybrid search, Solr/Elasticsearch migration,
+  and cluster/Serverless provisioning for Amazon OpenSearch Service (AOS and AOSS). Do NOT use for
+  general Athena/Redshift data lake SQL queries (use querying-data-lake or redshift-guide).
 metadata:
   version: "2"
 ---

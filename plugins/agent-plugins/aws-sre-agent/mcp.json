@@ -13,6 +13,18 @@
         "INSTALL_SOURCE=agent-toolkit-core"
       ]
     },
+    "aws-api": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-api-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "READ_OPERATIONS_ONLY": "true",
+        "REQUIRE_MUTATION_CONSENT": "true"
+      }
+    },
     "cloudwatch": {
       "type": "stdio",
       "command": "uvx",
@@ -33,6 +45,16 @@
         "FASTMCP_LOG_LEVEL": "ERROR"
       }
     },
+    "prometheus": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "awslabs.prometheus-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      }
+    },
     "cloudtrail": {
       "type": "stdio",
       "command": "uvx",
@@ -43,11 +65,59 @@
         "FASTMCP_LOG_LEVEL": "ERROR"
       }
     },
-    "prometheus": {
+    "eks": {
       "type": "stdio",
       "command": "uvx",
       "args": [
-        "awslabs.prometheus-mcp-server@latest"
+        "awslabs.eks-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      }
+    },
+    "ecs": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "awslabs-ecs-mcp-server@latest",
+        "--with",
+        "fastmcp<4",
+        "ecs-mcp-server"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "ALLOW_WRITE": "false",
+        "ALLOW_SENSITIVE_DATA": "false"
+      }
+    },
+    "network": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-network-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      }
+    },
+    "iac": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--with",
+        "fastmcp<4.0.0",
+        "awslabs.aws-iac-mcp-server==0.2.14"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      }
+    },
+    "cost-explorer": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "awslabs.billing-cost-management-mcp-server@latest"
       ],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR"

@@ -1,7 +1,7 @@
 {
   "name": "aws-marketplace-seller",
-  "version": "0.1.0",
-  "description": "AWS Marketplace seller skills for the main agent: integrating SaaS, container, and AMI products with AWS Marketplace metering.",
+  "version": "0.2.0",
+  "description": "End-to-end AWS Marketplace ISV & Seller engineering for the main agent: Metering & Entitlement APIs (ResolveCustomer, BatchMeterUsage, RegisterUsage, GetEntitlements), Catalog API product listings (StartChangeSet for SaaS, Container, AMI, GenAI), Private Offers & CPPO with Flexible Payment Scheduler, Agreement API, and SaaS control-plane onboarding.",
   "author": {
     "name": "TalkOps AI"
   },
@@ -11,15 +11,22 @@
   "keywords": [
     "aws",
     "marketplace",
+    "isv",
+    "seller",
     "metering",
+    "catalog-api",
+    "private-offers",
+    "cppo",
+    "entitlements",
     "saas"
   ],
   "skills": "./skills/",
   "mcpServers": "./mcp.json",
+  "hooks": "./hooks/hooks.json",
   "interface": {
     "displayName": "AWS Marketplace Seller",
-    "shortDescription": "AWS Marketplace seller skills for the main agent",
-    "longDescription": "AWS Marketplace seller skills for the main agent: integrating SaaS, container, and AMI products with AWS Marketplace metering.",
+    "shortDescription": "End-to-end AWS Marketplace ISV & Seller engineering for the main agent: Metering & Entitlement APIs (ResolveC…",
+    "longDescription": "End-to-end AWS Marketplace ISV & Seller engineering for the main agent: Metering & Entitlement APIs (ResolveCustomer, BatchMeterUsage, RegisterUsage, GetEntitlements), Catalog API product listings (StartChangeSet for SaaS, Container, AMI, GenAI), Private Offers & CPPO with Flexible Payment Scheduler, Agreement API, and SaaS control-plane onboarding.",
     "developerName": "TalkOps AI",
     "category": "Cloud",
     "capabilities": [

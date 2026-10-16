@@ -2,16 +2,17 @@
 
 # Cell 1: Setup
 
-%pip install --upgrade sagemaker>=3.7.1 --quiet  # NOTEBOOK_ONLY
+# %pip install --upgrade 'sagemaker>=3.7.1,<4.0' --quiet  # NOTEBOOK_ONLY
 
 # Cell 2: Configuration
 
-import boto3
 import json
 import time
-from sagemaker.serve.bedrock_model_builder import BedrockModelBuilder
-from sagemaker.core.resources import TrainingJob
+
+import boto3
 from sagemaker.core import Attribution, set_attribution
+from sagemaker.core.resources import TrainingJob
+from sagemaker.serve.bedrock_model_builder import BedrockModelBuilder
 
 set_attribution(Attribution.SAGEMAKER_AGENT_PLUGIN)
 
@@ -94,11 +95,13 @@ for attempt in range(1, 25):
     try:
         response = bedrock_runtime.invoke_model(
             modelId=model_arn,
-            body=json.dumps({
-                "prompt": "What is the capital of France?",
-                "max_gen_len": 50,
-                "temperature": 0.7,
-            }),
+            body=json.dumps(
+                {
+                    "prompt": "What is the capital of France?",
+                    "max_gen_len": 50,
+                    "temperature": 0.7,
+                }
+            ),
         )
         result = json.loads(response["body"].read())
         print(f"Response: {json.dumps(result)[:300]}")
@@ -109,12 +112,19 @@ for attempt in range(1, 25):
 else:
     print("Model did not become ready after 12 minutes.")
 
-# Save manifest
+# Cell 6: Save Manifest
+# Save manifest - record output of workflow step for future reference
 from pathlib import Path
+
 manifest_dir = Path("[PROJECT_DIR]") / "manifests"
 manifest_dir.mkdir(parents=True, exist_ok=True)
 manifest_path = manifest_dir / f"deploy-{TRAINING_JOB_NAME}.json"
-manifest_path.write_text(json.dumps({
-    "model_id": model_arn,
-}, indent=2))
+manifest_path.write_text(
+    json.dumps(
+        {
+            "model_id": model_arn,
+        },
+        indent=2,
+    )
+)
 print(f"Manifest saved: {manifest_path}")

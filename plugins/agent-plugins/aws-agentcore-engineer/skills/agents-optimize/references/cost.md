@@ -100,6 +100,23 @@ Rules of thumb:
 - If you don't need Container, use CodeZip — no ECR storage charge
 - If you need Container, keep the image small (see `agents-harden` Initialization time section)
 
+### Runtime Pricing Tiers: Elastic Reclamation vs. Committed Baseline
+
+Match your runtime pricing model to the workload traffic pattern:
+
+- **Standard Consumption (Scale-to-Zero + Elastic Memory Reclamation):** Best for spiky, interactive, or developer workloads. MicroVMs scale to zero after `idleRuntimeSessionTimeout`, and elastic memory reclamation bills only for active memory allocation while the session waits on external I/O (e.g., Bedrock streaming or slow MCP tools).
+- **Committed Baseline Pricing:** Best for steady 24/7 enterprise ambient agents with predictable high concurrency, offering significant discounts over on-demand vCPU-hour and GB-hour rates.
+
+### MCP Context Window Pruning (28.2% Token Reduction)
+
+In IDE and orchestrator environments using `awslabs.amazon-bedrock-agentcore-mcp-server`, the full server exposes **124 tools** (including 25 Browser and 10 Code Interpreter sandbox tools). Setting:
+
+```json
+"AGENTCORE_DISABLE_TOOLS": "browser,code_interpreter"
+```
+
+prunes those 35 sandbox execution tools down to the **89 control/data-plane and documentation tools**, cutting per-turn input token overhead by **28.2%** without losing any architecture, deployment, memory, gateway, or policy capabilities.
+
 ## Cross-references
 
 - For model selection decisions, see [`references/evals.md`](evals.md) Path A (evaluator model choice applies the same way)

@@ -95,15 +95,19 @@ guidance.
 - [Agent runtime platform](references/agentcore.md)
 - [ML pipelines and model serving](references/mlops.md)
 - [Strands SDK agent scaffolding](references/strands-agent.md)
+- [GPU capacity, service quotas, and accelerator selection (G6/G6e/P5/Inferentia2/Trainium)](references/gpu-capacity-for-startups.md)
+- [Self-hosted open-weight LLMs (vLLM/TGI) vs. Bedrock break-even math](references/self-hosted-llm.md)
+- [High-throughput batch AI inference (Bedrock Batch 50% discount, SQS micro-batching, Spot GPU Batch)](references/batch-inference.md)
 
 ### Cost
 
-- [Cost analysis and optimization](references/cost-check.md)
+- [Cost analysis and optimization](references/cost-check.md) — for a live read-only scan of the user's AWS account for waste, security gaps, and Activate credit runway, invoke the `startup-account-audit` skill.
 
 ### Architecture & Planning
 
 - [End-to-end architecture planning](references/aws-plan.md)
 - [Well-Architected design](references/aws-architect.md)
+- [Multi-tenant SaaS isolation patterns (Pooled RLS/ABAC vs. Bridge vs. Silo)](references/multi-tenant-isolation.md)
 
 ### Scaffolding
 

@@ -74,6 +74,16 @@ KUBECTL_MUTATING = {
 HELM_MUTATING = {"install", "upgrade", "uninstall", "delete", "rollback", "push"}
 COPILOT_MUTATING = {"deploy", "delete", "init"}
 AMPLIFY_MUTATING = {"push", "publish", "delete"}
+EB_MUTATING = {
+    "create", "deploy", "terminate", "setenv", "scale", "clone", "upgrade", "restore",
+    "abort", "swap", "config",
+}
+AGENTCORE_MUTATING = {"deploy", "remove", "destroy", "pause", "resume"}
+AGENTCORE_CLOUD_UNLESS_LOCAL = {"dev", "invoke", "run"}
+AGENTCORE_MCP_DESTRUCTIVE_PREFIXES = ("delete_", "stop_", "batch_delete_", "clear_")
+AGENTCORE_MCP_BILLABLE_PREFIXES = (
+    "create_", "update_", "invoke_", "start_", "put_", "batch_create_", "batch_update_",
+)
 
 WRAPPERS = {"sudo", "env", "time", "nohup", "command", "exec", "nice"}
 RUNNERS = {"npx", "pnpx", "bunx", "pnpm", "yarn", "uvx", "poetry", "uv", "pipx"}
@@ -182,6 +192,16 @@ def classify_segment(toks: list[str]) -> str | None:
         return cmd if COPILOT_MUTATING.intersection(pos) else None
     if prog == "amplify":
         return cmd if sub in AMPLIFY_MUTATING else None
+    if prog == "eb":
+        return cmd if sub in EB_MUTATING else None
+    if prog == "agentcore":
+        if any(a in ("--help", "-h", "--version") for a in args):
+            return None
+        if sub in AGENTCORE_MUTATING:
+            return cmd
+        if sub in AGENTCORE_CLOUD_UNLESS_LOCAL and "--local" not in args and "-l" not in args:
+            return cmd
+        return None
     return None
 
 
@@ -223,6 +243,29 @@ def classify_tool(tool_name: str, tool_input) -> str | None:
         service = "s3api" if service == "s3" else service  # API operations, not `aws s3 cp/sync`
         op = str(inp.get("operation_name", "")).replace("_", "-")
         return f"aws {service} {op}" if classify_aws([service, op]) else None
+    if "agentcore" in name:
+        short = name.rsplit("__", 1)[-1]
+        if short.startswith(AGENTCORE_MCP_DESTRUCTIVE_PREFIXES):
+            return f"{short} (WARNING: destructive AgentCore operation)"
+        if short.startswith(AGENTCORE_MCP_BILLABLE_PREFIXES):
+            return f"{short} (COST WARNING: billable AgentCore mutation or invocation)"
+    short = name.rsplit("__", 1)[-1]
+    if short == "manage_hyperpod_stacks":
+        op = str(inp.get("operation", "")).strip().lower()
+        if op == "delete":
+            return f"{short} operation=delete (WARNING: destructive HyperPod stack deletion)"
+        if op == "describe":
+            return None
+        return f"{short} operation={op or 'unknown'} (COST WARNING: mutating HyperPod stack operation)"
+    if short == "manage_hyperpod_cluster_nodes":
+        op = str(inp.get("operation", "")).strip().lower()
+        if op == "batch_delete":
+            return f"{short} operation=batch_delete (WARNING: destructive HyperPod node deletion)"
+        if op == "update_software":
+            return f"{short} operation=update_software (mutating HyperPod cluster software update)"
+        if op in ("list_clusters", "list_nodes", "describe_node"):
+            return None
+        return f"{short} operation={op or 'unknown'} (mutating HyperPod node operation)"
     return None
 
 
@@ -301,6 +344,17 @@ def self_test() -> int:
         "eksctl get clusters": False,
         "echo aws ec2 delete-vpc": False,
         "aws-vault exec prod -- aws ec2 delete-vpc --vpc-id v": True,
+        "agentcore status": False,
+        "agentcore doctor": False,
+        "agentcore invoke --local --prompt hello": False,
+        "agentcore invoke --prompt hello": True,
+        "agentcore deploy -y": True,
+        "agentcore remove memory --name MyMem": True,
+        "eb status": False,
+        "eb health --refresh": False,
+        "eb create prod-env --single": True,
+        "eb deploy prod-env": True,
+        "eb terminate prod-env --force": True,
     }
     bad = [c for c, want in cases.items() if bool(classify_shell(c)) != want]
     mcp = [
@@ -308,6 +362,17 @@ def self_test() -> int:
         ("mcp__plugin_x_aws-mcp__aws___call_aws", {"cli_command": "aws ec2 delete-vpc --vpc-id v"}, True),
         ("mcp__aws-mcp__aws___run_script", {"script": "..."}, True),
         ("use_aws", {"service_name": "s3", "operation_name": "list_buckets"}, False),
+        ("mcp__plugin_aws-agentcore-engineer_agentcore__search_agentcore_docs", {"query": "memory"}, False),
+        ("mcp__plugin_aws-agentcore-engineer_agentcore__get_agent_runtime", {"agentRuntimeId": "r-1"}, False),
+        ("mcp__plugin_aws-agentcore-engineer_agentcore__create_agent_runtime", {"agentRuntimeName": "r"}, True),
+        ("mcp__plugin_aws-agentcore-engineer_agentcore__delete_memory", {"memoryId": "m-1"}, True),
+        ("mcp__plugin_aws-sagemaker-engineer_sagemaker__manage_hyperpod_stacks", {"operation": "describe", "region": "us-west-2"}, False),
+        ("mcp__plugin_aws-sagemaker-engineer_sagemaker__manage_hyperpod_stacks", {"operation": "deploy", "region": "us-west-2"}, True),
+        ("mcp__plugin_aws-sagemaker-engineer_sagemaker__manage_hyperpod_stacks", {"operation": "delete", "region": "us-west-2"}, True),
+        ("mcp__plugin_aws-sagemaker-engineer_sagemaker__manage_hyperpod_cluster_nodes", {"operation": "list_clusters", "region": "us-west-2"}, False),
+        ("mcp__plugin_aws-sagemaker-engineer_sagemaker__manage_hyperpod_cluster_nodes", {"operation": "describe_node", "region": "us-west-2"}, False),
+        ("mcp__plugin_aws-sagemaker-engineer_sagemaker__manage_hyperpod_cluster_nodes", {"operation": "update_software", "region": "us-west-2"}, True),
+        ("mcp__plugin_aws-sagemaker-engineer_sagemaker__manage_hyperpod_cluster_nodes", {"operation": "batch_delete", "region": "us-west-2"}, True),
     ]
     bad += [f"{n} {i}" for n, i, want in mcp if bool(classify_tool(n, i)) != want]
     for b in bad:

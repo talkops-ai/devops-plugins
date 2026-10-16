@@ -1,0 +1,188 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "FinOpsBillingAndCostManagementReadOnly",
+      "Effect": "Allow",
+      "Action": [
+        "ce:Get*",
+        "ce:List*",
+        "ce:Describe*",
+        "cost-optimization-hub:Get*",
+        "cost-optimization-hub:List*",
+        "compute-optimizer:Get*",
+        "compute-optimizer:Describe*",
+        "compute-optimizer:List*",
+        "bcm-recommended-actions:List*",
+        "pricing:GetProducts",
+        "pricing:DescribeServices",
+        "pricing:GetAttributeValues",
+        "pricing:GetPriceListFileUrl",
+        "pricing:ListPriceLists",
+        "bcm-pricing-calculator:Get*",
+        "bcm-pricing-calculator:List*",
+        "savingsplans:Describe*",
+        "savingsplans:List*",
+        "budgets:ViewBudget",
+        "budgets:Describe*",
+        "cur:DescribeReportDefinitions",
+        "bcm-data-exports:Get*",
+        "bcm-data-exports:List*",
+        "billing:Get*",
+        "billing:List*",
+        "billingconductor:List*",
+        "invoicing:List*",
+        "invoicing:Get*",
+        "invoicing:BatchGet*",
+        "freetier:Get*",
+        "freetier:List*",
+        "tax:Get*",
+        "tax:List*",
+        "consolidatedbilling:Get*",
+        "consolidatedbilling:List*",
+        "payments:List*",
+        "payments:Get*"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "FinOpsTelemetryAndInventoryReadOnly",
+      "Effect": "Allow",
+      "Action": [
+        "cloudwatch:GetMetricData",
+        "cloudwatch:GetMetricStatistics",
+        "cloudwatch:ListMetrics",
+        "cloudwatch:DescribeAlarms",
+        "cloudwatch:DescribeAlarmHistory",
+        "logs:DescribeLogGroups",
+        "logs:StartQuery",
+        "logs:GetQueryResults",
+        "logs:StopQuery",
+        "ec2:Describe*",
+        "autoscaling:Describe*",
+        "rds:Describe*",
+        "rds:ListTagsForResource",
+        "lambda:List*",
+        "lambda:GetFunctionConfiguration",
+        "lambda:GetProvisionedConcurrencyConfig",
+        "ecs:Describe*",
+        "ecs:List*",
+        "eks:Describe*",
+        "eks:List*",
+        "dynamodb:Describe*",
+        "dynamodb:List*",
+        "elasticache:Describe*",
+        "opensearch:Describe*",
+        "opensearch:List*",
+        "aoss:BatchGetCollection",
+        "aoss:ListCollections",
+        "bedrock:List*",
+        "bedrock:GetProvisionedModelThroughput",
+        "bedrock:GetModelInvocationLoggingConfiguration",
+        "sagemaker:Describe*",
+        "sagemaker:List*",
+        "redshift:Describe*",
+        "redshift-serverless:Get*",
+        "redshift-serverless:List*",
+        "glue:GetDatabase*",
+        "glue:GetTable*",
+        "glue:GetPartition*",
+        "glue:GetJob*",
+        "s3:GetStorageLens*",
+        "s3:ListStorageLens*",
+        "s3:GetLifecycleConfiguration",
+        "s3:GetIntelligentTieringConfiguration",
+        "s3:GetBucketTagging",
+        "s3:GetBucketEncryption",
+        "s3:GetBucketLocation",
+        "s3:ListAllMyBuckets",
+        "tag:GetResources",
+        "tag:GetTagKeys",
+        "tag:GetTagValues",
+        "organizations:Describe*",
+        "organizations:List*",
+        "config:Describe*",
+        "config:GetDiscoveredResourceCounts",
+        "cloudtrail:DescribeTrails",
+        "cloudtrail:GetEventSelectors",
+        "sts:GetCallerIdentity"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "FinOpsAthenaWorkgroupScopedExecution",
+      "Effect": "Allow",
+      "Action": [
+        "athena:StartQueryExecution",
+        "athena:GetQueryExecution",
+        "athena:GetQueryResults",
+        "athena:StopQueryExecution",
+        "athena:GetWorkGroup"
+      ],
+      "Resource": [
+        "arn:aws:athena:*:*:workgroup/finops-readonly",
+        "arn:aws:athena:*:*:workgroup/StorageLens*"
+      ]
+    },
+    {
+      "Sid": "FinOpsAthenaWorkgroupDiscovery",
+      "Effect": "Allow",
+      "Action": [
+        "athena:ListWorkGroups",
+        "athena:ListDataCatalogs",
+        "athena:ListDatabases",
+        "athena:ListTableMetadata"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "FinOpsCurFocusAndStorageLensS3Access",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetBucketLocation",
+        "s3:GetObject",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::REPLACE_WITH_CUR_OR_FOCUS_BUCKET",
+        "arn:aws:s3:::REPLACE_WITH_CUR_OR_FOCUS_BUCKET/*",
+        "arn:aws:s3:::REPLACE_WITH_STORAGE_LENS_BUCKET",
+        "arn:aws:s3:::REPLACE_WITH_STORAGE_LENS_BUCKET/*"
+      ]
+    },
+    {
+      "Sid": "FinOpsAthenaResultsScratchpadOnly",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetBucketLocation",
+        "s3:GetObject",
+        "s3:ListBucket",
+        "s3:PutObject",
+        "s3:AbortMultipartUpload"
+      ],
+      "Resource": [
+        "arn:aws:s3:::REPLACE_WITH_ATHENA_RESULTS_BUCKET",
+        "arn:aws:s3:::REPLACE_WITH_ATHENA_RESULTS_BUCKET/finops-query-results/*"
+      ]
+    },
+    {
+      "Sid": "ExplicitDenySecretsAndDirectDataPlane",
+      "Effect": "Deny",
+      "Action": [
+        "secretsmanager:GetSecretValue",
+        "ssm:GetParameter",
+        "ssm:GetParameters",
+        "ssm:GetParametersByPath",
+        "s3:DeleteObject*",
+        "s3:PutBucket*",
+        "ec2:Purchase*",
+        "rds:Purchase*",
+        "elasticache:Purchase*",
+        "opensearch:Purchase*",
+        "savingsplans:CreateSavingsPlan",
+        "savingsplans:DeleteQueuedSavingsPlan"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

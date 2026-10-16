@@ -7,8 +7,9 @@ at: https://docs.aws.amazon.com/sagemaker/latest/dg/customize-model.html.
 """
 
 import json  # For JSON parsing - adjust imports based on your use case
-import re    # For pattern matching and validation
-from typing import Dict, Any, List, Optional # For type hints
+import re  # For pattern matching and validation
+from typing import Any, Dict, List, Optional  # For type hints
+
 # Add any other imports your use case requires
 
 # ========================================================================================
@@ -34,10 +35,10 @@ def extract_number(text: str) -> Optional[float]:
     """
     Extract numerical answer from text.
     Looks for numbers after answer keywords, or returns the last number found.
-    
+
     Args:
         text: Text containing a numerical answer
-        
+
     Returns:
         Extracted number as float, or None if no number found
     """
@@ -46,8 +47,8 @@ def extract_number(text: str) -> Optional[float]:
 
     # Try to find numbers after common answer keywords
     answer_patterns = [
-        r'(?:equals|is|answer is|result is|=)\s*(-?\d+\.?\d*)',
-        r'(?:answer|result|solution):\s*(-?\d+\.?\d*)',
+        r"(?:equals|is|answer is|result is|=)\s*(-?\d+\.?\d*)",
+        r"(?:answer|result|solution):\s*(-?\d+\.?\d*)",
     ]
 
     for pattern in answer_patterns:
@@ -59,7 +60,7 @@ def extract_number(text: str) -> Optional[float]:
                 pass
 
     # Fallback: find all numbers and return the last one (likely the answer)
-    pattern = r'-?\d+\.?\d*'
+    pattern = r"-?\d+\.?\d*"
     matches = re.findall(pattern, text)
 
     if matches:
@@ -69,6 +70,7 @@ def extract_number(text: str) -> Optional[float]:
             return None
 
     return None
+
 
 # =========================================================================================
 # SECTION 2: Helper function 2
@@ -80,10 +82,10 @@ def compute_reasoning_quality(response: str) -> float:
     """
     Compute reasoning quality score based on response characteristics.
     This is a simple heuristic - customize based on your needs.
-    
+
     Args:
         response: The model's response text
-        
+
     Returns:
         Quality score between 0.0 and 1.0
     """
@@ -94,9 +96,19 @@ def compute_reasoning_quality(response: str) -> float:
 
     # Check for reasoning indicators (customize these for your use case)
     reasoning_indicators = [
-        'because', 'therefore', 'thus', 'since', 'so',
-        'first', 'second', 'then', 'finally',
-        'step', 'calculate', 'compute', 'equals'
+        "because",
+        "therefore",
+        "thus",
+        "since",
+        "so",
+        "first",
+        "second",
+        "then",
+        "finally",
+        "step",
+        "calculate",
+        "compute",
+        "equals",
     ]
 
     response_lower = response.lower()
@@ -114,10 +126,11 @@ def compute_reasoning_quality(response: str) -> float:
         score += 0.1
 
     # Award points for structured response (max 0.2)
-    if '\n' in response or '.' in response:
+    if "\n" in response or "." in response:
         score += 0.2
 
     return min(score, 1.0)
+
 
 # =========================================================================================
 # SECTION 3: Sample reward function
@@ -130,7 +143,7 @@ def reward_function(sample: Dict[str, Any], index: int) -> Dict[str, Any]:
     Args:
         sample: Dictionary containing messages and reference_answer
         index: Sample index in batch
-    
+
     Returns:
         Dictionary with reward scores and metrics
     """
@@ -147,15 +160,15 @@ def reward_function(sample: Dict[str, Any], index: int) -> Dict[str, Any]:
     #   response: str — ground truth from the dataset
     #   reference_answer: dict {"text": str} OR str — ground truth (type varies)
     #   id: str — unique sample identifier
-    response = sample.get('model_response', '')
-    question = sample.get('query', '')
+    response = sample.get("model_response", "")
+    question = sample.get("query", "")
 
     # reference_answer may be a dict or a plain string — handle both
-    ref_answer = sample.get('reference_answer', '')
+    ref_answer = sample.get("reference_answer", "")
     if isinstance(ref_answer, dict):
-        reference_answer = ref_answer.get('text', '') or sample.get('response', '')
+        reference_answer = ref_answer.get("text", "") or sample.get("response", "")
     else:
-        reference_answer = ref_answer or sample.get('response', '')
+        reference_answer = ref_answer or sample.get("response", "")
 
     # Extract numerical answers
     predicted = extract_number(response)
@@ -173,7 +186,7 @@ def reward_function(sample: Dict[str, Any], index: int) -> Dict[str, Any]:
     # ========================================================================
     # SECTION 5: Compute reward scores
     # ========================================================================
-    # TODO: UPDATE logic to compute aggregate score 
+    # TODO: UPDATE logic to compute aggregate score
     # Note the below lines of code are examples and will not work for your use case
     # You MUST update them to match YOUR use case
     # Aggregate reward computation
@@ -186,21 +199,9 @@ def reward_function(sample: Dict[str, Any], index: int) -> Dict[str, Any]:
     # Note the below lines of code are examples and will not work for your use case
     # You MUST update them to match YOUR use case
     metrics = [
-        {
-            'name': 'exact_match',
-            'value': float(exact_match),
-            'type': 'Reward'
-        },
-        {
-            'name': 'answer_present',
-            'value': float(answer_present),
-            'type': 'Metric'
-        },
-        {
-            'name': 'reasoning_quality',
-            'value': float(reasoning_quality),
-            'type': 'Metric'
-        }
+        {"name": "exact_match", "value": float(exact_match), "type": "Reward"},
+        {"name": "answer_present", "value": float(answer_present), "type": "Metric"},
+        {"name": "reasoning_quality", "value": float(reasoning_quality), "type": "Metric"},
     ]
 
     # ========================================================================
@@ -212,10 +213,13 @@ def reward_function(sample: Dict[str, Any], index: int) -> Dict[str, Any]:
     # You MUST update them to match YOUR use case
 
     return {
-        'id': str(sample.get('id', f'sample-{index:03d}')),  # Use the id from the evaluation framework
-        'aggregate_reward_score': float(aggregate_reward),
-        'metrics_list': metrics
+        "id": str(
+            sample.get("id", f"sample-{index:03d}")
+        ),  # Use the id from the evaluation framework
+        "aggregate_reward_score": float(aggregate_reward),
+        "metrics_list": metrics,
     }
+
 
 def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
@@ -234,12 +238,9 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         # The container rejects lists with:
         #   "Lambda response body must be a JSON string, got <class 'list'>"
         return {
-            'statusCode': 200,
-            'headers': {'Content-Type': 'application/json'},
-            'body': json.dumps([result])
+            "statusCode": 200,
+            "headers": {"Content-Type": "application/json"},
+            "body": json.dumps([result]),
         }
     except Exception as e:
-        return {
-            'statusCode': 400,
-            'body': json.dumps({"error": str(e)})
-        }
+        return {"statusCode": 400, "body": json.dumps({"error": str(e)})}

@@ -104,7 +104,7 @@ Edge cases: if the request spans multiple sub-skills, run them in sequence (load
 
 9. **Broad requests.** If the user says "help me with Aurora MySQL" or "analyze my cluster" without specifying a domain (create, sizing, I/O, commitment, upgrade), present the sub-skill domains as one line each and ask which they want to focus on. Do NOT silently pick a sub-skill and run it. Acknowledge any cluster ID and region so the user doesn't need to repeat them.
 
-10. **Out-of-scope topics.** If the user asks about an Aurora feature not covered by a sub-skill (e.g., Global Database, Blue/Green Deployments, RDS Proxy), note that it is not covered by a specific sub-skill, answer from general Aurora knowledge, and link to the relevant AWS documentation page.
+10. **Cross-engine lifecycle & Day-2 topics.** When the user asks about Global Database RPO/RTO topologies, zero-copy Aurora Fast Cloning, Blue/Green Deployments, RDS Proxy connection pinning, least-privilege DB security roles, or lock-free online DDL, load the `db-ha-dr-and-schema-evolution` skill alongside this skill. For Performance Insights wait-event triage (`IO:XactSync`, `IO:DataFileRead`, `SYNCH` mutex / `innodb_sync_array_size`), load `db-observability-and-wait-triage`. For sequential cluster + instance + Secrets Manager creation, also consult `references/cluster-provisioning.md`.
 
 11. **Credential safety.** Do not create, store, or display long-lived credentials or DB passwords. `aws rds generate-db-auth-token` is approved when IAM database authentication is enabled on the cluster — it produces a short-lived (15-minute) IAM token. Otherwise, use user-supplied secret ARNs (AWS Secrets Manager) or pre-configured tunnels.
 

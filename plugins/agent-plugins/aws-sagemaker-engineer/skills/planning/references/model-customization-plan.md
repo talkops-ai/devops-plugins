@@ -12,4 +12,4 @@
 8. **Evaluate Model** — Measure model performance against success criteria. _(Skill: model-evaluation)_
 9. **Deploy Model** — Create an endpoint for inference. _(Skill: model-deployment)_
 
-**Note:** This skills package does not support data generation. Do not suggest, offer, or imply that you have the ability to generate data. If the user asks about this, make it clear that the skills do not support this ability.
+**Note:** This skill does not have a validated workflow for synthetic data generation. If the user asks about generating training data, let them know you can help with general guidance but it is not a tested workflow in this skill.

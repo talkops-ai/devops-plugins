@@ -1,7 +1,7 @@
 {
   "name": "aws-compute",
-  "version": "0.1.0",
-  "description": "EC2 skills for the main agent: choosing compute, launching instances with best practices, instance profiles, Auto Scaling, and EC2 Image Builder pipelines.",
+  "version": "0.2.0",
+  "description": "EC2 and PaaS compute skills for the main agent: instance family selection (Graviton4, compute/memory/GPU), Auto Scaling Groups, EC2 Image Builder golden AMIs, Elastic Beanstalk, instance profiles, and CloudWatch/Compute Optimizer right-sizing.",
   "author": {
     "name": "TalkOps AI"
   },
@@ -11,8 +11,11 @@
   "keywords": [
     "aws",
     "ec2",
+    "compute",
     "auto-scaling",
+    "graviton",
     "image-builder",
-    "instance-profile"
+    "elastic-beanstalk",
+    "rightsizing"
   ]
 }

@@ -125,8 +125,26 @@ The setup order matters — do it in this sequence or the console won't show sou
 
 See [cross-account observability](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability-cross-account.html) for the current console flow and edge cases.
 
+## Exporting OpenTelemetry Spans to Third-Party Backends (OTLP)
+
+While CloudWatch GenAI Observability and X-Ray are enabled by default, AgentCore Runtime uses standard OpenTelemetry (`gen_ai.*` semantic conventions) and can export traces directly to **Langfuse**, **MLflow**, **Elastic APM**, **Dynatrace**, or **Arize Phoenix** via standard OTLP environment variables on the runtime:
+
+| Environment Variable | Purpose | Example Value |
+| :--- | :--- | :--- |
+| `OTEL_EXPORTER_OTLP_PROTOCOL` | Transport encoding | `http/protobuf` |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | Collector / backend OTLP URL | `https://us.cloud.langfuse.com/api/public/otel` |
+| `OTEL_EXPORTER_OTLP_HEADERS` | Auth headers (inject from AgentCore Identity / Secrets Manager, never hardcode) | `Authorization=Basic <base64-credentials>` |
+| `OTEL_RESOURCE_ATTRIBUTES` | Service and environment tags | `service.name=my-agent,deployment.environment=prod` |
+
+> [!IMPORTANT]
+> For unit testing locally with `pytest`, always disable the OTel exporter so tests do not block on network timeouts:
+> ```bash
+> OTEL_SDK_DISABLED=true pytest
+> ```
+
 ## Cross-references
 
 - If logs aren't appearing at all, check the three requirements above or use `agents-debug`
+- For AIOps multi-signal incident correlation (`cloudwatch`, `appsignals`, `cloudtrail`), load [`../../agents-debug/references/aiops-runbooks.md`](../../agents-debug/references/aiops-runbooks.md)
 - For production observability setup, see `agents-harden`
 - For measuring agent quality (not just operational health), load [`references/evals.md`](evals.md)

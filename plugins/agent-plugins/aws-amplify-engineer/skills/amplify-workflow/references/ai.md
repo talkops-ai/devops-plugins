@@ -197,6 +197,14 @@ useEffect(() => {
 - **Generation auth MUST NOT be `allow.owner()`:** Using
   `allow.owner()` on `a.generation()` throws a TypeError at CDK assembly
   time. Use `allow.authenticated()`, `allow.guest()`, or `allow.group()`.
+- **Generation `.returns()` MUST use scalars or `a.customType()`, NEVER `a.model()`:**
+  Referencing a DynamoDB `a.model()` in `.returns(a.ref('Model'))` fails Bedrock structured-output validation.
+- **8 AppSync scalars MUST NOT be `.required()` in `a.generation()` returns:**
+  Never chain `.required()` on `a.email()`, `a.date()`, `a.time()`, `a.datetime()`, `a.timestamp()`, `a.phone()`, `a.url()`, or `a.ipAddress()` inside an `a.generation()` return type.
+- **Three-tier AI tools (`a.ai.dataTool()` & `@aws-amplify/backend-ai`):**
+  Use `a.ai.dataTool({ name, description, model: a.ref('Model'), modelOperation: 'list' })` for direct model queries, `a.ai.dataTool({ name, description, query: a.ref('customQuery') })` (with `allow.authenticated()` on the query) for custom logic or Bedrock Knowledge Base HTTP resolvers, and `defineConversationHandlerFunction` from `@aws-amplify/backend-ai/conversation` for custom turn handlers. See the `amplify-ai-kit` skill for complete blueprints.
+- **Out-of-order `.onStreamEvent()` chunks & non-cascading `.delete()`:**
+  Direct `.onStreamEvent()` subscribers must reorder text deltas by `contentBlockIndex` and `contentBlockDeltaIndex`. Calling `.delete()` on a conversation does not delete its `ConversationMessage` items in DynamoDB.
 - **Missing AI route in data schema:** The conversation or generation
   route **MUST** be defined in your `a.schema()` — without it, the
   frontend client has no AI endpoint to call.

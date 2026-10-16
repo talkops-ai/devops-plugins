@@ -3,21 +3,23 @@
 import os
 
 import boto3
+from sagemaker.core import Attribution, image_uris, set_attribution
 from sagemaker.core.helper.session_helper import Session, get_execution_role
-from sagemaker.core import image_uris
 from sagemaker.core.processing import FrameworkProcessor
-from sagemaker.core.shapes import ProcessingInput, ProcessingOutput, ProcessingS3Input, ProcessingS3Output
 from sagemaker.core.resources import ProcessingJob
-from sagemaker.core import Attribution, set_attribution
+from sagemaker.core.shapes import (
+    ProcessingInput,
+    ProcessingOutput,
+    ProcessingS3Input,
+    ProcessingS3Output,
+)
 
 set_attribution(Attribution.SAGEMAKER_AGENT_PLUGIN)
 
 
 def _get_session(region=None):
     """Create a SageMaker Session, optionally pinned to a region."""
-    return Session(
-        boto_session=boto3.Session(region_name=region) if region else None
-    )
+    return Session(boto_session=boto3.Session(region_name=region) if region else None)
 
 
 def execute_transformation_job(
@@ -86,8 +88,10 @@ def execute_transformation_job(
         code=script_name,
         source_dir=source_dir,
         arguments=[
-            "--input", os.path.join(input_local_path, input_filename),
-            "--output", os.path.join(output_local_path, input_filename),
+            "--input",
+            os.path.join(input_local_path, input_filename),
+            "--output",
+            os.path.join(output_local_path, input_filename),
         ],
         inputs=[
             ProcessingInput(
@@ -113,7 +117,9 @@ def execute_transformation_job(
         wait=False,
     )
 
-    print(f"Processing job submitted. Output will be at: {dataset_output_s3}")
+    print(
+        f"Processing job '{processor.latest_job.processing_job_name}' submitted. Output will be at: {dataset_output_s3}"
+    )
 
 
 def describe_transformation_job(job_name, region=None):

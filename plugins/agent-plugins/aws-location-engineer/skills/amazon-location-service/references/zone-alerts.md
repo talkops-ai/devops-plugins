@@ -159,7 +159,9 @@ await client.send(
 );
 ```
 
-**Note**: Tracker and geofence collection MUST be in the same AWS account — cross-account associations are not supported.
+**Note**:
+- Tracker and geofence collection MUST be in the same AWS account — cross-account associations are not supported.
+- Provisioning a `Tracker` and `GeofenceCollection` in isolation does **not** generate boundary alerts. You MUST explicitly bind them via `AssociateTrackerConsumer` (or AWS CDK `CfnTrackerConsumer` / Terraform `aws_location_tracker_association`), and the execution IAM role MUST grant `geo:AssociateTrackerConsumer` and `geo:BatchUpdateDevicePosition` (plus `geo:EvaluateGeofences` on the target collection).
 
 #### Tracker Position Filtering
 

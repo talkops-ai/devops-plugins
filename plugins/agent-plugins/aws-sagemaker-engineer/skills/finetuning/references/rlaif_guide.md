@@ -14,6 +14,7 @@ The `reward_model_id` sets the Bedrock LLM used as judge. To get the current lis
 
 ```bash
 venv/bin/python3 -c "from sagemaker.train.constants import _ALLOWED_REWARD_MODEL_IDS; import json; print(json.dumps(_ALLOWED_REWARD_MODEL_IDS, indent=2))"
+
 ```
 
 Present the output to the user as a numbered list showing each model name and its available regions, then ask them to pick one.
@@ -54,30 +55,30 @@ The Bedrock judge receives the prompt and evaluates the model output. No Lambda 
 ### Steps
 
 1. **Write the prompt file** — create a `.jinja` file with a suitable name in the project's scripts directory. The prompt should instruct the judge how to evaluate the model's response. It can reference `{{ prompt }}` and `{{ response }}` template variables.
+
    **To help user write the prompt** - think:
 
-- What should the judge look for in a good response?
-- What should it penalize?
-- Should it return a score, a label, or a ranking?
-
-<!-- markdownlint-disable MD029 -->
+   - What should the judge look for in a good response?
+   - What should it penalize?
+   - Should it return a score, a label, or a ranking?
 
 2. **Register the prompt as an evaluator**:
 
-```python
-from sagemaker.ai_registry.evaluator import Evaluator
-from sagemaker.ai_registry.air_constants import REWARD_PROMPT
+   ```python
+   from sagemaker.ai_registry.evaluator import Evaluator
+   from sagemaker.ai_registry.air_constants import REWARD_PROMPT
 
-reward_prompt_evaluator = Evaluator.create(
-    name="[GENERATE A NAME HERE]",  # lowercase alphanumeric + hyphens, max 20 chars
-    type=REWARD_PROMPT,
-    source="path/to/custom_reward_prompt.jinja",  # local file path or S3 URI
-    sagemaker_session=sagemaker_session,
-    wait=True
-)
-REWARD_PROMPT_ARN = reward_prompt_evaluator.arn
-print(f"Evaluator ARN: {REWARD_PROMPT_ARN}")
-```
+   reward_prompt_evaluator = Evaluator.create(
+       name="[GENERATE A NAME HERE]",  # lowercase alphanumeric + hyphens, max 20 chars
+       type=REWARD_PROMPT,
+       source="path/to/custom_reward_prompt.jinja",  # local file path or S3 URI
+       sagemaker_session=sagemaker_session,
+       wait=True
+   )
+   REWARD_PROMPT_ARN = reward_prompt_evaluator.arn
+   print(f"Evaluator ARN: {REWARD_PROMPT_ARN}")
+
+   ```
 
 3. **Pass the ARN as `reward_prompt`** to `RLAIFTrainer` (instead of the builtin string).
 

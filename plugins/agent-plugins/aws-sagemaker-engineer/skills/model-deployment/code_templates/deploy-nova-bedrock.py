@@ -2,20 +2,22 @@
 
 # Cell 1: Setup
 
-%pip install --upgrade sagemaker>=3.7.1 --quiet  # NOTEBOOK_ONLY
+# %pip install --upgrade 'sagemaker>=3.7.1,<4.0' --quiet  # NOTEBOOK_ONLY
 
 # Cell 2: Configuration
 
-import os
 import json
+import os
+
 import boto3
 
 os.environ["AWS_DEFAULT_REGION"] = "[REGION]"
 
+from pprint import pprint
+
+from sagemaker.core import Attribution, set_attribution
 from sagemaker.core.resources import TrainingJob
 from sagemaker.serve.bedrock_model_builder import BedrockModelBuilder
-from sagemaker.core import Attribution, set_attribution
-from pprint import pprint
 
 set_attribution(Attribution.SAGEMAKER_AGENT_PLUGIN)
 
@@ -53,12 +55,19 @@ resp = bedrock_runtime.converse(
 response_str = resp["output"]["message"]["content"][0]["text"]
 print(f"Model Response: {response_str}")
 
-# Save manifest
+# Cell 5: Save Manifest
+# Save manifest - record output of workflow step for future reference
 from pathlib import Path
+
 manifest_dir = Path("[PROJECT_DIR]") / "manifests"
 manifest_dir.mkdir(parents=True, exist_ok=True)
 manifest_path = manifest_dir / f"deploy-{CUSTOM_MODEL_NAME}.json"
-manifest_path.write_text(json.dumps({
-    "custom_model_name": CUSTOM_MODEL_NAME,
-}, indent=2))
+manifest_path.write_text(
+    json.dumps(
+        {
+            "custom_model_name": CUSTOM_MODEL_NAME,
+        },
+        indent=2,
+    )
+)
 print(f"Manifest saved: {manifest_path}")

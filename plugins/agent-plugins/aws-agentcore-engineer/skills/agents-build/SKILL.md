@@ -90,13 +90,14 @@ Based on the developer's prompt and `$ARGUMENTS`, load the appropriate reference
 
 | Developer intent | Reference to load |
 |---|---|
-| Add memory, remember things, user preferences, cross-session | [`references/memory.md`](references/memory.md) |
+| AgentCore Harness (`agentcore export harness`), `agentcore.json` v0.4.0+ schema migration (`runtimes`), Hybrid LangGraph (`StateGraph`) + Strands (`Agent`) pattern, `serve_ag_ui` / `AGUIApp`, `claude-agent-sdk` env ordering | [`references/harness-and-hybrid.md`](references/harness-and-hybrid.md) |
+| Add memory, remember things, user preferences, cross-session, KMS CMK encryption, LTM DLQ redrive | [`references/memory.md`](references/memory.md) |
 | Call agent from app, invoke from code, streaming, SDK client, agent URL, execute shell in session | [`references/integrate.md`](references/integrate.md) |
 | VPC, private network, RDS, internal API, subnet, security group | [`references/vpc.md`](references/vpc.md) |
 | Multi-agent, orchestrator, specialist, A2A, delegation, agent handoff | [`references/multi-agent.md`](references/multi-agent.md) |
 | Custom headers from caller to agent, header allowlist, tenant ID/correlation ID/trace propagation | [`references/request-headers.md`](references/request-headers.md) |
 | Migrate Bedrock Agent, import agent, move to AgentCore | [`references/migrate.md`](references/migrate.md) |
-| Browser tool, web navigation, form filling, scraping, Nova Act, Playwright, live view | [`references/browser.md`](references/browser.md) |
+| Browser tool, web navigation, form filling, scraping, Nova Act, Playwright, live view, Web Bot Auth | [`references/browser.md`](references/browser.md) |
 | Code Interpreter, execute code, sandbox, run Python/JS/TS, data analysis in agent, pandas | [`references/code-interpreter.md`](references/code-interpreter.md) |
 | Payments, pay for x402 or MPP content, 402 Payment Required, Machine Payments Protocol, WWW-Authenticate: Payment, microtransactions, paid API/tool, payment manager/connector | [`references/payments.md`](references/payments.md) |
 | Delete agent, remove resource, tear down, clean up, destroy, start fresh | [`references/teardown.md`](references/teardown.md) |

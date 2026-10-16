@@ -1,7 +1,7 @@
 {
   "name": "aws-startup-advisor",
-  "version": "0.1.0",
-  "description": "Stage-aware AWS guidance for startups: architecture and cost advice, project scaffolding, Azure/GCP/Heroku-to-AWS migrations, LLM SDK rewrites to Bedrock, agent runtime selection, DevOps Agent operations, and AWS Activate offers.",
+  "version": "0.2.0",
+  "description": "Principal AWS Startup Solutions Architect & Fractional Startup CTO: stage-calibrated architecture and unit-economics guidance (Pre-Revenue/MVP through Series B+), AWS Activate credit runway & 26-point account security/spend-leak audits, vibe-coded prototype migrations (Lovable, Bolt.new, Replit, v0), GCP/Azure/Heroku-to-AWS migrations, provider-neutral AI/LLM & OpenRouter migrations to Amazon Bedrock (`bedrock-mantle` GPT-5.x & Converse), deterministic AI agent runtime selection (AgentCore, ECS, EKS, Lambda, MicroVMs, Temporal), DevOps Agent operations, and AWS Activate offers.",
   "author": {
     "name": "TalkOps AI"
   },
@@ -11,12 +11,34 @@
   "keywords": [
     "aws",
     "startups",
+    "fractional-cto",
+    "activate",
+    "credit-runway",
+    "account-audit",
     "migration",
     "gcp-to-aws",
     "azure-to-aws",
     "heroku-to-aws",
+    "lovable",
+    "bolt",
+    "replit",
     "bedrock",
+    "ai-to-bedrock",
+    "llm-to-bedrock",
+    "openrouter",
+    "agentcore",
     "terraform",
-    "activate"
-  ]
+    "cdk",
+    "finops"
+  ],
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./.saws-migrate/.source-provider-env)",
+      "Read(./**/*.pem)",
+      "Read(./**/*.key)",
+      "Read(~/.aws/credentials)"
+    ]
+  }
 }

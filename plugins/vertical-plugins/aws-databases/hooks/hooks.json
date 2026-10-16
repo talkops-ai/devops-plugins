@@ -1,12 +1,29 @@
 {
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|use_aws|mcp__aws.*|mcp__plugin_aws-databases_.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 \"$0\"; command -v python >/dev/null 2>&1 && exec python \"$0\"; exec py -3 \"$0\"' \"${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py\"",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 \"$0\"; command -v python >/dev/null 2>&1 && exec python \"$0\"; exec py -3 \"$0\"' \"${CLAUDE_PLUGIN_ROOT}/hooks/aws-mutation-gate.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "mcp__.*aurora-dsql.*__transact",
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "A DSQL transact operation completed. Verify the result: if it was a DDL change, confirm the schema looks correct using get_schema. If it was a DML change, confirm the affected row count is expected. If it was an EXPLAIN operation, follow up on Query Plan Explainability within the DSQL skill"
+            "prompt": "A DSQL transact operation completed. Verify the result: if it was a DDL change, confirm the schema looks correct using get_schema. If it was a DML change, confirm the affected row count is expected. If it was an EXPLAIN operation, follow up on Query Plan Explainability within the DSQL skill."
           }
         ]
       }

@@ -1,56 +1,64 @@
 #!/usr/bin/env python3
-"""PreToolUse hook: block direct secret fetching from AWS Secrets Manager.
+"""PreToolUse hook: block direct secret fetching, plaintext .tfstate reads, hardcoded keys/PEMs, and .env writes."""
 
-Reads JSON from stdin, checks tool_name and tool_input, and returns
-a deny decision if the call would fetch secret values directly.
-
-Use {{resolve:secretsmanager:secret-id:SecretString:key}} with asm-exec instead.
-"""
+from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 
 DENY_MSG = (
     "Direct secret fetching is blocked. "
-    "Use {{resolve:secretsmanager:secret-id:SecretString:key}} with asm-exec instead. "
-    "See the aws-secrets-manager skill (aws-security-identity or aws-cloud-security-engineer plugin) for details."
+    "Use {{resolve:secretsmanager:secret-id:SecretString:key}} dynamic references in CloudFormation/CDK "
+    "or asm-exec instead. See the aws-iam skill (or aws-secrets-manager in aws-security-identity)."
+)
+
+TFSTATE_DENY_MSG = (
+    "Direct reading of plaintext Terraform/OpenTofu state files (*.tfstate, *.tfstate.backup) is blocked "
+    "because state files store unencrypted secret attributes. Use `terraform state list` or `terraform output` instead."
+)
+
+ENV_FILE_DENY_MSG = (
+    "Writing or modifying .env / .env.* files is blocked by secret-safety. "
+    "Store application secrets in AWS Secrets Manager or SSM Parameter Store SecureString and inject via dynamic references."
+)
+
+HARDCODED_SECRET_DENY_MSG = (
+    "Hardcoded AWS access keys (AKIA/ASIA) or PEM private key blocks detected in tool input. "
+    "Never commit or pass static credentials; use IAM roles, OIDC, or Secrets Manager dynamic references."
+)
+
+TFSTATE_FILE_PATTERN = re.compile(
+    r'(?:^|[\s"\'=:/])(?:[A-Za-z0-9_./-]*\.)?tfstate(?:\.backup|\.\d+)?(?:$|[\s"\'])',
+    re.I,
 )
 
 SMA_PATTERN = re.compile(
     r'(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\]|::1):2773/secretsmanager/get'
 )
 
-# AWS CLI invocation shape. Shared by the Bash and MCP branches so the two paths
-# cannot drift. Tolerates global flags interleaved before the service name or the
-# operation (e.g. `aws --region us-east-1 secretsmanager get-secret-value`).
-#
-# A flag token is `-` plus greedy non-whitespace, so it has exactly one possible
-# parse; an optional value token must not itself start with `-`. Both properties,
-# plus the bounded repetition, keep this linear — an ambiguous flag pattern here
-# backtracks catastrophically on long flag runs, and because the hook has a 5s
-# timeout in hooks.json, a hang would let the tool call through (fail-open).
 _CLI_FLAGS = r'(?:-\S+(?:\s+[^-\s]\S*)?\s+){0,12}'
 CLI_GSV_PATTERN = re.compile(
     rf'aws\s+{_CLI_FLAGS}secretsmanager\s+{_CLI_FLAGS}(?:batch-)?get-secret-value\b',
-    re.I
+    re.I,
 )
 
-# Structured operation names normalized to lowercase, no separators.
 GSV_OPERATIONS = ("getsecretvalue", "batchgetsecretvalue")
 
-# SDK call invocation shapes — matches actual method calls / constructors, not bare text.
-# boto3:  client.get_secret_value(...)
-# JS v3:  GetSecretValueCommand(...)
-# Generic SDK: (Batch)GetSecretValue(Request|Command)?(...)
 SDK_CALL_PATTERN = re.compile(
-    r'\.\s*(batch[-_]?)?get[-_]?secret[-_]?value\s*\('       # boto3/ruby/go style
-    r'|GetSecretValueCommand\s*\('                            # JS SDK v3
-    r'|(Batch)?GetSecretValue(Request|Command)?\s*\(',        # other SDKs
-    re.I
+    r'\.\s*(batch[-_]?)?get[-_]?secret[-_]?value\s*\('
+    r'|GetSecretValueCommand\s*\('
+    r'|(Batch)?GetSecretValue(Request|Command)?\s*\(',
+    re.I,
 )
 
-# Read-only text tools that should never be blocked for merely mentioning an API name.
+AWS_KEY_ID_PATTERN = re.compile(r'\b(?:AKIA|ASIA)(?!IOSFODNN7EXAMPLE|I44QH8DHBEXAMPLE)[0-9A-Z]{16}\b')
+
+PEM_PRIVATE_KEY_PATTERN = re.compile(
+    r'-----BEGIN\s+(?:RSA\s+|EC\s+|DSA\s+|OPENSSH\s+|ENCRYPTED\s+)?PRIVATE\s+KEY-----'
+)
+
 _READ_ONLY_PREFIXES = (
     'grep', 'egrep', 'fgrep', 'rg', 'ag', 'ack',
     'cat', 'less', 'more', 'head', 'tail', 'bat',
@@ -59,109 +67,139 @@ _READ_ONLY_PREFIXES = (
     'echo', 'printf', 'man', 'help',
 )
 
-# Interpreter flags that indicate inline code execution.
 _INTERPRETER_INLINE_RE = re.compile(
     r'(?:python[23]?|python3\.\d+|node|ruby|perl)\s+(?:-[a-zA-Z]*c|-e)\s'
 )
 
-# Shell compound operators that indicate the command has multiple parts.
 _COMPOUND_OPERATORS_RE = re.compile(r'[;&|`]|\$\(')
 
 
-def _normalize_op(operation):
-    """Collapse casing and -/_ separators so GetSecretValue == get-secret-value."""
+def _normalize_op(operation: str) -> str:
     return operation.lower().replace("-", "").replace("_", "")
 
 
-def _is_read_only_command(command):
-    """Check if the command's leading token is a known read-only text tool."""
+def _is_read_only_command(command: str) -> bool:
     stripped = command.lstrip()
-    # Skip common prefixes: env vars (FOO=bar), sudo, env, time, etc.
     while True:
-        # Skip env var assignments at the start
         if re.match(r'[A-Za-z_][A-Za-z0-9_]*=\S*\s', stripped):
             stripped = re.sub(r'^[A-Za-z_][A-Za-z0-9_]*=\S*\s+', '', stripped)
             continue
-        # Skip common wrapper commands
         if re.match(r'(sudo|env|time|nice|nohup|command|builtin)\s', stripped):
             stripped = re.sub(r'^(sudo|env|time|nice|nohup|command|builtin)\s+', '', stripped)
             continue
         break
     first_token = stripped.split()[0] if stripped.split() else ''
-    # Strip path prefix (e.g., /usr/bin/grep -> grep)
     first_token = first_token.rsplit('/', 1)[-1]
     return first_token in _READ_ONLY_PREFIXES
 
 
-def _has_sdk_call_in_inline_code(command):
-    """Check if the command executes inline interpreter code containing an SDK call."""
+def _has_sdk_call_in_inline_code(command: str) -> bool:
     if _INTERPRETER_INLINE_RE.search(command):
-        return SDK_CALL_PATTERN.search(command)
+        return bool(SDK_CALL_PATTERN.search(command))
     return False
 
 
-def deny():
-    json.dump({
-        "hookSpecificOutput": {
-            "hookEventName": "PreToolUse",
-            "permissionDecision": "deny",
-            "permissionDecisionReason": DENY_MSG
-        }
-    }, sys.stdout)
+def _is_env_file(path_str: str) -> bool:
+    base = os.path.basename(path_str.strip())
+    if base in (".env.example", ".env.sample", ".env.template"):
+        return False
+    return base == ".env" or base.startswith(".env.")
+
+
+def _has_hardcoded_secret(text: str) -> bool:
+    return bool(AWS_KEY_ID_PATTERN.search(text) or PEM_PRIVATE_KEY_PATTERN.search(text))
+
+
+def deny(reason: str = DENY_MSG) -> None:
+    json.dump(
+        {
+            "hookSpecificOutput": {
+                "hookEventName": "PreToolUse",
+                "permissionDecision": "deny",
+                "permissionDecisionReason": reason,
+            }
+        },
+        sys.stdout,
+    )
     sys.exit(0)
 
 
-def allow():
+def allow() -> None:
     sys.exit(0)
 
 
-def main():
-    data = json.load(sys.stdin)
+def main() -> None:
+    try:
+        data = json.load(sys.stdin)
+    except ValueError:
+        allow()
     tool_name = data.get("tool_name", "")
     tool_input = data.get("tool_input", {})
+    if not isinstance(tool_input, dict):
+        tool_input = {}
 
-    # Check structured AWS tool calls (use_aws or MCP AWS tools)
+    if tool_name in ("Write", "Edit", "MultiEdit"):
+        file_path = str(tool_input.get("file_path") or tool_input.get("path") or "")
+        if file_path and _is_env_file(file_path):
+            deny(ENV_FILE_DENY_MSG)
+        content_blobs = [
+            str(tool_input.get("content") or ""),
+            str(tool_input.get("new_string") or ""),
+            json.dumps(tool_input.get("edits") or []),
+        ]
+        if _has_hardcoded_secret("\n".join(content_blobs)):
+            deny(HARDCODED_SECRET_DENY_MSG)
+        allow()
+
     if tool_name == "use_aws" or tool_name.startswith("mcp__"):
-        service = (tool_input.get("service_name") or tool_input.get("service") or tool_input.get("serviceName") or "").lower()
-        operation = tool_input.get("operation_name") or tool_input.get("operation") or tool_input.get("operationName") or ""
-        if service == "secretsmanager" and _normalize_op(operation) in GSV_OPERATIONS:
+        service = (
+            tool_input.get("service_name")
+            or tool_input.get("service")
+            or tool_input.get("serviceName")
+            or ""
+        ).lower()
+        operation = (
+            tool_input.get("operation_name")
+            or tool_input.get("operation")
+            or tool_input.get("operationName")
+            or ""
+        )
+        if service == "secretsmanager" and _normalize_op(str(operation)) in GSV_OPERATIONS:
             deny()
-        # Only deny if tool input contains an actual SDK call shape (not just a mention)
         input_str = json.dumps(tool_input)
-        if SDK_CALL_PATTERN.search(input_str):
-            if "secretsmanager" in input_str.lower():
-                deny()
-        # AWS CLI command strings routed through an MCP proxy (e.g. call_aws's
-        # cli_command), which carry neither structured fields nor SDK call syntax.
+        if _has_hardcoded_secret(input_str):
+            deny(HARDCODED_SECRET_DENY_MSG)
+        if SDK_CALL_PATTERN.search(input_str) and "secretsmanager" in input_str.lower():
+            deny()
         if CLI_GSV_PATTERN.search(input_str):
             deny()
         allow()
 
-    # Check run_script tools for secret fetching in code
     if "run_script" in tool_name:
-        for key, val in tool_input.items():
-            if isinstance(val, str) and SDK_CALL_PATTERN.search(val):
-                deny()
+        for val in tool_input.values():
+            if isinstance(val, str):
+                if SDK_CALL_PATTERN.search(val):
+                    deny()
+                if _has_hardcoded_secret(val):
+                    deny(HARDCODED_SECRET_DENY_MSG)
         allow()
 
-    # Check Bash commands
     if tool_name == "Bash":
-        command = tool_input.get("command", "")
-        # AWS CLI secret fetching (shape-aware: actual `aws secretsmanager get-secret-value`)
+        command = str(tool_input.get("command", ""))
+        if _has_hardcoded_secret(command):
+            deny(HARDCODED_SECRET_DENY_MSG)
+        if TFSTATE_FILE_PATTERN.search(command) and not re.match(
+            r"^\s*(?:terraform|tofu)\s+state\s+(?:list|mv|rm)\b", command
+        ):
+            deny(TFSTATE_DENY_MSG)
         if CLI_GSV_PATTERN.search(command):
             deny()
-        # Direct SMA access (shape-aware: actual URL to the agent)
         if SMA_PATTERN.search(command):
             deny()
-        # Skip read-only commands that merely mention the API name,
-        # but only for simple commands (no compound operators that could
-        # chain a secret-fetching command after the read-only prefix).
         if _is_read_only_command(command) and not _COMPOUND_OPERATORS_RE.search(command):
             allow()
-        # SDK call invocations in inline interpreter code
         if _has_sdk_call_in_inline_code(command):
             deny()
-        # Piped interpreter execution with SDK calls (e.g., heredoc | python3)
         if SDK_CALL_PATTERN.search(command) and "secretsmanager" in command.lower():
             deny()
 

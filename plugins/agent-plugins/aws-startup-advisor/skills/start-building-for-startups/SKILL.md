@@ -31,6 +31,7 @@ If a codebase exists, your very first action before asking any discovery questio
 - How mature it is (skeleton vs. fleshed-out production code)
 - What infrastructure or deployment patterns are already in place
 - What conventions and patterns the code follows
+- Whether the repo was exported from an AI "vibe-coding" builder (**Lovable** `lovable-tagger` / `supabase/`, **Bolt.new** `.bolt/`, **Replit** `.replit` / `replit.nix`, or **v0**) — if detected, load [`references/vibe-coded-stacks.md`](./references/vibe-coded-stacks.md) to guide a zero-friction graduation onto Free-Tier / Activate-eligible AWS primitives with `git push` CI/CD.
 
 Use what you learn to skip questions you already have answers to, and to make your remaining questions sharper and more relevant. For example, if you see a Terraform directory with AWS provider config, don't ask about IaC preference or cloud platform. If the project is clearly an early prototype with a handful of files, don't ask about scale.
 

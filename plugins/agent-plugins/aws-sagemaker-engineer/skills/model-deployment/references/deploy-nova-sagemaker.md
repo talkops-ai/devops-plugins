@@ -41,7 +41,7 @@ For this step, you need: **the instance type.**
 
 First, determine the Nova variant from the training job's model package. Use your AWS tool to run `sagemaker describe-training-job` for the training job name and extract the `OutputModelPackageArn` from the response. Then inspect the model package to find the `hub_content_name` (e.g., `nova-textgeneration-micro`).
 
-Supported instances by Nova variant (smallest to largest). Larger instances support longer context lengths.
+The following are supported instances by Nova variant (smallest to largest); larger instances support longer context lengths. Treat this as a starting point that may be outdated — instance support changes over time and there is no API that enumerates the supported instance types for a model package. Pick from the list below; if the deploy call rejects the instance type, first try the next larger size within the same family (e.g. ml.g5.12xlarge → ml.g5.24xlarge), and if no larger size is available, escalate to the next family (g5 → g6 → p5).
 
 Nova Micro (`nova-textgeneration-micro`): ml.g5.12xlarge, ml.g5.24xlarge, ml.g6.12xlarge, ml.g6.24xlarge, ml.g6.48xlarge, ml.p5.48xlarge
 
@@ -61,7 +61,7 @@ Use the IAM role from the training job (extracted in Step 1 of the main workflow
 
 ### Step 4: Confirm Region
 
-The region was identified in Step 1 of the main workflow. Nova deployment is only supported in: us-east-1, us-west-2, eu-west-2, ap-northeast-1. If the region isn't supported, tell the user that SageMaker deployment is not supported for this model in this region.
+The region was identified in Step 1 of the main workflow. Nova deployment is supported in: us-east-1, us-west-2, eu-west-2, ap-northeast-1. There is no API that returns feature-level region availability for Nova, so this list may be outdated — treat it as guidance. If the user's region is not listed, warn them it is likely unsupported; if a deploy is attempted in an unlisted region and fails with a region/availability or access error, tell the user Nova SageMaker deployment is not available in that region.
 
 ### Step 5: Choose Endpoint Name
 
@@ -89,7 +89,7 @@ Suggest a name based on the model, e.g., `nova-micro-deploy-<timestamp>`. Ask th
 
 Read `../references/code_output_guide.md` for output format rules.
 
-If a project directory already exists (from earlier in the workflow), use it. Otherwise, activate the **directory-management** skill to set one up.
+If a project directory already exists (from earlier in the workflow), use it. Otherwise, load the **directory-management** reference to set one up.
 
 ⏸ Wait for user.
 
@@ -105,6 +105,7 @@ If a project directory already exists (from earlier in the workflow), use it. Ot
     "# Deploy Nova Fine-Tuned Model to SageMaker"
   ]
 }
+
 ```
 
 ### Cells
@@ -116,6 +117,7 @@ Each cell's content comes from `../code_templates/deploy-nova-sagemaker.py`, spl
 - **Cell 3**: Build Model
 - **Cell 4**: Deploy Endpoint
 - **Cell 5**: Test Inference
+- **Cell 6**: Save Manifest
 
 ### Placeholders
 
@@ -136,6 +138,8 @@ To run:
 3. Cell 3 — build model via ModelBuilder (~30s, creates SageMaker Model resource)
 4. Cell 4 — deploy endpoint (waits for InService, ~10-15 min)
 5. Cell 5 — test inference with a sample prompt
+6. Cell 6 — saves the deployment manifest to `manifests/deploy-<endpoint-name>.json`
+
 ```
 
 ## Common Issues

@@ -42,26 +42,22 @@
         "FASTMCP_LOG_LEVEL": "ERROR"
       }
     },
+    "cloudwatch": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "awslabs.cloudwatch-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      }
+    },
     "spark-troubleshooting": {
       "type": "stdio",
       "command": "uvx",
       "args": [
         "mcp-proxy-for-aws@latest",
         "https://sagemaker-unified-studio-mcp.us-east-1.api.aws/spark-troubleshooting/mcp",
-        "--service",
-        "sagemaker-unified-studio-mcp",
-        "--region",
-        "us-east-1",
-        "--read-timeout",
-        "180"
-      ]
-    },
-    "spark-upgrade": {
-      "type": "stdio",
-      "command": "uvx",
-      "args": [
-        "mcp-proxy-for-aws@latest",
-        "https://sagemaker-unified-studio-mcp.us-east-1.api.aws/spark-upgrade/mcp",
         "--service",
         "sagemaker-unified-studio-mcp",
         "--region",

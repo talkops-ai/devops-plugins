@@ -2,7 +2,6 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
   "mcpServers": {
     "aws-mcp": {
-      "type": "stdio",
       "command": "uvx",
       "args": [
         "mcp-proxy-for-aws-cli==1.7.0",
@@ -10,47 +9,62 @@
         "--skip-auth",
         "--metadata",
         "INSTALL_SOURCE=agent-toolkit-core"
-      ]
+      ],
+      "type": "stdio"
     },
     "cloudwatch": {
-      "type": "stdio",
       "command": "uvx",
       "args": [
         "awslabs.cloudwatch-mcp-server@latest"
       ],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR"
-      }
+      },
+      "type": "stdio"
     },
     "appsignals": {
-      "type": "stdio",
       "command": "uvx",
       "args": [
         "awslabs.cloudwatch-applicationsignals-mcp-server@latest"
       ],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR"
-      }
+      },
+      "type": "stdio"
     },
     "cloudtrail": {
-      "type": "stdio",
       "command": "uvx",
       "args": [
         "awslabs.cloudtrail-mcp-server@latest"
       ],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR"
-      }
+      },
+      "type": "stdio"
     },
     "prometheus": {
-      "type": "stdio",
       "command": "uvx",
       "args": [
         "awslabs.prometheus-mcp-server@latest"
       ],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR"
-      }
+      },
+      "type": "stdio"
+    },
+    "awssupport": {
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-support-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "type": "stdio"
+    },
+    "awsknowledge": {
+      "type": "streamable-http",
+      "url": "https://knowledge-mcp.global.api.aws"
     }
   }
 }

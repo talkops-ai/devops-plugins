@@ -1,7 +1,7 @@
 {
   "name": "aws-analytics",
-  "version": "0.1.0",
-  "description": "Analytics skills for the main agent: data lakes on S3 Tables/Iceberg, Glue Data Catalog and connections, Athena and Redshift (incl. migrations), OpenSearch, S3 Vectors, Clean Rooms, MWAA (Airflow), and system-table queries, with data-processing, Redshift, S3 Tables, and Spark troubleshooting/upgrade MCP servers.",
+  "version": "0.2.0",
+  "description": "Modern data lakehouse and analytics engineering for the main agent: S3 Tables (Apache Iceberg), AWS Glue (Catalog, Spark ETL, Data Quality DQDL), Lake Formation governance, Amazon Athena, Amazon Redshift, Amazon OpenSearch, EMR, MWAA (Airflow), Kinesis/MSK streaming ingestion, and system-table auditing.",
   "author": {
     "name": "TalkOps AI"
   },
@@ -12,12 +12,13 @@
     "aws",
     "analytics",
     "data-lake",
+    "iceberg",
+    "s3-tables",
     "glue",
+    "lake-formation",
     "athena",
     "redshift",
-    "s3-tables",
     "opensearch",
-    "mwaa",
-    "spark"
+    "mwaa"
   ]
 }

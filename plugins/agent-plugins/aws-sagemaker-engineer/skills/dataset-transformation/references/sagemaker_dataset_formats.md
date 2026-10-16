@@ -33,6 +33,7 @@ https://docs.aws.amazon.com/sagemaker/latest/dg/model-customize-evaluation-datas
     }
   ]
 }
+
 ```
 
 - `system` role is optional (system prompt)
@@ -48,6 +49,7 @@ https://docs.aws.amazon.com/sagemaker/latest/dg/model-customize-evaluation-datas
   "response": "?",
   "category": "Grammar"
 }
+
 ```
 
 - `system` and `category` are optional
@@ -62,6 +64,7 @@ https://docs.aws.amazon.com/sagemaker/latest/dg/model-customize-evaluation-datas
   "prompt": "What is the symbol that ends the sentence as a question",
   "completion": "?"
 }
+
 ```
 
 ### Conversational
@@ -75,6 +78,7 @@ https://docs.aws.amazon.com/sagemaker/latest/dg/model-customize-evaluation-datas
     { "role": "assistant", "content": "?" }
   ]
 }
+
 ```
 
 - `completion` is the ground truth
@@ -89,6 +93,7 @@ https://docs.aws.amazon.com/sagemaker/latest/dg/model-customize-evaluation-datas
   "chosen": "blue",
   "rejected": "green"
 }
+
 ```
 
 ### Conversational
@@ -105,6 +110,7 @@ https://docs.aws.amazon.com/sagemaker/latest/dg/model-customize-evaluation-datas
     { "role": "assistant", "content": "It is green." }
   ]
 }
+
 ```
 
 - `chosen` is the ground truth
@@ -128,6 +134,7 @@ https://docs.aws.amazon.com/sagemaker/latest/dg/model-customize-evaluation-datas
     "ground_truth": "4"
   }
 }
+
 ```
 
 ### Legacy (prompt as string)
@@ -140,6 +147,7 @@ https://docs.aws.amazon.com/sagemaker/latest/dg/model-customize-evaluation-datas
     "answer": "4"
   }
 }
+
 ```
 
 - Ground truth via `extra_info.answer` (preferred) or `reward_model.ground_truth`

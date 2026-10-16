@@ -17,6 +17,16 @@ DENY_MSG = (
     "See the aws-secrets-manager skill (aws-security-identity or aws-cloud-security-engineer plugin) for details."
 )
 
+TFSTATE_DENY_MSG = (
+    "Direct reading of plaintext Terraform/OpenTofu state files (*.tfstate, *.tfstate.backup) is blocked "
+    "because state files store unencrypted secret attributes. Use `terraform state list` or `terraform output` instead."
+)
+
+TFSTATE_FILE_PATTERN = re.compile(
+    r'(?:^|[\s"\'=:/])(?:[A-Za-z0-9_./-]*\.)?tfstate(?:\.backup|\.\d+)?(?:$|[\s"\'])',
+    re.I,
+)
+
 SMA_PATTERN = re.compile(
     r'(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\]|::1):2773/secretsmanager/get'
 )
@@ -100,12 +110,12 @@ def _has_sdk_call_in_inline_code(command):
     return False
 
 
-def deny():
+def deny(reason=DENY_MSG):
     json.dump({
         "hookSpecificOutput": {
             "hookEventName": "PreToolUse",
             "permissionDecision": "deny",
-            "permissionDecisionReason": DENY_MSG
+            "permissionDecisionReason": reason
         }
     }, sys.stdout)
     sys.exit(0)
@@ -147,6 +157,9 @@ def main():
     # Check Bash commands
     if tool_name == "Bash":
         command = tool_input.get("command", "")
+        # Block reading plaintext terraform.tfstate / *.tfstate.backup files
+        if TFSTATE_FILE_PATTERN.search(command) and not re.match(r"^\s*(?:terraform|tofu)\s+state\s+(?:list|mv|rm)\b", command):
+            deny(TFSTATE_DENY_MSG)
         # AWS CLI secret fetching (shape-aware: actual `aws secretsmanager get-secret-value`)
         if CLI_GSV_PATTERN.search(command):
             deny()

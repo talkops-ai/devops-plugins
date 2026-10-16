@@ -219,6 +219,17 @@ If your agent runs in VPC mode, the Browser tool can also run in VPC. See [`vpc.
 
 **Live view doesn't show your session:** Live view requires `ConnectBrowserLiveViewStream` IAM permission. The session also has to be `Ready`, not `Starting` or `Stopping`.
 
+## Production Browser Hardening: Web Bot Auth & Anti-Bot Heuristics
+
+Because AgentCore Browser sessions originate from AWS datacenter IP ranges, public websites frequently trigger CAPTCHAs or bot challenges unless configured properly:
+
+1. **Enable Web Bot Auth (Draft IETF Cryptographic Headers):**
+   - Configure **Web Bot Auth** on the AgentCore Browser resource so outbound HTTP requests include cryptographic bot-authentication headers (`Signature-Agent`, `Signature-Input`, `Signature`) recognized by Cloudflare and major CDNs, drastically reducing CAPTCHA blocks.
+2. **Search Engine Selection on Cloud IPs:**
+   - Avoid navigating directly to `google.com/search` from unauthenticated cloud browser sessions (almost always blocked by reCAPTCHA on datacenter IPs). Prefer **DuckDuckGo (`https://duckduckgo.com`)** or **Bing (`https://www.bing.com`)**, or use a dedicated search API via AgentCore Gateway.
+3. **DOM Inspection Heuristic (`querySelectorAll` over `querySelector`):**
+   - When executing JavaScript via `browser_evaluate` or Playwright `page.evaluate()`, always use `Array.from(document.querySelectorAll(...))` rather than `document.querySelector(...)` so dynamic SPAs with multiple matching nodes or hidden shadow templates don't return a single detached/hidden element.
+
 ## Output
 
 - Which framework fits (Strands vs Nova Act vs Playwright)
@@ -231,4 +242,5 @@ If your agent runs in VPC mode, the Browser tool can also run in VPC. See [`vpc.
 - Browser sessions are always wrapped in a context manager or try/finally — never leaked
 - IAM is scoped to `browser/*` in the account, not `Resource: "*"`
 - Nova Act API keys and other secrets use `agentcore add credential` + `@requires_api_key`, not env vars
+- Web Bot Auth and cloud-IP search engine best practices (DuckDuckGo/Bing, `querySelectorAll`) are applied
 - The code handles the case where the agent runs outside AgentCore Runtime (no `.env.local`, no credential provider) — typically by reading a local secret for development and the credential provider for production

@@ -608,9 +608,62 @@ client.put_memory_resource_policy(
 )
 ```
 
-**Custom extraction models** (pin the model used for LTM extraction — e.g., for data residency):
+**Custom extraction & consolidation models (`consolidationConfiguration`) and KMS CMK Encryption (`encryptionKeyArn`):**
 
-Use the "built-in with overrides" strategy type via `UpdateMemory`. See the [custom memory strategy docs](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/memory-custom-strategy.html) for the full configuration shape.
+For regulated workloads requiring single-region inference pinning or Customer-Managed KMS Key (CMK) encryption at rest, pass `encryptionKeyArn` and `memoryStrategies` overrides via `create_memory` / `update_memory`:
+
+```python
+import time
+import boto3
+
+control = boto3.client("bedrock-agentcore-control")
+
+resp = control.create_memory(
+    name="Enterprise_Encrypted_Memory",
+    encryptionKeyArn="arn:aws:kms:us-east-1:111122223333:key/mrk-1234567890abcdef",
+    eventExpiryDuration=90,
+    memoryStrategies=[
+        {
+            "customMemoryStrategy": {
+                "name": "Pinned_Fact_Extractor",
+                "namespaces": ["/facts/{actorId}/"],
+                "configuration": {
+                    "semanticOverride": {
+                        "extraction": {
+                            "modelId": "anthropic.claude-3-5-haiku-20241022-v1:0",
+                            "appendToPrompt": "Extract only verified enterprise account facts; never store raw secrets or tokens.",
+                        },
+                        "consolidation": {
+                            "modelId": "anthropic.claude-3-5-haiku-20241022-v1:0",
+                            "appendToPrompt": "Merge duplicate facts and retain the most recent timestamped entry.",
+                        },
+                    }
+                },
+            }
+        }
+    ],
+)
+```
+
+**Cross-Session LTM Extraction Wait Poll Loop (Testing & Evals):**
+Because LTM extraction runs asynchronously in the background after `create_event` (typically 10–30 seconds), integration tests and evaluation scripts that immediately switch sessions must poll `retrieve_memories` with exponential backoff before asserting recall:
+
+```python
+def wait_for_ltm_extraction(data_client, memory_id: str, namespace: str, query: str, timeout_s: int = 45):
+    deadline = time.time() + timeout_s
+    while time.time() < deadline:
+        records = data_client.retrieve_memories(
+            memoryId=memory_id, namespace=namespace, query=query, topK=5
+        ).get("memoryRecords", [])
+        if records:
+            return records
+        time.sleep(3)
+    raise TimeoutError(f"LTM extraction did not complete within {timeout_s}s for namespace {namespace}")
+```
+
+**LTM Dead-Letter Queue (DLQ) Redrive & Indirect Prompt Injection Defense:**
+- **LTM DLQ Redrive:** If background LTM consolidation fails (e.g., due to Bedrock model throttling or revoked KMS key permissions), failed extraction events land in the Memory DLQ. After resolving the quota/KMS issue, redrive the SQS DLQ (`aws sqs start-message-move-task`) so historical session turns are consolidated without data loss.
+- **Indirect Prompt Injection Boundary:** Always treat records returned by `retrieve_memories` as **untrusted data**. Wrap retrieved memories in `<retrieved_memory_untrusted>...</retrieved_memory_untrusted>` delimiters before injecting into the prompt, and never allow memory contents to trigger IAM/infrastructure mutations or bypass Cedar Gateway policies.
 
 **Self-managed strategies** (bring your own extraction logic):
 
@@ -631,5 +684,6 @@ Also API-only. See the AgentCore memory docs for the `selfManagedMemoryStrategy`
 - Generated code handles `MEMORY_ID` being None (local dev) without crashing
 - Env var name matches the memory resource name in `agentcore.json` (uppercase, underscores)
 - Framework-specific pattern is used — never generate Strands hooks for a LangGraph project
-- LTM extraction delay is communicated
+- LTM extraction delay and poll-loop testing pattern are communicated
+- Retrieved memories are treated as untrusted input (`<retrieved_memory_untrusted>`) and KMS CMK encryption is used for regulated workloads
 - Session ID guidance recommends UUIDs (v4) when LTM strategies are used (minimum 33 characters)

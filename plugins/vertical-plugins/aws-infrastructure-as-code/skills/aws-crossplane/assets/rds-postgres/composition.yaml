@@ -1,0 +1,86 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: postgres-aws-standalone
+  labels:
+    crossplane.io/xrd: xpostgresdatabases.aws.platform.example.org
+spec:
+  compositeTypeRef:
+    apiVersion: aws.platform.example.org/v1alpha1
+    kind: XPostgresDatabase
+  mode: Pipeline
+  pipeline:
+    - step: patch-and-transform
+      functionRef:
+        name: function-patch-and-transform
+      input:
+        apiVersion: pt.fn.crossplane.io/v1beta1
+        kind: Resources
+        resources:
+          - name: db-subnet-group
+            base:
+              apiVersion: rds.aws.upbound.io/v1beta1
+              kind: SubnetGroup
+              spec:
+                deletionPolicy: Orphan
+                providerConfigRef: {name: default}
+                forProvider:
+                  description: Managed by Crossplane
+            patches:
+              - {type: FromCompositeFieldPath, fromFieldPath: spec.parameters.region, toFieldPath: spec.forProvider.region}
+              - {type: FromCompositeFieldPath, fromFieldPath: spec.parameters.subnetIds, toFieldPath: spec.forProvider.subnetIds}
+          - name: db-security-group
+            base:
+              apiVersion: ec2.aws.upbound.io/v1beta1
+              kind: SecurityGroup
+              spec:
+                providerConfigRef: {name: default}
+                forProvider:
+                  description: PostgreSQL access boundary; restrict ingress before production use.
+                  ingress:
+                    - fromPort: 5432
+                      toPort: 5432
+                      protocol: tcp
+                      cidrBlocks: [10.0.0.0/8]
+            patches:
+              - {type: FromCompositeFieldPath, fromFieldPath: spec.parameters.region, toFieldPath: spec.forProvider.region}
+              - {type: FromCompositeFieldPath, fromFieldPath: spec.parameters.vpcId, toFieldPath: spec.forProvider.vpcId}
+          - name: rds-instance
+            base:
+              apiVersion: rds.aws.upbound.io/v1beta1
+              kind: Instance
+              spec:
+                deletionPolicy: Orphan
+                managementPolicies: [Observe, Create, Update]
+                providerConfigRef: {name: default}
+                forProvider:
+                  engine: postgres
+                  publiclyAccessible: false
+                  autoGeneratePassword: true
+                  storageEncrypted: true
+                  backupRetentionPeriod: 7
+                  skipFinalSnapshot: false
+                  username: masteradmin
+                  dbSubnetGroupNameSelector: {matchControllerRef: true}
+                  vpcSecurityGroupIdSelector: {matchControllerRef: true}
+                writeConnectionSecretToRef: {namespace: crossplane-system}
+            patches:
+              - {type: FromCompositeFieldPath, fromFieldPath: spec.parameters.region, toFieldPath: spec.forProvider.region}
+              - {type: FromCompositeFieldPath, fromFieldPath: spec.parameters.storageGB, toFieldPath: spec.forProvider.allocatedStorage}
+              - {type: FromCompositeFieldPath, fromFieldPath: spec.parameters.instanceClass, toFieldPath: spec.forProvider.instanceClass}
+              - {type: FromCompositeFieldPath, fromFieldPath: spec.parameters.databaseName, toFieldPath: spec.forProvider.dbName}
+              - {type: FromCompositeFieldPath, fromFieldPath: spec.parameters.deletionProtection, toFieldPath: spec.forProvider.deletionProtection}
+              - type: FromCompositeFieldPath
+                fromFieldPath: metadata.name
+                toFieldPath: spec.writeConnectionSecretToRef.name
+                transforms: [{type: string, string: {fmt: '%s-rds-connection'}}]
+              - {type: ToCompositeFieldPath, fromFieldPath: status.atProvider.endpoint, toFieldPath: status.endpoint}
+              - {type: ToCompositeFieldPath, fromFieldPath: status.atProvider.port, toFieldPath: status.port}
+            connectionDetails:
+              - {name: username, type: FromConnectionSecretKey, fromConnectionSecretKey: username}
+              - {name: password, type: FromConnectionSecretKey, fromConnectionSecretKey: password}
+              - {name: endpoint, type: FromConnectionSecretKey, fromConnectionSecretKey: endpoint}
+              - {name: port, type: FromConnectionSecretKey, fromConnectionSecretKey: port}
+    - step: auto-ready
+      functionRef:
+        name: function-auto-ready

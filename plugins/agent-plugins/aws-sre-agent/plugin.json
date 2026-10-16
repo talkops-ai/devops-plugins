@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "aws-sre-agent",
-  "version": "0.1.0",
-  "description": "Site-reliability agent for AWS workloads: CloudWatch metrics, logs, alarms and Logs Insights, Application Signals SLOs, X-Ray/ADOT traces, CloudTrail change history, Amazon Managed Prometheus, and AWS Support case escalation.",
+  "version": "0.2.0",
+  "description": "Principal AWS Site Reliability & Production Engineer: live-site incident command, root-cause investigations, and Correction of Errors (COE) postmortems; CloudWatch metrics, alarms, and Logs Insights, Application Signals SLOs, X-Ray/ADOT traces, Amazon Managed Prometheus (PromQL), and CloudTrail change forensics; EKS (pods, Karpenter, Auto Mode, VPC CNI, CoreDNS, IRSA/Pod Identity), ECS/Fargate (stopped tasks, circuit breakers, Express Mode), Lambda/API Gateway/Step Functions, EC2/ASG/ALB, RDS/Aurora/DynamoDB/ElastiCache/SQS, and VPC/TGW/Cloud WAN/Network Firewall diagnostics; Resilience Hub, Fault Injection Service (FIS), and Route 53 ARC (Zonal Shift, Region Switch) engineering; CloudFormation/CDK remediation validation (cfn-lint, cfn-guard); observability/compute FinOps right-sizing; and AWS Support escalation.",
   "author": {
     "name": "TalkOps AI"
   },
@@ -14,10 +14,20 @@
     "sre",
     "observability",
     "cloudwatch",
+    "application-signals",
     "x-ray",
     "cloudtrail",
     "prometheus",
     "incident-response",
-    "slo"
+    "postmortem",
+    "coe",
+    "slo",
+    "eks",
+    "ecs",
+    "fargate",
+    "resilience-hub",
+    "fis",
+    "arc",
+    "finops"
   ]
 }

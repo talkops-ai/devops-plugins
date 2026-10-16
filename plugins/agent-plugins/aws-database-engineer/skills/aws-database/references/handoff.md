@@ -29,9 +29,16 @@ Otherwise, use an already available local skill or the AWS MCP server. Loading a
 
 If the skill is already installed locally, it will activate automatically — the agent runtime detects installed skills and loads them. Check whether the skill is already available before attempting to install.
 
-### 2. AWS MCP server (if available)
+In addition to the engine-specific skill from the Service Reference table, also load any matching **Cross-Engine Operational Lifecycle Skill** from `SKILL.md`:
+- `db-observability-and-wait-triage` for wait events, slow queries, `DBLoad`, autovacuum, or memory/IOPS pressure.
+- `dms-schema-conversion` and `dms-data-migration-execution` for heterogeneous or homogeneous database migrations via AWS DMS.
+- `db-ha-dr-and-schema-evolution` for Blue/Green deployments, Global Database failover/switchover, RDS Proxy multiplexing, online DDL (`pg_repack`, `gh-ost`), or database role hardening.
+
+### 2. AWS MCP server and AWS Pricing MCP server (if available)
 
 If the skill is not installed locally and the AWS MCP server is connected, call `aws___retrieve_skill` with the skill name from the service reference table in SKILL.md. You already have the authoritative skill name, so you do not need to call `aws___search_documentation` first to discover it — pass the listed name directly.
+
+When the user's request involves **cost estimation, instance/ACU sizing, or storage tier comparison** (e.g., Aurora Standard vs. Aurora I/O-Optimized, DynamoDB On-Demand vs. Provisioned, or commercial RDS License Included vs. BYOL), query the `awspricing` MCP server (`mcp__plugin_aws-database-engineer_awspricing__*`) alongside the service skill or knowledge card so that all estimates use live regional unit prices.
 
 ## If the service skill is not available
 
@@ -39,7 +46,7 @@ If no service skill exists for this service (table shows `—`) or the skill can
 
 - The service's knowledge card (loaded from this skill)
 - The service's `llms.txt` documentation index (URL in the knowledge card)
-- AWS documentation tools (`aws___search_documentation`, `aws___read_documentation`) if available
+- AWS documentation tools (`aws___search_documentation`, `aws___read_documentation`) and `awspricing` MCP tools if available
 
 Do NOT narrate failed attempts or explain which methods you tried. **Lead with the recommendation** — answer the user's question directly from the knowledge card first. Mention the service skill at the end, not the beginning.
 

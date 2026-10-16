@@ -23,7 +23,7 @@ Select the reward function template based on the base model:
 
 Copy the selected template as `lambda_function.py` into the project's scripts directory.
 
-- Read the `directory-management` skill to determine the correct directory for storing scripts.
+- Read the `directory-management` reference to determine the correct directory for storing scripts.
 
 ### Step 2: Generate Code
 
@@ -40,6 +40,7 @@ evaluator = Evaluator.create(
     source=reward_function_path,
 )
 print(f"Reward Function ARN: {evaluator.arn}")
+
 ```
 
 Remember to set an appropriate name for the Evaluator by yourself in the above code, based on the use case and the current context.

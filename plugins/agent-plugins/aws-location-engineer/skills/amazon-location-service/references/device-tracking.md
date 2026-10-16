@@ -42,9 +42,32 @@ await client.send(
 
 **IMPORTANT**: Filtering affects what gets **stored** and **evaluated against geofences**. AccuracyBased and DistanceBased filtering reduce both storage costs and geofence evaluation costs. TimeBased evaluates every update against geofences but limits storage.
 
+### Customer-Managed KMS Encryption & Geospatial Queries (`KmsKeyEnableGeospatialQueries`)
+
+When attaching a customer-managed AWS KMS key (`KmsKeyId`) to a tracker for regulatory compliance, the **Bounding Polygon geospatial query** feature (`ListDevicePositions` with `FilterGeometry`) is **disabled by default** because spatial indexing relies on an unencrypted representation of device positions (even though exact coordinates remain encrypted). You MUST explicitly set `KmsKeyEnableGeospatialQueries: true` during `CreateTracker` or `UpdateTracker` if bounding polygon queries are required alongside a customer-managed KMS key:
+
+```javascript
+import { CreateTrackerCommand } from "@aws-sdk/client-location";
+
+await client.send(
+  new CreateTrackerCommand({
+    TrackerName: "my-compliant-fleet-tracker",
+    PositionFiltering: "AccuracyBased",
+    KmsKeyId: "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012",
+    KmsKeyEnableGeospatialQueries: true, // REQUIRED for FilterGeometry polygon queries when KmsKeyId is set
+    EventBridgeEnabled: true, // REQUIRED only if you need raw position UPDATE events in EventBridge
+  }),
+);
+```
+
+### Raw Position `UPDATE` Events vs. Geofence `ENTER`/`EXIT` Events (`EventBridgeEnabled`)
+
+- **Geofence `ENTER` and `EXIT` events** (`detail-type: "Location Geofence Event"`) are automatically published to Amazon EventBridge whenever a tracker is linked to a Geofence Collection via `AssociateTrackerConsumer`—no extra flag is required on the tracker.
+- **Raw device position `UPDATE` events** (`detail-type: "Location Device Position Event"`) are **suppressed by default** to prevent EventBridge cost spikes. Set `EventBridgeEnabled: true` on the tracker only when downstream consumers need every filtered position update streamed via EventBridge.
+
 ## Step 2: Send Position Updates
 
-Use `BatchUpdateDevicePosition` to send location data from devices. Each call accepts up to 10 device updates.
+Use `BatchUpdateDevicePosition` to send location data from devices. Each call accepts up to 10 device updates (default regional quota: **50 RPS**, adjustable up to **100 RPS**).
 
 ```javascript
 import { BatchUpdateDevicePositionCommand } from "@aws-sdk/client-location";
@@ -76,9 +99,30 @@ await client.send(
 );
 ```
 
-### MQTT Ingestion (IoT Devices)
+### MQTT Ingestion (AWS IoT Core `LocationAction` & SigV4 HTTP Proxies)
 
-For IoT devices, position updates can be sent via MQTT through AWS IoT Core, avoiding the need to use the AWS SDK directly on constrained devices. Configure an AWS IoT rule with a [Location action](https://docs.aws.amazon.com/iot/latest/developerguide/location-rule-action.html) to forward messages to `BatchUpdateDevicePosition`. This is the preferred path for high-volume IoT fleets. See the [AWS IoT Core docs](https://docs.aws.amazon.com/location/latest/developerguide/tracking-using-mqtt.html) for rule creation steps and message payload format.
+For high-throughput IoT fleets, stream coordinates via MQTT through **AWS IoT Core** (or SigV4 HTTP cellular proxies such as **Soracom Beam** targeting `/tracking/v0/trackers/{trackerName}/positions`), avoiding heavy AWS SDK credentials on constrained edge devices. Configure an AWS IoT Topic Rule with a `location` action and an IAM role granting `geo:BatchUpdateDevicePosition`:
+
+```json
+{
+  "sql": "SELECT * FROM 'iot/fleet/+/position'",
+  "actions": [
+    {
+      "location": {
+        "roleArn": "arn:aws:iam::123456789012:role/IoTLocationTrackerRole",
+        "trackerName": "my-fleet-tracker",
+        "deviceId": "${deviceId}",
+        "latitude": "${latitude}",
+        "longitude": "${longitude}",
+        "timestamp": {
+          "value": "${timestamp()}",
+          "unit": "MILLISECONDS"
+        }
+      }
+    }
+  ]
+}
+```
 
 ### Update Frequency Guidance
 
@@ -123,7 +167,7 @@ const response = await client.send(
 // response.Errors → array of devices that failed (check this!)
 ```
 
-### All Devices (Fleet View)
+### All Devices (Fleet View & Bounding Polygon Spatial Query)
 
 ```javascript
 import { ListDevicePositionsCommand } from "@aws-sdk/client-location";
@@ -132,6 +176,19 @@ const response = await client.send(
   new ListDevicePositionsCommand({
     TrackerName: "my-fleet-tracker",
     MaxResults: 100,
+    // Optional: filter devices currently inside a bounding polygon
+    // (Requires KmsKeyEnableGeospatialQueries: true if tracker uses a customer-managed KMS key)
+    FilterGeometry: {
+      Polygon: [
+        [
+          [-122.36, 47.63],
+          [-122.36, 47.60],
+          [-122.32, 47.60],
+          [-122.32, 47.63],
+          [-122.36, 47.63], // First and last vertex MUST match to close the ring
+        ],
+      ],
+    },
   }),
 );
 // response.Entries → array of { DeviceId, Position, SampleTime, ... }

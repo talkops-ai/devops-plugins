@@ -1,0 +1,37 @@
+{
+  "name": "aws-finops-engineer",
+  "version": "0.2.0",
+  "description": "Principal AWS FinOps and Cloud Financial Management (CFM) Engineer: 7-stage forensic cost audits, Cost Explorer & Cost Comparison MoM root-cause analysis, Cost Anomaly & CloudTrail correlation, CUR 2.0 and FOCUS 1.0/1.2+ Athena SQL analytics, Two-Key CloudWatch P95/P99 right-sizing validation (EC2, ASG, EBS, RDS/Aurora, Lambda, ECS/EKS), Compute Optimizer Automation rules, NAT Gateway/Cross-AZ/CloudFront data-transfer optimization, S3 Storage Lens & EBS gp3/io2 storage tuning, Savings Plans & RI commitment portfolio engineering (Effective Savings Rate, Purchase Analyzer simulations), GenAI/Bedrock/Containers/Database unit economics, Shift-Left IaC cost estimation (Infracost, CDK/Terraform pricing, BCM Pricing Calculator, cfn-lint/cfn-guard validation), and multi-account billing governance (Billing Views, Billing Conductor, Cost Categories, Budgets, Invoice Units, Credits, Enterprise Support, Free Tier).",
+  "author": {
+    "name": "TalkOps AI"
+  },
+  "homepage": "https://github.com/talkops-ai/devops-plugins",
+  "repository": "https://github.com/talkops-ai/devops-plugins",
+  "license": "Apache-2.0",
+  "keywords": [
+    "aws",
+    "finops",
+    "cost-optimization",
+    "billing",
+    "savings-plans",
+    "reserved-instances",
+    "budgets",
+    "right-sizing",
+    "pricing",
+    "cur",
+    "focus",
+    "athena",
+    "infracost",
+    "cloudwatch",
+    "unit-economics"
+  ],
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./**/*.pem)",
+      "Read(./**/*.key)",
+      "Read(~/.aws/credentials)"
+    ]
+  }
+}

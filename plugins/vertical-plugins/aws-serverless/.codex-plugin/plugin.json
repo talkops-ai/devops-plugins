@@ -1,7 +1,7 @@
 {
   "name": "aws-serverless",
-  "version": "0.1.0",
-  "description": "Serverless skills for the main agent: Lambda (durable functions, managed instances, MicroVMs, timeouts, VPC egress), API Gateway stages and custom domains, Step Functions, and EventBridge, with the read-only AWS Serverless MCP server.",
+  "version": "0.2.0",
+  "description": "Comprehensive serverless engineering skills for the main agent: AWS Lambda (SnapStart, Power Tuning, Durable Functions, Managed Instances), API Gateway, Step Functions, EventBridge (Buses, Scheduler, Pipes), SQS/SNS, Event Source Mappings, DynamoDB single-table modeling, Aurora DSQL, and SAM/CDK deployment.",
   "author": {
     "name": "TalkOps AI"
   },
@@ -12,17 +12,21 @@
     "aws",
     "serverless",
     "lambda",
-    "api-gateway",
     "step-functions",
     "eventbridge",
-    "sam"
+    "api-gateway",
+    "sam",
+    "sqs",
+    "sns",
+    "dynamodb"
   ],
   "skills": "./skills/",
   "mcpServers": "./mcp.json",
+  "hooks": "./hooks/hooks.json",
   "interface": {
     "displayName": "AWS Serverless",
-    "shortDescription": "Serverless skills for the main agent",
-    "longDescription": "Serverless skills for the main agent: Lambda (durable functions, managed instances, MicroVMs, timeouts, VPC egress), API Gateway stages and custom domains, Step Functions, and EventBridge, with the read-only AWS Serverless MCP server.",
+    "shortDescription": "Comprehensive serverless engineering skills for the main agent: AWS Lambda (SnapStart, Power Tuning, Durable…",
+    "longDescription": "Comprehensive serverless engineering skills for the main agent: AWS Lambda (SnapStart, Power Tuning, Durable Functions, Managed Instances), API Gateway, Step Functions, EventBridge (Buses, Scheduler, Pipes), SQS/SNS, Event Source Mappings, DynamoDB single-table modeling, Aurora DSQL, and SAM/CDK deployment.",
     "developerName": "TalkOps AI",
     "category": "Cloud",
     "capabilities": [

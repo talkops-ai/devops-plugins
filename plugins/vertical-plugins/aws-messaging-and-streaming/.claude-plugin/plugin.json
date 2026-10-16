@@ -1,7 +1,7 @@
 {
   "name": "aws-messaging-and-streaming",
-  "version": "0.1.0",
-  "description": "Messaging and streaming skills for the main agent: SQS, SNS, EventBridge, Amazon MQ, Kinesis Data Streams, MSK (incl. migrations), Managed Service for Apache Flink, and customer messaging with SES, SMS/voice, and WhatsApp, plus the SNS/SQS and Amazon MQ MCP servers.",
+  "version": "0.2.0",
+  "description": "Event-driven messaging, streaming, and customer communications for the main agent: SQS, SNS, EventBridge (Event Buses, Pipes, Scheduler), Amazon MSK (Kafka), Kinesis Data Streams, Managed Service for Apache Flink, Amazon MQ, and End-User Messaging (SES, SMS, WhatsApp, Push).",
   "author": {
     "name": "TalkOps AI"
   },
@@ -11,13 +11,14 @@
   "keywords": [
     "aws",
     "messaging",
+    "streaming",
     "sqs",
     "sns",
-    "kinesis",
+    "eventbridge",
     "msk",
     "kafka",
+    "kinesis",
     "flink",
-    "ses",
-    "amazon-mq"
+    "ses"
   ]
 }

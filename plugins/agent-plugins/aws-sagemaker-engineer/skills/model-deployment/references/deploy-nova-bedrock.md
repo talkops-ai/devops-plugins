@@ -46,7 +46,7 @@ Use the IAM role from the training job (extracted in Step 1 of the main workflow
 
 ### Step 4: Confirm Region
 
-The region was identified in Step 1 of the main workflow. Nova → Bedrock deployment is currently only supported in **us-east-1**. If the training job is in a different region, tell the user that Bedrock deployment is not supported for this model in this region.
+The region was identified in Step 1 of the main workflow. Nova → Bedrock deployment is supported in **us-east-1** (this may be outdated — region availability can change and there is no API to query it). If the training job is in a different region, warn the user that Bedrock deployment for this model is likely limited to us-east-1; if an import is attempted elsewhere and fails (note: Nova → Bedrock uses Custom Model Import under the hood, so an unsupported region typically returns an access/authorization-style error rather than a clear region error), confirm it is not supported there.
 
 ### Step 5: Confirm Configuration
 
@@ -66,7 +66,7 @@ The region was identified in Step 1 of the main workflow. Nova → Bedrock deplo
 
 Read `../references/code_output_guide.md` for output format rules.
 
-If a project directory already exists (from earlier in the workflow), use it. Otherwise, activate the **directory-management** skill to set one up.
+If a project directory already exists (from earlier in the workflow), use it. Otherwise, load the **directory-management** reference to set one up.
 
 ⏸ Wait for user.
 
@@ -82,6 +82,7 @@ If a project directory already exists (from earlier in the workflow), use it. Ot
     "# Deploy Nova to Bedrock"
   ]
 }
+
 ```
 
 ### Cells
@@ -92,6 +93,7 @@ Each cell's content comes from `../code_templates/deploy-nova-bedrock.py`, split
 - **Cell 2**: Configuration (env vars, imports, placeholders)
 - **Cell 3**: Build and Deploy to Bedrock (blocks until deployment is Active)
 - **Cell 4**: Test Inference
+- **Cell 5**: Save Manifest
 
 ### Placeholders
 
@@ -112,6 +114,8 @@ To run:
 2. Cell 2 — set configuration values
 3. Cell 3 — creates custom model via BedrockModelBuilder and deploys (blocks until Active)
 4. Cell 4 — test inference with a sample prompt via Converse API
+5. Cell 5 — saves the deployment manifest to `manifests/deploy-<name>.json`
+
 ```
 
 ## Common Issues

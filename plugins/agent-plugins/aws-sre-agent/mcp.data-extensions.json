@@ -1,0 +1,39 @@
+{
+  "$comment": "Optional read-only stateful data and caching MCP servers for aws-sre-agent. Merge into .mcp.json when deep PostgreSQL (pg_stat_activity), DynamoDB (DescribeTable/ContributorInsights), or ElastiCache (Valkey/Redis) data-plane triage is required.",
+  "mcpServers": {
+    "postgres": {
+      "command": "uvx",
+      "args": [
+        "awslabs.postgres-mcp-server@latest",
+        "--privilege_check",
+        "enforce"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "dynamodb": {
+      "command": "uvx",
+      "args": [
+        "awslabs.dynamodb-mcp-server>=2.1.6"
+      ],
+      "env": {
+        "DDB-MCP-READONLY": "true",
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "elasticache": {
+      "command": "uvx",
+      "args": [
+        "awslabs.elasticache-mcp-server@latest",
+        "--readonly"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    }
+  }
+}

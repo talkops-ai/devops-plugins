@@ -92,7 +92,7 @@ If the use case allows, think of rewards as a pyramid where each layer depends o
 ### Step 6: Write the Function as a Python Script
 
 1. Create a file called `lambda_function.py` in the project's scripts directory.
-2. Read the `directory-management` skill to determine the correct directory for storing scripts.
+2. Read the `directory-management` reference to determine the correct directory for storing scripts.
 3. Consult the reward function templates for structural reference:
    - Nova 2.0 Lite → `templates/nova_rlvr_reward_function_source_template.py`
    - All other models → `templates/rlvr_reward_function_source_template.py`
@@ -139,6 +139,7 @@ Test the reward function by executing it against crafted sample data:
    result = lambda_handler(event, None)
    print(json.dumps(result, indent=2))
    "
+
    ```
 
 5. **Verify the output.** Check that:
@@ -175,6 +176,7 @@ evaluator = Evaluator.create(
 )
 CUSTOM_REWARD_FUNCTION = evaluator.arn
 print(f"Reward Function ARN: {CUSTOM_REWARD_FUNCTION}")
+
 ```
 
 Generate an appropriate name for the Evaluator based on the use case and current context.

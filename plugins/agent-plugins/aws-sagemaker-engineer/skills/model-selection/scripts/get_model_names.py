@@ -1,6 +1,10 @@
-import boto3
 import json
+import os
 import sys
+
+import boto3
+
+os.environ.setdefault("AWS_SDK_UA_APP_ID", "AWSSkill-SageMaker")
 
 if len(sys.argv) < 2:
     print("Usage: python get_model_names.py <hub-name> [region]")
@@ -16,11 +20,7 @@ all_contents = []
 next_token = None
 
 while True:
-    params = {
-        "HubName": hub_name,
-        "HubContentType": "Model",
-        "MaxResults": 100
-    }
+    params = {"HubName": hub_name, "HubContentType": "Model", "MaxResults": 100}
 
     if next_token:
         params["NextToken"] = next_token
@@ -34,10 +34,17 @@ while True:
 
 # Filter for customization-capable models
 customization_models = [
-    content for content in all_contents
+    content
+    for content in all_contents
     if "@capability:customization" in content.get("HubContentSearchKeywords", [])
 ]
 
 model_names = [m.get("HubContentName") for m in customization_models]
+
+# Sort alphabetically (case-insensitive) so the same hub always yields the same
+# ordered list. The SageMaker ListHubContents API returns models in
+# pagination order, which is not stable across calls, so without this sort the
+# agent would present a different order each run.
+model_names.sort(key=lambda n: (n or "").lower())
 
 print(json.dumps(model_names))

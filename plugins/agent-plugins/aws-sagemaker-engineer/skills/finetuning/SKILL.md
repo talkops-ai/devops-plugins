@@ -1,182 +1,168 @@
 ---
 name: finetuning
-description: Generates code that fine-tunes a base model using SageMaker serverless training jobs. Use when the user says "start training", "fine-tune my model", "I'm ready to train", or when the plan reaches the finetuning step. Supports SFT, DPO, RLVR, and RLAIF trainers, including RLVR Lambda reward function and RLAIF custom prompt creation.
+description: >-
+  Generates code that initiates a SageMaker Serverless Model Customization job and optionally
+  creates a reward function for RLVR or configures RLAIF. Supports SFT, DPO, RLVR, and RLAIF
+  trainers on SageMaker Hub models. Use when the user says "start training", "fine-tune my model",
+  or reaches the fine-tuning step of a Serverless Model Customization plan. For custom PyTorch,
+  HuggingFace, XGBoost, Computer Vision (SAM), distributed DDP/FSDP, Managed Spot training jobs,
+  or Autopilot AutoMLv2, routes to sagemaker-training-architect; for HyperPod clusters, routes to
+  hyperpod-Training.
 metadata:
-  version: "1.0.0"
+  version: "2.0.0"
 ---
 
 # Prerequisites
 
-Before starting this workflow, verify:
+Check that the following are available in the conversation context before starting:
 
 1. A `use_case_spec.md` file exists
-   - If missing: Activate the `use-case-specification` skill first, then resume
-   - DON'T EVER offer to create a use case spec without activating the use-case-specification skill.
+   - If missing: Load the `use-case-specification` skill to generate it first, then resume
 
-2. A fine-tuning technique (SFT, DPO, RLVR, RLAIF, or CPT/RFT (for Nova)) and base model have already been selected
-   - If missing: Activate the `model-selection` and/or `finetuning-technique` skills to collect what's missing, then resume
-   - Don't make recommendations on the spot. You MUST activate the appropriate skill.
+2. A confirmed model and finetuning strategy (`SFT`, `DPO`, `RLAIF`, or `RLVR`)
+   - If missing: Load the `model-selection` and/or `finetuning-technique` skills to collect what's missing, then resume
+   - Don't make recommendations on the spot. You MUST load the appropriate skill.
 
 3. A base model name available on SageMakerHub has been identified
-   - If missing: Activate the `model-selection` skill to get it
+   - If missing: Load the `model-selection` skill to get it
    - **Important:** Only use the model name that `model-selection` retrieves, as it may differ from other commonly used names for the same model
 
 4. The SDK environment has been verified (SDK version, region, execution role)
-   - If not done: Activate the `sdk-getting-started` skill first, then resume
+   - If not done: Load the `sdk-getting-started` skill first, then resume
 
-5. A training dataset uploaded to a bucket in the environment's default region.
-   - If not met: Help the user upload the dataset to the correct S3
+5. The region supports serverless model customization
+   - Check the environment's region against `../planning/references/region-availability.md` (`us-west-2`, `us-east-1`, `ap-northeast-1`, `eu-west-1`). If it is NOT supported, STOP and give the user the blocking message from that file — or offer to run a standard Managed Training Job via **`sagemaker-training-architect`**.
+
+6. A training dataset uploaded to a bucket in the environment's default region.
+   - If not met: Help the user upload the dataset to the correct S3 bucket.
 
 ---
 
-# Critical Rules
+### Routing to Custom & Distributed Training Skills
 
-## Code Generation Rules
+This skill covers **SageMaker Serverless Model Customization** (`SFTTrainer`, `DPOTrainer`, `RLVRTrainer`, `RLAIFTrainer`). If the user's training workload involves any of the following, route immediately to the dedicated training skill rather than dead-ending:
+
+- **Standard Managed Training Jobs (`CreateTrainingJob`), `@remote` decorator, custom PyTorch/HuggingFace/XGBoost Estimators, Computer Vision / Multimodal fine-tuning (e.g., Segment Anything Model `MaskDecoder`), Distributed Data Parallel (DDP) / FSDP / DeepSpeed, Managed Spot Training with S3 checkpointing, or SageMaker Autopilot AutoMLv2** → Activate **`sagemaker-training-architect`**.
+- **SageMaker HyperPod multi-node EKS or Slurm cluster training** → Activate **`hyperpod-Training`**.
+- **Provisioning or connecting a SageMaker Managed MLflow App (`CreateMlflowApp`)** → Activate **`manage-mlflow`**.
+
+---
+
+## Critical Rules
+
+### Code Generation Rules
 
 - ✅ Use EXACTLY the imports shown in each code template
 - ❌ Do NOT add additional imports even if they seem helpful
 - ❌ Do NOT create variables before they're needed in that section
-- 📋 Copy the code structure precisely - no improvisation
+- ❌ Do NOT add custom validation, error handling, or retry logic
+- ❌ Do NOT add extra print statements beyond the template
+- ❌ Do NOT modify variable names from the template
+- ❌ Do NOT add helper functions
+- ❌ Do NOT add extra markdown text to explain the code or any sections
 - 🎯 Follow the minimal code principle strictly
 - ✅ When writing code, make sure the indentation and f strings are correct
 
-## User Communication Rules
+### User Communication Rules
 
 - ❌ NEVER offer to move on to a downstream skill while training is in progress (logically impossible)
-- ❌ NEVER set ACCEPT_EULA to True without explicit user confirmation in the conversation
+- ❌ NEVER set `ACCEPT_EULA` to `True` without explicit user confirmation in the conversation
 - ✅ Always mention both the number AND title of sections you reference
 - ✅ If user asks how to run (notebook): If `run_cell` is available, offer to run it. Otherwise, tell them to run cells one by one (mention ipykernel requirement).
-- ✅ If user asks how to run (script): Tell them to run with `python3 <script>.py`
+- ✅ Wait for user confirmation before proceeding with actions
 
 ---
 
-# Workflow
+## Workflow
 
-## 1. Code Generation Setup
+### 1. Code Generation Setup
 
-### 1.1 Directory Setup
+#### 1.1 Directory Setup
 
 1. Identify project directory from conversation context
    - If unclear (multiple relevant directories exist) → Ask user which folder to use
-   - If no project directory exists → activate the **directory-management** skill to set one up
+   - If no project directory exists → load the **directory-management** skill to set one up
 
 ⏸ Wait for user.
 
-### 1.2 Select Code Template
+#### 1.2 Select Code Template
 
 Read `references/code_output_guide.md` for output format rules, then read the code template matching the finetuning strategy:
 
-- SFT → `code_templates/sft.py`
-- DPO → `code_templates/dpo.py`
-- RLVR → `code_templates/rlvr.py`
-- RLAIF with built-in rewards → `code_templates/rlaif_builtin.py`
-- RLAIF with custom prompt → `code_templates/rlaif_custom_prompt.py`
+- **SFT** → `code_templates/sft.py`
+- **DPO** → `code_templates/dpo.py`
+- **RLVR** → `code_templates/rlvr.py`
+- **RLAIF (built-in prompt)** → `code_templates/rlaif_builtin.py`
+- **RLAIF (custom prompt)** → `code_templates/rlaif_custom_prompt.py`
 
 The template is a Python file where each `# Cell N: Label` comment marks the start of a new section. Split on these markers — everything between one marker and the next becomes one unit of output.
 
-### 1.3 Generate Code
+#### 1.3 Generate Code
 
 1. Write the code from the template following the rules in `code_output_guide.md`
 2. Use same order, dependencies, and imports as the template
-3. DO NOT improvise or add extra code
-4. If the model is **NOT** a Meta/Llama model (model ID does NOT start with `meta-`):
-   - Omit the `ACCEPT_EULA = False` line from the config cell
+3. Check if the selected model is from the Meta/Llama family (model ID starts with `meta-textgeneration-llama`)
+4. If NOT a Meta/Llama model:
+   - Omit the `ACCEPT_EULA` variable definition from the Configure Trainer section
    - Omit the `accept_eula=ACCEPT_EULA,` line from the trainer call
 5. If the model is from the Nova family, omit any code containing `max_epochs` or `lr_warmup_steps_ratio` from the Configure Trainer section and the Hyperparameter Overrides section
 
-### 1.4 Auto-Generate Configuration Values
+#### 1.4 Auto-Generate Configuration Values
 
 **In the 'Setup & Credentials' cell, populate:**
 
-1. **BASE_MODEL**
-   - Use the exact SageMakerHub model name from context
+1. `SAGEMAKER_ROLE_ARN` = execution role ARN from conversation context (resolved by `sdk-getting-started`)
+2. `S3_DATA_PATH` = S3 URI for the training dataset from conversation context (if known, otherwise leave placeholder)
+3. `MODEL_ID` = SageMaker Hub model ID for the base model selected in `model-selection`
+4. `MLFLOW_TRACKING_URI` = MLflow tracking server ARN:
+   1. Run `python scripts/mlflow_reference.py <REGION>` using the region from conversation context
+   2. Set `MLFLOW_TRACKING_URI` to the stdout output (the ARN string). If it prints `NONE` or fails, set `MLFLOW_TRACKING_URI = ""` (and optionally offer `manage-mlflow` if the user wants to create a Managed MLflow App).
 
-2. **MODEL_PACKAGE_GROUP_NAME**
-   - Generate from use case (read `use_case_spec.md` if needed)
-   - Format rules:
-     - Lowercase, alphanumeric with hyphens only
-     - 1-63 characters
-     - Pattern: `[a-zA-Z0-9](-*[a-zA-Z0-9]){0,62}`
-     - Example: "Customer Support Chatbot" → `customer-support-chatbot-v1`
+Save the notebook.
 
-3. Save notebook
+### 2. RLVR Reward Function (for RLVR only, skip this section if technique is SFT or DPO)
 
-## 2. RLVR Reward Function (for RLVR only, skip this section if technique is SFT or DPO)
-
-### 2.1 Check Reward Function Status
+#### 2.1 Check Reward Function Status
 
 - Ask if user has a reward function already, or would like help creating one.
   - If user says they have one → Ask for the SageMaker Hub Evaluator ARN. Only proceed to Section 2.3 once the user provides a valid Evaluator ARN. If they don't have it registered as a SageMaker Hub Evaluator, continue to 2.2.
   - If user says they do not have one → Continue to 2.2
 
-### 2.2 Generate Reward Function From Template
+#### 2.2 Generate Reward Function From Template
 
 1. Follow workflow in `references/rlvr_reward_function.md` section "Helping Users Create Custom Reward Functions"
 
-### 2.3 Set CUSTOM_REWARD_FUNCTION value
+#### 2.3 Set CUSTOM_REWARD_FUNCTION value
 
 1. Set the value for `CUSTOM_REWARD_FUNCTION` in the Notebook with the ARN of the reward function (either given directly by the user, or from the function generation code as `evaluator.arn`).
 
-## 3. RLAIF (for RLAIF only, skip this section if technique is not RLAIF)
+### 3. RLAIF (for RLAIF only, skip this section if technique is not RLAIF)
 
 Read `references/rlaif_guide.md` and follow its instructions.
 
-## 4. EULA review and acceptance
+### 4. EULA review and acceptance
 
-1. Look up the official license link for the selected base model from references/eula_links.md
-2. Display the license to the user following the phrasing in references/eula_links.md. For OSS models: "This model is licensed under **{License}**. Please review the license terms here: {URL}." For Nova models: "This model is subject to the AWS Service Terms: {URL}."
-3. Check if the selected base model is a Meta/Llama model (model ID starts with `meta-`)
+1. Look up the official license link for the selected base model from `references/eula_links.md`
+2. Display the license to the user following the phrasing in `references/eula_links.md`. For OSS models: "This model is licensed under **{License}**. Please review the license terms here: {URL}." For Nova models: "This model is subject to the AWS Service Terms: {URL}."
+3. Check if the model is from the Meta/Llama family (model ID starts with `meta-textgeneration-llama`):
    - **If Meta/Llama**: Tell the user they must read and agree to the EULA before using this model. Ask: "Do you accept the license terms? (yes/no)". If the user confirms, set `ACCEPT_EULA = True` and uncomment `accept_eula=ACCEPT_EULA` in the generated notebook. If the user declines, leave `ACCEPT_EULA = False` and warn that training will fail without acceptance.
    - **If non-Meta**: Inform the user of the license for their awareness. No code-level action needed — the `ACCEPT_EULA` variable and `accept_eula` parameter should already be omitted from the notebook (see Step 1.3).
 
-## 5. Post-Generation
+### 5. Post-Generation
 
 After generating the code, offer to run it. Training can take hours depending on your dataset and model.
 
-**Notebook mode:** If `run_cell` is available, offer to run the cells. Otherwise tell the user to run cells themselves.
+### 6. Continuous Customization
 
-**Script mode:** Present the user with options:
-
-> "Would you like me to:
->
-> 1. Leave it to you — run with `python scripts/[script_name]`
-> 2. Run it and wait until it's done
-> 3. Start it but don't wait — we can check status later"
-
-- **Option 1:** Done. Wait for user to come back.
-- **Option 2:** Execute the script as-is. `trainer.train(wait=True)` blocks until complete. Report final status.
-- **Option 3:** Change `wait=True` to `wait=False` in the script, execute, report the training job name.
-
-**Checking status:**
-
-- `describe-training-job --training-job-name NAME` → `TrainingJobStatus`, `FailureReason`, `SecondaryStatusTransitions`
-- For model package ARN after completion: `list-model-packages --model-package-group-name GROUP_NAME --sort-by CreationTime --sort-order Descending --max-results 1`
-
-**Showing results after completion:**
-
-- Use `scripts/mlflow_reference.py` as the pattern to query MLflow metrics
-- Present loss by epoch as a text table (total_loss, val_eval_total_loss for SFT; rewards/margins for DPO; critic/rewards/mean for RLVR)
-
-**CRITICAL:**
-
-- DON'T suggest moving to next steps before training completes
-- DON'T elaborate on the next steps unless the user specifically asks you about them.
-
-## 6. Continuous Customization
-
-If the user wants to finetune a model they had already customized, follow the instructions in references/continuous_customization.md
+If the user wants to finetune a model they had already customized, follow the instructions in `references/continuous_customization.md`.
 
 ---
 
-# References
+## References
 
-- `rlvr_reward_function.md` - Lambda reward function creation guide (RLVR only)
-- `templates/rlvr_reward_function_source_template.py` - Lambda reward function source template for open-weights models (RLVR only)
-- `templates/nova_rlvr_reward_function_source_template.py` - Lambda reward function source template for Nova 2.0 Lite (RLVR only)
-- `code_templates/sft.py` - Complete notebook template for Supervised Fine-Tuning (OSS path)
-- `code_templates/dpo.py` - Complete notebook template for Direct Preference Optimization (OSS path)
-- `code_templates/rlvr.py` - Complete notebook template for Reinforcement Learning from Verifiable Rewards (OSS path)
-- `references/continuous_customization.md` - Instructions on fine-tuning an already fine-tuned model.
-- `rlaif_guide.md` - instructions on RLAIF finetuning options
-- `rlaif_builtin.py` - Code template for RLAIF with built-in judge prompt
-- `rlaif_custom_prompt.py` - Code template for RLAIF with custom judge prompt
+- `references/rlvr_reward_function.md` — Lambda reward function creation guide (RLVR only)
+- `templates/rlvr_reward_function_source_template.py` — Lambda reward function source template for open-weights models (RLVR only)
+- `templates/nova_rlvr_reward_function_source_template.py` — Lambda reward function source template for Nova models (RLVR only)
+- `references/rlaif_guide.md` — RLAIF setup: judge model selection and custom prompt creation (RLAIF only)
+- `references/eula_links.md` — Official license URLs for supported base models
+- `references/continuous_customization.md` — Instructions for training a previously customized model

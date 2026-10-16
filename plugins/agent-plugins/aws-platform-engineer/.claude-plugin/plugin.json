@@ -1,7 +1,7 @@
 {
   "name": "aws-platform-engineer",
-  "version": "0.1.0",
-  "description": "Provisions and operates the AWS runtime platform: EC2 and Auto Scaling, EKS/ECS/Fargate containers, VPC and edge networking, storage, serverless compute, and messaging/streaming services.",
+  "version": "0.2.0",
+  "description": "Principal AWS Platform Engineer and Internal Developer Platform (IDP) Architect — translates high-level Developer and QA intent into production-grade, secure-by-default, cost-aware AWS Golden Paths, Infrastructure-as-Code (CDK, CloudFormation, SAM, Terraform), multi-account landing zones (Control Tower, SCPs/RCPs, Shared VPCs, IPAM, VPC Lattice), compute/containers/serverless/networking/storage/messaging/stateful data platforms, and Day-2 SRE incident triage.",
   "author": {
     "name": "TalkOps AI"
   },
@@ -10,15 +10,42 @@
   "license": "Apache-2.0",
   "keywords": [
     "aws",
+    "platform-engineering",
+    "idp",
+    "golden-paths",
+    "landing-zone",
+    "control-tower",
     "ec2",
     "eks",
     "ecs",
     "fargate",
     "vpc",
+    "vpc-lattice",
     "networking",
     "s3",
     "lambda",
+    "serverless",
     "sqs",
-    "kinesis"
-  ]
+    "kinesis",
+    "iac",
+    "cdk",
+    "cloudformation",
+    "iam",
+    "cloudwatch",
+    "cloudtrail",
+    "finops",
+    "security",
+    "dynamodb",
+    "elasticache",
+    "aurora"
+  ],
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./**/*.pem)",
+      "Read(./**/*.key)",
+      "Read(~/.aws/credentials)"
+    ]
+  }
 }

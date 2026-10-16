@@ -1,7 +1,7 @@
 {
   "name": "aws-iac-engineer",
-  "version": "0.1.0",
-  "description": "Authors, validates, deploys, and troubleshoots AWS infrastructure-as-code: CDK, CloudFormation, AWS Blocks, and CodePipeline/CodeBuild/CodeDeploy CI/CD, with cfn-lint/cfn-guard validation and stack failure diagnosis.",
+  "version": "0.2.0",
+  "description": "Principal AWS Infrastructure-as-Code Engineer: architects, authors, validates, estimates cost, deploys, and troubleshoots AWS infrastructure across CDK, CloudFormation, Terraform/OpenTofu (aws + awscc), Pulumi, and Crossplane (Upbound provider-family-aws), with CodePipeline/GitHub Actions/GitLab CI/Atlantis/ArgoCD GitOps delivery and brownfield resource imports.",
   "author": {
     "name": "TalkOps AI"
   },
@@ -13,8 +13,12 @@
     "iac",
     "cdk",
     "cloudformation",
-    "codepipeline",
+    "terraform",
+    "opentofu",
+    "pulumi",
+    "crossplane",
+    "gitops",
     "cicd",
-    "aws-blocks"
+    "finops"
   ]
 }

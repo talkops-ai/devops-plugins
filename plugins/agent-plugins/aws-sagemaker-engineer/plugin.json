@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "aws-sagemaker-engineer",
-  "version": "0.1.0",
-  "description": "End-to-end Amazon SageMaker AI engineer: use-case planning, model selection, dataset evaluation and transformation, SFT/DPO/RLVR/RLAIF fine-tuning, evaluation, deployment, and HyperPod cluster, node, NCCL, and performance debugging.",
+  "version": "0.2.0",
+  "description": "Principal Amazon SageMaker AI Solutions Architect & ML Platform Engineer: Well-Architected ML design, Studio Domain VpcOnly/PrivateLink/KMS/IAM IaC, pre-provisioning FinOps cost estimation, Foundation Model SFT/DPO/RLVR/RLAIF customization, custom/distributed training (@remote, Estimators, Vision/SAM, DDP/FSDP, Spot, Autopilot v2), production inference (InferenceComponent bin-packing, Scale-to-Zero, LMI/vLLM, Inferentia2, MCE, MME, Serverless, Async, Batch), MLOps Pipelines/Feature Store/Model Registry/MLflow/Catalog SQL, Deployment Guardrails, Model Monitor drift detection, and HyperPod EKS/Slurm operations.",
   "author": {
     "name": "TalkOps AI"
   },
@@ -16,6 +16,11 @@
     "fine-tuning",
     "hyperpod",
     "model-deployment",
-    "generative-ai"
+    "generative-ai",
+    "mlops",
+    "feature-store",
+    "mlflow",
+    "inference-components",
+    "finops"
   ]
 }

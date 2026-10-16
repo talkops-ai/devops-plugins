@@ -5,10 +5,35 @@
       "args": [
         "mcp-proxy-for-aws-cli==1.7.0",
         "https://aws-mcp.us-east-1.api.aws/mcp",
-        "--skip-auth",
         "--metadata",
         "INSTALL_SOURCE=agent-toolkit-startup-advisor"
-      ]
+      ],
+      "env": {
+        "AWS_REGION": "${AWS_REGION:-us-east-1}",
+        "AWS_MCP_PROXY_PROFILES": "${AWS_PROFILE:-default}"
+      }
+    },
+    "aws-pricing": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-pricing-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      },
+      "timeout": 120000
+    },
+    "aws-billing": {
+      "command": "uvx",
+      "args": [
+        "awslabs.billing-cost-management-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
     }
   }
 }

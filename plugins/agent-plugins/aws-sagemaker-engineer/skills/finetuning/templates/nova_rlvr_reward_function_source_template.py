@@ -7,8 +7,9 @@ at: https://docs.aws.amazon.com/sagemaker/latest/dg/customize-model.html.
 """
 
 import json  # For JSON parsing - adjust imports based on your use case
-import re    # For pattern matching and validation
-from typing import Dict, Any, List, Optional, Union # For type hints
+import re  # For pattern matching and validation
+from typing import Any, Dict, List, Optional, Union  # For type hints
+
 # Add any other imports your use case requires
 
 # ========================================================================================
@@ -123,8 +124,8 @@ def extract_number(text: str) -> Optional[float]:
 
     # Try to find numbers after common answer keywords
     answer_patterns = [
-        r'(?:equals|is|answer is|result is|=)\s*(-?\d+\.?\d*)',
-        r'(?:answer|result|solution):\s*(-?\d+\.?\d*)',
+        r"(?:equals|is|answer is|result is|=)\s*(-?\d+\.?\d*)",
+        r"(?:answer|result|solution):\s*(-?\d+\.?\d*)",
     ]
 
     for pattern in answer_patterns:
@@ -136,7 +137,7 @@ def extract_number(text: str) -> Optional[float]:
                 pass
 
     # Fallback: find all numbers and return the last one (likely the answer)
-    pattern = r'-?\d+\.?\d*'
+    pattern = r"-?\d+\.?\d*"
     matches = re.findall(pattern, text)
 
     if matches:
@@ -172,9 +173,19 @@ def compute_reasoning_quality(response: str) -> float:
 
     # Check for reasoning indicators (customize these for your use case)
     reasoning_indicators = [
-        'because', 'therefore', 'thus', 'since', 'so',
-        'first', 'second', 'then', 'finally',
-        'step', 'calculate', 'compute', 'equals'
+        "because",
+        "therefore",
+        "thus",
+        "since",
+        "so",
+        "first",
+        "second",
+        "then",
+        "finally",
+        "step",
+        "calculate",
+        "compute",
+        "equals",
     ]
 
     response_lower = response.lower()
@@ -192,7 +203,7 @@ def compute_reasoning_quality(response: str) -> float:
         score += 0.1
 
     # Award points for structured response (max 0.2)
-    if '\n' in response or '.' in response:
+    if "\n" in response or "." in response:
         score += 0.2
 
     return min(score, 1.0)
@@ -258,15 +269,15 @@ def reward_function(sample: Dict[str, Any], index: int) -> Dict[str, Any]:
     # TODO: UPDATE logic to parse the input as per YOUR use case
     # Note the below lines of code are examples and will not work for your use case
     # You MUST update them to match YOUR use case
-    messages = sample.get('messages', [])
-    ground_truth = sample.get('reference_answer', {})
+    messages = sample.get("messages", [])
+    ground_truth = sample.get("reference_answer", {})
 
     # Get the assistant's response (last message with role assistant or nova_assistant)
     response = ""
     for msg in messages:
-        role = msg.get('role', '')
-        if role in ('assistant', 'nova_assistant'):
-            response = content_to_text(msg.get('content', ''))
+        role = msg.get("role", "")
+        if role in ("assistant", "nova_assistant"):
+            response = content_to_text(msg.get("content", ""))
 
     # Extract numerical answers
     predicted = extract_number(response)
@@ -297,21 +308,9 @@ def reward_function(sample: Dict[str, Any], index: int) -> Dict[str, Any]:
     # Note the below lines of code are examples and will not work for your use case
     # You MUST update them to match YOUR use case
     metrics = [
-        {
-            'name': 'exact_match',
-            'value': float(exact_match),
-            'type': 'Reward'
-        },
-        {
-            'name': 'answer_present',
-            'value': float(answer_present),
-            'type': 'Metric'
-        },
-        {
-            'name': 'reasoning_quality',
-            'value': float(reasoning_quality),
-            'type': 'Metric'
-        }
+        {"name": "exact_match", "value": float(exact_match), "type": "Reward"},
+        {"name": "answer_present", "value": float(answer_present), "type": "Metric"},
+        {"name": "reasoning_quality", "value": float(reasoning_quality), "type": "Metric"},
     ]
 
     # ========================================================================
@@ -323,10 +322,11 @@ def reward_function(sample: Dict[str, Any], index: int) -> Dict[str, Any]:
     # You MUST update them to match YOUR use case
 
     return {
-        'id': str(sample.get('id', f'sample-{index:03d}')),
-        'aggregate_reward_score': float(aggregate_reward),
-        'metrics_list': metrics
+        "id": str(sample.get("id", f"sample-{index:03d}")),
+        "aggregate_reward_score": float(aggregate_reward),
+        "metrics_list": metrics,
     }
+
 
 def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
@@ -343,10 +343,16 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             result = reward_function(sample, i)
             results.append(result)
         except Exception as e:
-            results.append({
-                'id': str(sample.get('id', f'sample-{i:03d}') if isinstance(sample, dict) else f'sample-{i:03d}'),
-                'aggregate_reward_score': 0.0,
-                'metrics_list': []
-            })
+            results.append(
+                {
+                    "id": str(
+                        sample.get("id", f"sample-{i:03d}")
+                        if isinstance(sample, dict)
+                        else f"sample-{i:03d}"
+                    ),
+                    "aggregate_reward_score": 0.0,
+                    "metrics_list": [],
+                }
+            )
 
     return results

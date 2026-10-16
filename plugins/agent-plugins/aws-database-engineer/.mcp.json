@@ -17,10 +17,11 @@
     "dynamodb": {
       "command": "uvx",
       "args": [
-        "awslabs.dynamodb-mcp-server@latest"
+        "awslabs.dynamodb-mcp-server>=2.1.6"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
       }
     },
     "cloudwatch": {
@@ -63,6 +64,18 @@
         "FASTMCP_LOG_LEVEL": "ERROR",
         "AWS_REGION": "${AWS_REGION:-us-east-1}"
       }
+    },
+    "awspricing": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-pricing-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      },
+      "timeout": 120000
     }
   }
 }

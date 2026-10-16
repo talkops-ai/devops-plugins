@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "aws-database-engineer",
-  "version": "0.1.0",
-  "description": "Database engineer for the AWS portfolio: chooses the right engine, designs schemas, runs queries and migrations, and operates Aurora DSQL, Aurora/RDS, DynamoDB, DocumentDB, ElastiCache/MemoryDB, Neptune, Keyspaces, and Timestream.",
+  "version": "0.2.0",
+  "description": "Principal AWS Database Architect, Reliability & Migration Engineer: engine selection and FinOps TCO (awspricing), schema/access-pattern and pgvector design, Performance Insights/CloudWatch Database Insights wait-event triage, DMS Schema Conversion and Full Load + CDC execution, Blue/Green & Global Database HA/DR, RDS Proxy multiplexing, online DDL, and Day-2 operations across Aurora DSQL, Aurora/RDS (PostgreSQL, MySQL, MariaDB, Oracle, SQL Server, Db2, RDS Custom), DynamoDB, ElastiCache/MemoryDB, DocumentDB, Neptune, Keyspaces, and Timestream for InfluxDB.",
   "author": {
     "name": "TalkOps AI"
   },
@@ -16,8 +16,19 @@
     "dsql",
     "rds",
     "dynamodb",
+    "elasticache",
+    "documentdb",
+    "neptune",
+    "keyspaces",
+    "timestream",
     "postgresql",
-    "schema",
-    "migration"
+    "mysql",
+    "oracle",
+    "sqlserver",
+    "db2",
+    "dms",
+    "migration",
+    "performance-insights",
+    "rds-proxy"
   ]
 }

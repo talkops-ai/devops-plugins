@@ -1,7 +1,7 @@
 {
   "name": "aws-quantum-computing",
-  "version": "0.1.0",
-  "description": "Amazon Braket skills for the main agent: building, simulating, and running quantum circuits and hybrid jobs on Braket devices.",
+  "version": "0.2.0",
+  "description": "Quantum computing and hybrid algorithm engineering on Amazon Braket for the main agent: OpenQASM 3.0 & Braket SDK circuit design, Managed Simulators (SV1, DM1, TN1), QPU hardware targeting (IonQ, Rigetti, IQM, QuEra), Braket Hybrid Jobs (VQE, QAOA, PennyLane adjoint differentiation), pre-execution shot/task cost governance, and VPC/KMS security.",
   "author": {
     "name": "TalkOps AI"
   },
@@ -11,6 +11,12 @@
   "keywords": [
     "aws",
     "quantum",
-    "braket"
+    "braket",
+    "qpu",
+    "hybrid-jobs",
+    "qaoa",
+    "vqe",
+    "pennylane",
+    "openqasm"
   ]
 }

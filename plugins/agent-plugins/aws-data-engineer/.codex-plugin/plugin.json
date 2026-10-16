@@ -1,7 +1,7 @@
 {
   "name": "aws-data-engineer",
-  "version": "0.1.0",
-  "description": "Data-lake and analytics engineer: S3 Tables/Iceberg, Glue connections and Data Catalog, Athena and Redshift queries, ingestion pipelines, S3 Vectors, OpenSearch, and MWAA (Airflow) authoring, testing, debugging, and upgrades.",
+  "version": "0.2.0",
+  "description": "Principal AWS data-lake, streaming, and analytics engineer: S3 Tables/Apache Iceberg, Glue Data Catalog/Connections/5.1+ PySpark & EMR Serverless ETL, Data Firehose/DMS CDC/Kinesis/MSK/Flink/AppFlow streaming, Athena & Redshift (Provisioned/Serverless), OpenSearch OSIS/ISM, Step Functions/EventBridge & MWAA (Airflow) orchestration, Glue Data Quality (DQDL), Lake Formation governance, and CDK/CloudFormation data IaC.",
   "author": {
     "name": "TalkOps AI"
   },
@@ -10,23 +10,31 @@
   "license": "Apache-2.0",
   "keywords": [
     "aws",
+    "data-engineering",
     "data-lake",
     "glue",
+    "emr",
     "athena",
     "redshift",
     "s3-tables",
     "iceberg",
-    "opensearch",
+    "kinesis",
+    "msk",
+    "flink",
+    "firehose",
+    "lake-formation",
+    "data-quality",
     "mwaa",
-    "airflow"
+    "airflow",
+    "opensearch"
   ],
   "skills": "./skills/",
   "mcpServers": "./mcp.json",
   "hooks": "./hooks/hooks.json",
   "interface": {
     "displayName": "AWS Data Engineer",
-    "shortDescription": "Data-lake and analytics engineer",
-    "longDescription": "Data-lake and analytics engineer: S3 Tables/Iceberg, Glue connections and Data Catalog, Athena and Redshift queries, ingestion pipelines, S3 Vectors, OpenSearch, and MWAA (Airflow) authoring, testing, debugging, and upgrades.",
+    "shortDescription": "Principal AWS data-lake, streaming, and analytics engineer",
+    "longDescription": "Principal AWS data-lake, streaming, and analytics engineer: S3 Tables/Apache Iceberg, Glue Data Catalog/Connections/5.1+ PySpark & EMR Serverless ETL, Data Firehose/DMS CDC/Kinesis/MSK/Flink/AppFlow streaming, Athena & Redshift (Provisioned/Serverless), OpenSearch OSIS/ISM, Step Functions/EventBridge & MWAA (Airflow) orchestration, Glue Data Quality (DQDL), Lake Formation governance, and CDK/CloudFormation data IaC.",
     "developerName": "TalkOps AI",
     "category": "Cloud",
     "capabilities": [

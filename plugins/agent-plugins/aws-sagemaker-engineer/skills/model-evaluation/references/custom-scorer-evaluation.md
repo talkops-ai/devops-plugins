@@ -63,7 +63,7 @@ Then read `references/custom-lambda-scorer.md` and follow its instructions. Retu
 
 IMPORTANT: you MUST validate that dataset, to ensure that it is the correct format. Note that there are precise requirements based on model and evaluation type, so you cannot skip this step.
 
-Reference the **dataset-evaluation** skill to perform this validation.
+Reference the **dataset-evaluation** reference to perform this validation.
 
 ### Step 6: Determine evaluation scope
 
@@ -89,15 +89,15 @@ If you already have it from prior context, confirm with the user and move on. Ot
 
 > "What's the Model Package ARN (or group name) of your fine-tuned model?"
 
-If they provide a group name, resolve the ARN by calling `list-model-packages` via the AWS tool. Use the latest version's `ModelPackageArn`.
+If they provide a group name, resolve the ARN by running `aws sagemaker list-model-packages --model-package-group-name <group-name> --sort-by CreationTime --sort-order Descending --max-results 1`. Use the latest version's `ModelPackageArn`.
 
 **Validate the resolved ARN:**
 
 - Must look like: `arn:aws:sagemaker:REGION:ACCOUNT:model-package/NAME/VERSION`
-- If it's a group ARN (`:model-package-group/`), resolve to a package ARN by calling `list-model-packages` via the AWS tool. Use the latest version's `ModelPackageArn`.
-- If it contains `:model-package/` but does NOT end with a version number (e.g., `/1`), resolve it: extract the group name and use `list-model-packages`.
+- If it's a group ARN (`:model-package-group/`), resolve to a package ARN by running `aws sagemaker list-model-packages --model-package-group-name <group-name> --sort-by CreationTime --sort-order Descending --max-results 1`. Use the latest version's `ModelPackageArn`.
+- If it contains `:model-package/` but does NOT end with a version number (e.g., `/1`), resolve it: run `aws sagemaker list-model-packages --model-package-group-name <group-name> --sort-by CreationTime --sort-order Descending --max-results 1`.
 - If it contains `/DataSet/`, `/TrainingJob/`, or other non-model-package resource types, flag it: "That looks like a [Dataset/TrainingJob] ARN, not a model package ARN. Could you double-check?"
-- Verify it exists by calling `describe-model-package` via the AWS tool. If this fails, tell the user the ARN wasn't found and ask them to double-check.
+- Verify it exists by running `aws sagemaker describe-model-package --model-package-name <arn>`. If this fails, tell the user the ARN wasn't found and ask them to double-check.
 
 ### Step 8: Resolve base model
 
@@ -119,7 +119,7 @@ If you already know the IAM role ARN from conversation context, confirm with the
 
 If not, but you know the training job name, look up the role from that training job, since it should be a suitable role:
 
-- Call `describe-training-job` via the AWS tool and extract `RoleArn`.
+- Run `aws sagemaker describe-training-job --training-job-name <name>` and extract `RoleArn`.
 - Confirm with the user.
 
 If you don't have either, ask:
@@ -176,7 +176,7 @@ Summarize everything and ask for approval:
 
 Read `../references/code_output_guide.md` for output format rules.
 
-If no project directory exists, activate the **directory-management** skill to set one up.
+If no project directory exists, load the **directory-management** reference to set one up.
 
 Read `code_templates/custom_scorer_evaluator.py`, substitute the collected values into the placeholders, and write the cells. The template uses `# Cell N: Label` markers — each marker starts a new notebook cell, with everything between one marker and the next becoming that cell's content.
 
@@ -190,6 +190,7 @@ To run:
 2. Cell 2 — start evaluation
 3. Cell 3 — polls status automatically (~25-60 min)
 4. Cell 4 — show results
+
 ```
 
 **Script mode:**

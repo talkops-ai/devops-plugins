@@ -208,6 +208,8 @@ cfnIdentityPool.allowUnauthenticatedIdentities = false;
 
 ## Pitfalls
 
+- **Declarative Cognito Admin API access (`allow.resource`):** When a trigger or function needs Cognito Admin permissions (e.g., `AdminAddUserToGroup`), grant access declaratively inside `defineAuth` via `access: (allow) => [allow.resource(postConfirmation).to(['addUserToGroup'])]` (which auto-injects `AMPLIFY_AUTH_USERPOOL_ID` into `$amplify/env/<fn>`) and set `resourceGroupName: 'auth'` on `defineFunction`.
+- **Importing existing Cognito pools (`referenceAuth`):** Use `referenceAuth({ userPoolId, identityPoolId, authRoleArn, unauthRoleArn, userPoolClientId })` from `@aws-amplify/backend` when migrating from Gen 1 or attaching an existing User Pool. See the `amplify-auth-cognito` skill.
 - **Trigger not registered (silent no-op):** Defining a trigger function
   with `defineFunction` but NOT adding it to `triggers: {}` in `defineAuth`
   causes a **silent no-op** — the function deploys but never fires. You

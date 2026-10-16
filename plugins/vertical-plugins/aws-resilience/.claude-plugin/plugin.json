@@ -1,7 +1,7 @@
 {
   "name": "aws-resilience",
-  "version": "0.1.0",
-  "description": "Resilience skills for the main agent: Resilience Hub assessments (single and multi-account), Fault Injection Service experiments, ARC Region switch and recovery controller, resilience lifecycle, and resilience program design.",
+  "version": "0.2.0",
+  "description": "Resilience engineering, disaster recovery, and chaos testing for the main agent: AWS Resilience Hub assessments, AWS Fault Injection Service (FIS) chaos experiments with CloudWatch stop conditions, Route 53 Application Recovery Controller (ARC) zonal shift/region switch, and multi-region RTO/RPO DR architecture.",
   "author": {
     "name": "TalkOps AI"
   },
@@ -14,7 +14,10 @@
     "resilience-hub",
     "fis",
     "chaos-engineering",
+    "arc",
+    "zonal-shift",
     "disaster-recovery",
-    "arc"
+    "rto",
+    "rpo"
   ]
 }

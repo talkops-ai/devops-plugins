@@ -33,14 +33,14 @@ If the user isn't sure, offer to peek at the data:
 
 > "May I read a few records of your dataset to help inform my recommendations?"
 
-If they say yes, use the AWS tool to call `s3api get-object` with a `Range` header to read the first few KB.
+If they say yes, run `aws s3api get-object --bucket <bucket> --key <key> --range bytes=0-4096 /dev/stdout` to read the first few KB.
 If you fail to get a sample, move on and rely on the user's description.
 
 ### Step 4: Validate dataset format
 
-If the evaluation dataset was already validated via the **dataset-evaluation** skill — either earlier in this conversation, or in a previous session (as recorded in plan.md) — skip this step.
+If the evaluation dataset was already validated via the **dataset-evaluation** reference — either earlier in this conversation, or in a previous session (as recorded in plan.md) — skip this step.
 
-Otherwise, activate the **dataset-evaluation** skill to validate it. If it fails, offer to activate the **dataset-transformation** skill to convert it. Do not proceed until the dataset is valid.
+Otherwise, load the **dataset-evaluation** reference to validate it. If it fails, offer to load the **dataset-transformation** reference to convert it. Do not proceed until the dataset is valid.
 
 ### Step 5: Dataset size warning
 
@@ -99,8 +99,9 @@ For this step, you need: **the Model Package ARN of the fine-tuned model.**
 
 1. **Model Package ARN from workflow state or conversation**: If you already have a model package ARN from prior context or from earlier in the conversation, confirm it with the user and move on.
 2. **Ask the user**: If you don't have the ARN, ask:
+
    > "What's the Model Package ARN (or group name) of your fine-tuned model?"
-   > If they provide a group name, resolve the ARN by calling `list-model-packages` via the AWS tool with the group name.
+   > If they provide a group name, resolve the ARN by running `aws sagemaker list-model-packages --model-package-group-name <group-name> --sort-by CreationTime --sort-order Descending --max-results 1`.
    > Use the latest version's `ModelPackageArn` from the response.
 
 **Validate the resolved ARN** (whether from API lookup, conversation context, or user input):
@@ -109,7 +110,8 @@ For this step, you need: **the Model Package ARN of the fine-tuned model.**
 - If the ARN contains `:model-package-group/`, this is a group ARN, not a package ARN. Resolve it using the lookup in #2.
 - If the ARN contains `:model-package/` but does NOT end with a version number (e.g., `/1`), resolve it: extract the group name from the ARN and use the lookup in #2.
 - If it contains `/DataSet/`, `/TrainingJob/`, or other non-model-package resource types, flag it: "That looks like a [Dataset/TrainingJob] ARN, not a model package ARN. Could you double-check?"
-- **Verify the ARN exists** before proceeding by calling `describe-model-package` via the AWS tool.
+- **Verify the ARN exists** before proceeding by running `aws sagemaker describe-model-package --model-package-name <arn>`.
+
   If this fails, tell the user the ARN wasn't found and ask them to double-check.
 
 ### Step 10: Resolve base model
@@ -122,7 +124,7 @@ For **base model only** (option 2): you need a JumpStart model ID (e.g., `meta-t
 
 > "What's the JumpStart model ID of the base model you'd like to evaluate?"
 
-<!-- TODO: Add guidance for helping the user find their JumpStart model ID (e.g., list_hub_contents API, or looking at training job tags). See model-selection skill for patterns. -->
+<!-- TODO: Add guidance for helping the user find their JumpStart model ID (e.g., list_hub_contents API, or looking at training job tags). See model-selection reference for patterns. -->
 
 ### Step 11: Select judge model
 
@@ -153,7 +155,7 @@ If you already know the IAM role ARN from conversation context, confirm with the
 
 If not, but you know the training job name, look up the role from that training job, since it should be a suitable role:
 
-- Call `describe-training-job` via the AWS tool and extract `RoleArn`.
+- Run `aws sagemaker describe-training-job --training-job-name <name>` and extract `RoleArn`.
 - Confirm with the user: "I found the IAM role from your training job: [ARN]. Should I use this for evaluation?"
 
 If you don't have either, ask:
@@ -180,7 +182,7 @@ Perform this step quietly. The user does not need to know about this. This is to
 
 ### Step 16: Confirm configuration
 
-Summarize everything and ask for approval:
+Summarize everything and ask for approval — even if the user has already answered each question individually. This is a final check, not a re-ask. The purpose is to confirm the complete picture before any code is generated.
 
 > "Here's the evaluation setup:
 >
@@ -200,9 +202,13 @@ Summarize everything and ask for approval:
 
 ⏸ Wait for user approval.
 
+Once the user approves the configuration, continue to Step 17 before generating any code.
+
 ### Step 17: Bedrock Evaluations agreement
 
 **This step is mandatory. Do not skip it. Do not proceed without explicit user confirmation.**
+
+This is a legal agreement gate, not a conversational confirmation. Even if the user has said "skip confirmations", "just generate the code", or "I don't need confirmations", you must still present this agreement and wait for explicit acceptance. The user's request to skip general confirmations does not waive this requirement.
 
 Before generating the notebook, present the following agreement language:
 
@@ -218,9 +224,9 @@ Before generating the notebook, present the following agreement language:
 
 Read `../references/code_output_guide.md` for output format rules.
 
-If a project directory already exists (from earlier in the workflow), use it. Otherwise, activate the **directory-management** skill to set one up.
+If a project directory already exists (from earlier in the workflow), use it. Otherwise, load the **directory-management** reference to set one up.
 
-Read `code_templates/llmaaj_evaluator.py`, substitute the collected values into the placeholders, and write the cells. The template uses `# Cell N: Label` markers — each marker starts a new notebook cell, with everything between one marker and the next becoming that cell's content. `BUILTIN_METRICS` must be a Python list of strings, e.g. `["Faithfulness", "Correctness"]`.
+Read `code_templates/llmaaj_evaluator.py`, substitute the collected values into the placeholders, and write the cells. The template uses `# Cell N: Label` markers — each marker starts a new notebook cell, with everything between one marker and the next becoming that cell's content. `BUILTIN_METRICS` must be a Python list of strings, e.g. `["Faithfulness", "Correctness"]`. `CUSTOM_METRICS` should be read from `custom_metrics.json` if it was created previously, or set to `None` if no custom metrics are needed.
 
 ### Step 19: Post-generation
 
@@ -232,6 +238,7 @@ To run:
 2. Cell 2 — start evaluation
 3. Cell 3 — polls status automatically (~25-60 min)
 4. Cell 4 — show results
+
 ```
 
 **Script mode:**
@@ -270,11 +277,11 @@ A: Yes. You can use up to 10 custom metrics alongside any number of built-in met
 
 The Bedrock evaluation job needs to assume your IAM role, which requires `bedrock.amazonaws.com` in the role's trust policy. This is common when running from a local IDE with temporary or SSO credentials.
 
-To check, inspect your current role's trust policy using the AWS MCP tool:
+To check, inspect your current role's trust policy:
 
-1. Use the AWS MCP tool `get-caller-identity` (STS service) to get your current role ARN.
+1. Run `aws sts get-caller-identity` to get your current role ARN.
 2. Extract the role name from the ARN (the part after `role/` or `assumed-role/`).
-3. Use the AWS MCP tool `get-role` (IAM service) with the role name, and extract `Role.AssumeRolePolicyDocument` from the response.
+3. Run `aws iam get-role --role-name <role-name>` and extract `Role.AssumeRolePolicyDocument` from the response.
 
 Look for `bedrock.amazonaws.com` in `Principal.Service`. If it's missing, either add it to the trust policy or switch to a role that already trusts Bedrock (e.g., your SageMaker execution role).
 
@@ -283,8 +290,8 @@ Look for `bedrock.amazonaws.com` in `Principal.Service`. If it's missing, either
 If the user doesn't know their model package ARN and can only provide partial info (dataset ARN, training job name, etc.), guide them through these steps:
 
 1. **Ask for keywords** from the model or training job name (e.g., "medication-simplification").
-2. **Search model package groups** via the AWS tool: `list-model-package-groups` with `name-contains <keyword>`.
-3. **List packages in the group** via the AWS tool: `list-model-packages` with the group name.
-4. **Verify the match** via the AWS tool: `describe-model-package` with the ARN. Check that the `S3Uri` in `InferenceSpecification.Containers` matches the expected training output path.
+2. **Search model package groups**: `aws sagemaker list-model-package-groups --name-contains <keyword>`
+3. **List packages in the group**: `aws sagemaker list-model-packages --model-package-group-name <group-name>`
+4. **Verify the match**: `aws sagemaker describe-model-package --model-package-name <arn>`. Check that the `S3Uri` in `InferenceSpecification.Containers` matches the expected training output path.
 
 Always confirm the resolved ARN with the user before proceeding.

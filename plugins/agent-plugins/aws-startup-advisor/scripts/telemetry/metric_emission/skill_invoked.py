@@ -38,6 +38,7 @@ import record  # noqa: E402
 # `skills/shared` is absent on purpose: it is imported by skills, not one itself.
 SKILL_IDS = {
     "agent-advisor": "AGENT_ADVISOR",
+    "ai-to-bedrock": "AI_TO_BEDROCK",
     "architect-for-startups": "ARCHITECT_FOR_STARTUPS",
     "azure-to-aws": "AZURE_TO_AWS",
     "contextual-offers-for-startups": "CONTEXTUAL_OFFERS_FOR_STARTUPS",
@@ -48,6 +49,7 @@ SKILL_IDS = {
     "operate-on-aws": "OPERATE_ON_AWS",
     "prompt-library-for-startups": "PROMPT_LIBRARY_FOR_STARTUPS",
     "start-building-for-startups": "START_BUILDING_FOR_STARTUPS",
+    "startup-account-audit": "STARTUP_ACCOUNT_AUDIT",
     "tf-best-practices": "TF_BEST_PRACTICES",
 }
 

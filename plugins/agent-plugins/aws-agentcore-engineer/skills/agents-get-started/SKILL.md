@@ -100,9 +100,18 @@ If this is the first time discussing frameworks, present the options:
 
 **Key decision points to surface:**
 
+- "Do you want a zero-code declarative agent configured purely in `agentcore.json`?" → **AgentCore Harness** (can be ejected to Python source code later via `agentcore export harness` producing `app/` + `EXPORT_NOTES.md`)
+- "Do you need complex cyclic workflows with deterministic state-schema routing, human-in-the-loop (`interrupt_before`), AND AWS-native Bedrock streaming/MCP tools?" → **Hybrid LangGraph + Strands Pattern** (outer LangGraph `StateGraph` + inner Strands `Agent` specialist nodes — see [`../agents-build/references/harness-and-hybrid.md`](../agents-build/references/harness-and-hybrid.md))
 - "Do you have existing agent code in LangGraph or OpenAI Agents?" → use that framework
 - "Do you need complex graph-based workflows with conditional branching?" → LangGraph
 - "Starting fresh with no preference?" → Strands
+
+> [!IMPORTANT]
+> **`agentcore.json` v0.4.0+ Schema Compliance:**
+> If inspecting or migrating an older project (`< v0.4.0`), enforce these three schema rules before running CLI commands:
+> 1. Top-level array key MUST be `"runtimes"` (never legacy `"agents"`).
+> 2. Strip `"type": "AgentCoreRuntime"` from runtime entries.
+> 3. Rename `"type"` to `"authorizerType"` inside `"credentials"` entries.
 
 #### Framework not listed?
 
@@ -111,7 +120,7 @@ If the developer asks about a framework not in the table above, handle it:
 | They ask about | What to say |
 |---|---|
 | **CrewAI, AutoGen, Semantic Kernel** | Not scaffolded by the CLI, but you can use them via the BYO Container path (below). AgentCore Runtime is framework-agnostic — any code that implements the HTTP contract works. |
-| **Anthropic SDK / Claude Agent SDK** | This is a model SDK, not an agent framework. You can use it inside any framework (Strands, LangGraph, etc.) or standalone. For standalone use, wrap it in a container with the Runtime contract. |
+| **Anthropic SDK / Claude Agent SDK** | This is a model SDK, not an agent framework. You can use it inside any framework (Strands, LangGraph, etc.) or standalone. When using `claude-agent-sdk`, always set `CLAUDE_CODE_USE_BEDROCK=1`, `AWS_REGION`, and `ANTHROPIC_MODEL` in `os.environ` **before** constructing `ClaudeAgentOptions`. |
 | **Claude Code / Cursor / Copilot** | These are IDE tools, not agent frameworks. They're where you *write* agent code, not what you deploy. Pick a framework from the table above for the agent itself. |
 | **LangChain (without LangGraph)** | LangChain is a library, LangGraph is the agent framework built on it. The CLI scaffolds LangGraph. If you're using plain LangChain chains, the BYO Container path works. |
 | **Custom / homegrown framework** | BYO Container path — see below. |
@@ -206,7 +215,7 @@ agentcore create \
 
 **Guidance on choices:**
 
-- **Protocol:** Use `HTTP` unless the developer specifically needs MCP tool serving or A2A agent-to-agent communication
+- **Protocol:** Use `HTTP` unless the developer specifically needs MCP tool serving, A2A agent-to-agent communication (`A2A_PORT=9000`; never install `bedrock-agentcore[a2a]` and `bedrock-agentcore[a2a-v1]` together), or AG-UI frontend streaming (`serve_ag_ui` / `AGUIApp`)
 - **Build:** Use `CodeZip` unless the developer needs custom system dependencies (CodeZip is faster to deploy and doesn't require Docker locally)
 - **Model provider:** Use `Bedrock` unless the developer has a specific reason for another provider (Bedrock doesn't require managing API keys)
 - **Memory:** Start with `none` — memory can be added later via `agents-build` (loads [`references/memory.md`](../agents-build/references/memory.md)) when the developer needs it
@@ -220,7 +229,7 @@ The layout below reflects CLI v0.9.x. If the CLI version is different, run `tree
 ```
 <ProjectName>/
 ├── agentcore/
-│   ├── agentcore.json      ← Project config (agents, resources)
+│   ├── agentcore.json      ← Project config (runtimes, resources)
 │   ├── aws-targets.json    ← AWS account + region
 │   ├── .env.local          ← Local environment variables (gitignored)
 │   └── cdk/                ← CDK infrastructure (auto-managed, don't edit)
@@ -262,11 +271,12 @@ This starts a local dev server. The developer can interact with their agent imme
 
 The CLI prints the bound port and URL on startup — always read the actual value from the CLI output rather than hardcoding. **If the default port is already in use**, the CLI auto-increments (e.g., 8080 → 8081 → 8082), so a second dev session or a lingering process from a previous run can shift your port without warning. Use `agentcore dev --port <N>` to pin it, or grep `ps` / check the CLI banner if invocations start failing with connection-refused or exit-code-7 errors.
 
-**Important limitations to mention:**
+**Important limitations & COST WARNING to mention:**
 
-- Memory is not available in `agentcore dev` — it requires a deploy
-- Gateway URLs are not available locally — they require a deploy
-- The local server uses the model provider configured in the project
+- **COST WARNING on `agentcore dev`:** While `agentcore dev` runs the agent server locally, if `agentcore.json` defines cloud backing resources (Memory, Gateway, Identity) and you have a configured AWS target, `agentcore dev` **automatically synthesizes CDK and deploys real cloud backing resources** unless `--local` is explicitly passed (`agentcore dev --local`).
+- Memory and Gateway URLs require cloud backing resources to be deployed before local dev can connect to them.
+- The local server uses the model provider configured in the project (which incurs standard Bedrock/API token charges).
+- For unit tests (`pytest`), always set `OTEL_SDK_DISABLED=true pytest` so ADOT auto-instrumentation does not hang waiting for a local collector.
 
 ### Step 6: First deploy
 

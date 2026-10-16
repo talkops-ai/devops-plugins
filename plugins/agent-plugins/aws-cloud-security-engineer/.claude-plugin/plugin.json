@@ -1,7 +1,7 @@
 {
   "name": "aws-cloud-security-engineer",
-  "version": "0.1.0",
-  "description": "Cloud security and identity engineer: IAM policies, roles and trust relationships, AWS Config/KMS/VPC/WAF audits, Security Hub/GuardDuty/Inspector/Macie/Detective/Security Lake findings, CloudTrail correlation, Secrets Manager safe-handling, Cognito authentication, and Well-Architected security posture checks.",
+  "version": "0.2.0",
+  "description": "Principal AWS cloud security and identity engineer: IAM policies, roles, Cognito auth boundaries, and Organizations SCP/RCP Data Perimeters; S3 Object Lock, Macie, KMS CMKs/grants, Private CA/mTLS, and Secrets Manager zero-plaintext rotation; VPC/TGW/Network Firewall/DNS Firewall/WAFv2/Shield Advanced perimeters; EKS/ECS/Lambda/EC2 and Bedrock GenAI workload security; AWS STRIDE threat modeling and multi-IaC validation (cfn-guard, cdk-nag, Terraform); Security Hub/GuardDuty/Inspector/Macie/Detective/Security Lake (OCSF) incident triage and CloudTrail forensics; and CIS/FSBP/Well-Architected posture audits.",
   "author": {
     "name": "TalkOps AI"
   },
@@ -12,16 +12,18 @@
     "aws",
     "security",
     "iam",
+    "data-perimeter",
     "security-hub",
     "guardduty",
     "inspector",
+    "macie",
     "config",
     "kms",
     "vpc",
     "waf",
     "cloudtrail",
     "secrets-manager",
-    "cognito",
+    "bedrock",
     "compliance"
   ]
 }

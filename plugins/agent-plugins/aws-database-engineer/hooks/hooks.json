@@ -12,7 +12,7 @@
         ]
       },
       {
-        "matcher": "use_aws|mcp__aws.*|mcp__plugin_.*aws-mcp.*",
+        "matcher": "use_aws|mcp__aws.*|mcp__plugin_.*aws-.*mcp.*|mcp__plugin_.*awslocation.*|mcp__.*agentcore.*",
         "hooks": [
           {
             "type": "command",
@@ -32,7 +32,7 @@
         ]
       },
       {
-        "matcher": "use_aws|mcp__aws.*|mcp__plugin_.*aws-mcp.*",
+        "matcher": "use_aws|mcp__aws.*|mcp__plugin_.*aws-.*mcp.*|mcp__plugin_.*awslocation.*|mcp__.*agentcore.*",
         "hooks": [
           {
             "type": "command",

@@ -1,7 +1,7 @@
 {
   "name": "aws-storage",
-  "version": "0.1.0",
-  "description": "Storage skills for the main agent: choosing between S3, EBS, EFS, FSx, and S3 Files, securing S3 buckets, and troubleshooting EFS and S3 Files mounts and performance.",
+  "version": "0.2.0",
+  "description": "Cloud storage architecture, security, and operations for the main agent: Amazon S3 (Storage Lens, Intelligent-Tiering, Object Lock, S3 Tables), EFS performance & mount troubleshooting, EBS gp3/io2, FSx, AWS Backup vault lock, KMS data protection, and cross-region DR replication.",
   "author": {
     "name": "TalkOps AI"
   },
@@ -15,14 +15,17 @@
     "efs",
     "ebs",
     "fsx",
-    "s3-security"
+    "aws-backup",
+    "kms",
+    "data-protection"
   ],
   "skills": "./skills/",
   "mcpServers": "./mcp.json",
+  "hooks": "./hooks/hooks.json",
   "interface": {
     "displayName": "AWS Storage",
-    "shortDescription": "Storage skills for the main agent",
-    "longDescription": "Storage skills for the main agent: choosing between S3, EBS, EFS, FSx, and S3 Files, securing S3 buckets, and troubleshooting EFS and S3 Files mounts and performance.",
+    "shortDescription": "Cloud storage architecture, security, and operations for the main agent: Amazon S3 (Storage Lens, Intelligent…",
+    "longDescription": "Cloud storage architecture, security, and operations for the main agent: Amazon S3 (Storage Lens, Intelligent-Tiering, Object Lock, S3 Tables), EFS performance & mount troubleshooting, EBS gp3/io2, FSx, AWS Backup vault lock, KMS data protection, and cross-region DR replication.",
     "developerName": "TalkOps AI",
     "category": "Cloud",
     "capabilities": [

@@ -86,38 +86,40 @@ When you configure servers:
 
 - Don't set `AWS_PROFILE`. Inherit credentials from the environment. Set `AWS_REGION` to `${AWS_REGION:-us-east-1}` (Claude Code only; the portable copy drops it).
 - Start awslabs servers **read-only** (omit `--allow-write` and `--allow-sensitive-data-access`) unless the agent's core job is mutation, and say so in the README. Check each server's published `--help`: flags in upstream READMEs sometimes differ from the released package (for example, the IAM server is read-only by default and rejects `--readonly`).
-- For read-only agents, use `{"aws-mcp": {"$ref": "aws-mcp-read-only"}}`. Keep the server name `aws-mcp` so that tool patterns stay stable.
-- Pick servers from the [awslabs/mcp](https://github.com/awslabs/mcp) catalog (`reference/mcp/src`). Reusable definitions live in `mcp_catalog` in `scripts/aws-plugin-map.json`, and [docs/mcp-server-coverage.md](./mcp-server-coverage.md) shows where each one is used.
+- For read-only agents, pass `"--read-only"` to `aws-mcp` (or enforce read-only via `aws-mutation-gate.py`). Keep the server name `aws-mcp` so that tool patterns stay stable.
+- Pick servers from the [awslabs/mcp](https://github.com/awslabs/mcp) catalog. [docs/mcp-server-coverage.md](./mcp-server-coverage.md) documents where each server is used across agent and vertical plugins.
 
 ### Connectors (connection-bound servers)
 
 Plugin MCP files have no reliable "disabled" switch across hosts. Claude Code **ignores `"disabled": true`** (every declared server starts when the plugin is enabled), and the portable schema has no such key. Servers that need a connection target or local runtime at startup (a cluster endpoint, cache host, connection string, scoped list of functions, or Docker) therefore can't ship in the plugin's MCP files. Model them as **connectors** instead:
 
-1. Add the server to `connector_catalog` in the map as structured data: `package`, `docs`, `purpose`, `command`, `args`, optional `env`, optional one-time `setup` shell line, and `notes`. List its key in the plugin's `connectors`.
-2. The sync writes `CONNECTORS.md` with `claude mcp add`, `codex mcp add`, and `~/.codex/config.toml` snippets, and links it from the README.
-3. In an agent plugin, add `mcp__<key>__*` to the agent's `tools` so the agent can use the server once the user adds it under that exact key. The validator accepts `mcp__<key>__*` only for keys in the plugin's `CONNECTORS.md`, and requires every connector key to be bound.
-4. In the agent body, say the connector is optional and give the fallback path when it is missing.
+1. Document the server in the plugin's `CONNECTORS.md` with a markdown table (`| Key | Package | Purpose | ... |`) and include `claude mcp add`, `codex mcp add`, and `~/.codex/config.toml` setup snippets, then link `CONNECTORS.md` from `README.md`.
+2. In an agent plugin, add `mcp__<key>__*` to the agent's `tools` so the agent can use the server once the user adds it under that exact key. The validator accepts `mcp__<key>__*` only for keys listed in the plugin's `CONNECTORS.md`, and requires every connector key to be bound.
+3. In the agent body, state that the connector is optional and give the fallback path when it is missing.
 
 The validator rejects `"disabled"` in any plugin `.mcp.json`.
 
 ### Hooks
 
-- Use `PreToolUse` for safety gates (for example, the shared `secret-safety.py` and `aws-mutation-gate.py`) and `PostToolUse` for validators (template linting, diagram checks).
+- Use `PreToolUse` for safety gates (for example, `secret-safety.py` and `aws-mutation-gate.py`) and `PostToolUse` for validators (template linting, diagram checks).
 - Matchers are regexes. For MCP tools, match on the `mcp__plugin_<agent>_<server>__` prefix (Claude Code) and the `mcp__<server>__` prefix (Codex), for example `mcp__aws.*|mcp__plugin_.*aws-mcp.*`. Codex reports shell calls as `Bash` and file edits as `apply_patch`.
 - Reference every file through `${CLAUDE_PLUGIN_ROOT}`. Codex sets it too, and the validator checks that these paths exist.
 - Prefer `command` hooks. `prompt` hooks run only in Claude Code.
-- TalkOps-authored hook scripts live in `src/hooks/` and are copied by the sync through the `talkops` source in `hooks_catalog`. Generated sidecars (for example `aws-mutation-gate.json`, the list of read-only agents) are written by the sync.
+- Shared hook scripts live in `src/hooks/` and inside each plugin's `hooks/` directory alongside any required configuration sidecars (such as `hooks/aws-mutation-gate.json`).
 
 ## Vertical plugins
 
 ```
 plugins/vertical-plugins/<domain>/
 ├── .claude-plugin/plugin.json     # name == <domain>
+├── .codex-plugin/plugin.json      # Codex overlay manifest
+├── plugin.json                    # Portable Agent Plugins 1.0.0 manifest
 ├── skills/<skill>/SKILL.md        # attach to the main agent
-├── commands/*.md                  # hand-written slash commands (/<domain>:<command>)
-├── hooks/hooks.json               # optional
-├── .mcp.json                      # servers available to the main agent
-├── CONNECTORS.md                  # optional, generated from connector_catalog
+├── commands/*.md                  # slash commands (/<domain>:<command>)
+├── hooks/hooks.json               # optional safety & lint hooks
+├── .mcp.json                      # Claude Code MCP servers
+├── mcp.json                       # Portable Agent Plugins 1.0.0 MCP servers
+├── CONNECTORS.md                  # optional connection-bound MCP servers
 └── README.md
 ```
 
@@ -128,34 +130,21 @@ Vertical plugins have no `agents/<plugin>.md`. Skills, commands, and MCP servers
 - Prefer slash commands as the entry point for multi-step workflows. Each command needs a `description` (and an `argument-hint` when it takes input), routes to named skills and MCP servers, and states its mutation policy: read-only, or "show the plan and wait for approval".
 - `.mcp.json` servers become available to the main agent, so keep them read-only by default and leave secret-bearing or endpoint-bound servers to connectors.
 - Each vertical is self-contained and ships its own `aws-mcp`. If you install several verticals, toggle duplicate `aws-mcp` instances off in `/mcp`.
-- In the map, list the agent plugins that cover the same domain in `agents`; the README points users to them when they want an isolated specialist.
+- In `README.md`, point users to the corresponding agent plugins in `plugins/agent-plugins/` when they want an isolated specialist sub-agent.
 
 ## Partner-built plugins
 
 - Prefer vendor-published content: the vendor's official skills and MCP server (a remote `http` endpoint or the published package). Pin versions when the vendor publishes them.
-- Add the plugin to `scripts/aws-plugin-map.json` with `"kind": "partner"`. Add the vendor repo as a `sources` entry (with its `license`) and check it out under `reference/`. The sync then copies the content into `plugins/partner-built/<name>/` and generates the Claude Code, portable, and Codex layouts and both marketplace entries.
-- Keep the vendor's identity. Set `author`, `homepage`, `repository`, `license`, and `version` on the map entry (they override `defaults`), and `codex_interface` (`developerName`, `category`, `brandColor`, `websiteURL`) for the Codex card. Use the vendor's plugin name, for example `terraform`.
-- Copy vendor content **unmodified**. Don't add rewrites to copyleft (for example MPL-2.0) files. Add the project and license to `NOTICE`.
-- Connection-bound or runtime-bound servers (credentials, Docker) go in `connectors`, as for the AWS plugins. Never commit secrets.
-- Set `agents` to the TalkOps agent plugins that cover the same ground, so the README can point users to the isolated specialist.
+- Keep the vendor's identity (`author`, `homepage`, `repository`, `license`, and `version`) in `plugin.json` and `.claude-plugin/plugin.json`, and configure `.codex-plugin/plugin.json` (`developerName`, `category`, `brandColor`, `websiteURL`) for the Codex card.
+- Copy vendor content **unmodified**. Don't modify copyleft (for example MPL-2.0) files. Add the project and license to `NOTICE`.
+- Connection-bound or runtime-bound servers (credentials, Docker) go in `CONNECTORS.md`, as for the AWS plugins. Never commit secrets.
 
-## Generated AWS plugins
+## Validation
 
-The AWS agent and vertical plugins are generated from upstream sources by `scripts/sync_aws_plugins.py` using `scripts/aws-plugin-map.json`.
+All plugins in `plugins/agent-plugins/`, `plugins/vertical-plugins/`, and `plugins/partner-built/` are authored and maintained directly in-place. Before opening a PR, run:
 
-- To change which skills, MCP servers, connectors, or hooks a plugin gets, edit the map, then re-run the sync.
-- To change agent behaviour, edit `agents/<agent>.md`. To change vertical workflows, edit `commands/*.md`. The sync never overwrites either.
-- Don't hand-edit generated files (`skills/`, `.mcp.json`, `plugin.json`, `README.md`, `CONNECTORS.md`, `docs/mcp-server-coverage.md`). Use `rewrites` for targeted patches. The sync fails if an upstream file it patches has drifted.
+```bash
+python3 scripts/validate_plugins.py
+```
 
-Map features worth knowing:
-
-| Key | Purpose |
-|---|---|
-| `plugins[].kind` | `agent` (default) or `vertical`; decides the output directory and which dirs the sync owns |
-| `sources.<key>.flat` | The source keeps skills directly under the referenced path (the toolkit's `skills/` tree) instead of `<plugin>/skills/` |
-| `skills[].except` | Skip named skills when `names` is `"*"` |
-| `rewrites_catalog` | Named, reusable rewrite sets; reference them by name from a plugin's or hook's `rewrites` |
-| `connector_catalog` / `plugins[].connectors` | Opt-in, user-added MCP servers rendered into `CONNECTORS.md` |
-| `mcp_upstream_index` | Every awslabs/mcp server mapped to its catalog key or a skip reason; a full sync fails if a new upstream server is unaccounted for |
-
-Before opening a PR, run `python3 scripts/validate_plugins.py --claude`, then `python3 scripts/render_handover_docs.py` to refresh [docs/handover/](./handover/). When you add a plugin or change a design decision, record the rationale in `scripts/handover-notes.json` so reviewers see it next to the plugin.
+to verify all manifests, skill frontmatter, MCP bindings, connectors, hooks, and marketplace catalogs (`.claude-plugin/marketplace.json` and `.agents/plugins/marketplace.json`).

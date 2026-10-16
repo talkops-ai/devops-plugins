@@ -4,29 +4,36 @@
 
 # Set AWS region before importing SageMaker SDK
 import os
-REGION = "[REGION]"
-os.environ['AWS_DEFAULT_REGION'] = REGION
 
-%pip install --upgrade sagemaker>=3.7.1 --quiet  # NOTEBOOK_ONLY
+REGION = "[REGION]"
+os.environ["AWS_DEFAULT_REGION"] = REGION
+
+# %pip install --upgrade 'sagemaker>=3.7.1,<4.0' --quiet  # NOTEBOOK_ONLY
 
 import json
 from pathlib import Path
-from sagemaker.train.evaluate import LLMAsJudgeEvaluator
+
 from sagemaker.core import Attribution, set_attribution
+from sagemaker.train.evaluate import LLMAsJudgeEvaluator
 
 set_attribution(Attribution.SAGEMAKER_AGENT_PLUGIN)
 
 # Suppress verbose logging from SageMaker SDK
 import logging
-logging.getLogger('sagemaker').setLevel(logging.WARNING)
-logging.getLogger('botocore').setLevel(logging.WARNING)
+
+logging.getLogger("sagemaker").setLevel(logging.WARNING)
+logging.getLogger("botocore").setLevel(logging.WARNING)
 
 # Evaluation configuration
 MODEL = "[MODEL_ARN]"
 DATASET = "[DATASET_S3_URI]"
 EVALUATOR_MODEL = "[JUDGE_MODEL]"
 BUILTIN_METRICS = [METRICS_LIST]
-CUSTOM_METRICS = [CUSTOM_METRICS_JSON]
+CUSTOM_METRICS = None
+# NOTE FOR AGENT: If user wishes to use custom metrics,
+# custom_metrics.json should have been generated previously in the project root.
+# Uncomment this code to load the custom metrics from that file:
+# CUSTOM_METRICS = json.loads((Path("[PROJECT_DIR]") / "custom_metrics.json").read_text())
 S3_OUTPUT = "[S3_OUTPUT_PATH]"
 EVALUATE_BASE = [TRUE_OR_FALSE]
 
@@ -83,7 +90,12 @@ execution.show_results()
 manifest_dir = Path("[PROJECT_DIR]") / "manifests"
 manifest_dir.mkdir(parents=True, exist_ok=True)
 manifest_path = manifest_dir / f"eval-{execution.name}.json"
-manifest_path.write_text(json.dumps({
-    "evaluation_arn": execution.arn,
-}, indent=2))
+manifest_path.write_text(
+    json.dumps(
+        {
+            "evaluation_arn": execution.arn,
+        },
+        indent=2,
+    )
+)
 print(f"Manifest saved: {manifest_path}")

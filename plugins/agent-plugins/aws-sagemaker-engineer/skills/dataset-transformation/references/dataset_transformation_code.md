@@ -23,7 +23,7 @@ When generating:
 
 ## Generating a dataset transformation function
 
-The transformation function should be saved to its own file at `<project-dir>/scripts/transform_fn.py` so the user can view and edit it directly. The `<project-dir>` is the project directory established by the directory-management skill (e.g., `dpo-to-rlvr-conversion`).
+The transformation function should be saved to its own file at `<project-dir>/scripts/transform_fn.py` so the user can view and edit it directly. The `<project-dir>` is the project directory established by the directory-management reference (e.g., `dpo-to-rlvr-conversion`).
 
 ```python
 import pandas as pd
@@ -33,6 +33,7 @@ def transform_dataset(df: pd.DataFrame) -> pd.DataFrame:
     # Return a DataFrame matching the target schema
     transformed = {transformation logic}
     return transformed
+
 ```
 
 ## Generating a dataset transformation execution script
@@ -96,6 +97,7 @@ if __name__ == "__main__":
     output_dataset_to(args.output, from_path=local_output)
 
     print(f"Transformed {len(df)} records -> {args.output}")
+
 ```
 
 ## Execution Examples
@@ -104,6 +106,7 @@ if __name__ == "__main__":
 
 ```bash
 python transform.py --input s3://my-bucket/data/input.jsonl --output s3://my-bucket/data/output.jsonl
+
 ```
 
 ### SageMaker Processing Job
@@ -120,6 +123,7 @@ execute_transformation_job(
     dataset_source_s3="s3://bucket/input.jsonl", # S3 URI of input dataset
     dataset_output_s3="s3://bucket/output/",     # S3 URI for output
 )
+
 ```
 
 After submitting, check status with:
@@ -130,6 +134,7 @@ from scripts.transformation_tools import describe_transformation_job
 status = describe_transformation_job(job_name="<job-name>")
 print(status)
 # Returns: {"job_name": "...", "status": "InProgress|Completed|Failed|Stopped", ...}
+
 ```
 
 Call `describe_transformation_job` repeatedly (every ~30 seconds) until `status` is `Completed`, `Failed`, or `Stopped`.

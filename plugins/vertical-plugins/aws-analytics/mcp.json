@@ -2,7 +2,6 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
   "mcpServers": {
     "aws-mcp": {
-      "type": "stdio",
       "command": "uvx",
       "args": [
         "mcp-proxy-for-aws-cli==1.7.0",
@@ -10,40 +9,50 @@
         "--skip-auth",
         "--metadata",
         "INSTALL_SOURCE=agent-toolkit-core"
-      ]
+      ],
+      "type": "stdio"
     },
-    "dataprocessing": {
-      "type": "stdio",
+    "awsdataprocessing": {
       "command": "uvx",
       "args": [
         "awslabs.aws-dataprocessing-mcp-server@latest"
       ],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR"
-      }
+      },
+      "type": "stdio"
     },
     "redshift": {
-      "type": "stdio",
       "command": "uvx",
       "args": [
         "awslabs.redshift-mcp-server@latest"
       ],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR"
-      }
+      },
+      "type": "stdio"
     },
     "s3tables": {
-      "type": "stdio",
       "command": "uvx",
       "args": [
         "awslabs.s3-tables-mcp-server@latest"
       ],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR"
-      }
+      },
+      "type": "stdio"
+    },
+    "cloudwatch": {
+      "command": "uvx",
+      "args": [
+        "awslabs.cloudwatch-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "type": "stdio"
     },
     "spark-troubleshooting": {
-      "type": "stdio",
       "command": "uvx",
       "args": [
         "mcp-proxy-for-aws@latest",
@@ -54,21 +63,18 @@
         "us-east-1",
         "--read-timeout",
         "180"
-      ]
+      ],
+      "type": "stdio"
     },
-    "spark-upgrade": {
-      "type": "stdio",
+    "awspricing": {
       "command": "uvx",
       "args": [
-        "mcp-proxy-for-aws@latest",
-        "https://sagemaker-unified-studio-mcp.us-east-1.api.aws/spark-upgrade/mcp",
-        "--service",
-        "sagemaker-unified-studio-mcp",
-        "--region",
-        "us-east-1",
-        "--read-timeout",
-        "180"
-      ]
+        "awslabs.aws-pricing-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "type": "stdio"
     }
   }
 }

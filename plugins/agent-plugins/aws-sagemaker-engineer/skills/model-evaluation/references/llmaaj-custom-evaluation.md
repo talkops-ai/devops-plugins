@@ -40,18 +40,20 @@ Example of a valid single custom metric:
     }
   }
 ]
+
 ```
 
 Multiple custom metrics go in the same array (max 10 per job).
 
 ## Step 2: Write and Validate the JSON Artifact
 
-Once you have the custom metrics JSON (from the user or co-created), write it to a file called `custom_metrics.json` next to where the notebook will go.
+Once you have the custom metrics JSON (from the user or co-created), write it to a file called `custom_metrics.json` in the project root directory (`[PROJECT_DIR]/custom_metrics.json`). This ensures it can be reliably loaded by both notebooks (via `Path("[PROJECT_DIR]") / "custom_metrics.json"`) and scripts regardless of working directory.
 
 Then validate it by running the validation script:
 
 ```bash
 python scripts/validate_custom_metrics.py custom_metrics.json
+
 ```
 
 If validation fails, show the errors to the user and iterate until it passes.

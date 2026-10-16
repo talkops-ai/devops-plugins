@@ -1,7 +1,7 @@
 {
   "name": "aws-location-engineer",
-  "version": "0.1.0",
-  "description": "Adds geospatial features with Amazon Location Service: maps, geocoding and reverse geocoding, routing and service areas, places search, authentication setup, and SDK integration.",
+  "version": "0.2.0",
+  "description": "Principal AWS Location Service Engineer & Geospatial Architect: resourceless V2 Maps (`geo-maps`, MapLibre GL JS v5 / Native, 3D terrain/buildings, traffic, political views, static maps), Places V2 (`geo-places`, Autocomplete, Suggest, Geocode `MatchScores`, ReverseGeocode, SearchText, SearchNearby, GetPlace), bulk S3 Parquet Postal Address Validation Jobs (`location:StartJob` `ValidateAddress` for US/CA/UK/AU), Routes V2 (`geo-routes`, CalculateRoutes, CalculateRouteMatrix, CalculateIsolines, OptimizeWaypoints, SnapToRoads, truck & toll routing), stateful fleet Trackers & Geofences (`Geobuf`, `AssociateTrackerConsumer`, `ForecastGeofenceEvents`, `VerifyDevicePosition`, IoT Core MQTT `LocationAction`, EventBridge), V2 API key/Cognito/IAM security, CDK/Terraform/Amplify Gen 2 IaC, FinOps optimization, and migrations from Google Maps, Mapbox, or Legacy AWS Location V1.",
   "author": {
     "name": "TalkOps AI"
   },
@@ -11,9 +11,21 @@
   "keywords": [
     "aws",
     "location",
+    "amazon-location-service",
+    "geo-maps",
+    "geo-places",
+    "geo-routes",
+    "maplibre",
     "maps",
     "geocoding",
+    "address-validation",
     "routing",
+    "isochrones",
+    "geofencing",
+    "device-tracking",
+    "iot-location",
+    "google-maps-migration",
+    "mapbox-migration",
     "geospatial"
   ],
   "skills": "./skills/",
@@ -21,8 +33,8 @@
   "hooks": "./hooks/hooks.json",
   "interface": {
     "displayName": "AWS Location Engineer",
-    "shortDescription": "Adds geospatial features with Amazon Location Service",
-    "longDescription": "Adds geospatial features with Amazon Location Service: maps, geocoding and reverse geocoding, routing and service areas, places search, authentication setup, and SDK integration.",
+    "shortDescription": "Principal AWS Location Service Engineer & Geospatial Architect",
+    "longDescription": "Principal AWS Location Service Engineer & Geospatial Architect: resourceless V2 Maps (`geo-maps`, MapLibre GL JS v5 / Native, 3D terrain/buildings, traffic, political views, static maps), Places V2 (`geo-places`, Autocomplete, Suggest, Geocode `MatchScores`, ReverseGeocode, SearchText, SearchNearby, GetPlace), bulk S3 Parquet Postal Address Validation Jobs (`location:StartJob` `ValidateAddress` for US/CA/UK/AU), Routes V2 (`geo-routes`, CalculateRoutes, CalculateRouteMatrix, CalculateIsolines, OptimizeWaypoints, SnapToRoads, truck & toll routing), stateful fleet Trackers & Geofences (`Geobuf`, `AssociateTrackerConsumer`, `ForecastGeofenceEvents`, `VerifyDevicePosition`, IoT Core MQTT `LocationAction`, EventBridge), V2 API key/Cognito/IAM security, CDK/Terraform/Amplify Gen 2 IaC, FinOps optimization, and migrations from Google Maps, Mapbox, or Legacy AWS Location V1.",
     "developerName": "TalkOps AI",
     "category": "Cloud",
     "capabilities": [

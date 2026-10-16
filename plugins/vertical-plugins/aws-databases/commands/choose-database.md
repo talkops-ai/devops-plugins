@@ -1,12 +1,50 @@
 ---
-description: Choose the right AWS database for a workload
-argument-hint: "<workload description>"
+description: "Recommend the optimal AWS database engine (Aurora PostgreSQL/MySQL, Aurora DSQL, RDS, DynamoDB, DocumentDB, ElastiCache, Neptune, Keyspaces) with cost and HA comparison."
+argument-hint: "<workload-and-access-patterns>"
 ---
 
-Run the `aws-database` skill's selection flow for `$ARGUMENTS`.
+# `/aws-databases:choose-database` — Recommend the optimal AWS database engine (Aurora PostgreSQL/MySQL, Aurora DSQL, RDS, DynamoDB, DocumentDB, ElastiCache, Neptune, Keyspaces) with cost and HA comparison.
 
-1. Capture data model, access patterns, consistency, scale, latency, and operational constraints.
-2. Verify facts (limits, pricing, regional availability) with the knowledge cards and `awsknowledge` instead of memory.
-3. Recommend a service with the decision trail and runner-up, then hand off to the bundled service skill for next steps.
+Target / arguments provided by user: `$ARGUMENTS`
 
-This is a read-only workflow: do not create, modify, or delete resources.
+## 1. Skills to Activate in Main Agent
+Load and follow the domain playbooks and `references/` in these bundled skills:
+- `aws-database`
+- `dsql`
+- `amazon-dynamodb`
+- `amazon-aurora-postgresql`
+- `amazon-aurora-mysql`
+
+## 2. MCP Servers & Tooling Sequence
+Use the plugin's bound MCP servers (falling back to read-only AWS CLI only when an MCP tool does not cover the API):
+- `aws-mcp` (`mcp__plugin_aws-databases_aws-mcp__*`) — AWS CLI & API proxy (`aws___call_aws`, `aws___search_documentation`, `aws___read_documentation`).
+- `awsknowledge` (`mcp__plugin_aws-databases_awsknowledge__*`) — Official AWS documentation, Architecture Center, and Well-Architected knowledge base.
+- `dynamodb` (`mcp__plugin_aws-databases_dynamodb__*`) — DynamoDB table/index modeling, capacity inspection, and query validation.
+- `postgres` (`mcp__plugin_aws-databases_postgres__*`) — RDS / Aurora PostgreSQL schema inspection and read-only SQL diagnostics via RDS Data API.
+- `mysql` (`mcp__plugin_aws-databases_mysql__*`) — RDS / Aurora MySQL schema inspection and read-only SQL diagnostics via RDS Data API.
+- `elasticache` (`mcp__plugin_aws-databases_elasticache__*`) — Amazon ElastiCache control-plane inspection (read-only).
+- `cloudwatch` (`mcp__plugin_aws-databases_cloudwatch__*`) — CloudWatch Metrics, Logs Insights queries, Alarms, and live telemetry inspection.
+- `awspricing` (`mcp__plugin_aws-databases_awspricing__*`) — Real-time AWS service pricing catalog and architecture cost calculation.
+
+## 3. Step-by-Step Operational Workflow
+
+1. **Preflight & Context Verification**:
+   - Confirm active AWS account, region (`AWS_REGION`), and caller identity (`sts:GetCallerIdentity`) or inspect local IaC/application files in the workspace if operating offline.
+   - Parse `$ARGUMENTS` to identify target resource identifiers, regions, or architectural constraints. If a required identifier is ambiguous, list the discovered candidates first.
+2. **Evidence Collection & Domain Analysis**:
+   - Query live AWS state, telemetry, or official documentation using the MCP servers above and the decision trees in the activated skills.
+   - Cross-check configuration against AWS Well-Architected best practices (Security, Reliability, Performance Efficiency, Cost Optimization, Operational Excellence).
+3. **Synthesis, Remediation / Implementation & Verification**:
+   - Produce production-ready configurations, IaC/SDK code, or root-cause diagnostic findings with copy-pasteable verification commands.
+   - Where pricing or capacity changes are involved, calculate the estimated monthly cost delta using `awspricing` / `billing` before recommending changes.
+
+## 4. Safety & Mutation Policy
+- **Read-Only Operation**: Execute only non-destructive discovery, validation, and diagnostic calls (`Describe*`, `Get*`, `List*`, `Query*`). Do **not** create, modify, or delete AWS resources unless the user explicitly asks to apply a remediation and approves the exact command.
+- Never hardcode secrets, plaintext passwords, or long-lived IAM access keys; enforce KMS encryption, IAM roles, and least-privilege conditions.
+
+## 5. Required Output Structure
+Present your response using these structured sections:
+1. **Executive Summary & Current State**: What was inspected or designed, with exact resource ARNs/IDs and region.
+2. **Findings / Architecture & Implementation**: Detailed root-cause analysis, service selection matrix, or production-grade code/IaC.
+3. **Cost, Security & Reliability Impact**: Quantified FinOps estimate, IAM/KMS posture, and HA/DR considerations.
+4. **Verification & Rollback Commands**: Exact CLI/MCP checks to verify success and revert safely if needed.

@@ -9,11 +9,47 @@
         "https://aws-mcp.us-east-1.api.aws/mcp"
       ]
     },
+    "awsknowledge": {
+      "type": "streamable-http",
+      "url": "https://knowledge-mcp.global.api.aws"
+    },
     "appsync": {
       "type": "stdio",
       "command": "uvx",
       "args": [
         "awslabs.aws-appsync-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      }
+    },
+    "awsiac": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--with",
+        "fastmcp<4.0.0",
+        "awslabs.aws-iac-mcp-server==0.2.14"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      }
+    },
+    "dynamodb": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "awslabs.dynamodb-mcp-server>=2.1.6"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      }
+    },
+    "cloudwatch": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "awslabs.cloudwatch-mcp-server@latest"
       ],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR"

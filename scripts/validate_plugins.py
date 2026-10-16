@@ -163,7 +163,7 @@ def check_hooks(plugin_dir: Path, rep: Report) -> None:
             if not isinstance(agents, list):
                 rep.err(str(sidecar.relative_to(REPO_ROOT)), "'read_only_agents' must be a list")
         except (OSError, json.JSONDecodeError):
-            rep.err(where, "aws-mutation-gate hook needs hooks/aws-mutation-gate.json (re-run the sync)")
+            rep.err(where, "aws-mutation-gate hook needs hooks/aws-mutation-gate.json")
 
 
 def check_portable(plugin_dir: Path, claude_manifest: dict, rep: Report) -> None:
@@ -241,7 +241,7 @@ def check_codex(plugin_dir: Path, name: str, is_agent: bool, rep: Report) -> Non
     toml_path = plugin_dir / "codex" / "agents" / f"{name}.toml"
     where = str(toml_path.relative_to(REPO_ROOT))
     if not toml_path.exists():
-        rep.err(where, "missing Codex custom agent (re-run the sync)")
+        rep.err(where, "missing Codex custom agent")
         return
     try:
         data = tomllib.loads(toml_path.read_text())

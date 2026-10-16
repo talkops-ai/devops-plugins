@@ -1,6 +1,10 @@
-import boto3
 import json
+import os
 import sys
+
+import boto3
+
+os.environ.setdefault("AWS_SDK_UA_APP_ID", "AWSSkill-SageMaker")
 
 if len(sys.argv) < 3:
     print("Usage: python get_recipes.py <model-name> <hub-name>")
@@ -11,9 +15,7 @@ hub_name = sys.argv[2]
 sm_client = boto3.client("sagemaker")
 
 detail = sm_client.describe_hub_content(
-    HubName=hub_name,
-    HubContentType="Model",
-    HubContentName=model_name
+    HubName=hub_name, HubContentType="Model", HubContentName=model_name
 )
 
 keywords = detail.get("HubContentSearchKeywords", [])

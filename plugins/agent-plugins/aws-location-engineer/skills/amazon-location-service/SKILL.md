@@ -81,6 +81,12 @@ Avoid these frequent errors:
 
 7. **Wrong action names in API Key permissions**: API key `AllowActions` use `geo-maps:`, `geo-places:`, `geo-routes:` prefixes (e.g., `geo-places:Geocode`, `geo-routes:CalculateRoutes`). Do NOT use SDK client names (`@aws-sdk/client-geo-places`) or IAM-style actions. See the Authentication and Permissions section for the complete list.
 
+8. **Synthesizing deprecated V1 resources in IaC**: Never create `AWS::Location::Map`, `AWS::Location::PlaceIndex`, or `AWS::Location::RouteCalculator` in CDK, CloudFormation, Terraform, or Amplify Gen 2. Maps, Places, and Routes V2 are resourceless (`provider/default`); only provision `AWS::Location::APIKey`, `AWS::Location::Tracker`, `AWS::Location::GeofenceCollection`, and `AWS::Location::TrackerConsumer`.
+
+9. **Reversing coordinates (`[lat, lng]` instead of `[lng, lat]`)**: Every Amazon Location Service API and MapLibre GL JS expects `[longitude, latitude]` (GeoJSON order). Passing `[latitude, longitude]` places North American coordinates in Antarctica or the Indian Ocean.
+
+10. **Missing `AssociateTrackerConsumer` or `KmsKeyEnableGeospatialQueries: true`**: Creating a Tracker and a GeofenceCollection without linking them via `AssociateTrackerConsumer` (`AWS::Location::TrackerConsumer`) results in zero geofence evaluations. Enabling a customer-managed KMS key (`KmsKeyId`) on a Tracker without setting `KmsKeyEnableGeospatialQueries: true` breaks polygon-filtered `ListDevicePositions` queries.
+
 ## Defaults
 
 Use these default choices unless the user explicitly requests otherwise:
@@ -113,7 +119,7 @@ Choose the right API for your use case:
 
 - **SearchText** → General text search ("pizza near Seattle")
 - **SearchNearby** → Find places near a coordinate (restaurants within 5km)
-- **Suggest** → Predict places/POIs from partial or misspelled input
+- **Suggest** → Predict places/POIs from partial or misspelled input (note: V2 `/suggest` does not support server-side category filtering; use `SearchNearby` with `Filter.IncludeCategories` when category filtering is required)
 - **Autocomplete** → Address-specific predictions (not for general POI search)
 
 ### Geocoding
@@ -129,8 +135,10 @@ Choose the right API for your use case:
 ### Routing
 
 - **CalculateRoutes** → Single route between origin and destination
-- **CalculateRouteMatrix** → Multiple origins/destinations travel times
+- **CalculateRouteMatrix** → Multiple origins/destinations travel times (requires mandatory `RoutingBoundary`)
 - **CalculateIsolines** → Service areas (all locations reachable within time/distance)
+- **OptimizeWaypoints** → Optimal stop sequence (Traveling Salesperson Problem)
+- **SnapToRoads** → Align noisy GPS traces to the physical road network
 
 ## LLM Context Files
 
@@ -206,7 +214,7 @@ Resourceless API key actions (recommended):
 
 | Service | AllowActions                                                                                                                                                                  | AllowResources                                |
 | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
-| Maps    | `geo-maps:GetTile`, `geo-maps:GetStaticMap`                                                                                                                                   | `arn:aws:geo-maps:REGION::provider/default`   |
+| Maps    | `geo-maps:GetTile`, `geo-maps:GetStaticMap`, `geo-maps:GetStyleDescriptor`, `geo-maps:GetSprites`, `geo-maps:GetGlyphs`                                                       | `arn:aws:geo-maps:REGION::provider/default`   |
 | Places  | `geo-places:Autocomplete`, `geo-places:Geocode`, `geo-places:ReverseGeocode`, `geo-places:SearchText`, `geo-places:SearchNearby`, `geo-places:Suggest`, `geo-places:GetPlace` | `arn:aws:geo-places:REGION::provider/default` |
 | Routes  | `geo-routes:CalculateRoutes`, `geo-routes:CalculateRouteMatrix`, `geo-routes:CalculateIsolines`, `geo-routes:OptimizeWaypoints`, `geo-routes:SnapToRoads`                     | `arn:aws:geo-routes:REGION::provider/default` |
 
@@ -239,7 +247,15 @@ const client = new LocationClient({
 
 ## MCP Server Integration
 
-Integrates with the [AWS MCP Server](https://docs.aws.amazon.com/aws-mcp/latest/userguide/what-is-aws-mcp-server.html) (Apache-2.0 license) which provides access to AWS documentation, API references, and direct API interactions. See the [Getting Started Guide](https://docs.aws.amazon.com/aws-mcp/latest/userguide/getting-started-aws-mcp-server.html) for setup and credential configuration. To use a non-default region, add `"--metadata", "AWS_REGION=<your-region>"` to your MCP config args.
+This plugin integrates two complementary MCP servers:
+
+1. **Amazon Location Service MCP Server (`awslocation` — `awslabs.aws-location-mcp-server@latest`)**:
+   - Provides 8 dedicated, latency-optimized tools backed by `boto3.client('geo-places')` and `boto3.client('geo-routes')`:
+     - `geocode`, `reverse_geocode`, `search_places`, `search_nearby`, `search_places_open_now`, `get_place`, `calculate_route`, `optimize_waypoints`
+   - **Two-Step Landmark Rule**: When searching near a named landmark ("coffee shops near the Space Needle"), first call `geocode` to resolve `[longitude, latitude]`, then pass `longitude` and `latitude` to `search_nearby`.
+2. **AWS MCP Server (`aws-mcp`)**:
+   - Provides AWS documentation search (`aws___search_documentation`, `aws___read_documentation`), regional availability checks (`aws___get_regional_availability`), Agent SOPs (`aws___retrieve_agent_sop`), and live AWS CLI execution (`aws___call_aws`).
+   - Use `aws___call_aws` for V2 APIs not wrapped by `awslocation` (`aws geo-places autocomplete`, `aws geo-places suggest`, `aws geo-routes calculate-isolines`, `aws geo-routes calculate-route-matrix`, `aws geo-routes snap-to-roads`, `aws geo-maps get-static-map`) and all stateful `aws location` operations (API keys, trackers, geofence collections, address validation jobs).
 
 ## Additional Resources
 
@@ -253,12 +269,13 @@ Load these resources as needed for specific implementation guidance:
 
 - [Address Input](./references/address-input.md) - Create effective address input forms for users with address type ahead completion improving input speed and accuracy
 - [Address Verification](./references/address-verification.md) - Verify and standardize addresses in bulk against authoritative postal data using the asynchronous Jobs API (StartJob with Action ValidateAddress), before persisting to databases or taking downstream actions
-- [Calculate Routes](./references/calculate-routes.md) - Calculate routes between locations with customizable travel options and display them on maps
-- [Device Tracking](./references/device-tracking.md) - Track device locations in real time and query position history
-- [Dynamic Map Rendering](./references/dynamic-map.md) - Render dynamic maps with MapLibre
+- [Calculate Routes](./references/calculate-routes.md) - Calculate routes between locations with customizable travel options, route matrices, isolines, waypoint optimization, and road snapping
+- [Device Tracking](./references/device-tracking.md) - Track device locations in real time, configure KMS geospatial encryption, ingest via AWS IoT Core MQTT rules, and query polygon-filtered position history
+- [Dynamic Map Rendering](./references/dynamic-map.md) - Render dynamic vector maps with MapLibre GL, static map images with GeoJSON overlays, geopolitical views, and GrabMaps
 - [Google Maps Migration (Android)](./references/google-migration-android.md) - Migrate Android application from Google Maps SDK for Android to Amazon Location Service
 - [Google Maps Migration (iOS)](./references/google-migration-ios.md) - Migrate iOS application from Google Maps SDK for iOS to Amazon Location Service
 - [Google Maps Migration (JavaScript)](./references/google-migration-web.md) - Migrate JavaScript web application from Google Maps API to Amazon Location Service
-- [Places Search](./references/places-search.md) - Search for places or points of interest
+- [Migration, IaC, and FinOps](./references/migration-and-finops.md) - Migrate from Google Maps, Mapbox, or Legacy AWS Location V1 to V2; synthesize CDK, Terraform, and Amplify Gen 2 IaC; and optimize Places/Routes/Tracker costs and RPS quotas
+- [Places Search](./references/places-search.md) - Search for places or points of interest with category filters, open-now checks, and two-step landmark geocoding
 - [Web JavaScript](./references/web-javascript.md) - Integrate Amazon Location services into web browser applications
-- [Zone Alerts](./references/zone-alerts.md) - Monitor device positions against geographic boundaries and react to zone entry or exit
+- [Zone Alerts](./references/zone-alerts.md) - Monitor device positions against geographic boundaries, bind trackers via AssociateTrackerConsumer, and react to EventBridge ENTER/EXIT/UPDATE alerts

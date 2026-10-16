@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "aws-infrastructure-as-code",
-  "version": "0.1.0",
-  "description": "Author, validate, deploy, and troubleshoot AWS infrastructure as code directly in the main agent: CDK, CloudFormation (cfn-lint/cfn-guard), AWS Blocks, CodePipeline/CodeBuild/CodeDeploy CI/CD, and guided launches.",
+  "version": "0.2.0",
+  "description": "End-to-end AWS IaC and deployment skills for the main agent: AWS CDK, CloudFormation, Terraform/OpenTofu, Pulumi, Crossplane/ACK, brownfield resource import, preflight discovery, deployment verification/rollback, and vibe-coded app migration.",
   "author": {
     "name": "TalkOps AI"
   },
@@ -14,7 +14,11 @@
     "iac",
     "cdk",
     "cloudformation",
-    "cicd",
-    "aws-blocks"
+    "terraform",
+    "pulumi",
+    "crossplane",
+    "deployment",
+    "cfn-lint",
+    "cfn-guard"
   ]
 }

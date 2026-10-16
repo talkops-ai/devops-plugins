@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "aws-cost-optimization",
-  "version": "0.1.0",
-  "description": "Cost skills for the main agent: Cost Explorer analysis, anomalies, budgets, Savings Plans and Reserved Instances, Compute Optimizer right-sizing, and pricing estimates, with the Billing and Cost Management and Pricing MCP servers.",
+  "version": "0.2.0",
+  "description": "Cloud FinOps and cost engineering for the main agent: Cost Explorer & Anomaly Detection, CUR 2.0 Athena SQL analytics, Compute Optimizer P95/P99 right-sizing, Savings Plans & Reserved Instance commitment modeling, Shift-Left IaC cost estimation, AWS Budgets/Invoicing governance, and waste elimination.",
   "author": {
     "name": "TalkOps AI"
   },
@@ -14,8 +14,10 @@
     "finops",
     "cost-optimization",
     "billing",
-    "pricing",
+    "cost-explorer",
     "savings-plans",
-    "budgets"
+    "cur",
+    "compute-optimizer",
+    "pricing"
   ]
 }

@@ -74,6 +74,16 @@ KUBECTL_MUTATING = {
 HELM_MUTATING = {"install", "upgrade", "uninstall", "delete", "rollback", "push"}
 COPILOT_MUTATING = {"deploy", "delete", "init"}
 AMPLIFY_MUTATING = {"push", "publish", "delete"}
+EB_MUTATING = {
+    "create", "deploy", "terminate", "setenv", "scale", "clone", "upgrade", "restore",
+    "abort", "swap", "config",
+}
+AGENTCORE_MUTATING = {"deploy", "remove", "destroy", "pause", "resume"}
+AGENTCORE_CLOUD_UNLESS_LOCAL = {"dev", "invoke", "run"}
+AGENTCORE_MCP_DESTRUCTIVE_PREFIXES = ("delete_", "stop_", "batch_delete_", "clear_")
+AGENTCORE_MCP_BILLABLE_PREFIXES = (
+    "create_", "update_", "invoke_", "start_", "put_", "batch_create_", "batch_update_",
+)
 
 WRAPPERS = {"sudo", "env", "time", "nohup", "command", "exec", "nice"}
 RUNNERS = {"npx", "pnpx", "bunx", "pnpm", "yarn", "uvx", "poetry", "uv", "pipx"}
@@ -141,6 +151,39 @@ def classify_aws(args: list[str]) -> bool:
     return not op.startswith(AWS_READ_PREFIXES)
 
 
+def _stage_cost_warning(service: str, op: str, args: list[str]) -> str:
+    """Return a stage-aware cost warning suffix for known startup money-pit operations."""
+    s = service.lower()
+    o = op.lower().replace("_", "-")
+    joined = " ".join(a.lower() for a in args)
+    if (s == "eks" and o == "create-cluster") or (s == "eksctl" and o == "create"):
+        return (
+            " [STAGE COST WARNING: EKS control plane costs $73/mo minimum + worker nodes (~$150+/mo). "
+            "Strongly prefer Lambda or ECS Fargate for Pre-Revenue/Seed startups.]"
+        )
+    if s == "ec2" and o == "create-nat-gateway":
+        return (
+            " [STAGE COST WARNING: Managed NAT Gateway costs $32.85/mo fixed + $0.045/GB per AZ. "
+            "Prefer free S3/DynamoDB VPC Gateway Endpoints for Pre-Revenue/Seed startups.]"
+        )
+    if s == "rds" and o in ("create-db-instance", "modify-db-instance") and "--multi-az" in joined and "--no-multi-az" not in joined:
+        return (
+            " [STAGE COST WARNING: Multi-AZ RDS doubles database instance cost. "
+            "Prefer Single-AZ with automated backups for Pre-Revenue/Seed startups.]"
+        )
+    if s == "bedrock" and o == "create-provisioned-model-throughput":
+        return (
+            " [STAGE COST WARNING: Bedrock Provisioned Throughput bills thousands of USD/month continuously. "
+            "Prefer On-Demand Cross-Region Inference Profiles (us.anthropic.*).]"
+        )
+    if s in ("opensearch", "opensearchserverless") and o in ("create-domain", "create-collection"):
+        return (
+            " [STAGE COST WARNING: OpenSearch Serverless/Domains carry a high monthly floor (~$175-$350+/mo). "
+            "Consider RDS PostgreSQL pgvector or S3 Vectors for Pre-Revenue/Seed startups.]"
+        )
+    return ""
+
+
 def classify_segment(toks: list[str]) -> str | None:
     """Return a short description when the simple command mutates AWS, else None."""
     toks = _strip_prefix(toks)
@@ -151,7 +194,12 @@ def classify_segment(toks: list[str]) -> str | None:
     sub = pos[0] if pos else ""
     cmd = " ".join(toks)[:200]
     if prog == "aws":
-        return cmd if classify_aws(args) else None
+        if not classify_aws(args):
+            return None
+        aws_pos = _positionals(args, AWS_VALUE_OPTS)
+        svc = aws_pos[0] if aws_pos else ""
+        op = aws_pos[1] if len(aws_pos) > 1 else ""
+        return cmd + _stage_cost_warning(svc, op, args)
     if prog in ("terraform", "tofu"):
         if sub in TF_MUTATING:
             return cmd
@@ -168,7 +216,7 @@ def classify_segment(toks: list[str]) -> str | None:
         return cmd if sub in SAM_MUTATING else None
     if prog == "eksctl":
         if sub in EKSCTL_MUTATING:
-            return cmd
+            return cmd + _stage_cost_warning("eksctl", sub, args)
         if sub == "utils" and len(pos) > 1 and not pos[1].startswith(("describe-", "get-", "nodegroup-health")):
             return cmd
         return None
@@ -182,6 +230,16 @@ def classify_segment(toks: list[str]) -> str | None:
         return cmd if COPILOT_MUTATING.intersection(pos) else None
     if prog == "amplify":
         return cmd if sub in AMPLIFY_MUTATING else None
+    if prog == "eb":
+        return cmd if sub in EB_MUTATING else None
+    if prog == "agentcore":
+        if any(a in ("--help", "-h", "--version") for a in args):
+            return None
+        if sub in AGENTCORE_MUTATING:
+            return cmd
+        if sub in AGENTCORE_CLOUD_UNLESS_LOCAL and "--local" not in args and "-l" not in args:
+            return cmd
+        return None
     return None
 
 
@@ -217,12 +275,25 @@ def classify_tool(tool_name: str, tool_input) -> str | None:
         toks = _tokens(cli)
         if toks and toks[0] == "aws":
             toks = toks[1:]
-        return cli[:200] if classify_aws(toks) else None
+        if not classify_aws(toks):
+            return None
+        aws_pos = _positionals(toks, AWS_VALUE_OPTS)
+        svc = aws_pos[0] if aws_pos else ""
+        op = aws_pos[1] if len(aws_pos) > 1 else ""
+        return cli[:200] + _stage_cost_warning(svc, op, toks)
     if name == "use_aws":
         service = str(inp.get("service_name", ""))
         service = "s3api" if service == "s3" else service  # API operations, not `aws s3 cp/sync`
         op = str(inp.get("operation_name", "")).replace("_", "-")
-        return f"aws {service} {op}" if classify_aws([service, op]) else None
+        if not classify_aws([service, op]):
+            return None
+        return f"aws {service} {op}" + _stage_cost_warning(service, op, [])
+    if "agentcore" in name:
+        short = name.rsplit("__", 1)[-1]
+        if short.startswith(AGENTCORE_MCP_DESTRUCTIVE_PREFIXES):
+            return f"{short} (WARNING: destructive AgentCore operation)"
+        if short.startswith(AGENTCORE_MCP_BILLABLE_PREFIXES):
+            return f"{short} (COST WARNING: billable AgentCore mutation or invocation)"
     return None
 
 
@@ -301,13 +372,42 @@ def self_test() -> int:
         "eksctl get clusters": False,
         "echo aws ec2 delete-vpc": False,
         "aws-vault exec prod -- aws ec2 delete-vpc --vpc-id v": True,
+        "agentcore status": False,
+        "agentcore doctor": False,
+        "agentcore invoke --local --prompt hello": False,
+        "agentcore invoke --prompt hello": True,
+        "agentcore deploy -y": True,
+        "agentcore remove memory --name MyMem": True,
+        "eb status": False,
+        "eb health --refresh": False,
+        "eb create prod-env --single": True,
+        "eb deploy prod-env": True,
+        "eb terminate prod-env --force": True,
+        "aws eks create-cluster --name my-cluster": True,
+        "aws ec2 create-nat-gateway --subnet-id subnet-1 --allocation-id eipalloc-1": True,
+        "aws rds create-db-instance --db-instance-identifier db1 --multi-az": True,
+        "aws bedrock create-provisioned-model-throughput --model-units 1": True,
     }
     bad = [c for c, want in cases.items() if bool(classify_shell(c)) != want]
+    # Verify STAGE COST WARNING suffix is attached to startup money-pit commands
+    for money_pit_cmd in (
+        "aws eks create-cluster --name my-cluster",
+        "aws ec2 create-nat-gateway --subnet-id subnet-1 --allocation-id eipalloc-1",
+        "aws rds create-db-instance --db-instance-identifier db1 --multi-az",
+        "aws bedrock create-provisioned-model-throughput --model-units 1",
+    ):
+        classified = classify_shell(money_pit_cmd) or ""
+        if "STAGE COST WARNING" not in classified:
+            bad.append(f"missing STAGE COST WARNING on {money_pit_cmd}")
     mcp = [
         ("mcp__plugin_x_aws-mcp__aws___call_aws", {"cli_command": "aws ec2 describe-vpcs"}, False),
         ("mcp__plugin_x_aws-mcp__aws___call_aws", {"cli_command": "aws ec2 delete-vpc --vpc-id v"}, True),
         ("mcp__aws-mcp__aws___run_script", {"script": "..."}, True),
         ("use_aws", {"service_name": "s3", "operation_name": "list_buckets"}, False),
+        ("mcp__plugin_aws-agentcore-engineer_agentcore__search_agentcore_docs", {"query": "memory"}, False),
+        ("mcp__plugin_aws-agentcore-engineer_agentcore__get_agent_runtime", {"agentRuntimeId": "r-1"}, False),
+        ("mcp__plugin_aws-agentcore-engineer_agentcore__create_agent_runtime", {"agentRuntimeName": "r"}, True),
+        ("mcp__plugin_aws-agentcore-engineer_agentcore__delete_memory", {"memoryId": "m-1"}, True),
     ]
     bad += [f"{n} {i}" for n, i, want in mcp if bool(classify_tool(n, i)) != want]
     for b in bad:

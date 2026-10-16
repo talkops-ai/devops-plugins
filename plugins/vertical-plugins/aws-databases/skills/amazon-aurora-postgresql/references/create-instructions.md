@@ -80,6 +80,7 @@ If the user creates a full-config cluster and then cannot connect from their loc
 
 **Load on demand:**
 
+- [cluster-provisioning.md](cluster-provisioning.md) — full-configuration sequential `create-db-cluster` + `create-db-instance` + AWS Secrets Manager creation and status polling SOP
 - [../express-create/constraints.md](express-create-constraints.md) — constraint catalog
 - [../express-create/feature-overview.md](express-create-feature-overview.md) — connectivity, multi-AZ, defaults
 - [../express-create/comparison.md](express-create-comparison.md) — express vs full comparison

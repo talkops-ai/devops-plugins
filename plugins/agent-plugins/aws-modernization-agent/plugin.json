@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "aws-modernization-agent",
-  "version": "0.1.0",
-  "description": "Migrates and modernizes codebases with AWS Transform: .NET Framework to .NET 8/10, mainframe COBOL to Java, VMware to EC2, SQL Server to Aurora, language and AWS SDK upgrades, and continuous tech-debt remediation.",
+  "version": "0.2.0",
+  "description": "Principal AWS Modernization Solutions Architect: 7 Rs portfolio assessment, Strangler Fig decomposition (API Gateway Canary + VPC Lattice), AWS Transform (.NET, Java, mainframe COBOL/Blu Age, SQL Server), App2Container & AWS MGN replatforming, DMS Schema Conversion & CDC cutover, application SQL/ORM remediation, and parity verification.",
   "author": {
     "name": "TalkOps AI"
   },
@@ -14,8 +14,12 @@
     "transform",
     "modernization",
     "migration",
+    "strangler-fig",
     "dotnet",
     "mainframe",
-    "java-upgrade"
+    "java-upgrade",
+    "dms",
+    "mgn",
+    "app2container"
   ]
 }

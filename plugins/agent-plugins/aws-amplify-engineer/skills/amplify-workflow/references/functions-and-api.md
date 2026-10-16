@@ -220,6 +220,8 @@ For REST/HTTP API outputs added via `backend.addOutput()`, read the endpoint URL
 
 ## Pitfalls
 
+- **CloudFormation Circular Dependency (`resourceGroupName`):** When a function is used as a Cognito trigger in `defineAuth` or S3 trigger in `defineStorage` AND is also granted access to Data (`allow.resource(fn)`) or Auth, CDK creates a cross-stack circular dependency between nested stacks. Fix this by setting `resourceGroupName: 'auth'` (or `'data'` / `'storage'`) inside `defineFunction({ ... })`.
+- **Calling Data API from a Lambda handler (`getAmplifyDataClientConfig`):** When `allow.resource(myFunc)` is granted on `a.schema()`, configure Amplify inside the Lambda handler using `const { resourceConfig, libraryOptions } = await getAmplifyDataClientConfig(env)` from `@aws-amplify/backend/function/runtime` and `Amplify.configure(resourceConfig, libraryOptions)` before calling `generateClient<Schema>()`. See the `amplify-functions-cdk` skill for the full pattern.
 - **`runtime` must be an integer:** Use `runtime: 22`, NOT
   `runtime: "nodejs22.x"`. String format causes build errors.
 - **Wrong handler type:** REST API (v1) requires `APIGatewayProxyHandler`
@@ -227,7 +229,7 @@ For REST/HTTP API outputs added via `backend.addOutput()`, read the endpoint URL
   with `event.requestContext.http.method`. Mixing them causes malformed
   responses. Both return `{ statusCode, body }`.
 - **Missing resource access:** A function without explicit grants cannot
-  access auth, data, or storage resources — add grants in `backend.ts`.
+  access auth, data, or storage resources — prefer declarative `allow.resource(myFunc)` grants in `auth/resource.ts`, `data/resource.ts`, and `storage/resource.ts` over manual `addEnvironment` calls in `backend.ts`.
 - **Secrets in plain `environment`:** Sensitive values **MUST** use
   `secret()`, not string literals.
 - **`createStack` name collision:** Stack names passed to

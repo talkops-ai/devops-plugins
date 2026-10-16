@@ -65,6 +65,19 @@ See `references/services-overview.md` for service relationships, data formats, a
 | `security-lake-sources` | Security Lake Sources Summary | "what's flowing into Security Lake", "ingestion status", "source health", "data lake exceptions" | User wants data lake health overview | `references/security-lake-sources.md` |
 | `organization-policies` | Organization Policies Review | "organization policies", "org policies", "SECURITYHUB_POLICY", "INSPECTOR_POLICY", "list-policies", "policy targets", "policy enforcement" | User wants to review or discover AWS Organizations service policies | `references/organization-policies.md` |
 
+## Security-engineering audit extensions
+
+The reference AWS security-engineer workflow also requires deterministic read-only coverage for AWS Config, KMS, VPC perimeter controls, and credential-incident correlation. Route these requests through this skill and use the managed `aws-mcp` `aws___call_aws` tool when available; otherwise use the equivalent AWS CLI read APIs. Do not infer compliance from a missing response or from a single region.
+
+| Audit | Required read-only evidence | Actionable projection |
+|---|---|---|
+| AWS Config drift and compliance | `configservice.describe_configuration_recorders`, `describe_delivery_channels`, `describe-config-rules`, `get-compliance-details-by-config-rule`, `get-resource-config-history`, `get-resource-config` | recorder/delivery health, failing rule identifiers, resource IDs, timestamps, and configuration deltas |
+| KMS key governance | `kms.list-keys`, `describe-key`, `get-key-rotation-status`, `get-key-policy`, `list-grants` | key state, origin, rotation, policy principals/conditions, grants, and pending deletion state; never retrieve plaintext key material |
+| VPC perimeter | `ec2.describe-security-groups`, `describe-network-acls`, `describe-flow-logs`, `describe-route-tables`, `wafv2.list-web-acls`, `wafv2.list-resources-for-web-acl` | unrestricted `0.0.0.0/0` or `::/0` ingress on administrative/database ports, NACL exposure, missing flow logs, routes, and WAF association gaps |
+| Credential incident correlation | `iam.list-access-keys`, `iam.get-access-key-last-used`, `cloudtrail.lookup-events` filtered by `AccessKeyId`/`Username` | key age/status, last use, source IPs, API sequence, errors, affected resources, and a proposed containment plan requiring human approval |
+
+For multi-region audits, enumerate enabled regions first and bound concurrency with retry/backoff. Paginate every list API. Return compact findings rather than raw account-authorization or configuration-history payloads. Use this output contract: `scope`, `evidence_timestamp`, `region`, `finding_type`, `resource_arn_or_id`, `observed_state`, `expected_state`, `evidence`, `recommended_change`, and `approval_required`.
+
 ## Disambiguation
 
 | Keywords | Route to |

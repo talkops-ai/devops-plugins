@@ -1,7 +1,7 @@
 {
   "name": "aws-amplify-engineer",
-  "version": "0.1.0",
-  "description": "Builds and deploys full-stack web and mobile apps with AWS Amplify Gen 2: Cognito auth, AppSync/DynamoDB data models, S3 storage, functions, and the Amplify AI Kit.",
+  "version": "0.2.0",
+  "description": "Principal Full-Stack AWS Amplify Gen 2 Engineer: Cognito auth (OAuth/OIDC/SAML/Passkeys/triggers), AppSync/DynamoDB data models (relationships, GSIs, 6 auth modes, custom JS/RDS resolvers), S3 storage (path compiler rules, multi-bucket), Lambda & CDK escape hatches (resourceGroupName, AWS Blocks), Amplify AI Kit on Bedrock (a.conversation, a.generation, RAG), sandboxes, and Amplify Hosting CI/CD.",
   "author": {
     "name": "TalkOps AI"
   },
@@ -11,19 +11,26 @@
   "keywords": [
     "aws",
     "amplify",
+    "amplify-gen2",
     "fullstack",
     "cognito",
     "appsync",
+    "dynamodb",
+    "s3",
+    "bedrock",
+    "amplify-ai-kit",
+    "aws-blocks",
     "react",
-    "nextjs"
+    "nextjs",
+    "mobile"
   ],
   "skills": "./skills/",
   "mcpServers": "./mcp.json",
   "hooks": "./hooks/hooks.json",
   "interface": {
     "displayName": "AWS Amplify Engineer",
-    "shortDescription": "Builds and deploys full-stack web and mobile apps with AWS Amplify Gen 2",
-    "longDescription": "Builds and deploys full-stack web and mobile apps with AWS Amplify Gen 2: Cognito auth, AppSync/DynamoDB data models, S3 storage, functions, and the Amplify AI Kit.",
+    "shortDescription": "Principal Full-Stack AWS Amplify Gen 2 Engineer",
+    "longDescription": "Principal Full-Stack AWS Amplify Gen 2 Engineer: Cognito auth (OAuth/OIDC/SAML/Passkeys/triggers), AppSync/DynamoDB data models (relationships, GSIs, 6 auth modes, custom JS/RDS resolvers), S3 storage (path compiler rules, multi-bucket), Lambda & CDK escape hatches (resourceGroupName, AWS Blocks), Amplify AI Kit on Bedrock (a.conversation, a.generation, RAG), sandboxes, and Amplify Hosting CI/CD.",
     "developerName": "TalkOps AI",
     "category": "Cloud",
     "capabilities": [

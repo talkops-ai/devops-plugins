@@ -13,6 +13,18 @@
     "awsknowledge": {
       "type": "http",
       "url": "https://knowledge-mcp.global.api.aws"
+    },
+    "awsapi": {
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-api-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}",
+        "READ_OPERATIONS_ONLY": "true",
+        "REQUIRE_MUTATION_CONSENT": "true"
+      }
     }
   }
 }

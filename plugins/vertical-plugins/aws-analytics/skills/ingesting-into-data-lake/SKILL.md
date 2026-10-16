@@ -11,10 +11,10 @@ description: >-
   export DynamoDB, CTAS, convert to Iceberg. Do NOT use for setting up or troubleshooting
   Glue connections (use connecting-to-data-source), creating empty tables (use creating-data-lake-table),
   running queries (use querying-data-lake), finding tables by fuzzy name (use finding-data-lake-assets),
-  catalog audit (use exploring-data-catalog), or SaaS platforms like Salesforce, ServiceNow,
-  SAP, MongoDB, Kafka.
+  catalog audit (use exploring-data-catalog), or continuous streaming/CDC/SaaS ingestion via
+  Data Firehose, AWS DMS, DynamoDB Streams, or Amazon AppFlow (use ingesting-streaming-and-cdc-data).
 metadata:
-  version: "1"
+  version: "2"
   argument-hint: "'[source-path|connection-name|table-name] [--target s3-tables|iceberg|parquet]'"
 ---
 
@@ -50,7 +50,7 @@ You MUST execute commands using AWS MCP server tools when connected -- they prov
 | "export DynamoDB", "DynamoDB to data lake" | DynamoDB | [dynamodb-ingest.md](references/dynamodb-ingest.md) |
 | "migrate Glue table", "convert Hive to Iceberg" | Catalog migration | [catalog-migration.md](references/catalog-migration.md) |
 
-If the user names Salesforce, ServiceNow, SAP, MongoDB, Kafka, or another SaaS/streaming source, decline -- these are not supported in this release.
+If the user requests continuous streaming delivery (Amazon Data Firehose, Kinesis, MSK), ongoing Change Data Capture (AWS DMS CDC, DynamoDB Streams), or SaaS connectors (Salesforce, ServiceNow, SAP, Zendesk, Marketo via Amazon AppFlow), delegate immediately to **`ingesting-streaming-and-cdc-data`**.
 
 If the source table is referenced by a fuzzy or business name ("migrate our orders table", "pull from the sales warehouse"), delegate to `finding-data-lake-assets` to resolve before proceeding.
 

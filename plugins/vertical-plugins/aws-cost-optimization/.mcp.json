@@ -21,7 +21,6 @@
       }
     },
     "awspricing": {
-      "type": "stdio",
       "command": "uvx",
       "args": [
         "awslabs.aws-pricing-mcp-server@latest"
@@ -29,8 +28,29 @@
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR",
         "AWS_REGION": "${AWS_REGION:-us-east-1}"
-      },
-      "timeout": 120000
+      }
+    },
+    "cloudwatch": {
+      "command": "uvx",
+      "args": [
+        "awslabs.cloudwatch-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
+    },
+    "awsiac": {
+      "command": "uvx",
+      "args": [
+        "--with",
+        "fastmcp<4.0.0",
+        "awslabs.aws-iac-mcp-server==0.2.14"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "${AWS_REGION:-us-east-1}"
+      }
     }
   }
 }

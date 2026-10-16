@@ -1,7 +1,7 @@
 {
   "name": "aws-serverless-engineer",
-  "version": "0.1.0",
-  "description": "Designs, builds, deploys, and debugs serverless applications: Lambda (incl. durable functions, managed instances, MicroVMs), API Gateway, Step Functions, and SAM/CDK deployment with template validation.",
+  "version": "0.2.0",
+  "description": "Principal AWS Serverless Architect & Engineer: Lambda (Event Functions, Durable Functions, MicroVMs, Managed Instances, Web Adapter), API Gateway (HTTP/REST/WebSocket), Step Functions (Standard/Express/Distributed Map), EventBridge (Buses, Pipes, Scheduler), SQS/SNS async messaging, Event Source Mappings (SQS/Kinesis/DynamoDB/Kafka), DynamoDB access-pattern modeling, Aurora DSQL, Cognito/IAM/WAFv2 security, CloudWatch/X-Ray triage, FinOps cost estimation, and SAM/CDK deployment.",
   "author": {
     "name": "TalkOps AI"
   },
@@ -12,10 +12,18 @@
     "aws",
     "serverless",
     "lambda",
+    "durable-functions",
+    "microvms",
     "api-gateway",
     "step-functions",
+    "eventbridge",
+    "sqs",
+    "sns",
+    "dynamodb",
+    "aurora-dsql",
     "sam",
     "cdk",
-    "eventbridge"
+    "waf",
+    "finops"
   ]
 }

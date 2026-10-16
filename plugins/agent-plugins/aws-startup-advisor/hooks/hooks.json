@@ -1,53 +1,11 @@
 {
   "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "sh -c 'python3 \"$0\" 2>/dev/null || python \"$0\" 2>/dev/null || py -3 \"$0\"' \"${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py\"",
-            "timeout": 5
-          }
-        ]
-      },
-      {
-        "matcher": "use_aws|mcp__aws.*|mcp__plugin_.*aws-mcp.*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "sh -c 'python3 \"$0\" 2>/dev/null || python \"$0\" 2>/dev/null || py -3 \"$0\"' \"${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py\"",
-            "timeout": 5
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 \"$0\"; command -v python >/dev/null 2>&1 && exec python \"$0\"; exec py -3 \"$0\"' \"${CLAUDE_PLUGIN_ROOT}/hooks/aws-mutation-gate.py\"",
-            "timeout": 5
-          }
-        ]
-      },
-      {
-        "matcher": "use_aws|mcp__aws.*|mcp__plugin_.*aws-mcp.*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 \"$0\"; command -v python >/dev/null 2>&1 && exec python \"$0\"; exec py -3 \"$0\"' \"${CLAUDE_PLUGIN_ROOT}/hooks/aws-mutation-gate.py\"",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
     "SessionStart": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": "cat \"${CLAUDE_PLUGIN_ROOT}/hooks/offer-context.txt\" 2>/dev/null || true",
+            "command": "cat \"${CLAUDE_PLUGIN_ROOT}/hooks/offer-context.txt\" \"${CLAUDE_PLUGIN_ROOT}/scripts/startup-context.txt\" 2>/dev/null || true",
             "timeout": 5
           }
         ]
@@ -56,7 +14,24 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh -c 'python3 \"$0\" 2>/dev/null || python \"$0\" 2>/dev/null || py -3 \"$0\" 2>/dev/null || true' \"${CLAUDE_PLUGIN_ROOT}/scripts/telemetry/consent/session_start.py\"",
+            "command": "sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 \"$0\"; command -v python >/dev/null 2>&1 && exec python \"$0\"; exec py -3 \"$0\"' \"${CLAUDE_PLUGIN_ROOT}/scripts/telemetry/consent/session_start.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|use_aws|mcp__aws.*|mcp__plugin_aws-startup-advisor_.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 \"$0\"; command -v python >/dev/null 2>&1 && exec python \"$0\"; exec py -3 \"$0\"' \"${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py\"",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 \"$0\"; command -v python >/dev/null 2>&1 && exec python \"$0\"; exec py -3 \"$0\"' \"${CLAUDE_PLUGIN_ROOT}/hooks/aws-mutation-gate.py\"",
             "timeout": 5
           }
         ]
@@ -68,11 +43,21 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh -c 'python3 \"$0\" 2>/dev/null || python \"$0\" 2>/dev/null || py -3 \"$0\" 2>/dev/null || true' \"${CLAUDE_PLUGIN_ROOT}/scripts/telemetry/metric_emission/skill_invoked.py\"",
+            "command": "sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 \"$0\"; command -v python >/dev/null 2>&1 && exec python \"$0\"; exec py -3 \"$0\"' \"${CLAUDE_PLUGIN_ROOT}/scripts/telemetry/metric_emission/skill_invoked.py\"",
             "timeout": 5
           }
         ]
       }
+    ]
+  },
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./.saws-migrate/.source-provider-env)",
+      "Read(./**/*.pem)",
+      "Read(./**/*.key)",
+      "Read(~/.aws/credentials)"
     ]
   }
 }

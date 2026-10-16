@@ -1,10 +1,10 @@
 ---
 name: rds-oracle
 version: 1
-description: Diagnoses and resolves Amazon RDS for Oracle connectivity, authentication, networking, and driver troubleshooting. Applicable to any RDS-for-Oracle question including connecting a Python Lambda to RDS Oracle in a VPC with pooling and cold-start optimization, EKS pods to RDS Oracle via the Secrets Manager CSI driver with IRSA and SecretProviderClass, ORA-12170 cross-VPC timeouts from EC2, DPI-1047 cannot-locate-64-bit-Oracle-Client errors, and Oracle Connection Manager (CMAN) on EC2 as a proxy with HA across two AZs. Covers python-oracledb thin vs thick mode, init_oracle_client, RDS Proxy does NOT support RDS Oracle, port 1521, VPC peering, Transit Gateway, Kerberos with AWS Managed Microsoft AD, SSL/TLS/NNE, SSM port forwarding, EC2/ECS Fargate/EKS/Lambda, SQL Developer/DBeaver/Toad/SQLcl, and Secrets Manager.
+description: Full-lifecycle management, administration, and connectivity troubleshooting for Amazon RDS for Oracle and RDS Custom for Oracle. Covers CDB/PDB multitenant architecture, rdsadmin stored procedures, Option Groups (TDE, Native Network Encryption, Timezone, APEX, OEM, STATSPACK, S3_INTEGRATION), Oracle Data Pump and RMAN backups to S3, License Included (SE2) vs BYOL (EE/SE2) and Optimize CPUs, and RDS Custom for Oracle (OS/SYSDBA access, Custom Engine Versions, Support Perimeter). Also diagnoses and resolves connectivity, authentication, networking, and driver issues including Python Lambda in a VPC with pooling and cold-start optimization, EKS pods via Secrets Manager CSI driver with IRSA and SecretProviderClass, ORA-12170 cross-VPC timeouts, DPI-1047 errors, and Oracle Connection Manager (CMAN) on EC2 with HA across two AZs.
 ---
 
-# Amazon RDS for Oracle — Connectivity
+# Amazon RDS for Oracle & RDS Custom — Lifecycle, Administration & Connectivity
 
 ## Safety guidance
 
@@ -53,11 +53,11 @@ When refusing, explain why and offer the matching assessment workflow:
 
 ## Overview
 
-Amazon RDS for Oracle is a managed Oracle Database service. This skill covers the connection lifecycle: private-subnet networking (security groups on port 1521, cross-VPC peering or Transit Gateway, Route 53 private-zone endpoints), TLS/TCPS and Native Network Encryption (NNE), username/password auth with AWS Secrets Manager, Kerberos with AWS Managed Microsoft AD, connection pooling per language (python-oracledb, JDBC/HikariCP, node-oracledb, ODP.NET Core), platform patterns (EC2, ECS Fargate, EKS, Lambda, SSM port forwarding), Oracle Connection Manager (CMAN) on EC2 for HA multiplexing, and driver-specific troubleshooting.
+Amazon RDS for Oracle is a managed Oracle Database service (with RDS Custom for Oracle available when OS/SYSDBA access is required). This skill covers both **database lifecycle & administration** (CDB/PDB multitenant architecture, `rdsadmin` package replacements for `ALTER SYSTEM`, Option Groups, Oracle Data Pump and RMAN backups via `S3_INTEGRATION`, License Included vs. BYOL with Optimize CPUs, and RDS Custom for Oracle) and the **connection lifecycle** (private-subnet networking on port 1521, cross-VPC peering or Transit Gateway, TLS/TCPS and Native Network Encryption (NNE), username/password auth with AWS Secrets Manager, Kerberos with AWS Managed Microsoft AD, language connection pooling, EC2/ECS Fargate/EKS/Lambda patterns, SSM port forwarding, Oracle Connection Manager (CMAN) on EC2 for HA multiplexing, and driver troubleshooting).
 
-Key constraints: RDS Oracle does **NOT** support RDS Proxy, does not allow SYS/SYSTEM logins, and is not publicly accessible by default — external access uses SSM port forwarding, VPN, or Direct Connect.
+Key constraints: RDS Oracle does **NOT** support RDS Proxy, does not allow SYS/SYSTEM logins on standard RDS (use `rdsadmin.rdsadmin_util` or RDS Custom if true SYSDBA is needed), and is not publicly accessible by default — external access uses SSM port forwarding, VPN, or Direct Connect.
 
-Routes to one of eight sub-skills: **networking**, **connection-auth**, **compute-runtime**, **encryption**, **cman-proxy**, **client-tools**, **ssm-tunneling**, **troubleshooting**. Load only the matching reference.
+Routes to one of nine sub-skills: **lifecycle-and-admin**, **networking**, **connection-auth**, **compute-runtime**, **encryption**, **cman-proxy**, **client-tools**, **ssm-tunneling**, **troubleshooting**. Load only the matching reference.
 
 ## Security Considerations
 
@@ -95,6 +95,7 @@ Map the user's question to the correct sub-skill reference, then load only those
 
 | User says | Load |
 |---|---|
+| CDB / PDB / multitenant / `rdsadmin` / Option Group / Data Pump / `expdp` / `impdp` / RMAN / S3_INTEGRATION / BYOL / License Included / Optimize CPUs / RDS Custom / SYSDBA / CEV | [lifecycle-and-admin.md](references/lifecycle-and-admin.md) |
 | SG / VPC peering / TGW / Route 53 / port 1521 / CIDR | [networking.md](references/networking.md) |
 | connect / connection string / python-oracledb / JDBC / node-oracledb / ODP.NET / Secrets Manager / auth / Kerberos | [connection-auth.md](references/connection-auth.md) + language reference ([python.md](references/python.md), [java.md](references/java.md), [nodejs.md](references/nodejs.md), [dotnet.md](references/dotnet.md)) |
 | Lambda / EC2 / ECS Fargate / EKS / container / serverless / IRSA | [compute-runtime.md](references/compute-runtime.md) |
