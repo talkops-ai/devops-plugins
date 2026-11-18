@@ -139,18 +139,18 @@
     {
       "id": "eval-13-aws-essentials-whoami-i-m-new-to-aws-tell-me-whi",
       "prompt": "/aws-essentials:whoami\nI'm new to AWS—tell me which AWS account, IAM principal, credential source, and region I'm currently connected to, and whether anything about my setup is risky before I start deploying.",
-      "expected_output": "Queries live caller identity (`sts:GetCallerIdentity` -> Account `187382368021`, `arn:aws:iam::187382368021:user/sandeep.mahto`) and account aliases (`iam:ListAccountAliases` -> none) via AWS MCP (`awsapi` or `aws-mcp`), inspects local masked config via `aws configure list` and `aws --version`, warns that `sandeep.mahto` uses long-lived static IAM user credentials (`AKIA*` / `shared-credentials-file`) rather than short-term `ASIA*` role/SSO credentials, and presents both the 4-section slash-command output and a Preflight Readiness Summary.",
+      "expected_output": "Queries live caller identity (`sts:GetCallerIdentity` -> Account `123456789012`, `arn:aws:iam::123456789012:user/sandeep.mahto`) and account aliases (`iam:ListAccountAliases` -> none) via AWS MCP (`awsapi` or `aws-mcp`), inspects local masked config via `aws configure list` and `aws --version`, warns that `sandeep.mahto` uses long-lived static IAM user credentials (`AKIA*` / `shared-credentials-file`) rather than short-term `ASIA*` role/SSO credentials, and presents both the 4-section slash-command output and a Preflight Readiness Summary.",
       "files": [],
       "expectations": [
-        "Activates the `aws-auth-and-environment-preflight` skill, verifies live caller identity (`187382368021`, `arn:aws:iam::187382368021:user/sandeep.mahto`) and account aliases via AWS MCP (`awsapi` or `aws-mcp`), and checks local masked metadata (`aws configure list`).",
-        "Identifies active region `ap-south-1` and profile `client-devops`, and warns that static IAM user credentials (`AKIA*` / `shared-credentials-file`) should be replaced by short-term assumed-role / SSO tokens (`ASIA*`).",
+        "Activates the `aws-auth-and-environment-preflight` skill, verifies live caller identity (`123456789012`, `arn:aws:iam::123456789012:user/sandeep.mahto`) and account aliases via AWS MCP (`awsapi` or `aws-mcp`), and checks local masked metadata (`aws configure list`).",
+        "Identifies active region `ap-south-1` and profile `default`, and warns that static IAM user credentials (`AKIA*` / `shared-credentials-file`) should be replaced by short-term assumed-role / SSO tokens (`ASIA*`).",
         "Includes the 4 required slash-command sections (`Executive Summary & Current State`, `Findings / Architecture & Implementation`, `Cost, Security & Reliability Impact`, `Verification & Rollback Commands`) and a Preflight Readiness Summary."
       ]
     },
     {
       "id": "eval-14-run-a-full-preflight-check-on-this-workstation-a",
       "prompt": "Run a full preflight check on this workstation and our live `ap-south-1` AWS account before I build and deploy a containerized Python AWS SAM Lambda stack that sets `ReservedConcurrentExecutions: 50`.",
-      "expected_output": "Verifies live identity (`187382368021`) and `ap-south-1` Lambda concurrent execution quota (`L-B99A9384 = 10.0`) via AWS MCP (`awsapi` or `aws-mcp`), checks local CLI tools (`aws --version`, `sam --version`, `docker info`, `python3 --version`) in `Bash`, flags every blocker—missing `sam` CLI, stopped Docker daemon, and `L-B99A9384 = 10` being unable to satisfy `ReservedConcurrentExecutions: 50`—and sets Verdict to `ACTION REQUIRED`.",
+      "expected_output": "Verifies live identity (`123456789012`) and `ap-south-1` Lambda concurrent execution quota (`L-B99A9384 = 10.0`) via AWS MCP (`awsapi` or `aws-mcp`), checks local CLI tools (`aws --version`, `sam --version`, `docker info`, `python3 --version`) in `Bash`, flags every blocker—missing `sam` CLI, stopped Docker daemon, and `L-B99A9384 = 10` being unable to satisfy `ReservedConcurrentExecutions: 50`—and sets Verdict to `ACTION REQUIRED`.",
       "files": [],
       "expectations": [
         "Activates the `aws-auth-and-environment-preflight` skill, checks live identity and `ap-south-1` Lambda quota `L-B99A9384` via AWS MCP (`awsapi` or `aws-mcp`), and runs local toolchain checks (`aws --version`, `sam`, `docker`, `python3`) in `Bash`.",
@@ -181,11 +181,11 @@
     },
     {
       "id": "eval-17-aws-essentials-troubleshoot-auth-every-command-i",
-      "prompt": "/aws-essentials:troubleshoot-auth Every command I run in my terminal fails with `An error occurred (InvalidClientTokenId) when calling the GetCallerIdentity operation: The security token included in the request is invalid` even when I pass `--profile client-devops`, whereas my MCP tools with `client-devops` work fine!",
-      "expected_output": "Diagnoses credential-chain precedence shadowing: exported `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_SESSION_TOKEN` environment variables (`Type: env` in `aws configure list`) override `--profile client-devops`, verifies `client-devops` identity (`187382368021`) safely via MCP without printing any secret values, and provides `unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN` plus verification commands under the 4-section slash-command format.",
+      "prompt": "/aws-essentials:troubleshoot-auth Every command I run in my terminal fails with `An error occurred (InvalidClientTokenId) when calling the GetCallerIdentity operation: The security token included in the request is invalid` even when I pass `--profile default`, whereas my MCP tools with `default` work fine!",
+      "expected_output": "Diagnoses credential-chain precedence shadowing: exported `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_SESSION_TOKEN` environment variables (`Type: env` in `aws configure list`) override `--profile default`, verifies `default` identity (`123456789012`) safely via MCP without printing any secret values, and provides `unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN` plus verification commands under the 4-section slash-command format.",
       "files": [],
       "expectations": [
-        "Activates the `aws-auth-and-environment-preflight` skill, verifies live `client-devops` identity (`187382368021`) via AWS MCP, and checks safe credential-source metadata (`aws configure list` / env variable names only, never secret values).",
+        "Activates the `aws-auth-and-environment-preflight` skill, verifies live `default` identity (`123456789012`) via AWS MCP, and checks safe credential-source metadata (`aws configure list` / env variable names only, never secret values).",
         "Correctly diagnoses that exported `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` (`Type: env`) shadow `--profile` in the AWS credential chain and prescribes `unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN`.",
         "Structures the response with all 4 required slash-command sections (`Executive Summary & Current State`, `Findings / Architecture & Implementation`, `Cost, Security & Reliability Impact`, `Verification & Rollback Commands`)."
       ]

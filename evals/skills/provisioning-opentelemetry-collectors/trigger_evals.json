@@ -102,8 +102,8 @@
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "instrumenting-kubernetes-workloads",
       "prompt": "Inject Java, Node.js, and Python OpenTelemetry SDK agents into the `ad`, `payment`, and `recommendation` Deployments in `otel-demo` using an `Instrumentation` CR.",
+      "expected_alternative_skill": "instrumenting-kubernetes-workloads",
       "notes": "Application workload auto-instrumentation"
     },
     {
@@ -111,8 +111,8 @@
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "expected_alternative_skill": "upgrading-opentelemetry-components",
       "prompt": "Migrate `opentelemetry-otel-collector` in `otel-demo` from `v1alpha1` to `v1beta1` and upgrade its collector image from `0.98.0` to `0.152.1`.",
+      "expected_alternative_skill": "upgrading-opentelemetry-components",
       "notes": "Collector version upgrade & CRD migration"
     },
     {
@@ -120,8 +120,8 @@
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "troubleshooting-telemetry-pipelines",
       "prompt": "`opentelemetry-otel-collector` in `otel-demo` is stuck in `CrashLoopBackOff` right after a config edit—diagnose what failed and roll back to the previous working config.",
+      "expected_alternative_skill": "troubleshooting-telemetry-pipelines",
       "notes": "Live failure triage & config revert"
     },
     {
@@ -129,8 +129,8 @@
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "expected_alternative_skill": "controlling-telemetry-cardinality-and-noise",
       "prompt": "Write OTTL `replace_pattern` and `delete_key` rules on `opentelemetry-otel-collector` to mask `payment` credit card numbers and normalize high-cardinality UUIDs in `url.path`.",
+      "expected_alternative_skill": "controlling-telemetry-cardinality-and-noise",
       "notes": "OTTL processing rules"
     },
     {
@@ -138,8 +138,8 @@
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "configuring-prometheus-scraping-and-discovery",
       "prompt": "Create a `monitoring.coreos.com/v1` `ServiceMonitor` for `frontend-proxy` (`:10000/stats/prometheus`) in `otel-demo` so Prometheus scrapes Envoy metrics directly.",
+      "expected_alternative_skill": "configuring-prometheus-scraping-and-discovery",
       "notes": "Prometheus Operator ServiceMonitor authoring"
     }
   ]

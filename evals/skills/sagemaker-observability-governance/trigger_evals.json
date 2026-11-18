@@ -1,0 +1,62 @@
+{
+  "skill_name": "sagemaker-observability-governance",
+  "companion_skills": [
+    "aiml-access-diagnostics",
+    "aiml-gpu-training-cluster-investigation",
+    "bedrock-adoption-readiness",
+    "bedrock-operation-review",
+    "dataset-evaluation"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use `sagemaker-observability-governance` to design, validate, and troubleshoot sagemaker observability governance."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Walk me through production best practices and operational guardrails for sagemaker observability governance (`sagemaker-observability-governance`)."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We need an operational review and step-by-step runbook covering: Architects production observability, safe deployment guardrails, drift monitoring, and root-cause diagnostics for Amazon SageMaker AI. Covers Deployment Guardrails (Blue/Green Cana"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "What are the critical failure modes, configuration checks, and verification commands for sagemaker observability governance?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our sagemaker observability governance setup in read-only mode."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure and troubleshoot aiml access diagnostics exclusively without touching sagemaker observability governance.",
+      "expected_alternative_skill": "aiml-access-diagnostics"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+    }
+  ]
+}

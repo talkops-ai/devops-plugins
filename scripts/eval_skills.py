@@ -66,9 +66,40 @@ from _plugin_lib import (  # noqa: E402
 
 EVALS_ROOT = REPO_ROOT / "evals"
 SKILLS_EVALS_DIR = EVALS_ROOT / "skills"
-WORKSPACES_DIR = EVALS_ROOT / "workspaces"
+WORKSPACES_DIR = Path(
+    os.environ.get("DEVOPS_PLUGINS_EVAL_RUNS_DIR", str(REPO_ROOT / ".eval-runs"))
+).expanduser().resolve()
 SCHEMAS_DIR = EVALS_ROOT / "schemas"
 DEFAULT_TALKOPS_MCP_SRC = REPO_ROOT.parent / "talkops-mcp" / "src"
+
+ALLOWED_DUMMY_AWS_ACCOUNT_IDS = {
+    "123456789012",
+    "111122223333",
+    "222233334444",
+    "333344445555",
+    "444455556666",
+    "555566667777",
+    "777788889999",
+    "888899990000",
+    "999988887777",
+    "000000000000",
+    "000000000001",
+    "111111111111",
+    "222222222222",
+    "555555555555",
+    "210987654321",
+    "987654321098",
+    "012345678901",
+    "602401143452",
+    "763104351884",
+}
+
+
+def _display_path(p: Path) -> str:
+    try:
+        return str(p.relative_to(REPO_ROOT))
+    except ValueError:
+        return str(p)
 
 AGY_BRAIN_DIR = Path.home() / ".gemini" / "antigravity-cli" / "brain"
 
@@ -300,14 +331,14 @@ def _ensure_eval_venv() -> Path | None:
 
 
 def build_aws_env(
-    aws_profile: str | None = "client-devops",
-    aws_region: str | None = "ap-south-1",
+    aws_profile: str | None = None,
+    aws_region: str | None = None,
     mcp_src_dir: str | Path | None = None,
     disable_local_mcp: bool = False,
 ) -> dict[str, str]:
     """Configure live AWS and local TalkOps MCP environment variables for eval execution.
 
-    Prepends `evals/workspaces/.venv/bin` to `PATH` without setting cross-interpreter
+    Prepends `.eval-runs/.venv/bin` to `PATH` without setting cross-interpreter
     `PYTHONPATH` or `VIRTUAL_ENV`, preventing ABI mismatches when `uv run` spawns MCP
     servers that use a different Python minor version in their own `.venv`.
     """
@@ -322,8 +353,8 @@ def build_aws_env(
     local_mcp = resolve_local_mcp_src_dir(mcp_src_dir, disable_local_mcp=disable_local_mcp)
     if local_mcp:
         env["TALKOPS_MCP_SRC_DIR"] = str(local_mcp)
-    profile = aws_profile or env.get("AWS_PROFILE") or "client-devops"
-    region = aws_region or env.get("AWS_REGION") or "ap-south-1"
+    profile = (aws_profile or env.get("AWS_PROFILE") or "").strip()
+    region = (aws_region or env.get("AWS_REGION") or env.get("AWS_DEFAULT_REGION") or "us-east-1").strip()
     if profile:
         env.pop("AWS_ACCESS_KEY_ID", None)
         env.pop("AWS_SECRET_ACCESS_KEY", None)
@@ -591,36 +622,89 @@ def run_static_checks(target_skill: str | None = None, strict_limits: bool = Fal
                     if not parse_frontmatter(cmd_md.read_text()).get("description"):
                         errors.append(f"{cmd_md.relative_to(REPO_ROOT)}: missing frontmatter description")
 
-        # 5. Validate evals/skills/<skill-name>/ JSON suites if present
+        # 5. Enforce canonical top-level `evals/skills/<skill-name>/` layout & open-source hygiene
+        for p in paths:
+            stray_evals = p.parent / "evals"
+            if stray_evals.is_dir():
+                errors.append(
+                    f"{stray_evals.relative_to(REPO_ROOT)}: co-located evals inside plugins/ are disallowed; "
+                    f"keep canonical suites under evals/skills/{skill_name}/ so plugin installs stay lightweight"
+                )
+
         eval_dir = SKILLS_EVALS_DIR / skill_name
-        if eval_dir.is_dir():
+        if not eval_dir.is_dir():
+            warnings.append(f"evals/skills/{skill_name}: missing canonical eval directory")
+        else:
+            valid_quadrants = {"explicit", "implicit", "contextual", "near_miss_negative"}
+            valid_splits = {"train", "val"}
+
+            def _check_opensource_hygiene(f_where: str, raw_text: str) -> None:
+                for m_acct in re.finditer(r"(?<!\d)(\d{12})(?!\d)", raw_text):
+                    aid = m_acct.group(1)
+                    if aid not in ALLOWED_DUMMY_AWS_ACCOUNT_IDS and not re.match(
+                        r"^202[0-9](?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])(?:[01]\d|2[0-3])[0-5]\d$", aid
+                    ):
+                        errors.append(
+                            f"{f_where}: non-placeholder 12-digit AWS account ID '{aid}' detected; use 123456789012"
+                        )
+                for m_upath in re.finditer(r"/Users/([A-Za-z0-9_.-]+)/", raw_text):
+                    uname = m_upath.group(1)
+                    if uname.lower() not in ("user", "username", "alice", "bob", "dev", "developer", "example"):
+                        errors.append(f"{f_where}: personal local path '/Users/{uname}/...' detected")
+
             trig_path = eval_dir / "trigger_evals.json"
-            if trig_path.exists():
+            if not trig_path.exists():
+                errors.append(f"evals/skills/{skill_name}: missing trigger_evals.json")
+            else:
                 t_where = str(trig_path.relative_to(REPO_ROOT))
+                raw_t = trig_path.read_text(errors="replace")
+                _check_opensource_hygiene(t_where, raw_t)
                 try:
-                    t_data = load_json(trig_path)
-                    if isinstance(t_data, dict):
+                    t_data = json.loads(raw_t)
+                    if not isinstance(t_data, dict):
+                        errors.append(f"{t_where}: trigger_evals.json must be a JSON object matching trigger_evals.schema.json")
+                    else:
                         if t_data.get("skill_name") != skill_name:
                             errors.append(f"{t_where}: skill_name {t_data.get('skill_name')!r} != {skill_name!r}")
-                    elif isinstance(t_data, list):
-                        for idx_t, t_item in enumerate(t_data):
-                            if not isinstance(t_item, dict) or ("query" not in t_item and "prompt" not in t_item) or "should_trigger" not in t_item:
-                                errors.append(f"{t_where}[{idx_t}]: each trigger item requires 'query'/'prompt' and 'should_trigger'")
-                    else:
-                        errors.append(f"{t_where}: trigger_evals.json must be a JSON object or array")
+                        queries = t_data.get("queries", [])
+                        if not isinstance(queries, list) or len(queries) < 4:
+                            errors.append(f"{t_where}: 'queries' must contain at least 4 items")
+                        else:
+                            for idx_t, t_item in enumerate(queries):
+                                if not isinstance(t_item, dict):
+                                    errors.append(f"{t_where}[{idx_t}]: query item must be an object")
+                                    continue
+                                if not t_item.get("prompt") or "should_trigger" not in t_item:
+                                    errors.append(f"{t_where}[{idx_t}]: requires 'prompt' and 'should_trigger'")
+                                if t_item.get("quadrant") not in valid_quadrants:
+                                    errors.append(f"{t_where}[{idx_t}]: invalid quadrant {t_item.get('quadrant')!r}")
+                                if t_item.get("split") not in valid_splits:
+                                    errors.append(f"{t_where}[{idx_t}]: invalid split {t_item.get('split')!r}")
                 except Exception as exc:
                     errors.append(f"{t_where}: invalid trigger_evals.json: {exc}")
 
             exec_path = eval_dir / "evals.json"
-            if exec_path.exists():
+            if not exec_path.exists():
+                errors.append(f"evals/skills/{skill_name}: missing evals.json")
+            else:
                 e_where = str(exec_path.relative_to(REPO_ROOT))
+                raw_e = exec_path.read_text(errors="replace")
+                _check_opensource_hygiene(e_where, raw_e)
                 try:
-                    e_data = load_json(exec_path)
-                    if e_data.get("skill_name") != skill_name:
-                        errors.append(f"{e_where}: skill_name {e_data.get('skill_name')!r} != {skill_name!r}")
-                    for ev in e_data.get("evals", []):
-                        if not ev.get("prompt") or not ev.get("expectations"):
-                            errors.append(f"{e_where}: each eval item requires 'prompt' and 'expectations'")
+                    e_data = json.loads(raw_e)
+                    if not isinstance(e_data, dict):
+                        errors.append(f"{e_where}: evals.json must be a JSON object matching execution_evals.schema.json")
+                    else:
+                        if e_data.get("skill_name") != skill_name:
+                            errors.append(f"{e_where}: skill_name {e_data.get('skill_name')!r} != {skill_name!r}")
+                        for ev in e_data.get("evals", []):
+                            if not ev.get("prompt") or not ev.get("expectations"):
+                                errors.append(f"{e_where}: each eval item requires 'prompt' and 'expectations'")
+                            for rf in ev.get("files") or []:
+                                cand_local = (eval_dir / rf).resolve()
+                                cand_repo = (REPO_ROOT / rf).resolve()
+                                if not cand_local.exists() and not cand_repo.exists():
+                                    errors.append(f"{e_where}: fixture file '{rf}' not found in {eval_dir.relative_to(REPO_ROOT)} or repo root")
                 except Exception as exc:
                     errors.append(f"{e_where}: invalid evals.json: {exc}")
 
@@ -1061,8 +1145,8 @@ def prepare_isolated_workspace(
     primary_skill: str,
     input_files: list[str] | None = None,
     mount_plugin_ecosystem: bool = True,
-    aws_profile: str = "client-devops",
-    aws_region: str = "ap-south-1",
+    aws_profile: str | None = None,
+    aws_region: str | None = None,
     mcp_src_dir: str | Path | None = None,
     disable_local_mcp: bool = False,
     mcp_allow_write: str = "auto",
@@ -1224,10 +1308,16 @@ def prepare_isolated_workspace(
                 dump_json(agents_dir / "hooks.json", agy_hooks_cfg)
 
     for rel_file in input_files or []:
-        src_f = (REPO_ROOT / rel_file).resolve()
+        cand_skill = (SKILLS_EVALS_DIR / primary_skill / rel_file).resolve()
+        cand_repo = (REPO_ROOT / rel_file).resolve()
+        src_f = cand_skill if cand_skill.exists() else cand_repo
         if src_f.exists():
-            dst_f = ws / Path(rel_file).name
-            shutil.copy2(src_f, dst_f)
+            # Stage at both workspace root basename (e.g. `agent-context.json`) and relative path (`files/agent-context.json`)
+            shutil.copy2(src_f, ws / Path(rel_file).name)
+            dst_nested = ws / rel_file
+            dst_nested.parent.mkdir(parents=True, exist_ok=True)
+            if dst_nested.resolve() != (ws / Path(rel_file).name).resolve():
+                shutil.copy2(src_f, dst_nested)
 
     return ws
 
@@ -1920,7 +2010,7 @@ def run_trigger_evals(args: argparse.Namespace) -> int:
         f"(harness={args.harness}{model_info}, split={args.split}, queries={len(queries)}, runs={args.runs})"
     )
     print(f"Mounted catalog ({len(mounted_skills)} skills): {', '.join(mounted_skills)}")
-    print(f"Workspace output: {iter_dir.relative_to(REPO_ROOT)}\n")
+    print(f"Workspace output: {_display_path(iter_dir)}\n")
 
     from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -2013,13 +2103,48 @@ def run_trigger_evals(args: argparse.Namespace) -> int:
     report_path = iter_dir / "trigger_report.json"
     dump_json(report_path, report)
     print(f"\nTrigger Eval Accuracy: {accuracy * 100:.1f}% ({passed_queries}/{len(queries)})")
-    print(f"Saved report to {report_path.relative_to(REPO_ROOT)}")
+    print(f"Saved report to {_display_path(report_path)}")
     return 0 if passed_queries == len(queries) else 1
 
 
 # ---------------------------------------------------------------------------
 # Subcommand: `run` (Query -> Expectations Skill Evaluation & Benchmarking)
 # ---------------------------------------------------------------------------
+
+
+def _eval_single_deterministic_clause(text: str, clause: str) -> bool:
+    clause = clause.strip()
+    m_not = re.match(r"^not\s+contains\s+(['\"])(.*?)\1$", clause, re.S)
+    if m_not:
+        return m_not.group(2) not in text
+    m_con = re.match(r"^contains\s+(['\"])(.*?)\1$", clause, re.S)
+    if m_con:
+        return m_con.group(2) in text
+    m_rx = re.match(r"^matches\s+regex\s+/(.+)/([imsx]*)$", clause, re.S)
+    if m_rx:
+        flags = 0
+        if "i" in m_rx.group(2):
+            flags |= re.I
+        if "m" in m_rx.group(2):
+            flags |= re.M
+        if "s" in m_rx.group(2):
+            flags |= re.S
+        return re.search(m_rx.group(1), text, flags) is not None
+    return clause.lower() in text.lower()
+
+
+def evaluate_deterministic_assertions(text: str, assertions: list[str]) -> list[dict[str, Any]]:
+    """Evaluate deterministic `contains '...'`, `not contains '...'`, and `matches regex /.../` assertions."""
+    results: list[dict[str, Any]] = []
+    for raw_a in assertions:
+        or_parts = re.split(r"\s+or\s+(?=(?:not\s+)?contains\s+|matches\s+regex\s+)", raw_a)
+        passed = any(_eval_single_deterministic_clause(text, part) for part in or_parts)
+        results.append({
+            "text": f"[deterministic] {raw_a}",
+            "passed": passed,
+            "evidence": "Matched response text deterministically" if passed else "Response did not satisfy deterministic assertion",
+        })
+    return results
 
 
 def _execute_single_eval_config(
@@ -2055,8 +2180,8 @@ def _execute_single_eval_config(
         primary_skill=skill_name,
         input_files=eval_case.get("files", []),
         mount_plugin_ecosystem=(config_name == "with_skill"),
-        aws_profile=aws_profile or "client-devops",
-        aws_region=aws_region or "ap-south-1",
+        aws_profile=aws_profile,
+        aws_region=aws_region,
         mcp_src_dir=mcp_src_dir,
         disable_local_mcp=disable_local_mcp,
         mcp_allow_write=effective_allow_write,
@@ -2106,6 +2231,9 @@ def _execute_single_eval_config(
         model=model,
         effort=effort,
     )
+    det_assertions = [a for a in (eval_case.get("assertions") or []) if isinstance(a, str) and a.strip()]
+    if det_assertions:
+        expectation_results.extend(evaluate_deterministic_assertions(trace.final_response, det_assertions))
 
     passed_cnt = sum(1 for a in expectation_results if a["passed"])
     total_cnt = len(expectation_results)
@@ -2205,7 +2333,7 @@ def run_execution_evals(args: argparse.Namespace) -> int:
         f"Running Skill Execution Evals for '{skill_name}' "
         f"(harness={args.harness}{model_info}, cases={len(eval_cases)}, runs={args.runs}, configs={configs})"
     )
-    print(f"Workspace output: {iter_dir.relative_to(REPO_ROOT)}\n")
+    print(f"Workspace output: {_display_path(iter_dir)}\n")
 
     trig_path = SKILLS_EVALS_DIR / skill_name / "trigger_evals.json"
     companions: list[str] = []
@@ -2335,7 +2463,7 @@ def run_execution_evals(args: argparse.Namespace) -> int:
             "run_summary": run_summary,
         },
     )
-    print(f"\nSaved benchmark summary to {benchmark_path.relative_to(REPO_ROOT)}")
+    print(f"\nSaved benchmark summary to {_display_path(benchmark_path)}")
     all_green = run_summary["with_skill"]["reliability"]["red_evals"] == 0
     return 0 if all_green else 1
 
@@ -2368,8 +2496,8 @@ def main() -> int:
     )
     p_trig.add_argument("--split", choices=("train", "val", "all"), default="all", help="Dataset split to evaluate")
     p_trig.add_argument("--query-id", help="Run a single trigger query by id")
-    p_trig.add_argument("--aws-profile", default="client-devops", help="AWS CLI profile name (default: client-devops)")
-    p_trig.add_argument("--aws-region", default="ap-south-1", help="AWS region (default: ap-south-1)")
+    p_trig.add_argument("--aws-profile", default=None, help="AWS CLI profile override (defaults to $AWS_PROFILE)")
+    p_trig.add_argument("--aws-region", default=None, help="AWS region override (defaults to $AWS_REGION or us-east-1)")
     p_trig.add_argument("--kube-context", default=K8S_DEFAULT_CONTEXT, help="Kubernetes context to isolate & target for Kubernetes plugin evals (default: docker-desktop)")
     p_trig.add_argument("--mcp-src-dir", default=None, help="Local talkops-mcp/src directory override (auto-detected when ../talkops-mcp/src exists)")
     p_trig.add_argument("--use-uvx-mcp", action="store_true", help="Disable local talkops-mcp/src rewrite and launch published uvx packages")
@@ -2395,8 +2523,8 @@ def main() -> int:
         default=None,
         help="Reasoning effort for --harness agy (default: medium).",
     )
-    p_run.add_argument("--aws-profile", default="client-devops", help="AWS CLI profile name (default: client-devops)")
-    p_run.add_argument("--aws-region", default="ap-south-1", help="AWS region (default: ap-south-1)")
+    p_run.add_argument("--aws-profile", default=None, help="AWS CLI profile override (defaults to $AWS_PROFILE)")
+    p_run.add_argument("--aws-region", default=None, help="AWS region override (defaults to $AWS_REGION or us-east-1)")
     p_run.add_argument("--kube-context", default=K8S_DEFAULT_CONTEXT, help="Kubernetes context to isolate & target for Kubernetes plugin evals (default: docker-desktop)")
     p_run.add_argument("--mcp-src-dir", default=None, help="Local talkops-mcp/src directory override (auto-detected when ../talkops-mcp/src exists)")
     p_run.add_argument("--use-uvx-mcp", action="store_true", help="Disable local talkops-mcp/src rewrite and launch published uvx packages")

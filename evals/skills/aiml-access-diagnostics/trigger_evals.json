@@ -1,0 +1,103 @@
+{
+  "skill_name": "aiml-access-diagnostics",
+  "companion_skills": [
+    "aiml-gpu-training-cluster-investigation",
+    "bedrock-adoption-readiness",
+    "bedrock-operation-review",
+    "dataset-evaluation",
+    "dataset-transformation"
+  ],
+  "queries": [
+    {
+      "id": "trigger-bedrock-invokemodel-accessdenied",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Bedrock InvokeModel is returning AccessDeniedException for claude-3-5-sonnet in us-east-1"
+    },
+    {
+      "id": "trigger-verbatim-error-string",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "User: arn:aws:sts::111122223333:assumed-role/app-role/session is not authorized to perform: bedrock:InvokeModel on resource: arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-5-sonnet-20241022-v2:0"
+    },
+    {
+      "id": "trigger-sagemaker-training-accessdenied",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "My SageMaker training job fails with AccessDenied and I cannot tell why"
+    },
+    {
+      "id": "trigger-passrole",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "is not authorized to perform: iam:PassRole on resource: arn:aws:iam::111122223333:role/sagemaker-execution-role"
+    },
+    {
+      "id": "trigger-execution-role-s3",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why can't my SageMaker execution role read from the training data bucket?"
+    },
+    {
+      "id": "trigger-inference-profile-dual-resource",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Converse fails with AccessDeniedException using us.amazon.nova-micro-v1:0 — the role has bedrock:InvokeModel on the inference profile ARN"
+    },
+    {
+      "id": "no-trigger-general-iam-audit",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Review my IAM roles for least privilege and tell me which ones are too permissive"
+    },
+    {
+      "id": "no-trigger-bedrock-throttling",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Bedrock InvokeModel is returning ThrottlingException, how do I raise my quota?"
+    },
+    {
+      "id": "no-trigger-s3-accessdenied-non-aiml",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "My Lambda function gets AccessDenied writing to an S3 bucket"
+    },
+    {
+      "id": "no-trigger-policy-authoring",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write me an IAM policy that allows Bedrock model invocation"
+    },
+    {
+      "id": "no-trigger-model-quality",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "My Bedrock model responses are low quality and inconsistent, how do I improve them?"
+    },
+    {
+      "id": "no-trigger-unsupported-aiml-service",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Amazon Textract is returning AccessDenied when I call AnalyzeDocument"
+    },
+    {
+      "id": "no-trigger-sagemaker-endpoint-latency",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "My SageMaker endpoint has high p99 latency during peak traffic"
+    }
+  ]
+}

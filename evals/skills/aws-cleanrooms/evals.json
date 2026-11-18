@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Inspect our live AWS environment in `ap-south-1` (`client-devops`) for any existing AWS Clean Rooms collaborations and configured tables (`aws cleanrooms list-collaborations`, `aws cleanrooms list-configured-tables`), report the live inventory, and walk me through the complete permission debugging procedure (`references/permission-debugging.md`) when a Clean Rooms collaboration query fails with `AccessDeniedException` on a Glue/Lake Formation-governed S3 table encrypted with a customer-managed KMS key.",
+      "prompt": "Inspect our live AWS environment in `ap-south-1` (`default`) for any existing AWS Clean Rooms collaborations and configured tables (`aws cleanrooms list-collaborations`, `aws cleanrooms list-configured-tables`), report the live inventory, and walk me through the complete permission debugging procedure (`references/permission-debugging.md`) when a Clean Rooms collaboration query fails with `AccessDeniedException` on a Glue/Lake Formation-governed S3 table encrypted with a customer-managed KMS key.",
       "expected_output": "Live read-only inspection in `ap-south-1` confirming 0 Clean Rooms collaborations and 0 configured tables, followed by the 5-layer permission debugging checklist from `references/permission-debugging.md`: IAM service role trust policy (with `aws:SourceArn` + `aws:SourceAccount` confused-deputy conditions), IAM inline/managed permissions (`glue:Get*`, `s3:GetObject`/`ListBucket`, `kms:Decrypt`, `lakeformation:GetDataAccess`), S3 bucket policy, KMS key policy, and Lake Formation table/column grants.",
       "files": [],
       "expectations": [

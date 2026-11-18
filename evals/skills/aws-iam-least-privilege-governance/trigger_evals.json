@@ -55,7 +55,7 @@
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "CloudTrail shows `User: arn:aws:sts::187382368021:assumed-role/invoice-fn-role/invoice-fn is not authorized to perform: s3:ListBucket on resource: arn:aws:s3:::invoices-ap-south-1 with an explicit deny in a permissions boundary`. Help us diagnose and fix the policy."
+      "prompt": "CloudTrail shows `User: arn:aws:sts::123456789012:assumed-role/invoice-fn-role/invoice-fn is not authorized to perform: s3:ListBucket on resource: arn:aws:s3:::invoices-ap-south-1 with an explicit deny in a permissions boundary`. Help us diagnose and fix the policy."
     },
     {
       "id": "trig-ctx-02",
@@ -76,24 +76,24 @@
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "aws-iac-cloudformation-cdk",
-      "prompt": "Our CloudFormation stack `network-vpc-prod` has 4 drifted subnet route table resources—show how to run `detect-stack-drift` and import an untracked NAT Gateway via IaC Generator."
+      "prompt": "Our CloudFormation stack `network-vpc-prod` has 4 drifted subnet route table resources—show how to run `detect-stack-drift` and import an untracked NAT Gateway via IaC Generator.",
+      "expected_alternative_skill": "aws-iac-cloudformation-cdk"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "expected_alternative_skill": "aws-landing-zone-and-platform-governance",
-      "prompt": "Design a hierarchical Amazon VPC IPAM pool plan (`/12` -> `/16` -> `/17`) and share subnets across 30 spoke accounts using AWS RAM."
+      "prompt": "Design a hierarchical Amazon VPC IPAM pool plan (`/12` -> `/16` -> `/17`) and share subnets across 30 spoke accounts using AWS RAM.",
+      "expected_alternative_skill": "aws-landing-zone-and-platform-governance"
     },
     {
       "id": "trig-neg-03",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "aws-containers",
-      "prompt": "Configure EKS VPC CNI prefix delegation (`ENABLE_PREFIX_DELEGATION=true`) and ALB Target Group IP mode for 300 pods in a `/25` subnet."
+      "prompt": "Configure EKS VPC CNI prefix delegation (`ENABLE_PREFIX_DELEGATION=true`) and ALB Target Group IP mode for 300 pods in a `/25` subnet.",
+      "expected_alternative_skill": "aws-containers"
     }
   ]
 }

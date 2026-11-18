@@ -1,34 +1,68 @@
-[
-  {
-    "query": "Use /aws-messaging-and-streaming:kinesis-stream-ops to size a Kinesis Data Stream for 120 MB/s ingress and configure Enhanced Fan-Out (EFO) consumers.",
-    "should_trigger": true
-  },
-  {
-    "query": "Troubleshoot why our Kinesis Data Stream has WriteProvisionedThroughputExceeded on a single hot shard and rising GetRecords.IteratorAgeMilliseconds.",
-    "should_trigger": true
-  },
-  {
-    "query": "Tune an AWS Lambda Kinesis Event Source Mapping with ParallelizationFactor, BisectBatchOnFunctionError, TumblingWindowInSeconds, and an OnFailure DLQ.",
-    "should_trigger": true
-  },
-  {
-    "query": "Compare Kinesis Data Streams On-Demand mode vs Provisioned mode and enable shard-level CloudWatch metrics (`EnableEnhancedMonitoring`).",
-    "should_trigger": true
-  },
-  {
-    "query": "Redesign a skewed Kinesis PartitionKey using write sharding / random salting to eliminate hot-shard throttling.",
-    "should_trigger": true
-  },
-  {
-    "query": "Size an Amazon MSK Express Apache Kafka cluster using msk_sizing.py.",
-    "should_trigger": false
-  },
-  {
-    "query": "Create an AmazonData Firehose delivery stream to load S3 Parquet files into Amazon Redshift.",
-    "should_trigger": false
-  },
-  {
-    "query": "Upgrade an Amazon MWAA environment from Apache Airflow 2.8 to Airflow 3.0.",
-    "should_trigger": false
-  }
-]
+{
+  "skill_name": "managing-amazon-kinesis-data-streams",
+  "companion_skills": [
+    "amazon-opensearch-service",
+    "analytics-opensearch-expertise",
+    "auditing-aws-system-tables",
+    "authoring-glue-and-emr-spark-jobs",
+    "authoring-mwaa-workflow"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use /aws-messaging-and-streaming:kinesis-stream-ops to size a Kinesis Data Stream for 120 MB/s ingress and configure Enhanced Fan-Out (EFO) consumers."
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Troubleshoot why our Kinesis Data Stream has WriteProvisionedThroughputExceeded on a single hot shard and rising GetRecords.IteratorAgeMilliseconds."
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Tune an AWS Lambda Kinesis Event Source Mapping with ParallelizationFactor, BisectBatchOnFunctionError, TumblingWindowInSeconds, and an OnFailure DLQ."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Compare Kinesis Data Streams On-Demand mode vs Provisioned mode and enable shard-level CloudWatch metrics (`EnableEnhancedMonitoring`)."
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Redesign a skewed Kinesis PartitionKey using write sharding / random salting to eliminate hot-shard throttling."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Size an Amazon MSK Express Apache Kafka cluster using msk_sizing.py."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Create an AmazonData Firehose delivery stream to load S3 Parquet files into Amazon Redshift."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Upgrade an Amazon MWAA environment from Apache Airflow 2.8 to Airflow 3.0."
+    }
+  ]
+}

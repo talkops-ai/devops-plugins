@@ -71,7 +71,7 @@
     },
     {
       "id": "eval-07-route53-profile-inheritance-timing-and-cross-account-opacity",
-      "prompt": "Our consumer workload VPC in account `187382368021` is associated with a centralized Network Hub **Route 53 Profile** (`rp-0abc1234`) shared via AWS RAM that attaches a cross-account DNS Firewall rule group (using an unreadable RAM-shared domain list) and a cross-account Resolver `FORWARD` rule (`GetResolverRule` returns `AccessDenied` from our consumer account). How must our pre-change simulation classify hostnames in this VPC, and how long does a Route 53 Profile change take to propagate?",
+      "prompt": "Our consumer workload VPC in account `123456789012` is associated with a centralized Network Hub **Route 53 Profile** (`rp-0abc1234`) shared via AWS RAM that attaches a cross-account DNS Firewall rule group (using an unreadable RAM-shared domain list) and a cross-account Resolver `FORWARD` rule (`GetResolverRule` returns `AccessDenied` from our consumer account). How must our pre-change simulation classify hostnames in this VPC, and how long does a Route 53 Profile change take to propagate?",
       "expected_output": "Activates aws-vpc-dns-investigation, classifies cross-account unreadable DNS Firewall domain lists and Resolver rules as `OPAQUE` (`present, match set unknown` — refusing to assume they are empty or safe!), explains that effective VPC DNS is the union of `direct` and `profile:rp-0abc1234` constructs, and states the asynchronous Route 53 Profile propagation window (~300–350 seconds service-side, up to 900 seconds worst-case with negative TTL caching).",
       "files": [],
       "expectations": [

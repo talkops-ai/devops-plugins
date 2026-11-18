@@ -3,12 +3,12 @@
   "evals": [
     {
       "id": "eval-01-run-aws-devsecops-engineer-posture-in-ap-south-1",
-      "prompt": "Run `/aws-devsecops-engineer:posture` in `ap-south-1` (`client-devops`) to perform a live multi-service Cloud Security Posture Management (CSPM) sweep across Amazon GuardDuty, AWS Security Hub, Amazon Inspector2, and AWS Config. Report the exact subscription/enablement status of each service in account `187382368021` and provide a prioritized P0/P1/P2 remediation plan.",
+      "prompt": "Run `/aws-devsecops-engineer:posture` in `ap-south-1` (`default`) to perform a live multi-service Cloud Security Posture Management (CSPM) sweep across Amazon GuardDuty, AWS Security Hub, Amazon Inspector2, and AWS Config. Report the exact subscription/enablement status of each service in account `123456789012` and provide a prioritized P0/P1/P2 remediation plan.",
       "expected_output": "Executes read-only MCP checks via `aws-well-architected-security` and `aws-mcp` (`aws___run_script` / `aws___call_aws`) in `ap-south-1`, accurately reports `0` GuardDuty detectors (`DetectorIds: []`), Security Hub CSPM not subscribed (`InvalidAccessException`), Inspector2 `DISABLED` across `ec2`/`ecr`/`lambda`/`lambdaCode`, and `0` AWS Config recorders (`ConfigurationRecorders: []`), and provides P0/P1/P2 remediation steps.",
       "files": [],
       "expectations": [
         "Invokes `aws-well-architected-security` (`CheckSecurityServices` / `GetSecurityFindings`) and/or `aws-mcp` (`aws___run_script` / `aws___call_aws`) in read-only mode in `ap-south-1` without running raw `aws` CLI commands in `Bash`",
-        "Accurately reports the live `ap-south-1` status for account `187382368021`: `0` GuardDuty detectors (`DetectorIds: []`), AWS Security Hub not subscribed, Amazon Inspector2 `DISABLED` across resource types, and `0` AWS Config configuration recorders",
+        "Accurately reports the live `ap-south-1` status for account `123456789012`: `0` GuardDuty detectors (`DetectorIds: []`), AWS Security Hub not subscribed, Amazon Inspector2 `DISABLED` across resource types, and `0` AWS Config configuration recorders",
         "Ranks the missing telemetry and posture gaps using the P0/P1/P2 prioritization framework and provides concrete IaC / enablement remediation steps"
       ]
     }

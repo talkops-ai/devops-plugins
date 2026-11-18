@@ -1,58 +1,110 @@
-[
-  {
-    "query": "Migrate our 30 TB Teradata 17 data warehouse (UPI/NUPI, PPI, MULTISET tables, BTEQ and FastLoad scripts) to Amazon Redshift Serverless.",
-    "should_trigger": true
-  },
-  {
-    "query": "Convert Snowflake VARIANT columns, LATERAL FLATTEN queries, Clustering Keys, and Streams & Tasks to Amazon Redshift SUPER and PartiQL.",
-    "should_trigger": true
-  },
-  {
-    "query": "Plan an Oracle 19c Data Warehouse migration to Amazon Redshift RA3 using AWS Schema Conversion Tool (SCT), S3 COPY, and AWS DMS for CDC cutover.",
-    "should_trigger": true
-  },
-  {
-    "query": "Migrate a Microsoft SQL Server enterprise data warehouse (T-SQL stored procedures, columnstore tables, SSIS packages) to Amazon Redshift.",
-    "should_trigger": true
-  },
-  {
-    "query": "Move a 5 TB PostgreSQL analytics database into Amazon Redshift and convert PostgreSQL array/JSONB types and partitioning to DISTKEY and SORTKEY.",
-    "should_trigger": true
-  },
-  {
-    "query": "Design a post-migration data validation suite comparing row counts, partition aggregates, and checksums between legacy Netezza/Teradata and Amazon Redshift.",
-    "should_trigger": true
-  },
-  {
-    "query": "Convert Teradata BTEQ and FastExport scripts to Amazon Redshift RSQL and UNLOAD commands.",
-    "should_trigger": true
-  },
-  {
-    "query": "Assess source data warehouse workload complexity and size target Redshift RA3 nodes vs Redshift Serverless RPUs for a warehouse migration.",
-    "should_trigger": true
-  },
-  {
-    "query": "Migrate a self-managed Apache Kafka cluster on EC2 to Amazon MSK Express brokers using MirrorMaker 2.",
-    "should_trigger": false
-  },
-  {
-    "query": "Upgrade an Amazon MWAA environment from Apache Airflow 2.8 to Airflow 3.0.",
-    "should_trigger": false
-  },
-  {
-    "query": "Design an Amazon OpenSearch Service k-NN vector index for semantic product search.",
-    "should_trigger": false
-  },
-  {
-    "query": "Build a Java DataStream application on Amazon Managed Service for Apache Flink consuming from Kinesis Data Streams.",
-    "should_trigger": false
-  },
-  {
-    "query": "Configure Lake Formation LF-Tag policies and cell-level security filters on an S3 Tables Iceberg table.",
-    "should_trigger": false
-  },
-  {
-    "query": "Write an AWS Glue Data Quality DQDL ruleset to check completeness and uniqueness on an S3 Parquet table.",
-    "should_trigger": false
-  }
-]
+{
+  "skill_name": "migrating-to-amazon-redshift",
+  "companion_skills": [
+    "amazon-opensearch-service",
+    "analytics-opensearch-expertise",
+    "auditing-aws-system-tables",
+    "authoring-glue-and-emr-spark-jobs",
+    "authoring-mwaa-workflow"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Migrate our 30 TB Teradata 17 data warehouse (UPI/NUPI, PPI, MULTISET tables, BTEQ and FastLoad scripts) to Amazon Redshift Serverless."
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Convert Snowflake VARIANT columns, LATERAL FLATTEN queries, Clustering Keys, and Streams & Tasks to Amazon Redshift SUPER and PartiQL."
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Plan an Oracle 19c Data Warehouse migration to Amazon Redshift RA3 using AWS Schema Conversion Tool (SCT), S3 COPY, and AWS DMS for CDC cutover."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Migrate a Microsoft SQL Server enterprise data warehouse (T-SQL stored procedures, columnstore tables, SSIS packages) to Amazon Redshift."
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Move a 5 TB PostgreSQL analytics database into Amazon Redshift and convert PostgreSQL array/JSONB types and partitioning to DISTKEY and SORTKEY."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Design a post-migration data validation suite comparing row counts, partition aggregates, and checksums between legacy Netezza/Teradata and Amazon Redshift."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Convert Teradata BTEQ and FastExport scripts to Amazon Redshift RSQL and UNLOAD commands."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Assess source data warehouse workload complexity and size target Redshift RA3 nodes vs Redshift Serverless RPUs for a warehouse migration."
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Migrate a self-managed Apache Kafka cluster on EC2 to Amazon MSK Express brokers using MirrorMaker 2."
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Upgrade an Amazon MWAA environment from Apache Airflow 2.8 to Airflow 3.0."
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Design an Amazon OpenSearch Service k-NN vector index for semantic product search."
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Build a Java DataStream application on Amazon Managed Service for Apache Flink consuming from Kinesis Data Streams."
+    },
+    {
+      "id": "trig-13",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure Lake Formation LF-Tag policies and cell-level security filters on an S3 Tables Iceberg table."
+    },
+    {
+      "id": "trig-14",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Write an AWS Glue Data Quality DQDL ruleset to check completeness and uniqueness on an S3 Parquet table."
+    }
+  ]
+}

@@ -71,7 +71,7 @@ first. Don't start broad unscoped queries.
    creates a new flow log (suggest it; don't create it).
 2. Load [references/flow-log-queries.md](references/flow-log-queries.md) and run its scoped
    queries: rejected flows, both directions between the two hosts, and gaps (`logStatus`).
-   **Always time-box them**, because Logs Insights and Athena bill by data scanned. Custom
+   **Always time-box every CloudWatch Logs Insights and Athena query** (both when executing AND when writing example queries in your response — always include an explicit `@timestamp` / `start`–`end` filter or `--start-time` / `--end-time` window alongside `parse @message`), because Logs Insights and Athena bill by data scanned. Custom
    formats need `parse @message` in the exact field order.
 3. For record-level pairing, pull only the failing conversation's records
    (`filter-log-events` with the host as the filter pattern).

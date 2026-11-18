@@ -1,0 +1,99 @@
+{
+  "skill_name": "bedrock-operation-review",
+  "evals": [
+    {
+      "id": "bedrock-review-smoke-test",
+      "prompt": "Read bedrock-context.json. List each resource's name, type (model or guardrail), region, and account. No analysis needed.",
+      "expected_output": "Lists every resource from files/bedrock-context.json with its name, type, region, and account exactly as defined in the file.",
+      "files": [
+        "files/bedrock-context.json"
+      ],
+      "expectations": [
+        "Output satisfies check: matches regex /[a-z]{2}-[a-z]+-\\d/",
+        "Output satisfies check: contains 'model' or contains 'guardrail'",
+        "Output satisfies check: contains 'region'",
+        "Output satisfies check: contains 'account'"
+      ],
+      "assertions": [
+        "matches regex /[a-z]{2}-[a-z]+-\\d/",
+        "contains 'model' or contains 'guardrail'",
+        "contains 'region'",
+        "contains 'account'"
+      ]
+    },
+    {
+      "id": "bedrock-review-artifact-naming",
+      "prompt": "Read bedrock-context.json. Identify the FIRST resource listed and its region, then state the report artifact filename you would generate for this review (use today's date in YYYY-MM-DD form). Do not run the audit.",
+      "expected_output": "Identifies the first resource and region from files/bedrock-context.json and proposes an artifact name of the form bedrock-review-<account-id>-<region>-<YYYY-MM-DD>.md.",
+      "files": [
+        "files/bedrock-context.json"
+      ],
+      "expectations": [
+        "Output satisfies check: matches regex /bedrock-review-[a-z0-9-]+-\\d{4}-\\d{2}-\\d{2}\\.md/",
+        "Output satisfies check: matches regex /[a-z]{2}-[a-z]+-\\d/"
+      ],
+      "assertions": [
+        "matches regex /bedrock-review-[a-z0-9-]+-\\d{4}-\\d{2}-\\d{2}\\.md/",
+        "matches regex /[a-z]{2}-[a-z]+-\\d/"
+      ]
+    },
+    {
+      "id": "bedrock-review-data-source-priority",
+      "prompt": "According to the skill, which AWS APIs does the Bedrock operational review use to collect data? Name at least three specific API calls or namespaces the skill mentions. Confirm whether the skill invokes any foundation model or reads prompt/response content. No account access required.",
+      "expected_output": "States the skill uses Bedrock, Bedrock Agent, CloudWatch, Service Quotas, and EC2 APIs and explicitly does NOT invoke any foundation model or read prompt/response content. Names specific calls such as bedrock.ListGuardrails, cloudwatch.GetMetricData, cloudwatch.ListMetrics, or servicequotas.GetServiceQuota.",
+      "files": [],
+      "expectations": [
+        "Output satisfies check: contains 'Bedrock' or contains 'bedrock'",
+        "Output satisfies check: contains 'CloudWatch' or contains 'cloudwatch'",
+        "Output satisfies check: contains 'ListGuardrails' or contains 'GetMetricData' or contains 'ListMetrics' or contains 'GetServiceQuota'",
+        "Output satisfies check: contains 'not' or contains 'no '"
+      ],
+      "assertions": [
+        "contains 'Bedrock' or contains 'bedrock'",
+        "contains 'CloudWatch' or contains 'cloudwatch'",
+        "contains 'ListGuardrails' or contains 'GetMetricData' or contains 'ListMetrics' or contains 'GetServiceQuota'",
+        "contains 'not' or contains 'no '"
+      ]
+    },
+    {
+      "id": "bedrock-review-severity-definitions",
+      "prompt": "List the five severity levels the skill uses for findings, in order from most to least urgent. No account access required.",
+      "expected_output": "Lists CRITICAL, HIGH, MEDIUM, LOW, INFO in that order.",
+      "files": [],
+      "expectations": [
+        "Output satisfies check: contains 'CRITICAL'",
+        "Output satisfies check: contains 'HIGH'",
+        "Output satisfies check: contains 'MEDIUM'",
+        "Output satisfies check: contains 'LOW'",
+        "Output satisfies check: contains 'INFO'"
+      ],
+      "assertions": [
+        "contains 'CRITICAL'",
+        "contains 'HIGH'",
+        "contains 'MEDIUM'",
+        "contains 'LOW'",
+        "contains 'INFO'"
+      ]
+    },
+    {
+      "id": "bedrock-review-pillars",
+      "prompt": "List the pillars the skill evaluates during a Bedrock operational review. No account access required.",
+      "expected_output": "Mentions Security, Performance, Service Quotas, Cost Optimization, and Resilience.",
+      "files": [],
+      "expectations": [
+        "Output satisfies check: contains 'Security' or contains 'security'",
+        "Output satisfies check: contains 'Performance' or contains 'performance'",
+        "Output satisfies check: contains 'Quota' or contains 'quota'",
+        "Output satisfies check: contains 'Cost' or contains 'cost'",
+        "Output satisfies check: contains 'Resilience' or contains 'resilience'"
+      ],
+      "assertions": [
+        "contains 'Security' or contains 'security'",
+        "contains 'Performance' or contains 'performance'",
+        "contains 'Quota' or contains 'quota'",
+        "contains 'Cost' or contains 'cost'",
+        "contains 'Resilience' or contains 'resilience'"
+      ]
+    }
+  ]
+}

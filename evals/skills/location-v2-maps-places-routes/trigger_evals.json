@@ -1,0 +1,62 @@
+{
+  "skill_name": "location-v2-maps-places-routes",
+  "companion_skills": [
+    "amazon-location-service",
+    "location-migration-specialist",
+    "location-security-iac-and-finops",
+    "location-tracking-geofencing-iot",
+    "signing-in-to-aws"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use `location-v2-maps-places-routes` to design, validate, and troubleshoot location v2 maps places routes."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Walk me through production best practices and operational guardrails for location v2 maps places routes (`location-v2-maps-places-routes`)."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We need an operational review and step-by-step runbook covering: Production implementation blueprint for Amazon Location Service V2 resourceless APIs (`geo-maps`, `geo-places`, `geo-routes`) and bulk Postal Address Validation Jobs (`location:Sta"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "What are the critical failure modes, configuration checks, and verification commands for location v2 maps places routes?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our location v2 maps places routes setup in read-only mode."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure and troubleshoot amazon location service exclusively without touching location v2 maps places routes.",
+      "expected_alternative_skill": "amazon-location-service"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+    }
+  ]
+}

@@ -1,42 +1,82 @@
-[
-  {
-    "query": "Fix our Amazon Redshift SQL query that fails with 'SUBSTR() function is not supported' on a table column and replace stl_load_errors on Redshift Serverless.",
-    "should_trigger": true
-  },
-  {
-    "query": "Write a Redshift CREATE TABLE statement with DISTKEY, compound SORTKEY, AZ64 compression, and IDENTITY(1,1) instead of PostgreSQL SERIAL and CREATE INDEX.",
-    "should_trigger": true
-  },
-  {
-    "query": "Diagnose 'relation does not exist' and Datashare write permission denied errors on Amazon Redshift using SHOW commands and SYS_ / SVV_ views.",
-    "should_trigger": true
-  },
-  {
-    "query": "Run an async SQL query on an Amazon Redshift Serverless workgroup using aws redshift-data execute-statement with --secret-arn and bounded polling.",
-    "should_trigger": true
-  },
-  {
-    "query": "Write an Amazon Redshift MERGE ... REMOVE DUPLICATES query, QUALIFY window filter, and PartiQL query over a SUPER column.",
-    "should_trigger": true
-  },
-  {
-    "query": "Configure an Amazon Redshift AUTO REFRESH materialized view and check its staleness in SVV_MV_INFO.",
-    "should_trigger": true
-  },
-  {
-    "query": "Design a DynamoDB single-table partition key and sort key schema with Global Secondary Indexes.",
-    "should_trigger": false
-  },
-  {
-    "query": "Tune Amazon Aurora PostgreSQL autovacuum settings and parameter groups.",
-    "should_trigger": false
-  },
-  {
-    "query": "Upgrade an Amazon MWAA Apache Airflow 2.8 environment to Airflow 3.0.",
-    "should_trigger": false
-  },
-  {
-    "query": "Size an Amazon OpenSearch Service cluster with FAISS k-NN vector search.",
-    "should_trigger": false
-  }
-]
+{
+  "skill_name": "redshift-guide",
+  "companion_skills": [
+    "amazon-opensearch-service",
+    "analytics-opensearch-expertise",
+    "auditing-aws-system-tables",
+    "authoring-glue-and-emr-spark-jobs",
+    "authoring-mwaa-workflow"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Fix our Amazon Redshift SQL query that fails with 'SUBSTR() function is not supported' on a table column and replace stl_load_errors on Redshift Serverless."
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Write a Redshift CREATE TABLE statement with DISTKEY, compound SORTKEY, AZ64 compression, and IDENTITY(1,1) instead of PostgreSQL SERIAL and CREATE INDEX."
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Diagnose 'relation does not exist' and Datashare write permission denied errors on Amazon Redshift using SHOW commands and SYS_ / SVV_ views."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Run an async SQL query on an Amazon Redshift Serverless workgroup using aws redshift-data execute-statement with --secret-arn and bounded polling."
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Write an Amazon Redshift MERGE ... REMOVE DUPLICATES query, QUALIFY window filter, and PartiQL query over a SUPER column."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure an Amazon Redshift AUTO REFRESH materialized view and check its staleness in SVV_MV_INFO."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Design a DynamoDB single-table partition key and sort key schema with Global Secondary Indexes."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Tune Amazon Aurora PostgreSQL autovacuum settings and parameter groups."
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Upgrade an Amazon MWAA Apache Airflow 2.8 environment to Airflow 3.0."
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Size an Amazon OpenSearch Service cluster with FAISS k-NN vector search."
+    }
+  ]
+}

@@ -8,7 +8,7 @@
       "files": [],
       "expectations": [
         "Executes read-only discovery commands in ap-south-1 across A2A messaging (aws sqs list-queues, aws sns list-topics, aws events list-event-buses, and pipes/scheduler/mq), streaming (aws kinesis list-streams, aws kafka list-clusters-v2, aws firehose list-delivery-streams), and customer communications (aws sesv2 get-account, aws pinpoint-sms-voice-v2 describe-account-attributes, aws socialmessaging list-linked-whatsapp-business-accounts)",
-        "Accurately reports the live ap-south-1 state in a structured summary: 0 SQS queues, 0 SNS topics, 1 default EventBridge event bus (arn:aws:events:ap-south-1:187382368021:event-bus/default), 0 Kinesis streams, 0 MSK clusters, SESv2 in Sandbox (ProductionAccessEnabled: false, 200/day quota), SMS/Voice in SANDBOX tier, and 0 linked WhatsApp Business Accounts",
+        "Accurately reports the live ap-south-1 state in a structured summary: 0 SQS queues, 0 SNS topics, 1 default EventBridge event bus (arn:aws:events:ap-south-1:123456789012:event-bus/default), 0 Kinesis streams, 0 MSK clusters, SESv2 in Sandbox (ProductionAccessEnabled: false, 200/day quota), SMS/Voice in SANDBOX tier, and 0 linked WhatsApp Business Accounts",
         "Clearly organizes the AWS landscape into three architectural pillars: Application Messaging & Event Routing (SQS, SNS, EventBridge, Amazon MQ), Real-Time Data Streaming & Analytics (Kinesis, MSK, Firehose, Managed Flink), and End-User Customer Communications (SESv2, SMS/Voice/Notify/RCS, WhatsApp Social)",
         "Performs strictly read-only operations without creating or modifying any AWS resources"
       ]
@@ -69,7 +69,7 @@
       "expectations": [
         "Executes read-only checks in ap-south-1 against the exact named resources: aws sqs get-queue-url --queue-name prod-orders-fifo.fifo, aws kinesis describe-stream-summary --stream-name prod-clickstream-events, and aws events describe-event-bus --name prod-commerce-bus",
         "Captures and reports the live AWS API errors: QueueDoesNotExist for the SQS queue and ResourceNotFoundException for both the Kinesis stream and custom EventBridge bus",
-        "Confirms via list commands that ap-south-1 currently has 0 SQS queues, 0 Kinesis streams, and only the default EventBridge bus (arn:aws:events:ap-south-1:187382368021:event-bus/default)",
+        "Confirms via list commands that ap-south-1 currently has 0 SQS queues, 0 Kinesis streams, and only the default EventBridge bus (arn:aws:events:ap-south-1:123456789012:event-bus/default)",
         "Refuses to fabricate any queue URLs, stream ARNs, or metrics, and advises verifying the target AWS account/region or provisioning the missing infrastructure via IaC"
       ]
     },

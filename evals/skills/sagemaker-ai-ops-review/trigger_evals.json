@@ -1,0 +1,96 @@
+{
+  "skill_name": "sagemaker-ai-ops-review",
+  "companion_skills": [
+    "aiml-access-diagnostics",
+    "aiml-gpu-training-cluster-investigation",
+    "bedrock-adoption-readiness",
+    "bedrock-operation-review",
+    "dataset-evaluation"
+  ],
+  "queries": [
+    {
+      "id": "trig-pos-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Which skill would help me run an Amazon SageMaker AI operational review? Just name it; do not run it."
+    },
+    {
+      "id": "trig-pos-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Is there a skill for auditing my SageMaker endpoints, training jobs, and Studio domains against best practices? Answer yes or no with the skill name; do not execute it."
+    },
+    {
+      "id": "trig-pos-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Name the skill that covers SageMaker security, cost optimization, service quota, and resiliency reviews. Do not run any audit."
+    },
+    {
+      "id": "trig-pos-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "I need an ORR for SageMaker. Which skill covers that? Name it only."
+    },
+    {
+      "id": "trig-pos-05",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We're deploying a SageMaker AI workload to production next week and need an Operational Readiness Review. Which skill covers that? Name it only."
+    },
+    {
+      "id": "trig-pos-06",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Which skill gives me a pre-production readiness check for my SageMaker AI endpoints? Just name it."
+    },
+    {
+      "id": "trig-pos-07",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Which skill runs a SageMaker health check across my account? Just name it."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Why is my Bedrock InvokeModel call returning AccessDeniedException? Name the skill that diagnoses this; do not run it."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a Python script that sorts a list of numbers"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "What's the weather forecast for Sydney this weekend?"
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Create a CloudFormation template for an S3 bucket"
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Review my EKS cluster for upgrade readiness. Name the skill only."
+    }
+  ]
+}

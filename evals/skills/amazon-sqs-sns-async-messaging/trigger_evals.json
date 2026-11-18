@@ -8,72 +8,82 @@
   "queries": [
     {
       "id": "trig-01-positive-easy-sns-sqs-fanout-sam",
-      "category": "positive_easy",
-      "query": "Design an Amazon SNS to Amazon SQS fan-out architecture in AWS SAM with message attribute filter policies, RawMessageDelivery, and a Dead-Letter Queue.",
+      "quadrant": "explicit",
+      "split": "train",
       "should_trigger": true,
+      "prompt": "Design an Amazon SNS to Amazon SQS fan-out architecture in AWS SAM with message attribute filter policies, RawMessageDelivery, and a Dead-Letter Queue.",
       "notes": "Direct request for SNS-to-SQS fan-out with filter policies and DLQ."
     },
     {
       "id": "trig-02-positive-easy-sqs-lambda-visibility-timeout-and-batch-failures",
-      "category": "positive_easy",
-      "query": "How should I size my SQS queue VisibilityTimeout for a Lambda consumer and implement partial batch failure handling with `ReportBatchItemFailures`?",
+      "quadrant": "explicit",
+      "split": "train",
       "should_trigger": true,
+      "prompt": "How should I size my SQS queue VisibilityTimeout for a Lambda consumer and implement partial batch failure handling with `ReportBatchItemFailures`?",
       "notes": "Direct request for SQS VisibilityTimeout formula and ReportBatchItemFailures."
     },
     {
       "id": "trig-03-positive-easy-sqs-high-throughput-fifo",
-      "category": "positive_easy",
-      "query": "Configure an Amazon SQS FIFO queue in High-Throughput mode (`perMessageGroupId`) to handle 5,000 ordered messages per second per tenant.",
+      "quadrant": "explicit",
+      "split": "train",
       "should_trigger": true,
+      "prompt": "Configure an Amazon SQS FIFO queue in High-Throughput mode (`perMessageGroupId`) to handle 5,000 ordered messages per second per tenant.",
       "notes": "Direct request for High-Throughput SQS FIFO."
     },
     {
       "id": "trig-04-positive-hard-dlq-poison-pill-redrive",
-      "category": "positive_hard",
-      "query": "We have 8,000 failed messages stuck in our SQS dead-letter queue after a database outage. How do we inspect a sample without deleting them and redrive them at 50 messages/sec using `start_message_move_task`?",
+      "quadrant": "explicit",
+      "split": "train",
       "should_trigger": true,
+      "prompt": "We have 8,000 failed messages stuck in our SQS dead-letter queue after a database outage. How do we inspect a sample without deleting them and redrive them at 50 messages/sec using `start_message_move_task`?",
       "notes": "Operational DLQ triage and message move task workflow."
     },
     {
       "id": "trig-05-positive-hard-sns-to-sqs-delivery-failure-kms",
-      "category": "positive_hard",
-      "query": "Our SNS topic `NumberOfNotificationsFailed` metric is spiking and zero messages arrive in our KMS-encrypted SQS queue. What QueuePolicy and KMS Key Policy statements are missing?",
+      "quadrant": "explicit",
+      "split": "train",
       "should_trigger": true,
+      "prompt": "Our SNS topic `NumberOfNotificationsFailed` metric is spiking and zero messages arrive in our KMS-encrypted SQS queue. What QueuePolicy and KMS Key Policy statements are missing?",
       "notes": "Troubleshooting SNS-to-SQS delivery failure with CMK encryption."
     },
     {
       "id": "trig-06-negative-near-miss-eventbridge-custom-bus-jsonata",
-      "category": "negative_near_miss",
-      "query": "Write a JSONata transformer and `SYSTEM_METADATA` filter for an `AWS::EventsV2::Subscriber` on our custom EventBridge event bus.",
+      "quadrant": "near_miss_negative",
+      "split": "train",
       "should_trigger": false,
+      "prompt": "Write a JSONata transformer and `SYSTEM_METADATA` filter for an `AWS::EventsV2::Subscriber` on our custom EventBridge event bus.",
       "notes": "Belongs to amazon-eventbridge-event-bus."
     },
     {
       "id": "trig-07-negative-near-miss-eventbridge-scheduler-timezone-cron",
-      "category": "negative_near_miss",
-      "query": "Create an EventBridge Scheduler schedule group with a timezone-aware cron expression and `ActionAfterCompletion: DELETE`.",
+      "quadrant": "near_miss_negative",
+      "split": "train",
       "should_trigger": false,
+      "prompt": "Create an EventBridge Scheduler schedule group with a timezone-aware cron expression and `ActionAfterCompletion: DELETE`.",
       "notes": "Belongs to amazon-eventbridge-scheduler-and-pipes."
     },
     {
       "id": "trig-08-negative-near-miss-kinesis-enhanced-fanout",
-      "category": "negative_near_miss",
-      "query": "Our Kinesis Data Stream is throwing `ReadProvisionedThroughputExceeded` across 5 consumers. How do we enable Enhanced Fan-Out (`RegisterStreamConsumer`) and reshard?",
+      "quadrant": "near_miss_negative",
+      "split": "train",
       "should_trigger": false,
+      "prompt": "Our Kinesis Data Stream is throwing `ReadProvisionedThroughputExceeded` across 5 consumers. How do we enable Enhanced Fan-Out (`RegisterStreamConsumer`) and reshard?",
       "notes": "Belongs to managing-amazon-kinesis-data-streams."
     },
     {
       "id": "trig-09-negative-unrelated-rds-postgres-blue-green",
-      "category": "negative_unrelated",
-      "query": "Set up an Amazon RDS PostgreSQL Blue/Green deployment for a major version upgrade from PostgreSQL 14 to 16.",
+      "quadrant": "near_miss_negative",
+      "split": "train",
       "should_trigger": false,
+      "prompt": "Set up an Amazon RDS PostgreSQL Blue/Green deployment for a major version upgrade from PostgreSQL 14 to 16.",
       "notes": "Unrelated database upgrade workload."
     },
     {
       "id": "trig-10-negative-unrelated-s3-object-lock-compliance",
-      "category": "negative_unrelated",
-      "query": "Enable Amazon S3 Object Lock in Compliance mode on our CloudTrail log archive bucket for SEC 17a-4 immutability.",
+      "quadrant": "near_miss_negative",
+      "split": "train",
       "should_trigger": false,
+      "prompt": "Enable Amazon S3 Object Lock in Compliance mode on our CloudTrail log archive bucket for SEC 17a-4 immutability.",
       "notes": "Unrelated storage security workload."
     }
   ]

@@ -77,8 +77,8 @@
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "diagnosing-tempo-ingestion-and-health",
       "prompt": "Tempo ingester ring members in `observability` are unhealthy and Kafka partition lag is spiking while ingesting `otel-demo` traces—diagnose the outage.",
+      "expected_alternative_skill": "diagnosing-tempo-ingestion-and-health",
       "notes": "Live Tempo health/ring incident diagnosis"
     },
     {
@@ -86,8 +86,8 @@
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "expected_alternative_skill": "operating-loki-deployments-and-ingestion",
       "prompt": "Render a `1x.small` `LokiStack` CR `loki-otel` with TSDB `v13` and S3 object storage in namespace `observability`.",
+      "expected_alternative_skill": "operating-loki-deployments-and-ingestion",
       "notes": "LokiStack belongs to Loki ops"
     },
     {
@@ -95,8 +95,8 @@
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "provisioning-opentelemetry-collectors",
       "prompt": "Provision `opentelemetry-otel-collector` in `otel-demo` exporting traces from all 14 microservices to Tempo in `observability`.",
+      "expected_alternative_skill": "provisioning-opentelemetry-collectors",
       "notes": "OTel Collector provisioning"
     },
     {
@@ -104,8 +104,8 @@
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "expected_alternative_skill": "deploying-helm-charts",
       "prompt": "Install the `checkout` and `product-catalog` Helm charts from `charts/` into namespace `otel-demo`.",
+      "expected_alternative_skill": "deploying-helm-charts",
       "notes": "Helm chart installation"
     }
   ]

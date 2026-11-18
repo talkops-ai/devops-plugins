@@ -76,24 +76,24 @@
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "sitetositevpn",
-      "prompt": "Configure an AWS Site-to-Site IPsec VPN connection with BGP over two tunnels to a Virtual Private Gateway and tune IKEv2 phase-1 parameters."
+      "prompt": "Configure an AWS Site-to-Site IPsec VPN connection with BGP over two tunnels to a Virtual Private Gateway and tune IKEv2 phase-1 parameters.",
+      "expected_alternative_skill": "sitetositevpn"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "expected_alternative_skill": "aws-vpc-dns-investigation",
-      "prompt": "Diagnose why `internal.corp` DNS queries inside `vpc-0167f5c4bb94b89db` time out when both a Route 53 Private Hosted Zone and a Resolver FORWARD rule exist."
+      "prompt": "Diagnose why `internal.corp` DNS queries inside `vpc-0167f5c4bb94b89db` time out when both a Route 53 Private Hosted Zone and a Resolver FORWARD rule exist.",
+      "expected_alternative_skill": "aws-vpc-dns-investigation"
     },
     {
       "id": "trig-neg-03",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "transitgateway",
-      "prompt": "Centralize east-west VPC-to-VPC packet inspection through AWS Network Firewall attached to AWS Transit Gateway with `ApplianceModeSupport: enable`."
+      "prompt": "Centralize east-west VPC-to-VPC packet inspection through AWS Network Firewall attached to AWS Transit Gateway with `ApplianceModeSupport: enable`.",
+      "expected_alternative_skill": "transitgateway"
     }
   ]
 }

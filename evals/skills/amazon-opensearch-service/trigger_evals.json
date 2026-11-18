@@ -1,58 +1,110 @@
-[
-  {
-    "query": "Size a production Amazon OpenSearch Service domain for 2 TB/day of application logs with 14 days hot and 90 days UltraWarm retention.",
-    "should_trigger": true
-  },
-  {
-    "query": "Run /aws-analytics:opensearch-ops to diagnose why our OpenSearch cluster status is Yellow with unassigned replica shards and 88% JVMMemoryPressure.",
-    "should_trigger": true
-  },
-  {
-    "query": "Configure an OpenSearch k-NN vector index with FAISS HNSW and FP16 quantization for 10 million Bedrock Titan 1024-d embeddings plus a hybrid RRF search pipeline.",
-    "should_trigger": true
-  },
-  {
-    "query": "Assess migrating our self-managed Elasticsearch 7.17 cluster (custom analyzers, ILM policies, Logstash pipelines) to Amazon OpenSearch Service 2.17.",
-    "should_trigger": true
-  },
-  {
-    "query": "Set up an Amazon OpenSearch Ingestion (OSI / Data Prepper) pipeline to ingest OpenTelemetry traces into OpenSearch Trace Analytics.",
-    "should_trigger": true
-  },
-  {
-    "query": "Write an OpenSearch Piped Processing Language (PPL) query to analyze HTTP 5xx error rates and p99 latency across microservices.",
-    "should_trigger": true
-  },
-  {
-    "query": "Compare Amazon OpenSearch Provisioned domains vs OpenSearch Serverless Search and Time-Series collections for a spiky e-commerce search workload.",
-    "should_trigger": true
-  },
-  {
-    "query": "Configure Fine-Grained Access Control (FGAC) role mappings and SAML authentication on our Amazon OpenSearch Service domain.",
-    "should_trigger": true
-  },
-  {
-    "query": "Design an Amazon Redshift RA3 table with DISTKEY and compound SORTKEY to optimize star-schema fact table joins.",
-    "should_trigger": false
-  },
-  {
-    "query": "Create an Apache Iceberg table in Amazon S3 Tables and load Parquet data from S3 using Athena CTAS.",
-    "should_trigger": false
-  },
-  {
-    "query": "Upgrade our Amazon MWAA environment from Apache Airflow 2.8.1 to Airflow 3.0 using a blue-green environment strategy.",
-    "should_trigger": false
-  },
-  {
-    "query": "Calculate Amazon MSK Express broker sizing and partition count for a 150 MB/s Kafka streaming workload.",
-    "should_trigger": false
-  },
-  {
-    "query": "Write a Glue Data Quality DQDL ruleset to validate null rates and primary key uniqueness on our customer dimension table.",
-    "should_trigger": false
-  },
-  {
-    "query": "Configure Lake Formation LF-Tags and DataCellsFilter row-level security for our governed data lake tables.",
-    "should_trigger": false
-  }
-]
+{
+  "skill_name": "amazon-opensearch-service",
+  "companion_skills": [
+    "analytics-opensearch-expertise",
+    "auditing-aws-system-tables",
+    "authoring-glue-and-emr-spark-jobs",
+    "authoring-mwaa-workflow",
+    "connecting-to-data-source"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Size a production Amazon OpenSearch Service domain for 2 TB/day of application logs with 14 days hot and 90 days UltraWarm retention."
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Run /aws-analytics:opensearch-ops to diagnose why our OpenSearch cluster status is Yellow with unassigned replica shards and 88% JVMMemoryPressure."
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure an OpenSearch k-NN vector index with FAISS HNSW and FP16 quantization for 10 million Bedrock Titan 1024-d embeddings plus a hybrid RRF search pipeline."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Assess migrating our self-managed Elasticsearch 7.17 cluster (custom analyzers, ILM policies, Logstash pipelines) to Amazon OpenSearch Service 2.17."
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Set up an Amazon OpenSearch Ingestion (OSI / Data Prepper) pipeline to ingest OpenTelemetry traces into OpenSearch Trace Analytics."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Write an OpenSearch Piped Processing Language (PPL) query to analyze HTTP 5xx error rates and p99 latency across microservices."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Compare Amazon OpenSearch Provisioned domains vs OpenSearch Serverless Search and Time-Series collections for a spiky e-commerce search workload."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure Fine-Grained Access Control (FGAC) role mappings and SAML authentication on our Amazon OpenSearch Service domain."
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Design an Amazon Redshift RA3 table with DISTKEY and compound SORTKEY to optimize star-schema fact table joins."
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Create an Apache Iceberg table in Amazon S3 Tables and load Parquet data from S3 using Athena CTAS."
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Upgrade our Amazon MWAA environment from Apache Airflow 2.8.1 to Airflow 3.0 using a blue-green environment strategy."
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Calculate Amazon MSK Express broker sizing and partition count for a 150 MB/s Kafka streaming workload."
+    },
+    {
+      "id": "trig-13",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Write a Glue Data Quality DQDL ruleset to validate null rates and primary key uniqueness on our customer dimension table."
+    },
+    {
+      "id": "trig-14",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure Lake Formation LF-Tags and DataCellsFilter row-level security for our governed data lake tables."
+    }
+  ]
+}

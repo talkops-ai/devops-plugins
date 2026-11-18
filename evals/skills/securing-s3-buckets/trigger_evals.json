@@ -27,7 +27,7 @@
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Create and secure S3 buckets following AWS best practices for access control, encryption, monitoring, and remediation of misconfigurations. Use when the user wants to secure a new "
+      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Create and secure S3 buckets following AWS best practices for access control, encryption, monitoring, and remediation of misconfigurations. Use when the user wants to secure a new"
     },
     {
       "id": "trig-imp-02",
@@ -45,14 +45,14 @@
     },
     {
       "id": "trig-neg-01",
-      "quadrant": "negative",
+      "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
       "prompt": "Help me configure and troubleshoot aws resilience dr and migration architecture exclusively without touching securing s3 buckets."
     },
     {
       "id": "trig-neg-02",
-      "quadrant": "negative",
+      "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
       "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."

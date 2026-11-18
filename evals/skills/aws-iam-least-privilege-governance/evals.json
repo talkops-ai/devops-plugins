@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": "eval-01-eks-pod-identity-vs-irsa-and-access-entries",
-      "prompt": "Our platform team runs Amazon EKS 1.31 in ap-south-1 and developers keep asking us to edit the `aws-auth` ConfigMap and set up new OIDC thumbprints for IRSA every time a microservice needs S3 (`arn:aws:s3:::orders-prod-ap-south-1/invoices/*`) and DynamoDB (`arn:aws:dynamodb:ap-south-1:187382368021:table/Orders`) access. Explain why and how we should standardize on EKS Pod Identity and EKS Access Entries instead, write the scoped IAM trust and permissions policies (separating bucket-level vs object-level S3 actions), and validate the custom policy using IAM policy simulation.",
+      "prompt": "Our platform team runs Amazon EKS 1.31 in ap-south-1 and developers keep asking us to edit the `aws-auth` ConfigMap and set up new OIDC thumbprints for IRSA every time a microservice needs S3 (`arn:aws:s3:::orders-prod-ap-south-1/invoices/*`) and DynamoDB (`arn:aws:dynamodb:ap-south-1:123456789012:table/Orders`) access. Explain why and how we should standardize on EKS Pod Identity and EKS Access Entries instead, write the scoped IAM trust and permissions policies (separating bucket-level vs object-level S3 actions), and validate the custom policy using IAM policy simulation.",
       "expected_output": "Activates aws-iam-least-privilege-governance, contrasts EKS Pod Identity (pods.eks.amazonaws.com trust with sts:AssumeRole + sts:TagSession, automatic session tags, zero OIDC thumbprint sprawl) + EKS Access Entries (authenticationMode: API replacing aws-auth ConfigMap) against legacy IRSA, authors a least-privilege IAM policy separating s3:ListBucket on the bucket ARN from s3:GetObject/PutObject on /invoices/*, and runs iam MCP simulate_custom_policy to prove positive allow and negative deny.",
       "files": [],
       "expectations": [
@@ -20,7 +20,7 @@
       "files": [],
       "expectations": [
         "Activates the aws-iam-least-privilege-governance skill and queries both the iam MCP server (list_roles) and cloudtrail MCP server (lookup_events) in read-only mode without running raw aws CLI shell commands",
-        "Reports the live IAM roles and recent 60-minute CloudTrail events from account 187382368021 honestly without fabricating role names or events",
+        "Reports the live IAM roles and recent 60-minute CloudTrail events from account 123456789012 honestly without fabricating role names or events",
         "Clearly distinguishes Explicit Deny error messages (from an AWS Organizations SCP, Resource Control Policy, IAM Permissions Boundary, or explicit Deny statement) from Implicit Deny error messages (missing Allow in identity-based policy, KMS Key Policy, S3 Bucket Policy, or VPC Endpoint Policy)"
       ]
     },
@@ -65,14 +65,14 @@
       "files": [],
       "expectations": [
         "Activates the aws-iam-least-privilege-governance skill and uses connected MCP tools (aws-mcp aws___run_script for accessanalyzer ListAnalyzers / ValidatePolicy and/or iam MCP) in read-only mode without running raw aws CLI shell commands",
-        "Reports the live IAM Access Analyzer state in account 187382368021 honestly without fabricating analyzer ARNs or findings",
+        "Reports the live IAM Access Analyzer state in account 123456789012 honestly without fabricating analyzer ARNs or findings",
         "Validates a scoped Lambda SQS Event Source Mapping policy (sqs:ReceiveMessage, sqs:DeleteMessage, sqs:GetQueueAttributes scoped to a queue ARN) via Access Analyzer ValidatePolicy and/or IAM simulation",
         "Explains Day-2 unused permission right-sizing using IAM Service Last Accessed details (GenerateServiceLastAccessedDetails / GetServiceLastAccessedDetails) and IAM Access Analyzer unused-access findings followed by simulate_principal_policy verification"
       ]
     },
     {
       "id": "eval-07-kms-cross-policy-implicit-deny-troubleshooting",
-      "prompt": "Our Lambda function's execution role has `s3:GetObject` on `arn:aws:s3:::payroll-vault/*`, and the S3 bucket policy has no Deny statements, yet `GetObject` still fails with `AccessDenied: User: arn:aws:sts::187382368021:assumed-role/payroll-lambda-role/fn is not authorized to perform: kms:Decrypt on resource: arn:aws:kms:ap-south-1:187382368021:key/mrk-1234abcd because no identity-based policy allows the kms:Decrypt action`. Why did S3 GetObject require KMS, how do KMS Key Policies differ from S3 Bucket Policies for same-account IAM roles, and how should we scope `kms:Decrypt` safely?",
+      "prompt": "Our Lambda function's execution role has `s3:GetObject` on `arn:aws:s3:::payroll-vault/*`, and the S3 bucket policy has no Deny statements, yet `GetObject` still fails with `AccessDenied: User: arn:aws:sts::123456789012:assumed-role/payroll-lambda-role/fn is not authorized to perform: kms:Decrypt on resource: arn:aws:kms:ap-south-1:123456789012:key/mrk-1234abcd because no identity-based policy allows the kms:Decrypt action`. Why did S3 GetObject require KMS, how do KMS Key Policies differ from S3 Bucket Policies for same-account IAM roles, and how should we scope `kms:Decrypt` safely?",
       "expected_output": "Activates aws-iam-least-privilege-governance, explains that objects encrypted with SSE-KMS using a Customer Managed Key (CMK) require kms:Decrypt in addition to s3:GetObject, explains that unlike AWS-managed keys, a KMS CMK requires explicit permission in the KMS Key Policy (usually delegating via kms:* to arn:aws:iam::<account>:root so identity policies work, OR naming the role directly), and scopes kms:Decrypt to the exact CMK ARN with Condition kms:ViaService = s3.ap-south-1.amazonaws.com and kms:EncryptionContext:aws:s3:arn.",
       "files": [],
       "expectations": [

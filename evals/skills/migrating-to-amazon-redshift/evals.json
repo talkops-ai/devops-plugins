@@ -26,7 +26,7 @@
     },
     {
       "id": 3,
-      "prompt": "Using `references/teradata/validation-patterns.md` and `/aws-analytics:redshift-optimize` (do not read unrelated reference files), inspect our live AWS environment in `ap-south-1` (`client-devops`) for any existing Amazon Redshift provisioned clusters (`describe-clusters`) and Redshift Serverless workgroups (`list-workgroups`), report what exists, and provide the post-migration data validation queries (row count parity, numeric `SUM`/`MIN`/`MAX`/`COUNT(DISTINCT)` aggregate checks, and deterministic row sampling) plus `SVV_TABLE_INFO` skew/unsorted/stats_off diagnostics.",
+      "prompt": "Using `references/teradata/validation-patterns.md` and `/aws-analytics:redshift-optimize` (do not read unrelated reference files), inspect our live AWS environment in `ap-south-1` (`default`) for any existing Amazon Redshift provisioned clusters (`describe-clusters`) and Redshift Serverless workgroups (`list-workgroups`), report what exists, and provide the post-migration data validation queries (row count parity, numeric `SUM`/`MIN`/`MAX`/`COUNT(DISTINCT)` aggregate checks, and deterministic row sampling) plus `SVV_TABLE_INFO` skew/unsorted/stats_off diagnostics.",
       "expected_output": "Live read-only inspection in `ap-south-1` confirming 0 Redshift provisioned clusters and 0 Redshift Serverless workgroups, followed by a multi-tier data validation and `SVV_TABLE_INFO` skew/unsorted check playbook.",
       "files": [],
       "expectations": [

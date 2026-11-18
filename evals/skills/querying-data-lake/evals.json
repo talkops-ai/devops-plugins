@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Using the `querying-data-lake` skill (`references/workgroup-selection.md` and `references/query-patterns.md`), inspect our live AWS environment in `ap-south-1` (`client-devops`) for existing Amazon Athena workgroups (`aws athena list-work-groups`) and Glue databases (`aws glue get-databases`), report what exists, and write optimized Athena Engine v3 SQL queries to: (1) query an Apache Iceberg table as of a historical timestamp (`FOR TIMESTAMP AS OF`) and compare row diffs between two snapshots, and (2) perform an idempotent `MERGE INTO` upsert + `OPTIMIZE ... REWRITE DATA USING BIN_PACK` maintenance run.",
+      "prompt": "Using the `querying-data-lake` skill (`references/workgroup-selection.md` and `references/query-patterns.md`), inspect our live AWS environment in `ap-south-1` (`default`) for existing Amazon Athena workgroups (`aws athena list-work-groups`) and Glue databases (`aws glue get-databases`), report what exists, and write optimized Athena Engine v3 SQL queries to: (1) query an Apache Iceberg table as of a historical timestamp (`FOR TIMESTAMP AS OF`) and compare row diffs between two snapshots, and (2) perform an idempotent `MERGE INTO` upsert + `OPTIMIZE ... REWRITE DATA USING BIN_PACK` maintenance run.",
       "expected_output": "Live read-only inspection in `ap-south-1` reporting the Athena workgroups (`primary`) and 0 Glue databases, followed by Athena v3 Iceberg time-travel SQL (`FOR TIMESTAMP AS OF` / `FOR VERSION AS OF` against `\"table$snapshots\"`), idempotent `MERGE INTO`, and `OPTIMIZE ... REWRITE DATA USING BIN_PACK` + `VACUUM`.",
       "files": [],
       "expectations": [

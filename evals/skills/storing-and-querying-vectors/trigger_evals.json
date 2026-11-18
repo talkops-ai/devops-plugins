@@ -1,34 +1,68 @@
-[
-  {
-    "query": "Create an Amazon S3 Vectors bucket and 1024-dimension cosine vector index with nonFilterableMetadataKeys using aws s3vectors.",
-    "should_trigger": true
-  },
-  {
-    "query": "Insert 50,000 Bedrock Titan text embeddings into an Amazon S3 Vectors index in batches of 500 with put-vectors and query them with metadata filters.",
-    "should_trigger": true
-  },
-  {
-    "query": "Build a serverless RAG document chunking and semantic similarity search pipeline using Amazon S3 Vectors and Bedrock Titan Embeddings v2.",
-    "should_trigger": true
-  },
-  {
-    "query": "Filter similarity search results in Amazon S3 Vectors using $eq, $in, and $and metadata filter expressions on query-vectors.",
-    "should_trigger": true
-  },
-  {
-    "query": "Configure KMS encryption (`SSE-KMS`) and least-privilege s3vectors:PutVectors / QueryVectors IAM policies for an S3 Vectors bucket.",
-    "should_trigger": true
-  },
-  {
-    "query": "Create an Apache Iceberg relational table in Amazon S3 Tables (`aws s3tables create-table`) for SQL analytics in Athena.",
-    "should_trigger": false
-  },
-  {
-    "query": "Migrate a 20 TB Teradata data warehouse to Amazon Redshift Serverless.",
-    "should_trigger": false
-  },
-  {
-    "query": "Upgrade an Amazon MWAA environment from Apache Airflow 2.8 to Airflow 3.0.",
-    "should_trigger": false
-  }
-]
+{
+  "skill_name": "storing-and-querying-vectors",
+  "companion_skills": [
+    "amazon-opensearch-service",
+    "auditing-aws-system-tables",
+    "authoring-glue-and-emr-spark-jobs",
+    "authoring-mwaa-workflow",
+    "aws-cleanrooms"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Create an Amazon S3 Vectors bucket and 1024-dimension cosine vector index with nonFilterableMetadataKeys using aws s3vectors."
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Insert 50,000 Bedrock Titan text embeddings into an Amazon S3 Vectors index in batches of 500 with put-vectors and query them with metadata filters."
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Build a serverless RAG document chunking and semantic similarity search pipeline using Amazon S3 Vectors and Bedrock Titan Embeddings v2."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Filter similarity search results in Amazon S3 Vectors using $eq, $in, and $and metadata filter expressions on query-vectors."
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure KMS encryption (`SSE-KMS`) and least-privilege s3vectors:PutVectors / QueryVectors IAM policies for an S3 Vectors bucket."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Create an Apache Iceberg relational table in Amazon S3 Tables (`aws s3tables create-table`) for SQL analytics in Athena."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Migrate a 20 TB Teradata data warehouse to Amazon Redshift Serverless."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Upgrade an Amazon MWAA environment from Apache Airflow 2.8 to Airflow 3.0."
+    }
+  ]
+}

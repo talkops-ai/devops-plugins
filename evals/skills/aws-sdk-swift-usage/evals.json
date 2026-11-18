@@ -15,11 +15,11 @@
     {
       "id": "eval-02-check-what-s3-buckets-currently-exist-in-our-liv",
       "prompt": "Check what S3 buckets currently exist in our live AWS account in `ap-south-1`, then write a Swift 6 command-line tool using `aws-sdk-swift` async pagination (`PaginateAsyncSequence`) to iterate through all objects in the discovered bucket.",
-      "expected_output": "Uses connected AWS MCP tools (`awsapi` or `aws-mcp`) to list live S3 buckets in `ap-south-1` without raw `aws` CLI commands in `Bash`, discovers `krayak-dev-8021-as1-terraform-tfstate` in account `187382368021`, verifies pagination APIs via `awsknowledge`, and writes Swift async code using `s3.listObjectsV2Paginated(input: ListObjectsV2Input(bucket: \"krayak-dev-8021-as1-terraform-tfstate\"))` with `for try await page in pages`.",
+      "expected_output": "Uses connected AWS MCP tools (`awsapi` or `aws-mcp`) to list live S3 buckets in `ap-south-1` without raw `aws` CLI commands in `Bash`, discovers `example-prod-1234-as1-terraform-tfstate` in account `123456789012`, verifies pagination APIs via `awsknowledge`, and writes Swift async code using `s3.listObjectsV2Paginated(input: ListObjectsV2Input(bucket: \"example-prod-1234-as1-terraform-tfstate\"))` with `for try await page in pages`.",
       "files": [],
       "expectations": [
         "Activates the `aws-sdk-swift-usage` skill and inspects live S3 buckets in `ap-south-1` via connected AWS MCP tools (`awsapi` or `aws-mcp`) rather than raw `aws` CLI shell commands.",
-        "Accurately grounds the generated Swift code against the discovered bucket `krayak-dev-8021-as1-terraform-tfstate` in `ap-south-1`.",
+        "Accurately grounds the generated Swift code against the discovered bucket `example-prod-1234-as1-terraform-tfstate` in `ap-south-1`.",
         "Uses `listObjectsV2Paginated(input: ListObjectsV2Input(...))` (`PaginateAsyncSequence`) with `for try await page in pages` rather than a single unpaginated `listObjectsV2` call."
       ]
     },

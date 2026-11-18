@@ -55,6 +55,6 @@ Never present an unverified finding as if it were confirmed. If more than one ex
 
 For every addressable finding, present the available fix options as a comparison table with tradeoffs (cost, complexity, determinism, failover behavior) — never a single recommendation with no alternatives shown, since the "best" option depends on constraints (e.g., existing CRR, CopyObject usage, CIDR overlap) that vary per customer.
 
-## Recommend non-production validation
+## Recommend non-production validation & always include read-only validation commands
 
-Any fix that touches routing, endpoints, or DNS should be validated in a non-production environment before being applied to production traffic.
+Any fix that touches routing, endpoints, or DNS should be validated in a non-production environment before being applied to production traffic. Every response — including empty-region audits (`0` NAT Gateways / `0` flow logs) — MUST include a copy-pasteable **Read-Only Validation Commands** block (`aws ec2 describe-nat-gateways`, `aws ec2 describe-flow-logs`, `aws ec2 describe-vpc-endpoints`) so the operator can verify across regions or accounts.

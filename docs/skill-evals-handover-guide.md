@@ -30,8 +30,8 @@ Every engineer writing evals MUST follow these 5 rules:
   - ✅ Expectation: *"Uses connected AWS MCP tools rather than raw aws CLI shell commands for AWS discovery or pricing"*
   - ✅ Expectation: *"Presents a side-by-side monthly cost comparison table for Standard (~$2,052.26/mo) vs I/O-Optimized (~$2,421.54/mo)"*
 
-### Rule 3: Strictly Read-Only Queries Against Live AWS (`client-devops` / `ap-south-1`)
-- All execution evals run against our live AWS environment (`[profile client-devops]`, `region = ap-south-1`)—**never stub or mock AWS API calls**.
+### Rule 3: Strictly Read-Only Queries Against Live AWS (`default` / `ap-south-1`)
+- All execution evals run against our live AWS environment (`[profile default]`, `region = ap-south-1`)—**never stub or mock AWS API calls**.
 - Every `prompt` in `evals.json` MUST be a **read-only, advisory, discovery, troubleshooting, or architecture question**.
 - Never write an eval prompt that asks the agent to provision, modify, or delete live AWS resources. (To test safety guardrails, ask a diagnostic question about a dangerous flag—like *"Should we set `--publicly-accessible` on our cluster so our developers can connect from home?"*—and assert that the skill's Tier 3 guardrail refuses/warns against it and provides safe alternatives.)
 
@@ -86,7 +86,7 @@ evals/
 ```json
 {
   "skill_name": "<skill-name>",
-  "description": "Outcome & Expectation evaluations for <skill-name> using natural read-only queries against live AWS (client-devops, ap-south-1).",
+  "description": "Outcome & Expectation evaluations for <skill-name> using natural read-only queries against live AWS (default, ap-south-1).",
   "evals": [
     {
       "id": "eval-01-<short-kebab-slug>",
@@ -213,7 +213,7 @@ Run the execution eval suite using `agy` (Antigravity CLI) with `--workers 3` an
 python3 scripts/eval_skills.py run \
   --skill <skill-name> \
   --harness agy \
-  --aws-profile client-devops \
+  --aws-profile default \
   --aws-region ap-south-1 \
   --workers 3 \
   --timeout 480
@@ -222,7 +222,7 @@ python3 scripts/eval_skills.py run \
 python3 scripts/eval_skills.py run \
   --skill <skill-name> \
   --harness agy \
-  --aws-profile client-devops \
+  --aws-profile default \
   --aws-region ap-south-1 \
   --eval-id eval-01,eval-02,eval-08 \
   --workers 3 \
@@ -238,7 +238,7 @@ python3 scripts/eval_skills.py trigger \
 ```
 
 ### Step 5: Diagnose `RED` Cases & Fix the Skill / Components
-Every run saves full per-case artifacts under `evals/workspaces/<skill-name>/iteration-<N>/<eval-id>/with_skill/`:
+Every run saves full per-case artifacts under `.eval-runs/<skill-name>/iteration-<N>/<eval-id>/with_skill/`:
 - `normalized_trace.json`: Exact telemetry (`skills_invoked`, `mcp_tools_called`, `commands_run`, `files_read`, `hook_audit`, `duration_ms`, `total_tokens`).
 - `final_response.md`: The agent's final markdown output.
 - `grading.json`: Per-expectation `GREEN`/`RED` verdict and `evidence` cited by the evaluator.
@@ -259,20 +259,20 @@ Before marking a skill `✅ DONE` in [`docs/skill-evals-rollout-plan.md`](./skil
 - [ ] `python3 scripts/eval_skills.py static --skill <skill-name> --strict-limits` passes with **`0 error(s), 0 warning(s)`**.
 - [ ] `python3 scripts/validate_plugins.py` passes with **`42 plugins checked: 0 error(s), 0 warning(s)`**.
 - [ ] `evals/skills/<skill-name>/evals.json` contains **Zero** hardcoded `references/*.md` or `scripts/*.py` paths.
-- [ ] All eval cases in `evals/skills/<skill-name>/evals.json` achieve **`GREEN` (`100%`)** via `agy` against `client-devops` (`ap-south-1`) or your target Kubernetes sandbox cluster.
-- [ ] Note: `evals/workspaces/` is gitignored (runtime logs/traces stay local); commit only `evals/skills/<skill-name>/*.json` and any improvements made to `plugins/**`.
+- [ ] All eval cases in `evals/skills/<skill-name>/evals.json` achieve **`GREEN` (`100%`)** via `agy` against `default` (`ap-south-1`) or your target Kubernetes sandbox cluster.
+- [ ] Note: `.eval-runs/` is gitignored (runtime logs/traces stay local); commit only `evals/skills/<skill-name>/*.json` and any improvements made to `plugins/**`.
 
 ---
 
 ## 5. Kubernetes Delivery & Observability Evals (`OTEL-APP` Reference Scenario, `talkops-mcp/src` Local Wiring & Full Read/Write/Delete Testing)
 
-Unlike live shared AWS account evals (which enforce read-only operations), the **54 Kubernetes skills** across [`kubernetes-delivery-engineer`](../plugins/agent-plugins/kubernetes-delivery-engineer) (`24` skills: Helm, ArgoCD, Argo Rollouts, Kargo, Traefik v3) and [`kubernetes-observability-engineer`](../plugins/agent-plugins/kubernetes-observability-engineer) (`30` skills: Prometheus, Alertmanager, Grafana Tempo, Grafana Loki, OpenTelemetry) are designed around a **single cohesive, live-deployable reference application—`OTEL-APP` (`/Users/structbinary/Documents/work/talkops/OTEL-APP`, `https://github.com/talkops-ai/OTEL-APP`, Helm repository `talkops` `https://talkops-ai.github.io/OTEL-APP` v`0.1.1`) and its supporting Observability Stack (`open-telemetry/opentelemetry-operator`, `open-telemetry/opentelemetry-collector`, `prometheus-community/kube-prometheus-stack`, `grafana/tempo`, `grafana/loki`)**—testing the **complete Kubernetes operational lifecycle (Read, Dry-Run/Preview, Write/Apply/Upsert, Rollback/Revert, and Delete/Uninstall/Expire/Cancel) across all 173 MCP tools and 108 MCP resources** in `otel-demo` and `observability`.
+Unlike live shared AWS account evals (which enforce read-only operations), the **54 Kubernetes skills** across [`kubernetes-delivery-engineer`](../plugins/agent-plugins/kubernetes-delivery-engineer) (`24` skills: Helm, ArgoCD, Argo Rollouts, Kargo, Traefik v3) and [`kubernetes-observability-engineer`](../plugins/agent-plugins/kubernetes-observability-engineer) (`30` skills: Prometheus, Alertmanager, Grafana Tempo, Grafana Loki, OpenTelemetry) are designed around a **single cohesive, live-deployable reference application—`OTEL-APP` (`<local-path>`, `https://github.com/talkops-ai/OTEL-APP`, Helm repository `talkops` `https://talkops-ai.github.io/OTEL-APP` v`0.1.1`) and its supporting Observability Stack (`open-telemetry/opentelemetry-operator`, `open-telemetry/opentelemetry-collector`, `prometheus-community/kube-prometheus-stack`, `grafana/tempo`, `grafana/loki`)**—testing the **complete Kubernetes operational lifecycle (Read, Dry-Run/Preview, Write/Apply/Upsert, Rollback/Revert, and Delete/Uninstall/Expire/Cancel) across all 173 MCP tools and 108 MCP resources** in `otel-demo` and `observability`.
 
 ### 5.1 Direct Local MCP Source Execution (`talkops-mcp/src` Instead of `uvx`)
 
-Committed plugin `mcp.json` and `.mcp.json` files stay pinned to portable `uvx --from talkops-<server>==<version>` commands so marketplace distribution and `scripts/validate_plugins.py` remain 100% portable. During eval runs, [`scripts/eval_skills.py`](../scripts/eval_skills.py) **automatically rewrites** TalkOps MCP server entries inside the isolated workspace (`evals/workspaces/...`) to run directly from your local checkout at `/Users/structbinary/Documents/work/talkops/talkops-mcp/src`:
+Committed plugin `mcp.json` and `.mcp.json` files stay pinned to portable `uvx --from talkops-<server>==<version>` commands so marketplace distribution and `scripts/validate_plugins.py` remain 100% portable. During eval runs, [`scripts/eval_skills.py`](../scripts/eval_skills.py) **automatically rewrites** TalkOps MCP server entries inside the isolated workspace (`.eval-runs/...`) to run directly from your local checkout at `../talkops-mcp/src`:
 
-- **Auto-Discovery Order**: `--mcp-src-dir <path>` $\to$ `$TALKOPS_MCP_SRC_DIR` $\to$ sibling `../talkops-mcp/src` (`/Users/structbinary/Documents/work/talkops/talkops-mcp/src`).
+- **Auto-Discovery Order**: `--mcp-src-dir <path>` $\to$ `$TALKOPS_MCP_SRC_DIR` $\to$ sibling `../talkops-mcp/src` (`../talkops-mcp/src`).
 - **Workspace Rewrite**: Rewrites `uvx --from talkops-<srv>==<ver> <entrypoint>` to `uv run --quiet --directory <mcp-src-dir>/<srv> <entrypoint>` across workspace `mcp_config.json`, `mcp.json`, and `.mcp.json`, and appends `<mcp-src-dir>/*-mcp-server/src` to `PYTHONPATH`.
 - **Write-Gated Tool Registration (`--mcp-allow-write`)**: TalkOps Kubernetes MCP servers hide mutating tools unless `MCP_ALLOW_WRITE=true`. `scripts/eval_skills.py` defaults to `--mcp-allow-write auto`, which injects `MCP_ALLOW_WRITE="true"` into TalkOps Kubernetes MCP workspace configs so all **173 Read + Dry-Run + Write + Rollback + Delete tools** register and can be exercised end-to-end (pass `--mcp-allow-write false` to test read-only degradation paths, or `--use-uvx-mcp` to test published PyPI wheels).
 
@@ -299,7 +299,7 @@ python3 scripts/eval_skills.py run \
   --model gemini-4-hydrogen-medium \
   --effort medium \
   --kube-context docker-desktop \
-  --mcp-src-dir /Users/structbinary/Documents/work/talkops/talkops-mcp/src \
+  --mcp-src-dir ../talkops-mcp/src \
   --mcp-allow-write true \
   --workers 3 \
   --timeout 480
@@ -309,5 +309,5 @@ python3 scripts/eval_skills.py run \
 
 Because eval workspaces execute live against `talkops-mcp/src` without building or publishing wheels:
 1. Run an eval case (`--eval-id eval-01,...`) and inspect `normalized_trace.json` (`mcp_tools_called`, `mcp_resources_read`, `commands_run`, `hook_audit`) and `grading.json`.
-2. If a tool signature, Pydantic model, finding code, or dry-run diff behavior needs improvement in `/Users/structbinary/Documents/work/talkops/talkops-mcp/src/<server>-mcp-server`, edit the server code directly in `talkops-mcp/src` (or align the skill/script in `devops-plugins/plugins/agent-plugins/kubernetes-*-engineer`) and re-run immediately.
+2. If a tool signature, Pydantic model, finding code, or dry-run diff behavior needs improvement in `../talkops-mcp/src/<server>-mcp-server`, edit the server code directly in `talkops-mcp/src` (or align the skill/script in `devops-plugins/plugins/agent-plugins/kubernetes-*-engineer`) and re-run immediately.
 3. Every mutating Kubernetes eval expectation MUST enforce the **2-phase safety contract**: preview first (`dry_run=True`, `helm_dry_run_install`, `argocd_diff_application`, or `am_preview_silence`), pause or verify blast radius/diff, and only then execute with `dry_run=False` / `confirm=True`, while keeping `secret-safety.py` active (`zero` inline plaintext secrets).

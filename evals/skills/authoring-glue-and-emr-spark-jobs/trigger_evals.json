@@ -1,34 +1,68 @@
-[
-  {
-    "query": "Use /aws-analytics:spark-debug to diagnose why our AWS Glue 5.0 PySpark job failed with CommandExitCode 137 Executor OOM and shuffle data skew.",
-    "should_trigger": true
-  },
-  {
-    "query": "Author a production PySpark ETL script for Amazon EMR Serverless 7.x that reads Parquet from S3 and performs an Apache Iceberg MERGE INTO upsert.",
-    "should_trigger": true
-  },
-  {
-    "query": "Tune Adaptive Query Execution (`spark.sql.adaptive.skewJoin.enabled`), broadcast join thresholds, and G.2X vs G.4X worker sizing for an AWS Glue Spark job.",
-    "should_trigger": true
-  },
-  {
-    "query": "Configure AWS Glue Job Bookmarks (`transformation_ctx`) and Spark UI event logging (`--spark-event-logs-path`) for incremental S3 ingestion.",
-    "should_trigger": true
-  },
-  {
-    "query": "Right-size Amazon EMR Serverless driver and executor vCPU, memory, and disk pre-initialized capacity for a 2 TB daily Spark batch pipeline.",
-    "should_trigger": true
-  },
-  {
-    "query": "Build a Java DataStream application on Amazon Managed Service for Apache Flink with RocksDB state.",
-    "should_trigger": false
-  },
-  {
-    "query": "Upgrade an Amazon MWAA Apache Airflow 2.8 environment to Airflow 3.0.",
-    "should_trigger": false
-  },
-  {
-    "query": "Configure an Amazon OpenSearch Service cluster with FAISS k-NN vector search.",
-    "should_trigger": false
-  }
-]
+{
+  "skill_name": "authoring-glue-and-emr-spark-jobs",
+  "companion_skills": [
+    "amazon-opensearch-service",
+    "analytics-opensearch-expertise",
+    "auditing-aws-system-tables",
+    "authoring-mwaa-workflow",
+    "connecting-to-data-source"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use /aws-analytics:spark-debug to diagnose why our AWS Glue 5.0 PySpark job failed with CommandExitCode 137 Executor OOM and shuffle data skew."
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Author a production PySpark ETL script for Amazon EMR Serverless 7.x that reads Parquet from S3 and performs an Apache Iceberg MERGE INTO upsert."
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Tune Adaptive Query Execution (`spark.sql.adaptive.skewJoin.enabled`), broadcast join thresholds, and G.2X vs G.4X worker sizing for an AWS Glue Spark job."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure AWS Glue Job Bookmarks (`transformation_ctx`) and Spark UI event logging (`--spark-event-logs-path`) for incremental S3 ingestion."
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Right-size Amazon EMR Serverless driver and executor vCPU, memory, and disk pre-initialized capacity for a 2 TB daily Spark batch pipeline."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Build a Java DataStream application on Amazon Managed Service for Apache Flink with RocksDB state."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Upgrade an Amazon MWAA Apache Airflow 2.8 environment to Airflow 3.0."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure an Amazon OpenSearch Service cluster with FAISS k-NN vector search."
+    }
+  ]
+}

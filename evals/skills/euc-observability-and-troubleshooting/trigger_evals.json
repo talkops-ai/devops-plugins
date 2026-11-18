@@ -1,0 +1,60 @@
+{
+  "skill_name": "euc-observability-and-troubleshooting",
+  "companion_skills": [
+    "amazon-appstream-and-workspaces-web",
+    "amazon-workspaces-administration",
+    "amazon-workspaces-agent-access"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use `euc-observability-and-troubleshooting` to design, validate, and troubleshoot euc observability and troubleshooting."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Walk me through production best practices and operational guardrails for euc observability and troubleshooting (`euc-observability-and-troubleshooting`)."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We need an operational review and step-by-step runbook covering: Diagnose and remediate AWS End User Computing (WorkSpaces, AppStream 2.0, WorkSpaces Secure Browser) issues: in-session latency, unhealthy workspace states, Active Directory join a"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "What are the critical failure modes, configuration checks, and verification commands for euc observability and troubleshooting?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our euc observability and troubleshooting setup in read-only mode."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure and troubleshoot amazon appstream and workspaces web exclusively without touching euc observability and troubleshooting.",
+      "expected_alternative_skill": "amazon-appstream-and-workspaces-web"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+    }
+  ]
+}

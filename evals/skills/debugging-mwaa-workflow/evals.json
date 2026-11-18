@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Inspect our live AWS environment in `ap-south-1` (`client-devops`) for any existing Amazon MWAA environments (`aws mwaa list-environments`), report the live inventory, and walk me through the exact Path A (`references/debugging-provisioned.md` and `references/common-failures.md`) diagnostic workflow when a Provisioned MWAA DAG (`arn:aws:airflow:ap-south-1:187382368021:environment/prod-mwaa`) has: (1) a newly uploaded DAG not appearing in the UI (`importErrors`), and (2) a task failing with `AirflowTaskTimeout` / worker SIGKILL OOM (`state=failed`, `CloudWatch Airflow-prod-mwaa-Task` logs).",
+      "prompt": "Inspect our live AWS environment in `ap-south-1` (`default`) for any existing Amazon MWAA environments (`aws mwaa list-environments`), report the live inventory, and walk me through the exact Path A (`references/debugging-provisioned.md` and `references/common-failures.md`) diagnostic workflow when a Provisioned MWAA DAG (`arn:aws:airflow:ap-south-1:123456789012:environment/prod-mwaa`) has: (1) a newly uploaded DAG not appearing in the UI (`importErrors`), and (2) a task failing with `AirflowTaskTimeout` / worker SIGKILL OOM (`state=failed`, `CloudWatch Airflow-prod-mwaa-Task` logs).",
       "expected_output": "Live read-only inspection in `ap-south-1` confirming 0 MWAA environments, followed by deterministic Path A triage: `GET /importErrors` via `aws mwaa invoke-rest-api`, `GET /dags/{dag_id}/dagRuns/{dag_run_id}/taskInstances`, reading `Airflow-prod-mwaa-Task` and `Airflow-prod-mwaa-Scheduler` CloudWatch log groups, and diagnosing `AirflowTaskTimeout` vs worker memory SIGKILL (-9) OOM.",
       "files": [],
       "expectations": [
@@ -14,7 +14,7 @@
     },
     {
       "id": 2,
-      "prompt": "A run of our **MWAA Serverless** workflow (`arn:aws:airflow-serverless:ap-south-1:187382368021:workflow/daily_cur_ingest`, run ID `run-abc123`) failed. Walk me through how Step 0 routes this request to Path B (`references/debugging-serverless.md`), which `airflow-serverless` APIs (`GetWorkflowRun`, `ListTaskInstances`, `GetTaskInstance`) and CloudWatch log streams to inspect, and how to follow the downstream service failure handoff if the `GlueJobOperator` task failed with a Glue job error.",
+      "prompt": "A run of our **MWAA Serverless** workflow (`arn:aws:airflow-serverless:ap-south-1:123456789012:workflow/daily_cur_ingest`, run ID `run-abc123`) failed. Walk me through how Step 0 routes this request to Path B (`references/debugging-serverless.md`), which `airflow-serverless` APIs (`GetWorkflowRun`, `ListTaskInstances`, `GetTaskInstance`) and CloudWatch log streams to inspect, and how to follow the downstream service failure handoff if the `GlueJobOperator` task failed with a Glue job error.",
       "expected_output": "Routes deterministically to Path B (MWAA Serverless) via the `arn:aws:airflow-serverless:...` ARN, details `GetWorkflowRun` -> `ListTaskInstances` -> `GetTaskInstance` and CloudWatch log retrieval (`references/debugging-serverless.md`), and explains inspecting the downstream Glue job run (`aws glue get-job-run`) when the operator fails.",
       "files": [],
       "expectations": [

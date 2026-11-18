@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Using `/aws-analytics:lake-formation-governance` and the `governing-and-securing-data-lake` skill (`references/lf-tbac-and-data-filters.md`), inspect our live AWS environment in `ap-south-1` (`client-devops`) for our current AWS Lake Formation data lake settings (`aws lakeformation get-data-lake-settings`) and existing LF-Tags (`aws lakeformation list-lf-tags`), report the live governance state, and design an LF-TBAC (Tag-Based Access Control) taxonomy + `DataCellsFilter` row- and column-level security setup so `arn:aws:iam::187382368021:role/EU-Marketing-Analyst` can query `commerce.customers` ONLY where `country = 'DE'` and with PII columns (`ssn`, `tax_id`) excluded.",
+      "prompt": "Using `/aws-analytics:lake-formation-governance` and the `governing-and-securing-data-lake` skill (`references/lf-tbac-and-data-filters.md`), inspect our live AWS environment in `ap-south-1` (`default`) for our current AWS Lake Formation data lake settings (`aws lakeformation get-data-lake-settings`) and existing LF-Tags (`aws lakeformation list-lf-tags`), report the live governance state, and design an LF-TBAC (Tag-Based Access Control) taxonomy + `DataCellsFilter` row- and column-level security setup so `arn:aws:iam::123456789012:role/EU-Marketing-Analyst` can query `commerce.customers` ONLY where `country = 'DE'` and with PII columns (`ssn`, `tax_id`) excluded.",
       "expected_output": "Live read-only inspection in `ap-south-1` (`aws lakeformation get-data-lake-settings` and `list-lf-tags`), followed by a complete `/aws-analytics:lake-formation-governance` design: LF-Tag ontology (`Confidentiality=Public|Internal|PII`, `Domain=Commerce`), `aws lakeformation create-data-cells-filter` (`RowFilter: {\"FilterExpression\": \"country = 'DE'\"}` and `ColumnWildcard: {\"ExcludedColumnNames\": [\"ssn\", \"tax_id\"]}`), and `aws lakeformation grant-permissions` on the `DataCellsFilter` and `LFTagPolicy`.",
       "files": [],
       "expectations": [
@@ -14,7 +14,7 @@
     },
     {
       "id": 2,
-      "prompt": "Explain how to safely migrate an existing brownfield Glue Data Catalog database from coarse `IAMAllowedPrincipals` (`Use only IAM access control`) to Lake Formation governance using **Hybrid Access Mode** without breaking existing production Glue ETL jobs, and how to share a Lake Formation-governed table across AWS accounts (`187382368021` -> `222233334444`) using AWS Resource Access Manager (RAM) and resource links.",
+      "prompt": "Explain how to safely migrate an existing brownfield Glue Data Catalog database from coarse `IAMAllowedPrincipals` (`Use only IAM access control`) to Lake Formation governance using **Hybrid Access Mode** without breaking existing production Glue ETL jobs, and how to share a Lake Formation-governed table across AWS accounts (`123456789012` -> `222233334444`) using AWS Resource Access Manager (RAM) and resource links.",
       "expected_output": "Step-by-step brownfield migration using Lake Formation **Hybrid Access Mode** (opting in select principals to Lake Formation while legacy jobs continue via IAM until verified, before revoking `IAMAllowedPrincipals` `Super` permissions and registering the S3 location with `--use-service-linked-role` / custom role), plus cross-account LF-TBAC sharing via AWS RAM and creating a Glue Resource Link (`TargetTable`) in the consumer account.",
       "files": [],
       "expectations": [

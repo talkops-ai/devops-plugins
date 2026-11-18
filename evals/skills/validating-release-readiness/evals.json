@@ -24,12 +24,12 @@
     },
     {
       "id": "eval-03-run-aws-devsecops-engineer-release-readiness-in",
-      "prompt": "Run `/aws-devsecops-engineer:release-readiness` in `ap-south-1` (`client-devops`) in strictly read-only mode to evaluate whether our target environment (`187382368021`) is clear for deployment: check local git status/diff, check CloudFormation stacks in `ap-south-1`, check AWS Security Agent readiness (`setup_check`), and check `aws-cloudwatch` `get_active_alarms` for any pre-existing incidents. Present the complete 5-Gate Go/No-Go Release Readiness Scorecard.",
+      "prompt": "Run `/aws-devsecops-engineer:release-readiness` in `ap-south-1` (`default`) in strictly read-only mode to evaluate whether our target environment (`123456789012`) is clear for deployment: check local git status/diff, check CloudFormation stacks in `ap-south-1`, check AWS Security Agent readiness (`setup_check`), and check `aws-cloudwatch` `get_active_alarms` for any pre-existing incidents. Present the complete 5-Gate Go/No-Go Release Readiness Scorecard.",
       "expected_output": "Checks local git status/diff, calls `aws-cloudwatch` (`get_active_alarms`), `aws-mcp` (`cloudformation:ListStacks`, `sts:GetCallerIdentity`), and `aws-security-agent` (`setup_check`) in read-only mode, reports `0` firing alarms and `0` CloudFormation stacks in `ap-south-1`, and outputs the structured 5-Gate Release Readiness Scorecard (`1. Diff Scope & DB Compatibility`, `2. IaC Blast Radius`, `3. Security & IAM Gate`, `4. Rollback & Alarm Readiness`, and `Overall Verdict`).",
       "files": [],
       "expectations": [
         "Invokes `aws-cloudwatch` (`get_active_alarms`) and `aws-mcp` (`aws___call_aws` / `aws___run_script`) in read-only mode in `ap-south-1` without running mutating `aws` CLI commands in `Bash`",
-        "Accurately reports the live target environment telemetry in `ap-south-1` (`187382368021`): `0` pre-existing firing CloudWatch alarms (`ALARM`) and `0` active CloudFormation stacks",
+        "Accurately reports the live target environment telemetry in `ap-south-1` (`123456789012`): `0` pre-existing firing CloudWatch alarms (`ALARM`) and `0` active CloudFormation stacks",
         "Outputs the structured 5-Gate Release Readiness Scorecard table (`Gate 1: Diff Scope & DB Compatibility`, `Gate 2: IaC Blast Radius`, `Gate 3: Security & IAM Gate`, `Gate 4: Rollback & Alarm Readiness`, and `Overall Verdict: GO / CONDITIONAL GO / NO-GO (BLOCKED)`)"
       ]
     },

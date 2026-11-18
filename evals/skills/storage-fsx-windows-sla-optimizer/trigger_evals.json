@@ -1,86 +1,108 @@
-[
-  {
-    "id": "trig-exp-01",
-    "category": "explicit",
-    "query": "Run an SLA readiness, availability, and cost right-sizing review of our Amazon FSx for Windows File Server `fs-0123456789abcdef0` in us-east-1.",
-    "should_trigger": true,
-    "notes": "Direct request for an FSx for Windows SLA readiness and right-sizing review"
-  },
-  {
-    "id": "trig-exp-02",
-    "category": "explicit",
-    "query": "Audit all our FSx for Windows file systems in ap-south-1 for Multi-AZ failover readiness, Active Directory health, 20% storage headroom, backups, maintenance windows, and CloudWatch alarms.",
-    "should_trigger": true,
-    "notes": "Explicit fleet-wide FSx for Windows availability audit naming the 7 SLA dimensions"
-  },
-  {
-    "id": "trig-imp-01",
-    "category": "implicit",
-    "query": "Our Windows file share `fs-0a1b2c3d4e5f67890` in eu-west-1 just entered the `MISCONFIGURED` lifecycle state after a domain controller password rotation — can you check why and assess its overall availability posture?",
-    "should_trigger": true,
-    "notes": "Implicit FSx for Windows Misconfigured AD diagnosis + SLA review"
-  },
-  {
-    "id": "trig-imp-02",
-    "category": "implicit",
-    "query": "We are paying for 512 MBps throughput and 8 TiB SSD on three FSx Windows shares (`fs-0aaa11111`, `fs-0bbb22222`, `fs-0ccc33333`) in us-west-2 — check whether they meet high-availability requirements or are over-provisioned at peak.",
-    "should_trigger": true,
-    "notes": "Implicit multi-file-system FSx Windows SLA + peak right-sizing review"
-  },
-  {
-    "id": "trig-ctx-01",
-    "category": "contextual",
-    "query": "Security Hub flagged `FSx.5` on `arn:aws:fsx:ap-south-1:187382368021:file-system/fs-0987654321fedcba0` and users complain about Monday morning SMB slowdowns — can you evaluate its failover readiness, peak throughput, and free storage trend?",
-    "should_trigger": true,
-    "notes": "Contextual prompt with ARN wrapper, Security Hub FSx.5, and Monday peak SMB slowdown"
-  },
-  {
-    "id": "trig-ctx-02",
-    "category": "contextual",
-    "query": "Before finance signs off on renewing our legacy Windows file server fleet in ap-south-1, review whether any of our FSx for Windows file systems are completely idle or running below 20% free disk space.",
-    "should_trigger": true,
-    "notes": "Contextual fleet idle detection and storage headroom check for FSx Windows"
-  },
-  {
-    "id": "trig-neg-01",
-    "category": "negative",
-    "query": "Run a 5-pillar operational review of our Amazon FSx for NetApp ONTAP file systems, SVMs, volume tiering policies, and SnapMirror DP volumes in ap-south-1.",
-    "should_trigger": false,
-    "notes": "Explicitly excluded — FSx for NetApp ONTAP belongs to aws-fsxn-operations-review"
-  },
-  {
-    "id": "trig-neg-02",
-    "category": "negative",
-    "query": "Check our AWS Backup plans, vault lock compliance, and cross-service recovery point coverage for EC2, RDS, EFS, and DynamoDB in ap-south-1.",
-    "should_trigger": false,
-    "notes": "Explicitly excluded — AWS Backup service review belongs to aws-backup-coverage-review"
-  },
-  {
-    "id": "trig-neg-03",
-    "category": "negative",
-    "query": "Assess our S3 buckets in ap-south-1 for bucket versioning, Object Lock, Cross-Region Replication RTC, and Multi-Region Access Points.",
-    "should_trigger": false,
-    "notes": "Explicitly excluded — S3 resiliency belongs to storage-s3-resiliency-expertise"
-  },
-  {
-    "id": "trig-neg-04",
-    "category": "negative",
-    "query": "Investigate why EC2 instances in vpc-0167f5c4bb94b89db cannot resolve private Route 53 Hosted Zone records across our Route 53 Resolver outbound endpoints.",
-    "should_trigger": false,
-    "notes": "Belongs to aws-vpc-dns-investigation"
-  },
-  {
-    "id": "trig-neg-05",
-    "category": "negative",
-    "query": "Review our Direct Connect Private and Transit VIFs for single-router, single-location, and partial CIDR failover gaps.",
-    "should_trigger": false,
-    "notes": "Belongs to dx-vif-resilience"
-  },
-  {
-    "id": "trig-neg-06",
-    "category": "negative",
-    "query": "Check our EC2 vCPU, Elastic IP, and NAT Gateway Service Quotas in ap-south-1 against current utilization.",
-    "should_trigger": false,
-    "notes": "Belongs to service-quota-check"
-  }
-]
+{
+  "skill_name": "storage-fsx-windows-sla-optimizer",
+  "companion_skills": [
+    "amazon-ec2-image-builder",
+    "aws-backup-coverage-review",
+    "aws-compute",
+    "aws-containers",
+    "aws-finops-and-cost-optimization"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Run an SLA readiness, availability, and cost right-sizing review of our Amazon FSx for Windows File Server `fs-0123456789abcdef0` in us-east-1.",
+      "notes": "Direct request for an FSx for Windows SLA readiness and right-sizing review"
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Audit all our FSx for Windows file systems in ap-south-1 for Multi-AZ failover readiness, Active Directory health, 20% storage headroom, backups, maintenance windows, and CloudWatch alarms.",
+      "notes": "Explicit fleet-wide FSx for Windows availability audit naming the 7 SLA dimensions"
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Our Windows file share `fs-0a1b2c3d4e5f67890` in eu-west-1 just entered the `MISCONFIGURED` lifecycle state after a domain controller password rotation — can you check why and assess its overall availability posture?",
+      "notes": "Implicit FSx for Windows Misconfigured AD diagnosis + SLA review"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We are paying for 512 MBps throughput and 8 TiB SSD on three FSx Windows shares (`fs-0aaa11111`, `fs-0bbb22222`, `fs-0ccc33333`) in us-west-2 — check whether they meet high-availability requirements or are over-provisioned at peak.",
+      "notes": "Implicit multi-file-system FSx Windows SLA + peak right-sizing review"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Security Hub flagged `FSx.5` on `arn:aws:fsx:ap-south-1:123456789012:file-system/fs-0987654321fedcba0` and users complain about Monday morning SMB slowdowns — can you evaluate its failover readiness, peak throughput, and free storage trend?",
+      "notes": "Contextual prompt with ARN wrapper, Security Hub FSx.5, and Monday peak SMB slowdown"
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Before finance signs off on renewing our legacy Windows file server fleet in ap-south-1, review whether any of our FSx for Windows file systems are completely idle or running below 20% free disk space.",
+      "notes": "Contextual fleet idle detection and storage headroom check for FSx Windows"
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Run a 5-pillar operational review of our Amazon FSx for NetApp ONTAP file systems, SVMs, volume tiering policies, and SnapMirror DP volumes in ap-south-1.",
+      "notes": "Explicitly excluded — FSx for NetApp ONTAP belongs to aws-fsxn-operations-review"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Check our AWS Backup plans, vault lock compliance, and cross-service recovery point coverage for EC2, RDS, EFS, and DynamoDB in ap-south-1.",
+      "notes": "Explicitly excluded — AWS Backup service review belongs to aws-backup-coverage-review"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Assess our S3 buckets in ap-south-1 for bucket versioning, Object Lock, Cross-Region Replication RTC, and Multi-Region Access Points.",
+      "notes": "Explicitly excluded — S3 resiliency belongs to storage-s3-resiliency-expertise"
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Investigate why EC2 instances in vpc-0167f5c4bb94b89db cannot resolve private Route 53 Hosted Zone records across our Route 53 Resolver outbound endpoints.",
+      "notes": "Belongs to aws-vpc-dns-investigation"
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Review our Direct Connect Private and Transit VIFs for single-router, single-location, and partial CIDR failover gaps.",
+      "notes": "Belongs to dx-vif-resilience"
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Check our EC2 vCPU, Elastic IP, and NAT Gateway Service Quotas in ap-south-1 against current utilization.",
+      "notes": "Belongs to service-quota-check"
+    }
+  ]
+}

@@ -77,8 +77,8 @@
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "diagnosing-tempo-ingestion-and-health",
       "prompt": "Grafana Tempo's `ingester` hash ring in `observability` is `UNHEALTHY` and Tempo `compactor` has block lag while ingesting traces.",
+      "expected_alternative_skill": "diagnosing-tempo-ingestion-and-health",
       "notes": "Tempo backend health"
     },
     {
@@ -86,8 +86,8 @@
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "expected_alternative_skill": "upgrading-opentelemetry-components",
       "prompt": "Plan a zero-downtime upgrade of `opentelemetry-otel-collector` in `otel-demo` from `v0.98.0` to `v0.152.1` and migrate deprecated `logging` and `memory_ballast` blocks.",
+      "expected_alternative_skill": "upgrading-opentelemetry-components",
       "notes": "Planned Collector version upgrade"
     },
     {
@@ -95,8 +95,8 @@
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "provisioning-opentelemetry-collectors",
       "prompt": "Design and provision a greenfield 2-tier OpenTelemetry Collector architecture across `otel-demo` and `observability`.",
+      "expected_alternative_skill": "provisioning-opentelemetry-collectors",
       "notes": "Greenfield Collector provisioning"
     },
     {
@@ -104,8 +104,8 @@
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "expected_alternative_skill": "operating-loki-deployments-and-ingestion",
       "prompt": "Grafana Loki's Compactor in `observability` is lagging and `loki_discarded_samples_total` shows `per_stream_rate_limit` drops inside Loki.",
+      "expected_alternative_skill": "operating-loki-deployments-and-ingestion",
       "notes": "Loki backend diagnostics"
     }
   ]

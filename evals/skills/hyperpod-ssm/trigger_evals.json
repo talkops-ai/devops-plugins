@@ -1,0 +1,62 @@
+{
+  "skill_name": "hyperpod-ssm",
+  "companion_skills": [
+    "aiml-access-diagnostics",
+    "aiml-gpu-training-cluster-investigation",
+    "bedrock-adoption-readiness",
+    "bedrock-operation-review",
+    "dataset-evaluation"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use `hyperpod-ssm` to design, validate, and troubleshoot hyperpod ssm."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Walk me through production best practices and operational guardrails for hyperpod ssm (`hyperpod-ssm`)."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We need an operational review and step-by-step runbook covering: Remote command execution and file transfer on SageMaker HyperPod cluster nodes via AWS Systems Manager (SSM). This is the primary interface for accessing HyperPod nodes — direct SS"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "What are the critical failure modes, configuration checks, and verification commands for hyperpod ssm?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our hyperpod ssm setup in read-only mode."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure and troubleshoot aiml access diagnostics exclusively without touching hyperpod ssm.",
+      "expected_alternative_skill": "aiml-access-diagnostics"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+    }
+  ]
+}

@@ -194,27 +194,34 @@ plugins/
   vertical-plugins/<domain>/      # .claude-plugin/plugin.json · skills/ · commands/ · .mcp.json · hooks/ · CONNECTORS.md
                                   # plugin.json · mcp.json (portable) · .codex-plugin/plugin.json
   partner-built/<plugin>/         # vendor/ecosystem plugins: same three layouts (Claude Code, Portable, Codex)
-src/
-  hooks/aws-mutation-gate.py      # canonical TalkOps safety hook
+evals/
+  README.md                       # open-source 3-layer skill evaluation architecture & usage guide
+  schemas/                        # JSON Schemas for execution (evals.json) and trigger (trigger_evals.json) suites
+  skills/<skill-name>/            # canonical evals.json, trigger_evals.json, and optional files/ fixtures (446 skills)
 scripts/
   _plugin_lib.py                  # shared dependency-free frontmatter and schema helpers
   validate_plugins.py             # structural, binding, portable-format, and Codex validation across all 49 plugins
+  eval_skills.py                  # static audit, 4-quadrant trigger routing, and isolated execution eval runner
 docs/
   authoring-agent-plugins.md      # standards for authoring and maintaining agent, vertical, and partner plugins
   iam-guardrails.md               # IAM patterns that back read-only and approval rules
   mcp-server-coverage.md          # how each MCP server is used across agent, vertical, and partner plugins
+  skill-evals-handover-guide.md   # authoring & debugging guide for skill evaluations
 ```
 
-## Validating plugins
+## Validating plugins & running skill evaluations
 
-All 49 plugins in `plugins/agent-plugins/`, `plugins/vertical-plugins/`, and `plugins/partner-built/` are authored and maintained directly in-place. Run the validator before opening a PR:
+All 49 plugins and 446 canonical skill evaluation suites are validated before opening a PR:
 
 ```bash
-python3 scripts/validate_plugins.py           # structural, manifest, hook, and MCP binding checks
-python3 scripts/validate_plugins.py --claude  # also run `claude plugin validate`
+python3 scripts/validate_plugins.py                            # structural, manifest, hook, and MCP binding checks
+python3 scripts/validate_plugins.py --claude                   # also run `claude plugin validate`
+python3 scripts/eval_skills.py static                          # static skill, link, script, schema & open-source hygiene audit
+python3 scripts/eval_skills.py trigger --skill <name>          # 4-quadrant trigger precision/recall eval (runs in .eval-runs/)
+python3 scripts/eval_skills.py run --skill <name>              # isolated end-to-end skill, MCP & safety-hook execution eval
 ```
 
-See [docs/authoring-agent-plugins.md](./docs/authoring-agent-plugins.md) before adding or modifying a plugin.
+See [docs/authoring-agent-plugins.md](./docs/authoring-agent-plugins.md) and [evals/README.md](./evals/README.md) before adding or modifying a plugin or skill.
 
 ## License
 

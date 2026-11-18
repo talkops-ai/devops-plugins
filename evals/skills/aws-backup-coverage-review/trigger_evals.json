@@ -55,7 +55,7 @@
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Before our DR audit tomorrow, review account `187382368021` in `ap-south-1` to verify every backup vault's KMS encryption, Vault Lock status, cross-Region copy rules, and recovery point freshness."
+      "prompt": "Before our DR audit tomorrow, review account `123456789012` in `ap-south-1` to verify every backup vault's KMS encryption, Vault Lock status, cross-Region copy rules, and recovery point freshness."
     },
     {
       "id": "trig-ctx-02",
@@ -76,24 +76,24 @@
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "storage-s3-resiliency-expertise",
-      "prompt": "Audit S3 bucket `s3://krayak-dev-8021-as1-terraform-tfstate` across all 9 S3 resiliency dimensions including bucket versioning, CRR, Object Lock, Ownership Controls, and website hosting."
+      "prompt": "Audit S3 bucket `s3://example-prod-1234-as1-terraform-tfstate` across all 9 S3 resiliency dimensions including bucket versioning, CRR, Object Lock, Ownership Controls, and website hosting.",
+      "expected_alternative_skill": "storage-s3-resiliency-expertise"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "expected_alternative_skill": "aws-fsxn-operations-review",
-      "prompt": "Run a 46-check operational posture review on our Amazon FSx for NetApp ONTAP file systems and SVMs in ap-south-1."
+      "prompt": "Run a 46-check operational posture review on our Amazon FSx for NetApp ONTAP file systems and SVMs in ap-south-1.",
+      "expected_alternative_skill": "aws-fsxn-operations-review"
     },
     {
       "id": "trig-neg-03",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "storage-fsx-windows-sla-optimizer",
-      "prompt": "Review our FSx for Windows File Server `fs-0123456789abcdef0` for Single-AZ vs Multi-AZ SLA readiness, Active Directory health, and throughput right-sizing."
+      "prompt": "Review our FSx for Windows File Server `fs-0123456789abcdef0` for Single-AZ vs Multi-AZ SLA readiness, Active Directory health, and throughput right-sizing.",
+      "expected_alternative_skill": "storage-fsx-windows-sla-optimizer"
     }
   ]
 }

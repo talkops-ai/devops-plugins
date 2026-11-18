@@ -101,8 +101,8 @@
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "provisioning-opentelemetry-collectors",
       "prompt": "Provision an `OpenTelemetryCollector` gateway in `otel-demo` and an `otel-agent` DaemonSet in `observability`.",
+      "expected_alternative_skill": "provisioning-opentelemetry-collectors",
       "notes": "Collector provisioning"
     },
     {
@@ -110,8 +110,8 @@
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "expected_alternative_skill": "onboarding-exporters-and-instrumentation",
       "prompt": "Deploy a Prometheus `postgres_exporter` sidecar or Deployment in `otel-demo` to expose `/metrics` for `postgresql:5432`.",
+      "expected_alternative_skill": "onboarding-exporters-and-instrumentation",
       "notes": "Prometheus exporter onboarding"
     },
     {
@@ -119,8 +119,8 @@
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "troubleshooting-telemetry-pipelines",
       "prompt": "`opentelemetry-otel-collector` pods in `otel-demo` are getting `OOMKilled` (`ExitCode 137`) under heavy load—diagnose the collector pipeline.",
+      "expected_alternative_skill": "troubleshooting-telemetry-pipelines",
       "notes": "Collector pipeline troubleshooting"
     },
     {
@@ -128,8 +128,8 @@
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "expected_alternative_skill": "auditing-observability-security-posture",
       "prompt": "Audit Kubernetes RBAC `ClusterRole` permissions and exporter TLS settings across `opentelemetry-otel-collector` and `otel-gateway`.",
+      "expected_alternative_skill": "auditing-observability-security-posture",
       "notes": "Security posture audit"
     },
     {
@@ -137,8 +137,8 @@
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "tuning-sampling-and-trace-derived-metrics",
       "prompt": "Configure collector `tail_sampling` policies and `spanmetrics` connectors for `otel-demo` traces on our `otel-tail-sampler` StatefulSet.",
+      "expected_alternative_skill": "tuning-sampling-and-trace-derived-metrics",
       "notes": "Collector sampling & connectors"
     }
   ]

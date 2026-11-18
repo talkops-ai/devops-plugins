@@ -27,7 +27,7 @@
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Migrate, modernize, and upgrade codebases to AWS. Run analysis on repos for tech debt, security vulnerabilities, and modernization opportunities. Transforms .NET Framework to .NET "
+      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Migrate, modernize, and upgrade codebases to AWS. Run analysis on repos for tech debt, security vulnerabilities, and modernization opportunities. Transforms .NET Framework to .NET"
     },
     {
       "id": "trig-imp-02",
@@ -45,14 +45,14 @@
     },
     {
       "id": "trig-neg-01",
-      "quadrant": "negative",
+      "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
       "prompt": "Help me configure and troubleshoot app data layer remediation exclusively without touching aws transform."
     },
     {
       "id": "trig-neg-02",
-      "quadrant": "negative",
+      "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
       "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."

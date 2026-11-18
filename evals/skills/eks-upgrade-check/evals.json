@@ -1,0 +1,232 @@
+{
+  "skill_name": "eks-upgrade-check",
+  "evals": [
+    {
+      "id": "eval-01-clean-cluster-ready",
+      "prompt": "Run a strictly read-only EKS upgrade readiness assessment using the cluster fixture in `files/scenarios/01-clean-cluster.md` (clean-cluster-ready) and produce the full scored readiness report.",
+      "expected_output": "Score 100%, rating READY, no blockers, all required report sections present",
+      "files": [
+        "files/scenarios/01-clean-cluster.md"
+      ],
+      "expectations": [
+        "score_is_100: score == 100",
+        "rating_ready: report rating matches regex '(?<!NOT )READY' (anchored: 'NOT READY' must NOT satisfy this)",
+        "no_blockers: Blockers section says 'No blockers identified'",
+        "all_sections_present: report contains all required headings"
+      ]
+    },
+    {
+      "id": "eval-02-hard-blocker-karpenter",
+      "prompt": "Run a strictly read-only EKS upgrade readiness assessment using the cluster fixture in `files/scenarios/02-karpenter-blocker.md` (hard-blocker-karpenter) and produce the full scored readiness report.",
+      "expected_output": "Score 59% (hard-blocker cap), rating NOT READY, Karpenter flagged as blocker. Upgrade Plan orders control plane first, then data plane, then add-ons; the conditional Karpenter step is upgrade-first (Karpenter is not an ordering exception — it is a compatibility prerequisite, brought to a target-compatible version before the control plane).",
+      "files": [
+        "files/scenarios/02-karpenter-blocker.md"
+      ],
+      "expectations": [
+        "score_capped_59: score == 59",
+        "rating_not_ready: report rating contains 'NOT READY'",
+        "karpenter_in_blockers: Blockers section mentions Karpenter",
+        "karpenter_version_detected: report contains '0.37'",
+        "upgrade_order_correct: Upgrade Plan is control-plane-first (control plane before data plane and add-ons), AND the conditional Karpenter step runs upgrade-first (Karpenter upgraded before the control plane, as a compatibility prerequisite rather than an ordering exception)"
+      ]
+    },
+    {
+      "id": "eval-03-hard-blocker-degraded-addon",
+      "prompt": "Run a strictly read-only EKS upgrade readiness assessment using the cluster fixture in `files/scenarios/03-degraded-addon.md` (hard-blocker-degraded-addon) and produce the full scored readiness report.",
+      "expected_output": "Score 59% (hard-blocker cap), rating NOT READY, EBS CSI flagged as blocker",
+      "files": [
+        "files/scenarios/03-degraded-addon.md"
+      ],
+      "expectations": [
+        "score_capped_59: score == 59",
+        "rating_not_ready: report contains 'NOT READY'",
+        "ebs_csi_in_blockers: Blockers section mentions ebs-csi or EBS CSI",
+        "degraded_mentioned: report contains 'DEGRADED'"
+      ]
+    },
+    {
+      "id": "eval-04-subnet-single-low-warning",
+      "prompt": "Run a strictly read-only EKS upgrade readiness assessment using the cluster fixture in `files/scenarios/04-subnet-exhausted.md` (subnet-single-low-warning) and produce the full scored readiness report.",
+      "expected_output": "Score 87% GOOD, no hard blocker override; BOTH low subnets (aaa=3, bbb=12) are individually in the <=15 warning band (+2 each) but collectively 3+12=15 IPs clears the conservative capacity-review guard. This is not proof of ENI placement or AWS upgrade success.",
+      "files": [
+        "files/scenarios/04-subnet-exhausted.md"
+      ],
+      "expectations": [
+        "score_is_87: score == 87",
+        "rating_good: report contains 'GOOD'",
+        "no_hard_blocker_override: score > 59",
+        "both_subnet_warnings_not_blocker: both low subnets (aaa and bbb) noted as warnings, neither in Blockers as a hard blocker (collective IPs >=5); no claim that AWS upgrade success or ENI placement is guaranteed"
+      ]
+    },
+    {
+      "id": "eval-05-multiple-medium-no-blockers",
+      "prompt": "Run a strictly read-only EKS upgrade readiness assessment using the cluster fixture in `files/scenarios/05-medium-issues.md` (multiple-medium-no-blockers) and produce the full scored readiness report.",
+      "expected_output": "Score 86% GOOD, no hard blocker override, issues in Recommended Actions",
+      "files": [
+        "files/scenarios/05-medium-issues.md"
+      ],
+      "expectations": [
+        "score_is_86: score == 86",
+        "rating_good: report contains 'GOOD'",
+        "no_hard_blocker_override: score > 59",
+        "recommended_actions_populated: Recommended Actions section is not empty/placeholder"
+      ]
+    },
+    {
+      "id": "eval-06-k8s-136-selfmanaged-containerd-not-blocker",
+      "prompt": "Run a strictly read-only EKS upgrade readiness assessment using the cluster fixture in `files/scenarios/06-k8s-136-selfmanaged-containerd.md` (k8s-136-selfmanaged-containerd-not-blocker) and produce the full scored readiness report.",
+      "expected_output": "Score 74% FAIR, no hard blocker override. Self-managed containerd 1.x on target 1.36 is HIGH severity (+5 Cat 3) but NOT a hard blocker; gitRepo volume flagged HIGH.",
+      "files": [
+        "files/scenarios/06-k8s-136-selfmanaged-containerd.md"
+      ],
+      "expectations": [
+        "score_is_74: score == 74",
+        "rating_fair: report contains 'FAIR'",
+        "no_hard_blocker_override: score > 59",
+        "containerd_not_blocker: containerd noted as HIGH but not in Blockers as a hard blocker",
+        "gitrepo_flagged: report mentions gitRepo volume as HIGH"
+      ]
+    },
+    {
+      "id": "eval-07-k8s-136-managed-containerd-not-blocker",
+      "prompt": "Run a strictly read-only EKS upgrade readiness assessment using the cluster fixture in `files/scenarios/07-k8s-136-managed-containerd.md` (k8s-136-managed-containerd-not-blocker) and produce the full scored readiness report.",
+      "expected_output": "Score 98% READY. Managed containerd 1.x on target 1.36 is INFO only, NOT a hard blocker.",
+      "files": [
+        "files/scenarios/07-k8s-136-managed-containerd.md"
+      ],
+      "expectations": [
+        "score_is_98: score == 98",
+        "rating_ready: report rating matches regex '(?<!NOT )READY' (anchored: 'NOT READY' must NOT satisfy this)",
+        "no_hard_blocker_override: score > 59",
+        "containerd_not_blocker: containerd noted as INFO/auto-handled, not in Blockers"
+      ]
+    },
+    {
+      "id": "eval-08-denied-read-category-unassessed",
+      "prompt": "Run a strictly read-only EKS upgrade readiness assessment using the cluster fixture in `files/scenarios/08-denied-read-unassessed.md` (denied-read-category-unassessed) and produce the full scored readiness report.",
+      "expected_output": "One category (Deprecated APIs) had its backing read denied (403), so it is reported UNKNOWN / not-scored: listed in ## Unassessed, excluded from the score sum (NOT scored 0), and the headline carries the '(partial — N categories unassessed)' marker and is capped below READY. Assessed remainder scores 98 (sole deduction: subnet-aaa low-IP warning +2 under Node Readiness), but the partial marker prevents a READY rating.",
+      "files": [
+        "files/scenarios/08-denied-read-unassessed.md"
+      ],
+      "expectations": [
+        "deprecated_apis_unassessed: ## Unassessed section lists the Deprecated APIs category with the denied/403 read as the reason",
+        "unassessed_excluded_from_sum: Deprecated APIs contributes NO row to the Master Finding List Pts sum and NO deduction — it is excluded, not scored 0",
+        "headline_partial_marker: headline band contains a '(partial' unassessed marker, e.g. '(partial — 1 category unassessed)'",
+        "capped_below_ready: report rating contains 'GOOD' (a capped partial assessment is pinned to exactly GOOD, not READY and not an over-conservative FAIR/RISKY band)",
+        "assessed_remainder_98: assessed-remainder arithmetic score == 98 (100 - 2 for the single low-IP subnet warning)"
+      ]
+    },
+    {
+      "id": "eval-09-cluster-identity-binding",
+      "prompt": "Run a strictly read-only EKS upgrade readiness assessment using the cluster fixture in `files/scenarios/09-cluster-identity.md` (cluster-identity-binding) and produce the full scored readiness report.",
+      "expected_output": "Wrong or unverified connection halts before Kubernetes reads; a unique endpoint-matching context is pinned; ambiguous credentials require selection; denied reads on a verified cluster retain partial-assessment behavior.",
+      "files": [
+        "files/scenarios/09-cluster-identity.md"
+      ],
+      "expectations": [
+        "wrong_cluster_halts: Case 1 halts without Kubernetes reads, configuration mutation, or readiness score; a matching display name is insufficient",
+        "unique_context_pinned: Case 2 selects operations-alias and uses explicit --context for all subsequent kubectl calls",
+        "ambiguous_context_asks: Case 3 requests credential/context selection instead of choosing admin or reader",
+        "mcp_identity_independent: Case 4 halts for unverifiable MCP binding even though local context matches",
+        "permission_failure_partial: Case 5 continues only as a caveated partial assessment; DevOps runtime does so autonomously"
+      ]
+    },
+    {
+      "id": "eval-10-managed-addon-default-not-latest",
+      "prompt": "Run a strictly read-only EKS upgrade readiness assessment using the cluster fixture in `files/scenarios/10-addon-default-version.md` (managed-addon-default-not-latest) and produce the full scored readiness report.",
+      "expected_output": "A/B/D/E/F COMPATIBLE (0); C UPDATE_RECOMMENDED (1); G INCOMPATIBLE optional (3, no cap); H Unassessed/not-scored. No downgrade based on default mismatch.",
+      "files": [
+        "files/scenarios/10-addon-default-version.md"
+      ],
+      "expectations": [
+        "newer_equal_missing_default: A, B, D, E, F are target COMPATIBLE, 0 pts, no default-mismatch downgrade",
+        "behind_default: C is UPDATE_RECOMMENDED, 1 pt; do not recommend installation before verifying the candidate on current",
+        "complete_set_absence: G is optional INCOMPATIBLE, 3 pts, no hard-blocker cap",
+        "pagination_failure: H is UNKNOWN/not-scored and Unassessed, not INCOMPATIBLE or a clean pass",
+        "numeric_build_order: D treats eksbuild.10 as newer than eksbuild.9 and includes page 2",
+        "matching_compatibility_entry: E uses the 1.35 default flag, not the 1.34 flag"
+      ]
+    },
+    {
+      "id": "eval-11-current-target-transition",
+      "prompt": "Run a strictly read-only EKS upgrade readiness assessment using the cluster fixture in `files/scenarios/11-addon-transition.md` (current-target-transition) and produce the full scored readiness report.",
+      "expected_output": "Alpha uses verified 2.5 bridge with documented CRD-first migration; beta transition unresolved; gamma current-only support concern without outage claim or extra deduction; delta and denied current lookup remain explicitly unassessed.",
+      "files": [
+        "files/scenarios/11-addon-transition.md"
+      ],
+      "expectations": [
+        "bridge_candidate: Alpha recommends 2.5 before control plane with CRD migration; never 3.0 before 1.35",
+        "no_bridge_no_invention: Beta has no verified pre-upgrade candidate or fabricated install command; migration review required",
+        "current_only_concern: Gamma reports existing unsupported 1.34 combination, target COMPATIBLE 0 pts, no invented outage or hard blocker",
+        "missing_current_evidence: Delta current compatibility is UNKNOWN and Unassessed; known target compatibility retained",
+        "denied_current_read: Case 5 lists current compatibility read in Unassessed without discarding target evidence or presenting complete READY"
+      ]
+    },
+    {
+      "id": "eval-12-pdb-drain-eligibility",
+      "prompt": "Run a strictly read-only EKS upgrade readiness assessment using the cluster fixture in `files/scenarios/12-pdb-drain-scope.md` (pdb-drain-eligibility) and produce the full scored readiness report.",
+      "expected_output": "Recovering, restrictive, percentage contribute 2 each; paused, other-group, exempt 0; stale/inconsistent Unassessed. PDB raw subtotal 6, medium cap yields Category 6 subtotal 4. Unspecified scope is unassessed.",
+      "files": [
+        "files/scenarios/12-pdb-drain-scope.md"
+      ],
+      "expectations": [
+        "empty_and_outside_scope: paused and other-group contribute no drain-risk deduction",
+        "health_vs_configuration: recovering gets health-recovery advice; restrictive and percentage get owner policy/maintenance review; each contributes 2 pts",
+        "unhealthy_eviction_exemption: exempt contributes 0 because only unhealthy AlwaysAllow pod is on affected node",
+        "unknown_data: stale and inconsistent are Unassessed/not-scored, not clean passes",
+        "subtotal: raw PDB subtotal 6; Category 6 medium subtotal capped at 4; no hard-blocker cap",
+        "unknown_scope: recovering with unspecified scope is potential risk/Unassessed, not a proven scored drain obstruction"
+      ]
+    },
+    {
+      "id": "eval-13-score-transparency",
+      "prompt": "Run a strictly read-only EKS upgrade readiness assessment using the cluster fixture in `files/scenarios/13-score-transparency.md` (score-transparency) and produce the full scored readiness report.",
+      "expected_output": "Show calculated and final scores plus named adjustment: A 100/100 READY; B 86/59 NOT READY; C 50/50 NOT READY; D 98/98 GOOD partial; E 85/59 NOT READY partial; F 0/0 NOT READY with zero floor; G 75/75 FAIR partial; H no score.",
+      "files": [
+        "files/scenarios/13-score-transparency.md"
+      ],
+      "expectations": [
+        "uncapped_arithmetic: A displays calculated 100 and final 100 with no hard-blocker cap; Total identifies calculated score",
+        "blocker_explanation: B displays calculated 86, final/headline 59 NOT READY and names Karpenter; no invented 27-point finding",
+        "never_raise_low_score: C displays calculated 50 and final 50, explains blockers impose ceiling without further reduction; never raises to 59",
+        "partial_verdict_only: D retains calculated/final 98, headline GOOD partial, and explains incomplete coverage without a deduction to 89",
+        "both_adjustments: E displays 85/59 NOT READY partial and explains both EBS CSI blocker and incomplete coverage",
+        "zero_floor: F shows max(0, 100 - 130) = 0 and final 0, never negative or raised to 59",
+        "lower_partial_verdict: G remains 75/75 FAIR partial; does not raise verdict to GOOD",
+        "halt_no_score: H reports preflight identity failure with no calculated or final readiness score"
+      ]
+    },
+    {
+      "id": "eval-14-eks-maintenance-guidance",
+      "prompt": "Run a strictly read-only EKS upgrade readiness assessment using the cluster fixture in `files/scenarios/14-eks-maintenance-guidance.md` (eks-maintenance-guidance) and produce the full scored readiness report.",
+      "expected_output": "Capacity guards preserve scores without predicting AWS rejection or success; EKS node-update strategy, prefix allocation, and Fargate rollback advice match AWS guidance; dormant and singleton scores are unchanged.",
+      "files": [
+        "files/scenarios/14-eks-maintenance-guidance.md"
+      ],
+      "expectations": [
+        "capacity_policy: Case 1: node 4, calculated/final 96; Case 2: node 9, calculated 91, final 59 NOT READY as a conservative policy guard; neither treats an address sum as a placement test",
+        "partial_subnet: Case 3 does not evaluate the total guard from a partial list; missing capacity evidence is Unassessed",
+        "eks_node_update_strategy: Case 4 allows up to ten extra nodes, not one; Case 5 explains terminate-first capacity reduction without recommending an automatic strategy switch",
+        "prefix_constraints: Case 6 rejects prefix delegation as a per-pod address-saving remedy and notes the missing contiguous /28 and warm-pool demand",
+        "fargate_scope: Case 7 distinguishes control-plane rollback eligibility from no in-place Fargate worker downgrade, retains observed node/kubelet evidence, and proposes owner-coordinated pod replacement without executing deletion or force",
+        "workload_policy_unchanged: Case 8 retains 5 points but labels reactivation/application-rollout risk, not current eviction risk; Case 9 retains 3 single-replica + 2 restrictive-PDB points, recognizes owner-coordination intent, and applies no hard-blocker cap"
+      ]
+    },
+    {
+      "id": "eval-15-overlapping-pdbs",
+      "prompt": "Run a strictly read-only EKS upgrade readiness assessment using the cluster fixture in `files/scenarios/15-overlapping-pdbs.md` (overlapping-pdbs) and produce the full scored readiness report.",
+      "expected_output": "Cases 1,2,4 have raw/applied 4 PDB points; 3,5,8 have 0; 6 changes from 0 to 4; 7 scores overlap 4 while listing stale budget status Unassessed; 9 is unassessed. No hard-blocker cap or per-pod/per-pair double counting.",
+      "files": [
+        "files/scenarios/15-overlapping-pdbs.md"
+      ],
+      "expectations": [
+        "positive_budget_overlap: Case 1 reports both PDBs at 2 points each despite positive budgets and multiple matching pods; Category 6 subtotal 4",
+        "deduplicate_causes: Case 2 retains raw 4, not 6, because p1 is counted once despite zero budget and overlap",
+        "eligibility_scope: Cases 3 and 5 score 0 for outside-scope and Pending/terminating candidates; Case 4 still scores 4 because AlwaysAllow does not bypass multiple matching PDBs",
+        "selector_and_namespace: Case 6 evaluates empty selector plus both matchExpressions: 0 before label removal, 4 after; Case 8 has no cross-namespace overlap",
+        "unknown_checks: Case 7 scores independently confirmed overlap 4 while retaining stale-budget Unassessed; Case 9 does not trust the cached single PDB as proof of either overlap or safety",
+        "non_blocker_remediation: No case applies the hard-blocker score cap; recommends owner review of overlapping coverage without automatic deletion, budget relaxation, or force"
+      ]
+    }
+  ]
+}

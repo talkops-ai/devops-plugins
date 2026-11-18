@@ -14,11 +14,11 @@
     },
     {
       "id": "eval-02-our-ci-cd-pipeline-in-github-repository-talkops",
-      "prompt": "Our CI/CD pipeline in GitHub repository `talkops-ai/payments-service` currently uses long-lived `AKIA*` IAM user access keys stored in GitHub Secrets to deploy to AWS account `187382368021`. Design a keyless GitHub Actions OIDC (`sts:AssumeRoleWithWebIdentity`) IAM role trust policy pinned strictly to the `main` branch and `production` GitHub Environment, and explain why omitting the `sub` condition is a critical vulnerability.",
+      "prompt": "Our CI/CD pipeline in GitHub repository `talkops-ai/payments-service` currently uses long-lived `AKIA*` IAM user access keys stored in GitHub Secrets to deploy to AWS account `123456789012`. Design a keyless GitHub Actions OIDC (`sts:AssumeRoleWithWebIdentity`) IAM role trust policy pinned strictly to the `main` branch and `production` GitHub Environment, and explain why omitting the `sub` condition is a critical vulnerability.",
       "expected_output": "Provides the `aws_iam_openid_connect_provider` for `https://token.actions.githubusercontent.com` and an IAM role trust policy for `sts:AssumeRoleWithWebIdentity` with `StringEquals`/`StringLike` conditions on both `token.actions.githubusercontent.com:aud` (`sts.amazonaws.com`) and `token.actions.githubusercontent.com:sub`, explaining cross-repo takeover if `sub` is omitted.",
       "files": [],
       "expectations": [
-        "Configures the IAM OIDC provider ARN `arn:aws:iam::187382368021:oidc-provider/token.actions.githubusercontent.com` with `Action: \"sts:AssumeRoleWithWebIdentity\"`",
+        "Configures the IAM OIDC provider ARN `arn:aws:iam::123456789012:oidc-provider/token.actions.githubusercontent.com` with `Action: \"sts:AssumeRoleWithWebIdentity\"`",
         "Pins `token.actions.githubusercontent.com:aud` to `\"sts.amazonaws.com\"`",
         "Pins `token.actions.githubusercontent.com:sub` to `\"repo:talkops-ai/payments-service:ref:refs/heads/main\"` and/or `\"repo:talkops-ai/payments-service:environment:production\"`",
         "Explains that omitting the `sub` claim condition allows ANY GitHub repository in the world to assume the IAM role via `token.actions.githubusercontent.com`"
@@ -26,13 +26,13 @@
     },
     {
       "id": "eval-03-we-want-to-allow-a-developer-ci-cd-role-appdeplo",
-      "prompt": "We want to allow a developer CI/CD role (`AppDeployerRole`) in account `187382368021` to create new IAM roles (`iam:CreateRole`, `iam:AttachRolePolicy`, `iam:PutRolePolicy`) for microservices without allowing privilege escalation to `AdministratorAccess`. Design the IAM Permission Boundary policy (`WorkloadPermissionsBoundary`) and the `AppDeployerRole` policy that forces every created role to attach that boundary.",
-      "expected_output": "Provides both the `WorkloadPermissionsBoundary` policy (capping maximum permissions and denying IAM/Organizations/CloudTrail escalation) and the `AppDeployerRole` policy requiring `\"StringEquals\": {\"iam:PermissionsBoundary\": \"arn:aws:iam::187382368021:policy/WorkloadPermissionsBoundary\"}` on `iam:CreateRole`, `iam:AttachRolePolicy`, and `iam:PutRolePolicy`, plus an explicit `Deny` on deleting or detaching the boundary.",
+      "prompt": "We want to allow a developer CI/CD role (`AppDeployerRole`) in account `123456789012` to create new IAM roles (`iam:CreateRole`, `iam:AttachRolePolicy`, `iam:PutRolePolicy`) for microservices without allowing privilege escalation to `AdministratorAccess`. Design the IAM Permission Boundary policy (`WorkloadPermissionsBoundary`) and the `AppDeployerRole` policy that forces every created role to attach that boundary.",
+      "expected_output": "Provides both the `WorkloadPermissionsBoundary` policy (capping maximum permissions and denying IAM/Organizations/CloudTrail escalation) and the `AppDeployerRole` policy requiring `\"StringEquals\": {\"iam:PermissionsBoundary\": \"arn:aws:iam::123456789012:policy/WorkloadPermissionsBoundary\"}` on `iam:CreateRole`, `iam:AttachRolePolicy`, and `iam:PutRolePolicy`, plus an explicit `Deny` on deleting or detaching the boundary.",
       "files": [],
       "expectations": [
-        "Enforces `\"StringEquals\": {\"iam:PermissionsBoundary\": \"arn:aws:iam::187382368021:policy/WorkloadPermissionsBoundary\"}` as a mandatory condition on `iam:CreateRole`, `iam:AttachRolePolicy`, `iam:DetachRolePolicy`, `iam:PutRolePolicy`, and `iam:DeleteRolePolicy`",
+        "Enforces `\"StringEquals\": {\"iam:PermissionsBoundary\": \"arn:aws:iam::123456789012:policy/WorkloadPermissionsBoundary\"}` as a mandatory condition on `iam:CreateRole`, `iam:AttachRolePolicy`, `iam:DetachRolePolicy`, `iam:PutRolePolicy`, and `iam:DeleteRolePolicy`",
         "Includes an explicit `Deny` preventing `AppDeployerRole` from calling `iam:DeleteRolePermissionsBoundary` or modifying/deleting the `WorkloadPermissionsBoundary` policy itself (`iam:CreatePolicyVersion`, `iam:DeletePolicy`)",
-        "Scopes `iam:CreateRole` and `iam:PassRole` to a dedicated path or naming prefix (e.g., `arn:aws:iam::187382368021:role/app-*`) so the deployer cannot modify administrative roles"
+        "Scopes `iam:CreateRole` and `iam:PassRole` to a dedicated path or naming prefix (e.g., `arn:aws:iam::123456789012:role/app-*`) so the deployer cannot modify administrative roles"
       ]
     }
   ]

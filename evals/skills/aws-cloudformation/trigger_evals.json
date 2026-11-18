@@ -9,101 +9,101 @@
   "queries": [
     {
       "id": "trigger-01",
-      "prompt": "Author a CloudFormation YAML template for an encrypted S3 bucket and DynamoDB table with DeletionPolicy: Retain, persist design rationale in com.aws.cloudformation.Context, and validate it with cfn-lint and cfn-guard.",
+      "quadrant": "explicit",
+      "split": "train",
       "should_trigger": true,
-      "quadrant": "should_trigger",
-      "split": "train"
+      "prompt": "Author a CloudFormation YAML template for an encrypted S3 bucket and DynamoDB table with DeletionPolicy: Retain, persist design rationale in com.aws.cloudformation.Context, and validate it with cfn-lint and cfn-guard."
     },
     {
       "id": "trigger-02",
-      "prompt": "Our CloudFormation stack `prod-orders-stack` is stuck in `UPDATE_ROLLBACK_FAILED` in `ap-south-1`. Diagnose the root-cause failed event using `describe-events` and CloudTrail correlation.",
+      "quadrant": "explicit",
+      "split": "train",
       "should_trigger": true,
-      "quadrant": "should_trigger",
-      "split": "train"
+      "prompt": "Our CloudFormation stack `prod-orders-stack` is stuck in `UPDATE_ROLLBACK_FAILED` in `ap-south-1`. Diagnose the root-cause failed event using `describe-events` and CloudTrail correlation."
     },
     {
       "id": "trigger-03",
-      "prompt": "How do I run CloudFormation Express mode (`--deployment-config '{\"mode\": \"EXPRESS\"}'`) during development iteration, and how does it differ from `cdk deploy --hotswap`?",
+      "quadrant": "explicit",
+      "split": "train",
       "should_trigger": true,
-      "quadrant": "should_trigger",
-      "split": "train"
+      "prompt": "How do I run CloudFormation Express mode (`--deployment-config '{\"mode\": \"EXPRESS\"}'`) during development iteration, and how does it differ from `cdk deploy --hotswap`?"
     },
     {
       "id": "trigger-04",
-      "prompt": "Before I delete the `VpcId` Export from our networking CloudFormation template, check `list-imports` and walk me through the Cross-Stack Reference Safety decoupling steps.",
+      "quadrant": "explicit",
+      "split": "train",
       "should_trigger": true,
-      "quadrant": "should_trigger",
-      "split": "train"
+      "prompt": "Before I delete the `VpcId` Export from our networking CloudFormation template, check `list-imports` and walk me through the Cross-Stack Reference Safety decoupling steps."
     },
     {
       "id": "trigger-05",
-      "prompt": "Explain what this existing `.cfn.yaml` template does by reading its `Description` and `Metadata.com.aws.cloudformation.Context` blocks.",
+      "quadrant": "explicit",
+      "split": "val",
       "should_trigger": true,
-      "quadrant": "should_trigger",
-      "split": "val"
+      "prompt": "Explain what this existing `.cfn.yaml` template does by reading its `Description` and `Metadata.com.aws.cloudformation.Context` blocks."
     },
     {
       "id": "trigger-06",
-      "prompt": "Run account-aware CloudFormation pre-deployment validation (`--validation-mode`) on our Change Set before we execute it.",
+      "quadrant": "explicit",
+      "split": "val",
       "should_trigger": true,
-      "quadrant": "should_trigger",
-      "split": "val"
+      "prompt": "Run account-aware CloudFormation pre-deployment validation (`--validation-mode`) on our Change Set before we execute it."
     },
     {
       "id": "trigger-07",
-      "prompt": "Our CloudFormation YAML template is 50,900 bytes and hitting the 51,200-byte inline size limit. How should we condense metadata or split the stack safely?",
+      "quadrant": "explicit",
+      "split": "val",
       "should_trigger": true,
-      "quadrant": "should_trigger",
-      "split": "val"
+      "prompt": "Our CloudFormation YAML template is 50,900 bytes and hitting the 51,200-byte inline size limit. How should we condense metadata or split the stack safely?"
     },
     {
       "id": "trigger-08",
-      "prompt": "Write a Terraform `.tftest.hcl` unit test suite using `mock_provider \"aws\" {}` and `moved` blocks to refactor our HCL module.",
+      "quadrant": "near_miss_negative",
+      "split": "train",
       "should_trigger": false,
-      "quadrant": "near_miss_neighbor",
-      "split": "train"
+      "prompt": "Write a Terraform `.tftest.hcl` unit test suite using `mock_provider \"aws\" {}` and `moved` blocks to refactor our HCL module."
     },
     {
       "id": "trigger-09",
-      "prompt": "Author a Crossplane `CompositeResourceDefinition` (XRD) and `spec.mode: Pipeline` Composition using `function-patch-and-transform` for Upbound `provider-aws-rds`.",
+      "quadrant": "near_miss_negative",
+      "split": "train",
       "should_trigger": false,
-      "quadrant": "near_miss_neighbor",
-      "split": "train"
+      "prompt": "Author a Crossplane `CompositeResourceDefinition` (XRD) and `spec.mode: Pipeline` Composition using `function-patch-and-transform` for Upbound `provider-aws-rds`."
     },
     {
       "id": "trigger-10",
-      "prompt": "Build a Pulumi TypeScript `ComponentResource` with `@pulumi/aws` and `@pulumi/aws-native` and configure Pulumi ESC OIDC credentials.",
+      "quadrant": "near_miss_negative",
+      "split": "train",
       "should_trigger": false,
-      "quadrant": "near_miss_neighbor",
-      "split": "train"
+      "prompt": "Build a Pulumi TypeScript `ComponentResource` with `@pulumi/aws` and `@pulumi/aws-native` and configure Pulumi ESC OIDC credentials."
     },
     {
       "id": "trigger-11",
-      "prompt": "Migrate our v1 `@aws-cdk/aws-s3` TypeScript app to AWS CDK v2 `aws-cdk-lib`, wire `cdk-nag` `AwsSolutionsChecks`, and run `cdk refactor`.",
+      "quadrant": "near_miss_negative",
+      "split": "val",
       "should_trigger": false,
-      "quadrant": "near_miss_neighbor",
-      "split": "val"
+      "prompt": "Migrate our v1 `@aws-cdk/aws-s3` TypeScript app to AWS CDK v2 `aws-cdk-lib`, wire `cdk-nag` `AwsSolutionsChecks`, and run `cdk refactor`."
     },
     {
       "id": "trigger-12",
-      "prompt": "Scaffold a new full-stack Todo web application using `npx @aws-blocks/create-blocks-app my-app --template demo` with `KVStore` and `AuthCognito`.",
+      "quadrant": "near_miss_negative",
+      "split": "val",
       "should_trigger": false,
-      "quadrant": "near_miss_neighbor",
-      "split": "val"
+      "prompt": "Scaffold a new full-stack Todo web application using `npx @aws-blocks/create-blocks-app my-app --template demo` with `KVStore` and `AuthCognito`."
     },
     {
       "id": "trigger-13",
-      "prompt": "Write a Python script using Pandas to calculate the 30-day rolling volatility of S&P 500 stock prices from a local CSV file.",
+      "quadrant": "near_miss_negative",
+      "split": "train",
       "should_trigger": false,
-      "quadrant": "unrelated",
-      "split": "train"
+      "prompt": "Write a Python script using Pandas to calculate the 30-day rolling volatility of S&P 500 stock prices from a local CSV file."
     },
     {
       "id": "trigger-14",
-      "prompt": "Configure an Apple iOS SwiftUI navigation stack with deep-linking and CoreData persistence.",
+      "quadrant": "near_miss_negative",
+      "split": "val",
       "should_trigger": false,
-      "quadrant": "unrelated",
-      "split": "val"
+      "prompt": "Configure an Apple iOS SwiftUI navigation stack with deep-linking and CoreData persistence."
     }
   ]
 }

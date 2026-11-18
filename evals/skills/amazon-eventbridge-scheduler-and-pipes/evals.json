@@ -1,6 +1,5 @@
 {
   "skill_name": "amazon-eventbridge-scheduler-and-pipes",
-  "Companion_skills_note": "Associates with amazon-eventbridge-event-bus, amazon-sqs-sns-async-messaging, and aws-messaging-and-streaming",
   "evals": [
     {
       "id": "eval-01-slash-command-eventbridge-routing-timezone-scheduler-and-live-audit",

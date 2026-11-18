@@ -25,18 +25,18 @@
     },
     {
       "id": "eval-03-run-aws-devsecops-engineer-accounts-in-client-de",
-      "prompt": "Run `/aws-devsecops-engineer:accounts` in `client-devops` (`ap-south-1`): enumerate our locally configured AWS profile names (without ever reading `~/.aws/credentials`), verify the live caller identity for `client-devops` via `aws-mcp` (`aws___call_aws` with `aws_profile=\"client-devops\"`), and present the Step 4 Unified Multi-Account Summary Table.",
-      "expected_output": "Enumerates configured AWS profile names (`aws configure list-profiles` or `~/.aws/config`, never touching `~/.aws/credentials`), calls `aws___call_aws(cli_command=\"aws sts get-caller-identity\", aws_profile=\"client-devops\")`, reports Account `187382368021` (`arn:aws:iam::187382368021:user/sandeep.mahto`), and outputs the Step 4 Unified Multi-Account Summary Table labeled by Account ID, Profile Name, and Region.",
+      "prompt": "Run `/aws-devsecops-engineer:accounts` in `default` (`ap-south-1`): enumerate our locally configured AWS profile names (without ever reading `~/.aws/credentials`), verify the live caller identity for `default` via `aws-mcp` (`aws___call_aws` with `aws_profile=\"default\"`), and present the Step 4 Unified Multi-Account Summary Table.",
+      "expected_output": "Enumerates configured AWS profile names (`aws configure list-profiles` or `~/.aws/config`, never touching `~/.aws/credentials`), calls `aws___call_aws(cli_command=\"aws sts get-caller-identity\", aws_profile=\"default\")`, reports Account `123456789012` (`arn:aws:iam::123456789012:user/sandeep.mahto`), and outputs the Step 4 Unified Multi-Account Summary Table labeled by Account ID, Profile Name, and Region.",
       "files": [],
       "expectations": [
-        "Enumerates configured AWS profile names (including `client-devops`, `prod`, `zoksh-prod`, `zoksh-sandbox`, `krayak`, etc.) without reading `~/.aws/credentials`",
-        "Invokes `aws-mcp` (`aws___call_aws` with `aws sts get-caller-identity` and `aws_profile=\"client-devops\"`) in read-only mode and reports Account ID `187382368021` (`arn:aws:iam::187382368021:user/sandeep.mahto`)",
+        "Enumerates configured AWS profile names (including `default`, `prod`, `zoksh-prod`, `zoksh-sandbox`, `example-corp`, etc.) without reading `~/.aws/credentials`",
+        "Invokes `aws-mcp` (`aws___call_aws` with `aws sts get-caller-identity` and `aws_profile=\"default\"`) in read-only mode and reports Account ID `123456789012` (`arn:aws:iam::123456789012:user/sandeep.mahto`)",
         "Formats the output using the Step 4 Unified Multi-Account Summary Table (`Account / Profile | Region | Domain | Status / Findings | Action Required`)"
       ]
     },
     {
       "id": "eval-04-walk-through-step-3-s-staged-promotion-gate-dev",
-      "prompt": "Walk through Step 3's Staged Promotion Gate (`dev -> staging -> prod`) when promoting a CloudFormation / CDK change from `dev` (`187382368021`) to `staging` (`111122223333`) and then to `prod` (`444455556666`). Which companion skills must run at each stage, and what must the human confirmation gate show before touching `prod`?",
+      "prompt": "Walk through Step 3's Staged Promotion Gate (`dev -> staging -> prod`) when promoting a CloudFormation / CDK change from `dev` (`123456789012`) to `staging` (`111122223333`) and then to `prod` (`444455556666`). Which companion skills must run at each stage, and what must the human confirmation gate show before touching `prod`?",
       "expected_output": "Details the mandatory 3-step promotion sequence: (1) run `validating-release-readiness` (5-gate blast radius, `Replacement: False`, diff scan, IAM Access Analyzer, active alarms check) against `staging`, (2) after `staging` deployment, run `executing-synthetic-release-tests` on `staging` and confirm all CloudWatch Synthetics canaries and bake-window Golden Signal alarms pass (`PASS`), and (3) require an explicit human confirmation gate (`aws-mutation-gate.py`) displaying the exact target Account ID (`444455556666`), profile (`prod`), and region before executing any mutating operation in production.",
       "files": [],
       "expectations": [

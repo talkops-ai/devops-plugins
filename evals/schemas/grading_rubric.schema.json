@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Skill Grading Rubric",
+  "description": "Binary grading schema for skill execution expectations.",
+  "type": "object",
+  "required": ["assertion_results"],
+  "additionalProperties": false,
+  "properties": {
+    "assertion_results": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["text", "passed", "evidence"],
+        "additionalProperties": false,
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "The expectation text being graded."
+          },
+          "passed": {
+            "type": "boolean",
+            "description": "Strict binary pass (true) or fail (false)."
+          },
+          "evidence": {
+            "type": "string",
+            "description": "Concrete evidence from Observed Execution Telemetry or Agent Final Response."
+          }
+        }
+      }
+    }
+  }
+}

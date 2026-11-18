@@ -27,7 +27,7 @@
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Troubleshoots failing applications by discovering and analyzing CloudWatch log groups to identify error patterns, root causes, and actionable solutions. Use when an application is "
+      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Troubleshoots failing applications by discovering and analyzing CloudWatch log groups to identify error patterns, root causes, and actionable solutions. Use when an application is"
     },
     {
       "id": "trig-imp-02",
@@ -45,14 +45,14 @@
     },
     {
       "id": "trig-neg-01",
-      "quadrant": "negative",
+      "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
       "prompt": "Help me configure and troubleshoot arc region switch exclusively without touching troubleshooting application failures."
     },
     {
       "id": "trig-neg-02",
-      "quadrant": "negative",
+      "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
       "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."

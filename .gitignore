@@ -18,4 +18,5 @@ __pycache__/
 .plugin-data/
 .pricing_cache/
 reference/
+.eval-runs/
 evals/workspaces/

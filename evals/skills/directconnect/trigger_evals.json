@@ -27,7 +27,7 @@
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Configures AWS Direct Connect: choosing a connection model (dedicated, hosted, or a link aggregation group) and completing the cross connect; creating private, public, and transit "
+      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Configures AWS Direct Connect: choosing a connection model (dedicated, hosted, or a link aggregation group) and completing the cross connect; creating private, public, and transit"
     },
     {
       "id": "trig-imp-02",
@@ -45,14 +45,14 @@
     },
     {
       "id": "trig-neg-01",
-      "quadrant": "negative",
+      "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
       "prompt": "Help me configure and troubleshoot amazon ec2 image builder exclusively without touching directconnect."
     },
     {
       "id": "trig-neg-02",
-      "quadrant": "negative",
+      "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
       "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."

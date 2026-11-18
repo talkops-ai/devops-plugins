@@ -1,42 +1,82 @@
-[
-  {
-    "query": "Create a managed Apache Iceberg table in Amazon S3 Tables with an s3tables table bucket, namespace, s3tablescatalog Glue integration, and monthly partitioning.",
-    "should_trigger": true
-  },
-  {
-    "query": "Set up a new data lake table schema with nested struct/array fields (`schemaV2`) and hidden day() partitioning using aws s3tables create-table.",
-    "should_trigger": true
-  },
-  {
-    "query": "Configure least-privilege s3tables:* bucket policies and glue:Get* IAM permissions so Athena can query our S3 Tables Iceberg table.",
-    "should_trigger": true
-  },
-  {
-    "query": "Fix 'Table location can not be specified' and AccessDeniedException when creating an S3 Tables Iceberg table in Athena.",
-    "should_trigger": true
-  },
-  {
-    "query": "Evolve the schema of our S3 Tables Iceberg table by adding columns and widening int to bigint via Athena DDL.",
-    "should_trigger": true
-  },
-  {
-    "query": "Configure Glue Spark ETL --conf arguments for software.amazon.s3tables.iceberg.S3TablesCatalog to create an S3 Tables table from a Spark job.",
-    "should_trigger": true
-  },
-  {
-    "query": "Import 500 GB of existing Parquet files and PostgreSQL tables into an already-created Iceberg table.",
-    "should_trigger": false
-  },
-  {
-    "query": "Store and query 10 million 1536-dimension vector embeddings using Amazon S3 Vectors or OpenSearch k-NN.",
-    "should_trigger": false
-  },
-  {
-    "query": "Run an analytical SQL query with window functions and time-travel on an existing Athena table.",
-    "should_trigger": false
-  },
-  {
-    "query": "Search across our Glue Data Catalog to find which existing database and table stores customer billing records.",
-    "should_trigger": false
-  }
-]
+{
+  "skill_name": "creating-data-lake-table",
+  "companion_skills": [
+    "amazon-opensearch-service",
+    "analytics-opensearch-expertise",
+    "auditing-aws-system-tables",
+    "authoring-glue-and-emr-spark-jobs",
+    "authoring-mwaa-workflow"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Create a managed Apache Iceberg table in Amazon S3 Tables with an s3tables table bucket, namespace, s3tablescatalog Glue integration, and monthly partitioning."
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Set up a new data lake table schema with nested struct/array fields (`schemaV2`) and hidden day() partitioning using aws s3tables create-table."
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure least-privilege s3tables:* bucket policies and glue:Get* IAM permissions so Athena can query our S3 Tables Iceberg table."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Fix 'Table location can not be specified' and AccessDeniedException when creating an S3 Tables Iceberg table in Athena."
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Evolve the schema of our S3 Tables Iceberg table by adding columns and widening int to bigint via Athena DDL."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure Glue Spark ETL --conf arguments for software.amazon.s3tables.iceberg.S3TablesCatalog to create an S3 Tables table from a Spark job."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Import 500 GB of existing Parquet files and PostgreSQL tables into an already-created Iceberg table."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Store and query 10 million 1536-dimension vector embeddings using Amazon S3 Vectors or OpenSearch k-NN."
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Run an analytical SQL query with window functions and time-travel on an existing Athena table."
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Search across our Glue Data Catalog to find which existing database and table stores customer billing records."
+    }
+  ]
+}

@@ -5,112 +5,112 @@
       "id": "eval-01-configure-processing-drop-healthchecks-high-card-attrs-and-pii",
       "prompt": "Inspect the current log and Kubernetes enrichment profiles on `opentelemetry-otel-collector` in `otel-demo`, then preview and apply collector processing rules across `traces`, `metrics`, and `logs` to: (1) parse JSON log bodies from `checkout` and `recommendation`, (2) drop `flagd` `/healthz` and `/readyz` plus `/metrics` noise, (3) strip high-cardinality `session.id`, `app.user.id`, `url.query`, and `k8s.pod.uid` attributes, and (4) mask `email`, `ssn`, `credit_card`, and `bearer_token` PII.",
       "expected_output": "Reads `otel://collector/otel-demo/opentelemetry-otel-collector/config`, `otel://logs-profile/otel-demo/opentelemetry-otel-collector`, and `otel://k8s-enrichment/otel-demo/opentelemetry-otel-collector`, calls `otel_configure_processing(namespace=\"otel-demo\", collector_name=\"opentelemetry-otel-collector\", signals=[\"traces\", \"metrics\", \"logs\"], rules={\"parse_json\": True, \"drop_noise_paths\": [\"/healthz\", \"/readyz\", \"/metrics\"], \"drop_attributes\": [\"session.id\", \"app.user.id\", \"url.query\", \"k8s.pod.uid\"], \"mask_pii\": [\"email\", \"ssn\", \"credit_card\", \"bearer_token\"]}, dry_run=True)`, verifies `error_mode: ignore` and processor order (`memory_limiter` first, `batch` last), applies with `dry_run=False`, and checks `otel_diagnose_collector`.",
+      "files": [],
       "expectations": [
         "Inspects `otel://logs-profile/otel-demo/opentelemetry-otel-collector` and `otel://k8s-enrichment/otel-demo/opentelemetry-otel-collector` via MCP resources",
         "Calls `otel_configure_processing` on `opentelemetry-otel-collector` in `otel-demo` passing structured `rules={\"parse_json\": True, \"drop_noise_paths\": [...], \"drop_attributes\": [...], \"mask_pii\": [...]}`",
         "Preserves processor ordering (`memory_limiter` first, `transform`/`filter` middle, `batch` last) and `error_mode: ignore`",
         "Runs `dry_run=True` first, applies `dry_run=False`, and checks `otel_diagnose_collector`"
-      ],
-      "files": []
+      ]
     },
     {
       "id": "eval-02-ottl-url-path-uuid-and-numeric-id-normalization",
-      "prompt": "When `load-generator` floods `frontend-proxy` and `frontend` in `otel-demo`, HTTP spans and metrics arriving at `opentelemetry-otel-collector` include raw order UUIDs and numeric IDs inside `url.path` (such as `/api/checkout/orders/550e8400-e29b-41d4-a716-446655440000/items/984123` and `?sessionId=...`), causing a `120,000x` histogram series explosion in Prometheus! Normalize dynamic UUIDs and numeric order IDs inside `url.path` using OTTL and preview the processing change on `opentelemetry-otel-collector`.",
+      "prompt": "When `load-generator` floods `frontend-proxy` and `frontend` in `otel-demo`, HTTP spans and metrics arriving at `opentelemetry-otel-collector` include raw order UUIDs and numeric IDs inside `url.path` (such as `/api/checkout/orders/550e8400-e29b-41d4-a716-123456789012/items/984123` and `?sessionId=...`), causing a `120,000x` histogram series explosion in Prometheus! Normalize dynamic UUIDs and numeric order IDs inside `url.path` using OTTL and preview the processing change on `opentelemetry-otel-collector`.",
       "expected_output": "Explains multiplicative cardinality explosion, authors OTTL `replace_pattern(attributes[\"url.path\"], \"/[0-9a-fA-F-]{36}\", \"/{uuid}\")` and `replace_pattern(attributes[\"url.path\"], \"/[0-9]{4,}\", \"/{id}\")` with `error_mode: ignore` plus dropping `url.full`, `url.query`, and `http.target`, and previews on `opentelemetry-otel-collector` in `otel-demo` via `otel_configure_processing(..., dry_run=True)`.",
+      "files": [],
       "expectations": [
         "Authors OTTL `replace_pattern` rules normalizing both UUIDs (`/{uuid}`) and 4+ digit numeric IDs (`/{id}`) in `attributes[\"url.path\"]`",
         "Drops raw `url.full`, `url.query`, and `http.target` attributes so unnormalized URLs and `sessionId` params do not leak into metric dimensions",
         "Previews via `otel_configure_processing(..., dry_run=True)` on `opentelemetry-otel-collector` with `error_mode: ignore`"
-      ],
-      "files": []
+      ]
     },
     {
       "id": "eval-03-json-log-body-parsing-with-severity-and-trace-context-promotion",
       "prompt": "Container logs from `otel-demo` arriving at `otel-agent` in `observability` contain JSON strings in `body.string` from `recommendation` and `product-catalog` (`{\"level\":\"error\",\"msg\":\"productCatalogFailure on L9ECAV7KIM\",\"trace_id\":\"4bf92f3577b34da6a3ce929d0e0e4736\",\"span_id\":\"00f067aa0ba902b7\"}`), alongside plaintext Envoy (`frontend-proxy`) and `kafka` startup banners. Preview safe OTTL JSON parsing on `otel-agent` without dropping non-JSON lines.",
       "expected_output": "Uses `error_mode: ignore` and guards `ParseJSON` (`IsMatch(body, \"^\\\\s*\\\\{\")` / `rules={\"parse_json\": True}`), merges parsed keys and promotes `severity_text`, `trace_id`, and `span_id`, and previews on `signals=[\"logs\"]` via `otel_configure_processing(namespace=\"observability\", collector_name=\"otel-agent\", ..., dry_run=True)`.",
+      "files": [],
       "expectations": [
         "Ensures `error_mode: ignore` (and JSON prefix guard) so plaintext `frontend-proxy` and `kafka` startup banners never fail or drop log batches",
         "Promotes `severity_text`, `trace_id`, and `span_id` from parsed JSON attributes",
         "Calls `otel_configure_processing` on `otel-agent` (`signals=[\"logs\"]`) with `dry_run=True`"
-      ],
-      "files": []
+      ]
     },
     {
       "id": "eval-04-preserve-failing-healthchecks-while-dropping-200-ok-probes",
       "prompt": "Preview dropping Kubernetes kubelet `GET /healthz` and `GET /readyz` probe spans from `flagd` (`:8014`), `frontend-proxy`, and `cart` on `opentelemetry-otel-collector` in `otel-demo`, while making sure failing `500`/`503` readiness probe spans are STILL exported whenever `cart` fails its readiness check!",
       "expected_output": "Avoids a blind path-only drop that hides readiness outages; writes an OTTL `filter` condition dropping `/healthz` and `/readyz` spans ONLY when `status.code != STATUS_CODE_ERROR` and `(attributes[\"http.response.status_code\"] == 200 or attributes[\"http.status_code\"] == 200)`, previewing via `otel_configure_processing(namespace=\"otel-demo\", collector_name=\"opentelemetry-otel-collector\", ..., dry_run=True)`.",
+      "files": [],
       "expectations": [
         "Scopes the OTTL drop condition so `5xx` / `STATUS_CODE_ERROR` readiness probe spans from `cart` are retained",
         "Handles both `http.response.status_code` (v1.24+) and `http.status_code` (v1.20) attributes",
         "Previews via `otel_configure_processing(..., dry_run=True)` on `opentelemetry-otel-collector`"
-      ],
-      "files": []
+      ]
     },
     {
       "id": "eval-05-custom-regex-secret-redaction-in-query-strings-and-headers",
       "prompt": "Storefront requests passing through `frontend-proxy` (`:8090`) and `payment` in `otel-demo` include `?code=...&api_key=...&access_token=...` in `url.full` and Envoy access logs, plus `X-Api-Key`, `Authorization`, and `Cookie` headers. Preview collector-side OTTL scrubbing on `opentelemetry-otel-collector` in `otel-demo`.",
       "expected_output": "Previews `otel_configure_processing` on `opentelemetry-otel-collector` with `custom_mask_rules` / `ottl_statements` scrubbing `((?:api_key|access_token|code|secret)=)[^&\\s]+` -> `$1[REDACTED]` and `drop_attributes` deleting `http.request.header.x_api_key`, `http.request.header.authorization`, `http.request.header.cookie`, and `http.response.header.set_cookie`.",
+      "files": [],
       "expectations": [
         "Scrubs URL query secret parameters (`api_key`, `access_token`, `code`, `secret`) via regex replacement",
         "Deletes sensitive HTTP request/response headers (`x_api_key`, `authorization`, `cookie`, `set_cookie`)",
         "Previews via `otel_configure_processing(..., dry_run=True)` on `opentelemetry-otel-collector` in `otel-demo`"
-      ],
-      "files": []
+      ]
     },
     {
       "id": "eval-06-metric-datapoint-attribute-aggregation-in-ottl",
       "prompt": "Prometheus remote-write from `opentelemetry-otel-collector` in `otel-demo` is hitting series limits on `http.server.request.duration` during load tests because Locust attaches ephemeral `client.address`, `client.port`, and `user_agent.original` to every `frontend` and `frontend-proxy` histogram datapoint. Preview stripping those attributes in the collector metrics pipeline and check collector metric health.",
       "expected_output": "Previews `otel_configure_processing(namespace=\"otel-demo\", collector_name=\"opentelemetry-otel-collector\", signals=[\"metrics\"], rules={\"drop_attributes\": [\"client.address\", \"client.port\", \"net.peer.port\", \"user_agent.original\"]}, dry_run=True)` (applying `delete_key` in `datapoint` context), checks `otel_diagnose_collector(include=[\"metrics\"])`, and explains that stripping ephemeral socket/UA attributes collapses series count while keeping histogram counts/buckets accurate.",
+      "files": [],
       "expectations": [
         "Targets `signals=[\"metrics\"]` (`datapoint` context) via `otel_configure_processing(..., dry_run=True)` on `opentelemetry-otel-collector`",
         "Drops `client.address`, `client.port` / `net.peer.port`, and `user_agent.original`",
         "Checks collector metric health via `otel_diagnose_collector`"
-      ],
-      "files": []
+      ]
     },
     {
       "id": "eval-07-reject-error-mode-propagate-anti-pattern-in-production-ottl",
       "prompt": "Review this OTTL `transform` processor snippet before we patch `opentelemetry-otel-collector` in `otel-demo` (which receives mixed JSON logs from `checkout` and plaintext HTTP logs from Ruby `email` and `frontend-proxy`):\n```yaml\nprocessors:\n  transform/parse:\n    error_mode: propagate\n    log_statements:\n      - context: log\n        statements:\n          - merge_maps(attributes, ParseJSON(body.string), \"upsert\")\n```",
       "expected_output": "Flags `error_mode: propagate` with unguarded `ParseJSON(body.string)` as a critical batch-wide data-loss bug: a single plaintext line from `email` or `frontend-proxy` in an 8,192-log batch causes the processor to fail and drop the **entire batch**; changes `error_mode` to `ignore` and adds `where IsMatch(body.string, \"^\\\\s*\\\\{\")`.",
+      "files": [],
       "expectations": [
         "Flags `error_mode: propagate` as a batch-wide data-loss hazard on `otel-demo`'s mixed JSON and plaintext log streams",
         "Changes `error_mode` to `ignore`",
         "Adds a `where` JSON-object guard before `ParseJSON(body.string)`"
-      ],
-      "files": []
+      ]
     },
     {
       "id": "eval-08-processor-pipeline-order-violation-fix",
       "prompt": "A teammate drafted `processors: [transform/ottl, batch, memory_limiter]` on `opentelemetry-otel-collector` in `otel-demo`. Explain what happens under a heavy traffic spike with this processor order and provide the corrected configuration.",
       "expected_output": "Explains the mandatory OpenTelemetry Collector processor ordering invariant: `memory_limiter` MUST be first (to shed load before expensive OTTL regex/JSON allocations OOM the collector pod) and `batch` MUST be last (after `filter`/`transform` drop noisy healthcheck records so outbound batches pack cleanly): `[memory_limiter, transform/ottl, filter/drop_noise, batch]`.",
+      "files": [],
       "expectations": [
         "Moves `memory_limiter` to the very first position in `processors`",
         "Moves `batch` to the very last position after `transform` and `filter`",
         "Explains OOM risk when `transform` runs before `memory_limiter` and under-filled batches when `filter` runs after `batch`"
-      ],
-      "files": []
+      ]
     },
     {
       "id": "eval-09-target-specific-named-pipeline-without-touching-pci-audit-logs",
       "prompt": "`otel-split-logs-collector` in `otel-demo` has two log pipelines: `logs/storefront-app` (`ad`, `recommendation`, `frontend-proxy`) and `logs/payment-audit` (immutable `payment` and `checkout` order audit records). Preview dropping `DEBUG` (`severity_number < 9`) logs ONLY on `logs/storefront-app` while leaving `logs/payment-audit` completely untouched.",
       "expected_output": "Reads `otel://collector/otel-demo/otel-split-logs-collector/config`, calls `otel_configure_processing(namespace=\"otel-demo\", collector_name=\"otel-split-logs-collector\", signals=[\"logs\"], target_pipelines=[\"logs/storefront-app\"], rules={\"ottl_statements\": [...]}, dry_run=True)`, and verifies in the diff that `logs/payment-audit` is unchanged.",
+      "files": [],
       "expectations": [
         "Reads `otel://collector/otel-demo/otel-split-logs-collector/config` via MCP first to inspect pipeline names",
         "Passes `target_pipelines=[\"logs/storefront-app\"]` to `otel_configure_processing` so `logs/payment-audit` is untouched",
         "Drops `severity_number < 9` (`DEBUG`/`TRACE`) cleanly with `dry_run=True` diff verification"
-      ],
-      "files": []
+      ]
     },
     {
       "id": "eval-10-offline-ottl-generator-validation-when-no-options-passed",
       "prompt": "Generate a standalone YAML `processors:` manifest for GitOps pull-request review in `otel-demo` that combines JSON log parsing, PII redaction (customer emails, SSNs, credit cards, bearer tokens), deleting `session.id,k8s.pod.uid`, and dropping `/healthz,/readyz,/metrics`.",
       "expected_output": "Runs `scripts/render_ottl_statements.py --parse-json-logs --redact-pii --drop-attributes session.id,k8s.pod.uid --drop-noise-paths /healthz,/readyz,/metrics` to render valid `processors:` YAML containing both `transform/ottl` (`error_mode: ignore`, `trace_statements` in `span` context, `metric_statements` in `datapoint` context, `log_statements` in `log` context) and `filter/drop_noise` (`error_mode: ignore`).",
+      "files": [],
       "expectations": [
         "Renders valid YAML containing `transform/ottl` and `filter/drop_noise` with `error_mode: ignore`",
         "Includes `span`, `datapoint`, and `log` contexts for `session.id`/`k8s.pod.uid` deletion and PII `replace_pattern` scrubbing",
         "Includes `ParseJSON` log enrichment and `/healthz`, `/readyz`, `/metrics` noise filters"
-      ],
-      "files": []
+      ]
     }
   ]
 }

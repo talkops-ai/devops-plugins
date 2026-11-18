@@ -45,14 +45,14 @@
     },
     {
       "id": "trig-neg-01",
-      "quadrant": "negative",
+      "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
       "prompt": "Help me configure and troubleshoot azure verified modules exclusively without touching provider actions."
     },
     {
       "id": "trig-neg-02",
-      "quadrant": "negative",
+      "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
       "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."

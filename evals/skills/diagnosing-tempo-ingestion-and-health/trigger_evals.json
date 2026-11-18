@@ -77,8 +77,8 @@
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "operating-tempo-deployments-and-tenants",
       "prompt": "Render a `large-prod` `TempoStack` CR `tempo-otel` with S3 storage and 30-day retention in `observability`.",
+      "expected_alternative_skill": "operating-tempo-deployments-and-tenants",
       "notes": "Day-1/Day-2 TempoStack sizing & provisioning"
     },
     {
@@ -86,8 +86,8 @@
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "expected_alternative_skill": "troubleshooting-telemetry-pipelines",
       "prompt": "`opentelemetry-otel-collector` in `otel-demo` is `OOMKilled` and `otelcol_exporter_enqueue_failed_spans` is spiking on `:8888/metrics`.",
+      "expected_alternative_skill": "troubleshooting-telemetry-pipelines",
       "notes": "OTel Collector internal pipeline failure"
     },
     {
@@ -95,8 +95,8 @@
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "operating-loki-deployments-and-ingestion",
       "prompt": "Grafana Loki in `observability` is dropping `frontend-proxy` Envoy logs with `loki_discarded_samples_total{reason=\"per_stream_rate_limit\"}`.",
+      "expected_alternative_skill": "operating-loki-deployments-and-ingestion",
       "notes": "Loki ingestion drops"
     },
     {
@@ -104,8 +104,8 @@
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "expected_alternative_skill": "triaging-tempo-service-errors",
       "prompt": "Triage a 25% `PlaceOrder` error spike on `checkout-service` in Tempo caused by `paymentFailure` and identify which downstream microservice is failing.",
+      "expected_alternative_skill": "triaging-tempo-service-errors",
       "notes": "Application service error triage in Tempo"
     }
   ]

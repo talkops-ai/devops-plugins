@@ -76,24 +76,24 @@
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "network-log-analyzer",
-      "prompt": "VPC Flow Logs on `eni-0998877` show `ACCEPT` on TCP SYN to `10.20.4.15:5432` and `REJECT` on the return packet—tell me whether a Security Group or NACL dropped it."
+      "prompt": "VPC Flow Logs on `eni-0998877` show `ACCEPT` on TCP SYN to `10.20.4.15:5432` and `REJECT` on the return packet—tell me whether a Security Group or NACL dropped it.",
+      "expected_alternative_skill": "network-log-analyzer"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "expected_alternative_skill": "aws-routing",
-      "prompt": "Why is AWS Transit Gateway preferring our remote `eu-west-1` Direct Connect VIF over `ap-south-1` and how do BGP communities `7224:7300` vs `7224:7100` change path selection?"
+      "prompt": "Why is AWS Transit Gateway preferring our remote `eu-west-1` Direct Connect VIF over `ap-south-1` and how do BGP communities `7224:7300` vs `7224:7100` change path selection?",
+      "expected_alternative_skill": "aws-routing"
     },
     {
       "id": "trig-neg-03",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "aws-natgw-traffic-analysis",
-      "prompt": "Analyze our NAT Gateway ENI flow logs in GB and % to see how much traffic is going to cross-region S3 buckets."
+      "prompt": "Analyze our NAT Gateway ENI flow logs in GB and % to see how much traffic is going to cross-region S3 buckets.",
+      "expected_alternative_skill": "aws-natgw-traffic-analysis"
     }
   ]
 }

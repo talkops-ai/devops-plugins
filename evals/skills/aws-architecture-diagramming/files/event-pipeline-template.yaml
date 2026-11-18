@@ -1,0 +1,71 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Invoice Event Processing Pipeline
+Resources:
+  InvoiceVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.20.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+
+  PrivateAppSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref InvoiceVPC
+      CidrBlock: 10.20.1.0/24
+      AvailabilityZone: ap-south-1a
+
+  IsolatedDataSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref InvoiceVPC
+      CidrBlock: 10.20.11.0/24
+      AvailabilityZone: ap-south-1a
+
+  S3GatewayEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref InvoiceVPC
+      ServiceName: com.amazonaws.ap-south-1.s3
+      VpcEndpointType: Gateway
+
+  InvoiceArchiveBucket:
+    Type: AWS::S3::Bucket
+
+  InvoiceDLQ:
+    Type: AWS::SQS::Queue
+
+  InvoiceQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt InvoiceDLQ.Arn
+        maxReceiveCount: 3
+
+  InvoiceEventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      EventPattern:
+        source: ["corp.invoices"]
+      Targets:
+        - Id: InvoiceQueueTarget
+          Arn: !GetAtt InvoiceQueue.Arn
+
+  InvoiceAuroraCluster:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      Engine: aurora-postgresql
+      StorageEncrypted: true
+
+  InvoiceWorkerFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: python3.12
+      Architectures: [arm64]
+      Handler: index.handler
+      Role: arn:aws:iam::123456789012:role/InvoiceWorkerRole
+      Code:
+        ZipFile: "def handler(event, ctx): return {'ok': True}"
+      VpcConfig:
+        SubnetIds: [!Ref PrivateAppSubnetA]
+        SecurityGroupIds: [sg-0123456789abcdef0]

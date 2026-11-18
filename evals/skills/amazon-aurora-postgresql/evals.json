@@ -132,7 +132,7 @@
       "expected_output": "Activates the amazon-aurora-postgresql skill, confirms native `pgvector` support on Aurora PostgreSQL, provides the SQL to enable and use `pgvector` (`CREATE EXTENSION IF NOT EXISTS vector;`, `vector(1536)` column, and distance operators `<=>` cosine, `<->` L2, `<#>` inner product), compares HNSW (`m`, `ef_construction`, `hnsw.ef_search` — higher recall and query speed, no training step required, higher memory usage) vs IVFFlat (`lists`, `ivfflat.probes` — faster build/lower memory, requires data present before indexing), and recommends tuning `maintenance_work_mem`, `max_parallel_maintenance_workers`, and considering Aurora Optimized Reads (`r6gd`/`r8gd` NVMe cache) when working sets exceed buffer cache.",
       "files": [],
       "expectations": [
-        "Activates the amazon-aurora-postgresql skill and provides concrete SQL for enabling `pgvector` (`CREATE EXTENSION vector`), defining a `vector(1536)` column, and querying with `pgvector` distance operators (`<=>`, `<->`, `<#>`) ",
+        "Activates the amazon-aurora-postgresql skill and provides concrete SQL for enabling `pgvector` (`CREATE EXTENSION vector`), defining a `vector(1536)` column, and querying with `pgvector` distance operators (`<=>`, `<->`, `<#>`)",
         "Compares HNSW (`m`, `ef_construction`, `hnsw.ef_search`) vs IVFFlat (`lists`, `ivfflat.probes`) across recall/latency, memory footprint, and build behavior",
         "Recommends concrete PostgreSQL and Aurora tuning parameters for vector workloads (`maintenance_work_mem`, `max_parallel_maintenance_workers`, `shared_buffers`, and/or Aurora Optimized Reads)"
       ]

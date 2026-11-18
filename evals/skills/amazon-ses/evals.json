@@ -87,14 +87,14 @@
     },
     {
       "id": 8,
-      "prompt": "Perform a read-only audit of our SESv2 account, email templates, and deliverability test reports in ap-south-1. Then review our security architecture: an ECS service in AWS account `187382368021` currently uses hardcoded IAM user SMTP credentials stored in environment variables with an IAM policy granting `\"Action\": \"ses:*\", \"Resource\": \"*\"`, and publishes bounce events to an SNS topic whose resource policy allows `ses.amazonaws.com` without any `Condition` block. Provide the remediated zero-trust architecture without modifying any live resources.",
+      "prompt": "Perform a read-only audit of our SESv2 account, email templates, and deliverability test reports in ap-south-1. Then review our security architecture: an ECS service in AWS account `123456789012` currently uses hardcoded IAM user SMTP credentials stored in environment variables with an IAM policy granting `\"Action\": \"ses:*\", \"Resource\": \"*\"`, and publishes bounce events to an SNS topic whose resource policy allows `ses.amazonaws.com` without any `Condition` block. Provide the remediated zero-trust architecture without modifying any live resources.",
       "expected_output": "A read-only audit of get-account, list-email-templates ([]), and list-deliverability-test-reports ([]) in ap-south-1, followed by zero-trust remediation replacing static SMTP credentials with an ECS Task IAM Role using sesv2 SendEmail, scoping IAM with ses:FromAddress conditions, and hardening the SNS topic policy with aws:SourceAccount and aws:SourceArn.",
       "files": [],
       "expectations": [
         "Executes read-only aws sesv2 commands in ap-south-1 including get-account, list-email-templates, and list-deliverability-test-reports, confirming 0 templates and 0 deliverability test reports exist",
         "Recommends replacing static IAM user SMTP credentials in ECS environment variables with a short-lived ECS Task IAM Role calling the SESv2 API (aws sesv2 send-email / SDK SendEmail)",
         "Replaces the wildcard ses:* policy with a least-privilege IAM policy scoped to ses:SendEmail and ses:SendBulkEmail on specific identity and configuration-set ARNs, restricted with Condition keys such as ses:FromAddress",
-        "Fixes the confused-deputy flaw on the SNS topic resource policy for ses.amazonaws.com by adding StringEquals on aws:SourceAccount (187382368021) and ArnLike on aws:SourceArn, without executing any mutating CLI commands"
+        "Fixes the confused-deputy flaw on the SNS topic resource policy for ses.amazonaws.com by adding StringEquals on aws:SourceAccount (123456789012) and ArnLike on aws:SourceArn, without executing any mutating CLI commands"
       ]
     }
   ]

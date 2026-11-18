@@ -9,7 +9,7 @@
       "expectations": [
         "Executes read-only aws pinpoint-sms-voice-v2 commands in ap-south-1 including describe-account-attributes, describe-account-limits, and describe-spend-limits",
         "Checks live originator and destination inventory in ap-south-1 using describe-phone-numbers, describe-sender-ids, describe-verified-destination-numbers, describe-opt-out-lists, and describe-configuration-sets",
-        "Accurately reports live ap-south-1 telemetry: ACCOUNT_TIER is SANDBOX, monthly spend limits are $1.00 (MaxLimit/EnforcedLimit 1) across TEXT, VOICE, MEDIA, NOTIFY, and RCS, 0 phone numbers/sender IDs/verified numbers/configuration sets, and 1 Default opt-out list (arn:aws:sms-voice:ap-south-1:187382368021:opt-out-list/Default)",
+        "Accurately reports live ap-south-1 telemetry: ACCOUNT_TIER is SANDBOX, monthly spend limits are $1.00 (MaxLimit/EnforcedLimit 1) across TEXT, VOICE, MEDIA, NOTIFY, and RCS, 0 phone numbers/sender IDs/verified numbers/configuration sets, and 1 Default opt-out list (arn:aws:sms-voice:ap-south-1:123456789012:opt-out-list/Default)",
         "Provides a clear Sandbox-to-Production architectural roadmap covering verified destination numbers for sandbox testing, country-specific originator/registration workflow, Service Quotas spend limit increase, Protect Configurations, and Configuration Set event destinations without mutating any live resources"
       ]
     },
@@ -115,9 +115,9 @@
       "expected_output": "A read-only audit of Opt-Out Lists (Default) and Configuration Sets (empty) in ap-south-1, identification of the wildcard IAM and SNS confused-deputy vulnerabilities, and hardened least-privilege IAM and SNS policies using aws:SourceAccount and aws:SourceArn.",
       "files": [],
       "expectations": [
-        "Executes read-only aws pinpoint-sms-voice-v2 describe-opt-out-lists and describe-configuration-sets in ap-south-1 and reports the live Default opt-out list ARN (arn:aws:sms-voice:ap-south-1:187382368021:opt-out-list/Default) and 0 configuration sets",
+        "Executes read-only aws pinpoint-sms-voice-v2 describe-opt-out-lists and describe-configuration-sets in ap-south-1 and reports the live Default opt-out list ARN (arn:aws:sms-voice:ap-south-1:123456789012:opt-out-list/Default) and 0 configuration sets",
         "Rejects the wildcard IAM policy (sms-voice:* on *) and provides a least-privilege application IAM policy scoped only to required sending actions (e.g., sms-voice:SendTextMessage) and specific originator/pool/configuration-set ARNs",
-        "Identifies the confused-deputy vulnerability in the SNS topic policy (missing Condition block for sms-voice.amazonaws.com) and provides a hardened policy restricting access with aws:SourceAccount (187382368021) and aws:SourceArn",
+        "Identifies the confused-deputy vulnerability in the SNS topic policy (missing Condition block for sms-voice.amazonaws.com) and provides a hardened policy restricting access with aws:SourceAccount (123456789012) and aws:SourceArn",
         "Remains strictly read-only and does not create or mutate any IAM roles, SNS topics, opt-out lists, or configuration sets"
       ]
     }

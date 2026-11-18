@@ -25,7 +25,7 @@
     },
     {
       "id": 3,
-      "prompt": "Inspect our live AWS environment in `ap-south-1` (`client-devops`) to discover any existing AWS Glue connections (`aws glue get-connections`) and candidate RDS/Redshift databases (`describe-db-instances`, `describe-clusters`), report what exists, and walk through the ordered troubleshooting checklist (`references/troubleshooting.md`) when `aws glue test-connection` fails with `Connect timed out` vs `UnableToFindVpcEndpoint` vs `SSL handshake failed`.",
+      "prompt": "Inspect our live AWS environment in `ap-south-1` (`default`) to discover any existing AWS Glue connections (`aws glue get-connections`) and candidate RDS/Redshift databases (`describe-db-instances`, `describe-clusters`), report what exists, and walk through the ordered troubleshooting checklist (`references/troubleshooting.md`) when `aws glue test-connection` fails with `Connect timed out` vs `UnableToFindVpcEndpoint` vs `SSL handshake failed`.",
       "expected_output": "Live read-only inspection in `ap-south-1` reporting 0 Glue connections and 0 RDS/Redshift instances, followed by the ordered network -> credentials -> driver diagnostic flow for `Connect timed out`, `UnableToFindVpcEndpoint`, and `SSL handshake failed`.",
       "files": [],
       "expectations": [

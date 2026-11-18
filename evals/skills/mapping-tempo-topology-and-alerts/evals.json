@@ -1,116 +1,115 @@
 {
   "skill_name": "mapping-tempo-topology-and-alerts",
-  "description": "Outcome & Expectation evaluations for mapping-tempo-topology-and-alerts covering 3-tier topology discovery (prometheus, traceql_metrics_plus_trace_dag, traceql_search), high-coupling blast-radius bottlenecks, failing edge RED drilldowns, unpaired datastore virtual nodes (peer_attributes), span-metrics & service-graph PrometheusRule generation, Tempo vs OTel spanmetrics naming/units, multi-tenant isolation, and /setup-monitoring --signals traces.",
   "evals": [
     {
       "id": "eval-01-blast-radius-dependency-mapping-and-high-coupling-bottlenecks",
       "prompt": "Before we perform maintenance on `product-catalog-service` (and its `postgresql:5432` database in `otel-demo`), map its upstream callers and downstream dependencies over the last hour in Grafana Tempo (`observability`) and flag any high-coupling blast-radius bottlenecks.",
       "expected_output": "Reads `tempo://server/capabilities` and `tempo://deployment/overview`, calls `tempo_get_service_dependencies(backend_id=\"default\", since=\"1h\", service=\"product-catalog-service\")`, reports `source_used` (`prometheus`, `traceql_metrics_plus_trace_dag`, or `traceql_search`), lists upstream (`frontend`, `checkout-service`, `recommendation` -> `product-catalog-service`) and downstream (`product-catalog-service` -> `postgresql`, `flagd`) edges with call rates and failure ratios, and flags `product-catalog-service` as a high-coupling bottleneck (`>= 3` distinct upstream callers at `call_rate >= 10.0` req/s).",
+      "files": [],
       "expectations": [
         "Calls `tempo_get_service_dependencies` focused on `product-catalog-service` over the 1-hour window",
         "Reports `source_used` (`prometheus`, `traceql_metrics_plus_trace_dag`, or `traceql_search`) so topology fidelity is transparent",
         "Identifies high-coupling bottleneck nodes (`>= 3` distinct `otel-demo` callers at `>= 10.0` req/s) and upstream/downstream blast radius"
-      ],
-      "files": []
+      ]
     },
     {
       "id": "eval-02-cluster-wide-topology-and-red-drilldown-on-failing-edge",
       "prompt": "Discover the full `otel-demo` microservice call graph across `observability` Grafana Tempo over the last 30 minutes, rank any failing `client -> server` edges, and drill down into operation-level RED metrics on the most degraded downstream service.",
       "expected_output": "Calls `tempo_get_service_dependencies(backend_id=\"default\", since=\"30m\")` across `otel-demo`, identifies failing edges (`checkout-service -> payment` or `recommendation -> product-catalog-service`) with elevated failure ratio, and calls `tempo_analyze_service_red` (`group_by=\"span:name\"` / `name`) on the degraded downstream `server` service (`payment` or `product-catalog-service`) to pinpoint failing operations.",
+      "files": [],
       "expectations": [
         "Calls cluster-wide `tempo_get_service_dependencies` over the 30-minute window",
         "Ranks `otel-demo` edges by failure ratio and request rate to surface failing `client -> server` links",
         "Follows up with `tempo_analyze_service_red` grouped by operation/span name on a degraded downstream `otel-demo` service"
-      ],
-      "files": []
+      ]
     },
     {
       "id": "eval-03-generate-spanmetrics-prometheus-rule-after-threshold-gate",
       "prompt": "Generate a `monitoring.coreos.com/v1` `PrometheusRule` manifest for `checkout-service` (`otel-demo`) deployed in namespace `observability` using Tempo `span-metrics` series with a `5%` error-ratio critical alert and a `1.0s` p99 latency warning alert (`for: 5m`).",
       "expected_output": "Checks current `checkout-service` RED baseline via `tempo_analyze_service_red`, runs `scripts/generate_spanmetrics_prometheus_rule.py --service checkout-service --namespace observability --error-ratio 0.05 --p99-seconds 1.0`, and renders `PrometheusRule` `tempo-spanmetrics-checkout-service-alerts` in `observability` containing `TempoServiceHighErrorRatio` (`traces_spanmetrics_calls_total` `SPAN_KIND_SERVER`, `STATUS_CODE_ERROR` / `clamp_min(..., 0.001) > 0.05`, `for: 5m`, `severity: critical`) and `TempoServiceHighP99Latency` (`histogram_quantile(0.99, ... traces_spanmetrics_latency_bucket ...) > 1.0`, `for: 5m`, `severity: warning`).",
+      "files": [],
       "expectations": [
         "Runs `generate_spanmetrics_prometheus_rule.py` rendering valid `monitoring.coreos.com/v1` `PrometheusRule` YAML in `observability` targeting `service=\"checkout-service\"`",
         "Uses `traces_spanmetrics_calls_total` (`SPAN_KIND_SERVER`, `STATUS_CODE_ERROR`) with `clamp_min` protection for error ratio `> 0.05`",
         "Uses `traces_spanmetrics_latency_bucket` (`SPAN_KIND_SERVER`) with `histogram_quantile(0.99, ...)` for p99 latency `> 1.0` and `for: 5m` on both alerts"
-      ],
-      "files": []
+      ]
     },
     {
       "id": "eval-04-fallback-topology-when-prometheus-service-graphs-unavailable",
       "prompt": "Map the upstream callers and downstream dependencies of `checkout-service` in `otel-demo` against our `tempo-no-local-blocks` Tempo instance in `observability`—where neither Prometheus service-graph scraping nor `local-blocks` is active yet—and explain what low-QPS edges (`email` or `quote`) could be missed by sampled trace discovery and how to unlock full `service-graphs` coverage.",
       "expected_output": "Calls `tempo_get_service_dependencies(backend_id=\"tempo-no-local-blocks\", service=\"checkout-service\")` observing `source_used=\"traceql_search\"`, explains the 3-tier topology discovery hierarchy (`prometheus` `traces_service_graph_request_total` -> `traceql_metrics_plus_trace_dag` -> sampled `traceql_search`), warns that sampled `traceql_search` can miss lower-QPS edges like `checkout-service -> email` (`sample_traces` can be raised up to `50`), and shows how to enable `service-graphs` + Prometheus `remote_write` in Tempo `metrics_generator.processors`.",
+      "files": [],
       "expectations": [
         "Calls `tempo_get_service_dependencies` on `tempo-no-local-blocks` for `checkout-service` and reports `source_used=\"traceql_search\"`",
         "Explains all three topology tiers (`prometheus`, `traceql_metrics_plus_trace_dag`, `traceql_search`) and warns that sampled traces can miss low-QPS edges (`email` / `quote`)",
         "Shows how to enable `service-graphs` in Tempo `metrics_generator` with `remote_write` to `observability` Prometheus"
-      ],
-      "files": []
+      ]
     },
     {
       "id": "eval-05-unpaired-spans-diagnosis-in-service-graph",
       "prompt": "In our `observability` Tempo service-graph metrics for `otel-demo`, `traces_service_graph_unpaired_spans_total` is climbing and datastore calls (`cart-service -> valkey-cart:6379` and `product-catalog-service -> postgresql:5432`) never appear as connected `client -> server` edges. Why is that happening, and how do we materialize uninstrumented datastore nodes in Tempo service graphs?",
       "expected_output": "Explains that `service-graphs` pairs `SPAN_KIND_CLIENT` with a matching `SPAN_KIND_SERVER` child span; infrastructure datastores `valkey-cart:6379` and `postgresql:5432` in `OTEL-APP` do not emit server spans into Tempo (incrementing `traces_service_graph_unpaired_spans_total`), so `peer_attributes` (`server.address`, `db.system`, `db.name`, `net.peer.name`, `peer.service`) virtual node mapping must be configured in Tempo `metrics_generator.processor.service_graphs` (and checks W3C `traceparent` if internal app hops like `shipping-service -> quote` are unpaired).",
+      "files": [],
       "expectations": [
         "Explains why datastore calls (`cart-service -> valkey-cart:6379` and `product-catalog-service -> postgresql:5432`) increment `traces_service_graph_unpaired_spans_total` (no `SPAN_KIND_SERVER` span)",
         "Recommends configuring `peer_attributes` (`server.address`, `db.system`, `peer.service`) in `service_graphs` to materialize virtual `valkey-cart` and `postgresql` nodes",
         "Checks for `otel.enabled=false` or dropped W3C `traceparent` headers if internal `otel-demo` app services (`quote`/`email`) are unpaired"
-      ],
-      "files": []
+      ]
     },
     {
       "id": "eval-06-service-graph-edge-failure-prometheus-alert",
       "prompt": "Write a `monitoring.coreos.com/v1` `PrometheusRule` alerting rule in `observability` on Tempo `service-graphs` metrics that pages (`OtelServiceGraphEdgeFailureHigh`) when any `otel-demo` `client -> server` edge (such as `checkout-service -> payment` or `shipping-service -> quote`) exceeds a `5%` failure ratio over `5m`—ignoring low-traffic edges below `1 req/s` so idle routes don't flap.",
       "expected_output": "Authors a `PrometheusRule` alert using `sum by (client, server) (rate(traces_service_graph_request_failed_total[5m])) / clamp_min(sum by (client, server) (rate(traces_service_graph_request_total[5m])), 0.001) > 0.05` gated by `and sum by (client, server) (rate(traces_service_graph_request_total[5m])) >= 1`, with `for: 5m`, `severity`, and `summary`/`description` annotations.",
+      "files": [],
       "expectations": [
         "Uses `traces_service_graph_request_failed_total` and `traces_service_graph_request_total` grouped by `(client, server)`",
         "Protects division against zero with `clamp_min` and gates low-traffic noise with a `>= 1` req/s minimum request rate filter",
         "Includes `for: 5m`, `severity`, and actionable `summary`/`description` annotations referencing `client` and `server`"
-      ],
-      "files": []
+      ]
     },
     {
       "id": "eval-07-confirmation-gate-when-alert-thresholds-unspecified",
       "prompt": "Map `payment` (`oteldemo.PaymentService/Charge` in `otel-demo`) dependencies in Grafana Tempo and set up `span-metrics` alerts for it in `observability` right away.",
       "expected_output": "Executes read-only `tempo_get_service_dependencies(service=\"payment\")` (`checkout-service -> payment -> flagd`) and `tempo_analyze_service_red(service=\"payment\")` to measure observed request rate, error ratio, and p99 latency on `payment`, proposes calibrated `--error-ratio` and `--p99-seconds` thresholds grounded in those live metrics, and confirms target `observability` namespace / thresholds at the gate (optionally previewing candidate YAML via `scripts/generate_spanmetrics_prometheus_rule.py`).",
+      "files": [],
       "expectations": [
         "Runs `tempo_get_service_dependencies` and `tempo_analyze_service_red` for `payment` first",
         "Bases proposed `payment` alert thresholds on observed live RED metrics rather than blind guesses",
         "Confirms target namespace (`observability`), error-ratio threshold, and p99 latency threshold with the operator"
-      ],
-      "files": []
+      ]
     },
     {
       "id": "eval-08-tempo-spanmetrics-vs-otel-spanmetrics-connector-naming",
       "prompt": "Our alert `rate(traces_spanmetrics_calls_total{service=\"product-catalog-service\"}[5m])` in `observability` returns empty, yet we enabled the `spanmetrics` connector on `opentelemetry-otel-collector` in `otel-demo` instead of Tempo's `metrics-generator`. Which metric names and latency units do we need to check?",
       "expected_output": "Clarifies the metric naming and unit differences between Tempo `metrics-generator` `span-metrics` (`traces_spanmetrics_calls_total`, `traces_spanmetrics_latency_bucket` in **seconds**) vs `opentelemetry-otel-collector` `spanmetrics` connector (`traces_span_metrics_calls_total` / `calls_total`, `traces_span_metrics_duration_milliseconds_bucket` in **milliseconds** unless explicitly configured in seconds), preventing silent dead alerts or `1000x` latency threshold bugs on `product-catalog-service`.",
+      "files": [],
       "expectations": [
         "Distinguishes Tempo `metrics-generator` series (`traces_spanmetrics_calls_total`, `traces_spanmetrics_latency_bucket`) from `opentelemetry-otel-collector` `spanmetrics` connector series (`traces_span_metrics_*`)",
         "Highlights unit differences (`seconds` vs `milliseconds` buckets) so `product-catalog-service` p99 thresholds aren't off by `1000x`",
         "Recommends verifying exact metric names in `observability` Prometheus before deploying the `PrometheusRule`"
-      ],
-      "files": []
+      ]
     },
     {
       "id": "eval-09-tenant-scoped-dependency-graph-isolation",
       "prompt": "Build the Grafana Tempo dependency topology strictly for our production `otel-demo` tenant over the last 2 hours so chaos experiments running in the `otel-staging` tenant are never mixed into our production `OTEL-APP` blast-radius map.",
       "expected_output": "Calls `tempo_get_service_dependencies(backend_id=\"default\", since=\"2h\", tenant=\"otel-demo\")` (and `tempo_analyze_service_red(..., tenant=\"otel-demo\")` if drilling down), preserving strict `X-Scope-OrgID: otel-demo` tenant isolation.",
+      "files": [],
       "expectations": [
         "Scopes `tempo_get_service_dependencies` explicitly to tenant `otel-demo` over the 2-hour window",
         "Preserves `otel-demo` tenant/namespace isolation on any follow-up RED queries or `PrometheusRule` matchers",
         "Reports upstream/downstream dependency edges strictly within `otel-demo` without `otel-staging` contamination"
-      ],
-      "files": []
+      ]
     },
     {
       "id": "eval-10-slash-command-setup-monitoring-traces-workflow",
       "prompt": "/setup-monitoring checkout-service in otel-demo --slo 99.9 --signals traces",
       "expected_output": "Reads `commands/setup-monitoring.md`, inspects Tempo capabilities and deployment overview (`tempo://server/capabilities`, `tempo://deployment/overview`), maps `checkout-service` upstream/downstream dependencies (`tempo_get_service_dependencies`), measures current RED error and latency baselines (`tempo_analyze_service_red`), and generates calibrated `99.9%` SLO (`0.001` / multi-burn or calibrated error-ratio + p99 latency) Tempo `span-metrics` & `service-graphs` `PrometheusRule` YAML via `scripts/generate_spanmetrics_prometheus_rule.py`.",
+      "files": [],
       "expectations": [
         "Reads `commands/setup-monitoring.md` and inspects Tempo capabilities/overview for `checkout-service` in `otel-demo`",
         "Maps `checkout-service` dependencies via `tempo_get_service_dependencies` and measures baselines via `tempo_analyze_service_red`",
         "Generates `PrometheusRule` YAML for `checkout-service` using `generate_spanmetrics_prometheus_rule.py` calibrated to the `99.9%` SLO target"
-      ],
-      "files": []
+      ]
     }
   ]
 }

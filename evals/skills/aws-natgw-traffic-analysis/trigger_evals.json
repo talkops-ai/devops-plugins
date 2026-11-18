@@ -76,24 +76,24 @@
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "network-log-analyzer",
-      "prompt": "VPC Flow Logs on `eni-0db111` show `ACCEPT` on TCP SYN to port `5432` and `REJECT` on the outbound `SYN-ACK`—determine whether an SG or NACL dropped it."
+      "prompt": "VPC Flow Logs on `eni-0db111` show `ACCEPT` on TCP SYN to port `5432` and `REJECT` on the outbound `SYN-ACK`—determine whether an SG or NACL dropped it.",
+      "expected_alternative_skill": "network-log-analyzer"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "expected_alternative_skill": "aws-vpc-dns-investigation",
-      "prompt": "Simulate whether adding a Route 53 Resolver `FORWARD` rule for `.corp` will shadow our `internal.corp` Private Hosted Zone inside `vpc-0167f5c4bb94b89db`."
+      "prompt": "Simulate whether adding a Route 53 Resolver `FORWARD` rule for `.corp` will shadow our `internal.corp` Private Hosted Zone inside `vpc-0167f5c4bb94b89db`.",
+      "expected_alternative_skill": "aws-vpc-dns-investigation"
     },
     {
       "id": "trig-neg-03",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "aws-routing",
-      "prompt": "Explain why AS-path prepending on a Mumbai Direct Connect VIF does not override Direct Connect Gateway local-region preference."
+      "prompt": "Explain why AS-path prepending on a Mumbai Direct Connect VIF does not override Direct Connect Gateway local-region preference.",
+      "expected_alternative_skill": "aws-routing"
     }
   ]
 }

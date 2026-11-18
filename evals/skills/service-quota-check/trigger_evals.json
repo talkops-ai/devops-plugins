@@ -76,24 +76,24 @@
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "aws-finops-and-cost-optimization",
-      "prompt": "Calculate our Savings Plans hourly commitment target at 80% coverage after deducting $5,840/month in right-sizing opportunities."
+      "prompt": "Calculate our Savings Plans hourly commitment target at 80% coverage after deducting $5,840/month in right-sizing opportunities.",
+      "expected_alternative_skill": "aws-finops-and-cost-optimization"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "expected_alternative_skill": "aws-observability-and-incident-triage",
-      "prompt": "Why does Node.js `keepAliveTimeout = 5s` behind an Application Load Balancer with `idle_timeout = 60s` cause intermittent HTTP 502 errors?"
+      "prompt": "Why does Node.js `keepAliveTimeout = 5s` behind an Application Load Balancer with `idle_timeout = 60s` cause intermittent HTTP 502 errors?",
+      "expected_alternative_skill": "aws-observability-and-incident-triage"
     },
     {
       "id": "trig-neg-03",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "eks-karpenter-autoscaling",
-      "prompt": "Write a `karpenter.sh/v1` `NodePool` YAML with `consolidationPolicy: WhenEmptyOrUnderutilized` and `karpenter.sh/do-not-disrupt` pod annotations."
+      "prompt": "Write a `karpenter.sh/v1` `NodePool` YAML with `consolidationPolicy: WhenEmptyOrUnderutilized` and `karpenter.sh/do-not-disrupt` pod annotations.",
+      "expected_alternative_skill": "eks-karpenter-autoscaling"
     }
   ]
 }

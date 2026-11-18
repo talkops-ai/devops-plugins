@@ -79,8 +79,8 @@
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "reviewing-helm-release-security",
       "prompt": "Render and audit the Helm chart security posture of `charts/image-provider` and `charts/postgresql` in `otel-demo` before installing those Helm releases.",
+      "expected_alternative_skill": "reviewing-helm-release-security",
       "notes": "Helm release security review"
     },
     {
@@ -88,8 +88,8 @@
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "expected_alternative_skill": "auditing-traefik-security-posture",
       "prompt": "Audit Traefik v3 `IngressRoute` and `TLSOptions` CRs fronting `frontend-proxy` in `otel-demo` for TLS 1.0/1.1 cipher weaknesses and insecure dashboard flags.",
+      "expected_alternative_skill": "auditing-traefik-security-posture",
       "notes": "Traefik ingress security audit"
     },
     {
@@ -97,8 +97,8 @@
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "controlling-telemetry-cardinality-and-noise",
       "prompt": "Drop healthy `200 OK` `flagd` `/healthz` spans and normalize numeric product IDs in `frontend` `url.path` using OTTL to cut metric series cardinality.",
+      "expected_alternative_skill": "controlling-telemetry-cardinality-and-noise",
       "notes": "Cardinality & noise reduction without security audit"
     },
     {
@@ -106,8 +106,8 @@
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "expected_alternative_skill": "auditing-alertmanager-governance",
       "prompt": "Audit Alertmanager silence hygiene, catch-all route leaks, and HA peer gossip mesh health in `observability` for `otel-demo` alerts.",
+      "expected_alternative_skill": "auditing-alertmanager-governance",
       "notes": "Alertmanager governance"
     }
   ]

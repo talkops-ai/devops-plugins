@@ -1,0 +1,62 @@
+{
+  "skill_name": "arize-incident-investigation",
+  "companion_skills": [
+    "agentcore-observability-setup",
+    "agentcore-ops-review",
+    "agents-build",
+    "agents-connect",
+    "agents-debug"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use `arize-incident-investigation` to design, validate, and troubleshoot arize incident investigation."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Walk me through production best practices and operational guardrails for arize incident investigation (`arize-incident-investigation`)."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We need an operational review and step-by-step runbook covering: Investigates production incidents in LLM applications and AI agents traced in Arize AX, using the Arize AX MCP server tools (not the ax CLI). Use when an incident or operations age"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "What are the critical failure modes, configuration checks, and verification commands for arize incident investigation?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our arize incident investigation setup in read-only mode."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure and troubleshoot agentcore observability setup exclusively without touching arize incident investigation.",
+      "expected_alternative_skill": "agentcore-observability-setup"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+    }
+  ]
+}

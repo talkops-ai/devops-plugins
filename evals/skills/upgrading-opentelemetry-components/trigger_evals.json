@@ -77,8 +77,8 @@
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "upgrading-and-rolling-back-helm-releases",
       "prompt": "Upgrade the `ad` and `checkout` microservice Helm releases in `otel-demo` from chart version `0.1.0` to `0.1.1` while preserving existing custom values.",
+      "expected_alternative_skill": "upgrading-and-rolling-back-helm-releases",
       "notes": "Helm release upgrade"
     },
     {
@@ -86,8 +86,8 @@
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "expected_alternative_skill": "provisioning-opentelemetry-collectors",
       "prompt": "Provision a brand-new `OpenTelemetryCollector` StatefulSet and `TargetAllocator` from scratch in `otel-demo`.",
+      "expected_alternative_skill": "provisioning-opentelemetry-collectors",
       "notes": "Greenfield collector provisioning"
     },
     {
@@ -95,8 +95,8 @@
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "troubleshooting-telemetry-pipelines",
       "prompt": "Triage `:8888/metrics` exporter queue saturation on `opentelemetry-otel-collector` because `otelcol_exporter_send_failed_spans` spiked during a traffic flood.",
+      "expected_alternative_skill": "troubleshooting-telemetry-pipelines",
       "notes": "Runtime queue saturation troubleshooting"
     },
     {
@@ -104,8 +104,8 @@
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "expected_alternative_skill": "onboarding-and-migrating-to-argo-rollouts",
       "prompt": "Migrate `Deployment/checkout` in `otel-demo` to an `argoproj.io/v1alpha1` `Rollout` CR with canary traffic steps.",
+      "expected_alternative_skill": "onboarding-and-migrating-to-argo-rollouts",
       "notes": "Argo Rollouts CRD migration"
     }
   ]

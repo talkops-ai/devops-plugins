@@ -1,0 +1,47 @@
+{
+  "skill_name": "enrich-with-aws-security-agent",
+  "companion_skills": [
+    "auditing-cloudtrail-forensics",
+    "diff-scanning-with-aws-security-agent",
+    "engineering-iam-least-privilege",
+    "executing-synthetic-release-tests",
+    "hardening-iac-and-perimeter"
+  ],
+  "queries": [
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "How do I set up an S3 bucket lifecycle policy?"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "What are the best practices for DynamoDB table design?"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Explain how to configure CloudFront distributions with custom origins."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "How do I create a new IAM role for my Lambda function?"
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "What are the differences between ECS and EKS for container orchestration?"
+    }
+  ]
+}

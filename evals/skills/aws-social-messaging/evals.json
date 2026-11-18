@@ -52,12 +52,12 @@
     {
       "id": 5,
       "prompt": "We want to route inbound WhatsApp customer messages and delivery receipts (`sent`, `delivered`, `read`, `failed`) into our event-driven backend in ap-south-1. Run a read-only check of our linked WABAs and EventBridge event buses in ap-south-1, then design the event destination architecture including the per-WABA destination limit, the IAM role trust policy with confused-deputy protection, and how a downstream consumer parses the webhook event payload.",
-      "expected_output": "Live read-only inspection of linked WABAs ([]) and EventBridge buses (default bus arn:aws:events:ap-south-1:187382368021:event-bus/default) in ap-south-1, plus the event destination design, 1-destination-per-WABA rule, IAM trust policy for social-messaging.amazonaws.com, and webhook payload structure.",
+      "expected_output": "Live read-only inspection of linked WABAs ([]) and EventBridge buses (default bus arn:aws:events:ap-south-1:123456789012:event-bus/default) in ap-south-1, plus the event destination design, 1-destination-per-WABA rule, IAM trust policy for social-messaging.amazonaws.com, and webhook payload structure.",
       "files": [],
       "expectations": [
-        "Executes read-only discovery in ap-south-1 using aws socialmessaging list-linked-whatsapp-business-accounts and aws events list-event-buses (reporting the default bus arn:aws:events:ap-south-1:187382368021:event-bus/default)",
+        "Executes read-only discovery in ap-south-1 using aws socialmessaging list-linked-whatsapp-business-accounts and aws events list-event-buses (reporting the default bus arn:aws:events:ap-south-1:123456789012:event-bus/default)",
         "Explains that put-whatsapp-business-account-event-destinations supports a maximum of 1 event destination per WABA (and overwrites any existing destination), listing the supported target services (EventBridge, SNS, Kinesis Data Streams, Firehose, CloudWatch Logs)",
-        "Provides a least-privilege IAM role trust policy for social-messaging.amazonaws.com with aws:SourceAccount (187382368021) and aws:SourceArn conditions to prevent confused-deputy attacks",
+        "Provides a least-privilege IAM role trust policy for social-messaging.amazonaws.com with aws:SourceAccount (123456789012) and aws:SourceArn conditions to prevent confused-deputy attacks",
         "Explains the inbound event payload structure delivered by AWS End User Messaging Social (top-level context.MetaWabaIds, context.MetaPhoneNumberIds, and the JSON-stringified whatsAppWebhookEntry field containing changes[].value.messages and changes[].value.statuses)"
       ]
     },
@@ -105,7 +105,7 @@
       "expectations": [
         "Runs aws socialmessaging list-linked-whatsapp-business-accounts --region ap-south-1 without mutating any resources",
         "Flags the event destination limit flaw: AWS End User Messaging Social supports at most 1 event destination per WABA (and calling put-whatsapp-business-account-event-destinations replaces any existing destination), recommending a single EventBridge or SNS destination to fan out to Kinesis, CloudWatch Logs, and Lambda",
-        "Flags the IAM security flaw: rejects Action: * / Resource: * and requires a least-privilege IAM role whose trust policy for social-messaging.amazonaws.com includes aws:SourceAccount (187382368021) and aws:SourceArn conditions",
+        "Flags the IAM security flaw: rejects Action: * / Resource: * and requires a least-privilege IAM role whose trust policy for social-messaging.amazonaws.com includes aws:SourceAccount (123456789012) and aws:SourceArn conditions",
         "Flags the data privacy flaw: explains that --template-definition payloads and example parameters are recorded in AWS CloudTrail logs and submitted to Meta for review, so real customer PII, credit card numbers, or live OTP secrets must never be embedded in template definitions"
       ]
     },

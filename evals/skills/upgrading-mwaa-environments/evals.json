@@ -15,7 +15,7 @@
     },
     {
       "id": 2,
-      "prompt": "Inspect our live AWS environment in `ap-south-1` (`client-devops`) for any existing Amazon MWAA environments (`aws mwaa list-environments`), report what exists, and explain how Phase 0 Plan Reconciliation handles a corrupted `.mwaa-upgrade-plan-analytics.md` file where `Where we are.test_run_checkpoint` says `PASSED` and `has_import_errors: false` (`LOADED`), but a row in `## Test-run results` still shows `FAILED`.",
+      "prompt": "Inspect our live AWS environment in `ap-south-1` (`default`) for any existing Amazon MWAA environments (`aws mwaa list-environments`), report what exists, and explain how Phase 0 Plan Reconciliation handles a corrupted `.mwaa-upgrade-plan-analytics.md` file where `Where we are.test_run_checkpoint` says `PASSED` and `has_import_errors: false` (`LOADED`), but a row in `## Test-run results` still shows `FAILED`.",
       "expected_output": "Live read-only inspection in `ap-south-1` confirming 0 MWAA environments, followed by the exact Phase 0 Plan Reconciliation invariant check (`references/plan-materialization.md`) explaining why `LOADED` (`has_import_errors: false`) is never `VERIFIED` and why any row not in `SUCCESS` or `NEEDS-DECISION` forces `test_run_checkpoint` back to `NOT-PASSED` and blocks switchover or live upgrade.",
       "files": [],
       "expectations": [

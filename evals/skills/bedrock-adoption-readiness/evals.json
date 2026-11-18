@@ -1,0 +1,115 @@
+{
+  "skill_name": "bedrock-adoption-readiness",
+  "evals": [
+    {
+      "id": "full-assessment",
+      "prompt": "I'm preparing to move our Bedrock usage to production. Can you review our readiness?",
+      "expected_output": "Satisfies all bedrock-adoption-readiness evaluation checks.",
+      "files": [],
+      "expectations": [
+        "Output satisfies check: Asks which account and region to assess",
+        "Output satisfies check: Checks IAM permissions for Bedrock",
+        "Output satisfies check: Evaluates data retention / ZDR configuration",
+        "Output satisfies check: Checks quota utilization against limits",
+        "Output satisfies check: Reviews CloudWatch alarms for Bedrock",
+        "Output satisfies check: Produces findings with severity ratings",
+        "Output satisfies check: Generates a structured report"
+      ],
+      "assertions": [
+        "Asks which account and region to assess",
+        "Checks IAM permissions for Bedrock",
+        "Evaluates data retention / ZDR configuration",
+        "Checks quota utilization against limits",
+        "Reviews CloudWatch alarms for Bedrock",
+        "Produces findings with severity ratings",
+        "Generates a structured report"
+      ]
+    },
+    {
+      "id": "quota-focused",
+      "prompt": "We're getting throttled on Bedrock. Can you check our quota situation and tell me what to do?",
+      "expected_output": "Satisfies all bedrock-adoption-readiness evaluation checks.",
+      "files": [],
+      "expectations": [
+        "Output satisfies check: Checks current TPM and RPM quotas",
+        "Output satisfies check: Pulls 7-day CloudWatch throttling metrics",
+        "Output satisfies check: Checks max_tokens configuration pattern",
+        "Output satisfies check: Evaluates CRIS enablement",
+        "Output satisfies check: Recommends right-sizing max_tokens if overconsumption detected",
+        "Output satisfies check: Recommends quota increase if utilization >70%"
+      ],
+      "assertions": [
+        "Checks current TPM and RPM quotas",
+        "Pulls 7-day CloudWatch throttling metrics",
+        "Checks max_tokens configuration pattern",
+        "Evaluates CRIS enablement",
+        "Recommends right-sizing max_tokens if overconsumption detected",
+        "Recommends quota increase if utilization >70%"
+      ]
+    },
+    {
+      "id": "security-focused",
+      "prompt": "We're in healthcare and need to make sure our Bedrock setup meets compliance requirements. Can you check our ZDR and IAM configuration?",
+      "expected_output": "Satisfies all bedrock-adoption-readiness evaluation checks.",
+      "files": [],
+      "expectations": [
+        "Output satisfies check: Checks inference profile ZDR mode",
+        "Output satisfies check: Flags if provider_data_share is enabled without awareness",
+        "Output satisfies check: Reviews IAM policies for wildcarded Bedrock permissions",
+        "Output satisfies check: Checks for SCP enforcement at org level",
+        "Output satisfies check: Flags regulated industry context in severity assessment",
+        "Output satisfies check: Recommends ZDR mode 'none' for regulated workloads"
+      ],
+      "assertions": [
+        "Checks inference profile ZDR mode",
+        "Flags if provider_data_share is enabled without awareness",
+        "Reviews IAM policies for wildcarded Bedrock permissions",
+        "Checks for SCP enforcement at org level",
+        "Flags regulated industry context in severity assessment",
+        "Recommends ZDR mode 'none' for regulated workloads"
+      ]
+    },
+    {
+      "id": "cost-optimization",
+      "prompt": "Our Bedrock bill is growing fast. What can we optimize?",
+      "expected_output": "Satisfies all bedrock-adoption-readiness evaluation checks.",
+      "files": [],
+      "expectations": [
+        "Output satisfies check: Pulls 30-day Cost Explorer data for Bedrock",
+        "Output satisfies check: Identifies daily spend trend",
+        "Output satisfies check: Checks model selection fitness (expensive models for simple tasks)",
+        "Output satisfies check: Evaluates prompt caching eligibility",
+        "Output satisfies check: Checks batch inference opportunity",
+        "Output satisfies check: Recommends Savings Plan if spend threshold met"
+      ],
+      "assertions": [
+        "Pulls 30-day Cost Explorer data for Bedrock",
+        "Identifies daily spend trend",
+        "Checks model selection fitness (expensive models for simple tasks)",
+        "Evaluates prompt caching eligibility",
+        "Checks batch inference opportunity",
+        "Recommends Savings Plan if spend threshold met"
+      ]
+    },
+    {
+      "id": "observability-check",
+      "prompt": "How do I know if something goes wrong with our Bedrock usage? Do we have proper monitoring?",
+      "expected_output": "Satisfies all bedrock-adoption-readiness evaluation checks.",
+      "files": [],
+      "expectations": [
+        "Output satisfies check: Checks existing CloudWatch alarms for Bedrock metrics",
+        "Output satisfies check: Verifies model invocation logging status",
+        "Output satisfies check: Checks CloudTrail Bedrock event configuration",
+        "Output satisfies check: Recommends specific alarm set if gaps found",
+        "Output satisfies check: Flags if no throttle monitoring exists"
+      ],
+      "assertions": [
+        "Checks existing CloudWatch alarms for Bedrock metrics",
+        "Verifies model invocation logging status",
+        "Checks CloudTrail Bedrock event configuration",
+        "Recommends specific alarm set if gaps found",
+        "Flags if no throttle monitoring exists"
+      ]
+    }
+  ]
+}

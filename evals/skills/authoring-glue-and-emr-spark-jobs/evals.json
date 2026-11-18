@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Using `/aws-analytics:spark-debug` and the `authoring-glue-and-emr-spark-jobs` skill (`references/spark-tuning-and-troubleshooting.md`), inspect our live AWS environment in `ap-south-1` (`client-devops`) for any existing AWS Glue jobs (`aws glue get-jobs`) and Amazon EMR Serverless applications (`aws emr-serverless list-applications`), report the live inventory, and write a production AWS Glue 5.0 (Spark 3.5) PySpark script that reads incremental S3 Parquet files, joins them with a 500 GB skewed customer orders table using Adaptive Query Execution (AQE) skew join tuning, and performs an Apache Iceberg `MERGE INTO` upsert.",
+      "prompt": "Using `/aws-analytics:spark-debug` and the `authoring-glue-and-emr-spark-jobs` skill (`references/spark-tuning-and-troubleshooting.md`), inspect our live AWS environment in `ap-south-1` (`default`) for any existing AWS Glue jobs (`aws glue get-jobs`) and Amazon EMR Serverless applications (`aws emr-serverless list-applications`), report the live inventory, and write a production AWS Glue 5.0 (Spark 3.5) PySpark script that reads incremental S3 Parquet files, joins them with a 500 GB skewed customer orders table using Adaptive Query Execution (AQE) skew join tuning, and performs an Apache Iceberg `MERGE INTO` upsert.",
       "expected_output": "Live read-only inspection in `ap-south-1` confirming 0 Glue jobs and 0 EMR Serverless applications, followed by a production Glue 5.0 PySpark script with `--datalake-formats iceberg`, AQE (`spark.sql.adaptive.enabled`, `spark.sql.adaptive.skewJoin.enabled`, `coalescePartitions`), and Iceberg `MERGE INTO`.",
       "files": [],
       "expectations": [

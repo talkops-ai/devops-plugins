@@ -1,0 +1,13 @@
+<!-- broken -- comment inside xml -->
+<diagram name="Malformed Network">
+  <mxGraphModel>
+    <root>
+      <mxCell id="node1" value="ALB" vertex="1">
+        <mxGeometry x="40" y="40" width="60" height="60" as="geometry" />
+      </mxCell>
+      <mxCell id="node1" value="ECS" vertex="1">
+        <mxGeometry x="45" y="45" width="60" height="60" as="geometry" />
+      </mxCell>
+    </root>
+  </mxGraphModel>
+</diagram>

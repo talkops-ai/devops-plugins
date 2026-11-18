@@ -1,0 +1,54 @@
+{
+  "skill_name": "bedrock-operation-review",
+  "companion_skills": [
+    "agentcore-observability-setup",
+    "agentcore-ops-review",
+    "agents-build",
+    "agents-connect",
+    "agents-debug"
+  ],
+  "queries": [
+    {
+      "id": "trig-pos-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Which skill would help me run a Bedrock operational review? Just name it; do not run it."
+    },
+    {
+      "id": "trig-pos-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Is there a skill available for auditing Amazon Bedrock workloads against best practices? Answer yes or no with the skill name; do not execute it."
+    },
+    {
+      "id": "trig-pos-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Name the skill that covers Bedrock security, cost optimization, and quota reviews. Do not run any audit."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Write a Python script that sorts a list of numbers"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "What's the weather forecast for Sydney this weekend?"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Create a CloudFormation template for an S3 bucket"
+    }
+  ]
+}

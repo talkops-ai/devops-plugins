@@ -1,0 +1,62 @@
+{
+  "skill_name": "amplify-data-appsync",
+  "companion_skills": [
+    "amplify-ai-kit",
+    "amplify-auth-cognito",
+    "amplify-functions-cdk",
+    "amplify-hosting-cicd",
+    "amplify-storage-s3"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use `amplify-data-appsync` to design, validate, and troubleshoot amplify data appsync."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Walk me through production best practices and operational guardrails for amplify data appsync (`amplify-data-appsync`)."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We need an operational review and step-by-step runbook covering: Models, secures, and integrates AWS AppSync GraphQL and Amazon DynamoDB data layers in Amplify Gen 2 (amplify/data/resource.ts via defineData and a.schema). Covers bidirectional re"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "What are the critical failure modes, configuration checks, and verification commands for amplify data appsync?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our amplify data appsync setup in read-only mode."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure and troubleshoot amplify ai kit exclusively without touching amplify data appsync.",
+      "expected_alternative_skill": "amplify-ai-kit"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+    }
+  ]
+}

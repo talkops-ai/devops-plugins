@@ -1,0 +1,62 @@
+{
+  "skill_name": "honeycomb-production-investigation",
+  "companion_skills": [
+    "honeycomb-create-board",
+    "honeycomb-metrics-queries",
+    "honeycomb-observability-fundamentals",
+    "honeycomb-query-patterns",
+    "honeycomb-slos-and-triggers"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use `honeycomb-production-investigation` to design, validate, and troubleshoot honeycomb production investigation."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Walk me through production best practices and operational guardrails for honeycomb production investigation (`honeycomb-production-investigation`)."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We need an operational review and step-by-step runbook covering: Load when an investigation needs Honeycomb telemetry to find a root cause: a latency spike, an error surge, a deployment regression, a failing dependency or an SLO burning budget. "
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "What are the critical failure modes, configuration checks, and verification commands for honeycomb production investigation?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our honeycomb production investigation setup in read-only mode."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure and troubleshoot honeycomb create board exclusively without touching honeycomb production investigation.",
+      "expected_alternative_skill": "honeycomb-create-board"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+    }
+  ]
+}

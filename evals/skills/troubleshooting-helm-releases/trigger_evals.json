@@ -27,7 +27,7 @@
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Diagnoses and resolves failed or degraded Helm releases, Kubernetes rollout failures, pod CrashLoopBackOff, ImagePullBackOff, OOMKilled containers, Pending pods, and CRD ownership "
+      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Diagnoses and resolves failed or degraded Helm releases, Kubernetes rollout failures, pod CrashLoopBackOff, ImagePullBackOff, OOMKilled containers, Pending pods, and CRD ownership"
     },
     {
       "id": "trig-imp-02",
@@ -45,14 +45,14 @@
     },
     {
       "id": "trig-neg-01",
-      "quadrant": "negative",
+      "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
       "prompt": "Help me configure and troubleshoot adopting traefik nginx ingress provider exclusively without touching troubleshooting helm releases."
     },
     {
       "id": "trig-neg-02",
-      "quadrant": "negative",
+      "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
       "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."

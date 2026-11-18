@@ -15,7 +15,7 @@
     },
     {
       "id": "eval-02-c4-l4-multi-az-drawio-2026-icons",
-      "prompt": "Generate a C4 Level 4 deployment diagram in draw.io XML (`docs/payments-l4.drawio`) for our PCI workload in AWS Account `187382368021` (`ap-south-1`) across `ap-south-1a` and `ap-south-1b` inside VPC `10.10.0.0/16` (`Public`, `Private App`, and `Isolated Data` subnets): Route 53 + CloudFront + WAF at the edge, ALB in Public Subnets, ECS Fargate tasks in Private Subnets with Security Groups, Aurora PostgreSQL Multi-AZ in Isolated Data Subnets, and S3 + KMS in the Region via Gateway/Interface VPC Endpoints. Validate the `.drawio` XML and include the core XML in your response.",
+      "prompt": "Generate a C4 Level 4 deployment diagram in draw.io XML (`docs/payments-l4.drawio`) for our PCI workload in AWS Account `123456789012` (`ap-south-1`) across `ap-south-1a` and `ap-south-1b` inside VPC `10.10.0.0/16` (`Public`, `Private App`, and `Isolated Data` subnets): Route 53 + CloudFront + WAF at the edge, ALB in Public Subnets, ECS Fargate tasks in Private Subnets with Security Groups, Aurora PostgreSQL Multi-AZ in Isolated Data Subnets, and S3 + KMS in the Region via Gateway/Interface VPC Endpoints. Validate the `.drawio` XML and include the core XML in your response.",
       "expected_output": "Writes valid `<mxfile>` `.drawio` XML to `docs/payments-l4.drawio` using official AWS 2026 `mxgraph.aws4.group` boundary containers (`#232F3E` AWS Cloud, `#CD2264` Account, `#00A4A6` Region, `#8C4FFF` VPC, `#147EBA` AZ, `#7AA116` Public Subnet, `#00A4A6` Private Subnet, `#DD344C` Security Group) with explicit `parent=\"...\"` hierarchy, `60x60` `mxgraph.aws4.resourceIcon` vertices (`#ED7100` compute, `#8C4FFF` networking, `#C925D1` database, `#7AA116` storage, `#DD344C` security), orthogonal labeled edges, validates `docs/payments-l4.drawio` (`VALIDATION PASSED`), and includes the XML in the response.",
       "files": [],
       "expectations": [
@@ -37,11 +37,11 @@
     {
       "id": "eval-04-slash-command-live-ap-south-1-topology-diagram",
       "prompt": "/aws-well-architected:architecture-diagram Discover and diagram our live AWS account topology in ap-south-1 (VPCs, Security Groups, and S3 buckets) in validated Mermaid format",
-      "expected_output": "Follows the `architecture-diagram` slash-command specification, inspects live AWS topology in `ap-south-1` via `aws-mcp` (`aws___run_script` `call_boto3`) with zero raw `aws` CLI calls in `Bash`, discovers Account `187382368021`, Default VPC `vpc-0167f5c4bb94b89db` (`172.31.0.0/16`), Security Group `sg-0d5002d190214ecf6` (noting exposed SSH 22), and S3 bucket `krayak-dev-8021-as1-terraform-tfstate` (placed in Region outside VPC), validates the Mermaid diagram (`VALIDATION PASSED`), and formats the response using the 4-section command structure.",
+      "expected_output": "Follows the `architecture-diagram` slash-command specification, inspects live AWS topology in `ap-south-1` via `aws-mcp` (`aws___run_script` `call_boto3`) with zero raw `aws` CLI calls in `Bash`, discovers Account `123456789012`, Default VPC `vpc-0167f5c4bb94b89db` (`172.31.0.0/16`), Security Group `sg-0d5002d190214ecf6` (noting exposed SSH 22), and S3 bucket `example-prod-1234-as1-terraform-tfstate` (placed in Region outside VPC), validates the Mermaid diagram (`VALIDATION PASSED`), and formats the response using the 4-section command structure.",
       "files": [],
       "expectations": [
         "Activates the `aws-architecture-diagramming` skill and discovers live `ap-south-1` resources via `aws-mcp` (`aws___run_script`) with zero raw `aws` CLI calls in `Bash`.",
-        "Accurately depicts Account `187382368021`, VPC `vpc-0167f5c4bb94b89db` (`172.31.0.0/16`), `sg-0d5002d190214ecf6`, and regional S3 bucket `krayak-dev-8021-as1-terraform-tfstate` outside the VPC.",
+        "Accurately depicts Account `123456789012`, VPC `vpc-0167f5c4bb94b89db` (`172.31.0.0/16`), `sg-0d5002d190214ecf6`, and regional S3 bucket `example-prod-1234-as1-terraform-tfstate` outside the VPC.",
         "Validates the generated Mermaid file (`exit_code == 0`, `VALIDATION PASSED`) and structures the reply with the 4 required slash command sections (`Executive Summary & Current State`, `Findings / Architecture & Implementation`, `Cost, Security & Reliability Impact`, `Verification & Rollback Commands`)."
       ]
     },
@@ -60,7 +60,7 @@
       "prompt": "Visualize the CloudFormation template `event-pipeline-template.yaml` in this workspace as both a validated Mermaid C4 Level 2/4 diagram (`docs/invoice-pipeline.mmd`) and explain how each template resource maps to AWS network boundaries.",
       "expected_output": "Reads `event-pipeline-template.yaml`, maps `InvoiceVPC` (`10.20.0.0/16`), `PrivateAppSubnetA` (`10.20.1.0/24` with `InvoiceWorkerFunction` `arm64`), `IsolatedDataSubnetA` (`10.20.11.0/24` with `InvoiceAuroraCluster`), `S3GatewayEndpoint` (`com.amazonaws.ap-south-1.s3`), and regional VPC-less `InvoiceEventRule`, `InvoiceQueue`, `InvoiceDLQ` (`maxReceiveCount: 3`), and `InvoiceArchiveBucket`, writes and validates `docs/invoice-pipeline.mmd` (`VALIDATION PASSED`), and includes the diagram in the response.",
       "files": [
-        "evals/skills/aws-architecture-diagramming/fixtures/event-pipeline-template.yaml"
+        "files/event-pipeline-template.yaml"
       ],
       "expectations": [
         "Activates the `aws-architecture-diagramming` skill, inspects `event-pipeline-template.yaml`, writes `docs/invoice-pipeline.mmd`, and runs the diagram validator with `exit_code == 0`.",
@@ -72,7 +72,7 @@
       "prompt": "Our CI documentation check rejected `broken-diagram.mmd` in this workspace. Run validation on `broken-diagram.mmd`, explain every syntax and layout rule it violates, write the repaired diagram to `fixed-diagram.mmd`, re-validate until clean, and include the fixed Mermaid code.",
       "expected_output": "Runs the validator against `broken-diagram.mmd` to surface all defects (invalid `diagram TB` header, unquoted parentheses in subgraph/node labels, `<br/>` HTML tag, dangling `ecs -->` arrow, unclosed `subgraph`, plus placing CloudFront inside a regional/VPC block without proper boundary separation), writes `fixed-diagram.mmd`, verifies `VALIDATION PASSED` (`exit_code: 0`), and outputs the fixed Mermaid diagram.",
       "files": [
-        "evals/skills/aws-architecture-diagramming/fixtures/broken-diagram.mmd"
+        "files/broken-diagram.mmd"
       ],
       "expectations": [
         "Activates the `aws-architecture-diagramming` skill and runs the validator on `broken-diagram.mmd` to diagnose every error (`diagram TB` invalid header, unquoted parentheses, `<br/>` HTML tag, dangling `ecs -->` arrow, and missing `end`).",
@@ -84,7 +84,7 @@
       "prompt": "`malformed-network.drawio` refuses to open in draw.io Desktop. Validate `malformed-network.drawio`, list every XML and `mxGraphModel` structural defect, write a repaired AWS 2026 version to `fixed-network.drawio` with proper spacing and official `mxgraph.aws4.*` ALB -> ECS Fargate -> Aurora icons, and confirm validation passes.",
       "expected_output": "Detects all defects in `malformed-network.drawio` (illegal `--` inside XML comment causing XML parse failure, wrong root `<diagram>` instead of `<mxfile>`, missing root structural `mxCell` `id=\"0\"` and `id=\"1\"`, duplicate `mxCell id=\"node1\"`, overlapping `(40,40)` vs `(45,45)` coordinates, and missing `mxgraph.aws4.*` styles), writes `fixed-network.drawio`, confirms `VALIDATION PASSED` (`exit_code: 0`), and includes the repaired XML in the response.",
       "files": [
-        "evals/skills/aws-architecture-diagramming/fixtures/malformed-network.drawio"
+        "files/malformed-network.drawio"
       ],
       "expectations": [
         "Activates the `aws-architecture-diagramming` skill and identifies the illegal `--` XML comment, wrong `<diagram>` root tag (must be `<mxfile>`), missing `mxCell` IDs `0` and `1`, duplicate `id=\"node1\"`, and overlapping vertex coordinates.",

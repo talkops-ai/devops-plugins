@@ -1,34 +1,68 @@
-[
-  {
-    "query": "What databases, S3 Table buckets, crawlers, and connections do I have in my AWS data lake catalog right now?",
-    "should_trigger": true
-  },
-  {
-    "query": "Give me a complete overview and health check of our AWS Glue Data Catalog and S3 Tables posture in ap-south-1.",
-    "should_trigger": true
-  },
-  {
-    "query": "Audit our data lake catalog to see which tables are on S3 Tables vs legacy Hive CSV/Parquet and whether any crawlers are failing.",
-    "should_trigger": true
-  },
-  {
-    "query": "Show me my data lake inventory and tell me if s3tablescatalog federation is configured.",
-    "should_trigger": true
-  },
-  {
-    "query": "Explore our AWS Glue catalog and summarize all user databases versus AWS system tables.",
-    "should_trigger": true
-  },
-  {
-    "query": "Find the specific table in our catalog that has a column named customer_churn_score.",
-    "should_trigger": false
-  },
-  {
-    "query": "Create a new Apache Iceberg table in Amazon S3 Tables with monthly partitioning.",
-    "should_trigger": false
-  },
-  {
-    "query": "Import a 50 GB PostgreSQL database table into our AWS data lake using Glue.",
-    "should_trigger": false
-  }
-]
+{
+  "skill_name": "exploring-data-catalog",
+  "companion_skills": [
+    "amazon-opensearch-service",
+    "analytics-opensearch-expertise",
+    "auditing-aws-system-tables",
+    "authoring-glue-and-emr-spark-jobs",
+    "authoring-mwaa-workflow"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "What databases, S3 Table buckets, crawlers, and connections do I have in my AWS data lake catalog right now?"
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Give me a complete overview and health check of our AWS Glue Data Catalog and S3 Tables posture in ap-south-1."
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Audit our data lake catalog to see which tables are on S3 Tables vs legacy Hive CSV/Parquet and whether any crawlers are failing."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Show me my data lake inventory and tell me if s3tablescatalog federation is configured."
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Explore our AWS Glue catalog and summarize all user databases versus AWS system tables."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Find the specific table in our catalog that has a column named customer_churn_score."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Create a new Apache Iceberg table in Amazon S3 Tables with monthly partitioning."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Import a 50 GB PostgreSQL database table into our AWS data lake using Glue."
+    }
+  ]
+}

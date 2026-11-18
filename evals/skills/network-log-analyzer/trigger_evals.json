@@ -55,7 +55,7 @@
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Flow log line `5 187382368021 eni-011 10.0.1.8 10.0.2.9 44120 443 6 4 240 1731910000 1731910060 REJECT OK` has `reject-reason` `BPA` on one subnet and `SKIPDATA` on another—interpret both."
+      "prompt": "Flow log line `5 123456789012 eni-011 10.0.1.8 10.0.2.9 44120 443 6 4 240 1731910000 1731910060 REJECT OK` has `reject-reason` `BPA` on one subnet and `SKIPDATA` on another—interpret both."
     },
     {
       "id": "trig-ctx-02",
@@ -76,24 +76,24 @@
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "aws-vpc-dns-investigation",
-      "prompt": "Our EC2 instances in `ap-south-1` get `NXDOMAIN` for `orders.internal.corp` even though the Route 53 Private Hosted Zone is attached to the VPC—diagnose the DNS precedence collision."
+      "prompt": "Our EC2 instances in `ap-south-1` get `NXDOMAIN` for `orders.internal.corp` even though the Route 53 Private Hosted Zone is attached to the VPC—diagnose the DNS precedence collision.",
+      "expected_alternative_skill": "aws-vpc-dns-investigation"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "expected_alternative_skill": "aws-natgw-traffic-analysis",
-      "prompt": "Categorize our NAT Gateway traffic in GB and % across local S3, cross-region S3, and customer Elastic IPs to see why our NAT Gateway volume spiked."
+      "prompt": "Categorize our NAT Gateway traffic in GB and % across local S3, cross-region S3, and customer Elastic IPs to see why our NAT Gateway volume spiked.",
+      "expected_alternative_skill": "aws-natgw-traffic-analysis"
     },
     {
       "id": "trig-neg-03",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "aws-network-monitoring",
-      "prompt": "Install and configure the Amazon CloudWatch Network Flow Monitor agent (`aws-network-flow-monitor-agent`) on our Amazon Linux 2023 EC2 instances."
+      "prompt": "Install and configure the Amazon CloudWatch Network Flow Monitor agent (`aws-network-flow-monitor-agent`) on our Amazon Linux 2023 EC2 instances.",
+      "expected_alternative_skill": "aws-network-monitoring"
     }
   ]
 }

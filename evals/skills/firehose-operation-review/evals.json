@@ -1,0 +1,131 @@
+{
+  "skill_name": "firehose-operation-review",
+  "evals": [
+    {
+      "id": "firehose-review-trigger",
+      "prompt": "Run an operational review of my Amazon Data Firehose delivery streams in us-east-1. Cover security, reliability, delivery health, performance, cost, and service quotas, and rate each finding by severity.",
+      "expected_output": "The response conducts (or lays out the procedure for) a Well-Architected-aligned Firehose operational review: it establishes scope (account/region/streams), collects configuration and CloudWatch delivery-health signals such as DataFreshness, evaluates findings across the security, reliability, performance, cost, and service-quota pillars, and presents findings each tagged with a severity level. It relies only on Firehose, CloudWatch, and Service Quotas control-plane APIs and does not put or read record data.",
+      "files": [],
+      "expectations": [
+        "Output satisfies check: The response frames the work as a Firehose operational or best-practices review rather than a generic answer",
+        "Output satisfies check: Findings are organized by Well-Architected pillar (at least security, reliability, performance, cost, and service quotas)",
+        "Output satisfies check: Each finding or issue carries an explicit severity rating",
+        "Output satisfies check: The response references DataFreshness or delivery-lag as a delivery-health signal",
+        "Output satisfies check: The response asks for or establishes the scope (account, region, or specific delivery streams) before or while reviewing",
+        "check"
+      ],
+      "assertions": [
+        "The response frames the work as a Firehose operational or best-practices review rather than a generic answer",
+        "Findings are organized by Well-Architected pillar (at least security, reliability, performance, cost, and service quotas)",
+        "Each finding or issue carries an explicit severity rating",
+        "The response references DataFreshness or delivery-lag as a delivery-health signal",
+        "The response asks for or establishes the scope (account, region, or specific delivery streams) before or while reviewing"
+      ]
+    },
+    {
+      "id": "firehose-review-severity-definitions",
+      "prompt": "Using the Firehose operational review skill, list the five severity levels it uses for findings, in order from most to least urgent. No account access required.",
+      "expected_output": "Lists the five severity levels CRITICAL, HIGH, MEDIUM, LOW, and INFO in order from most to least urgent, matching the skill's severity definitions.",
+      "files": [],
+      "expectations": [
+        "Output satisfies check: The five levels are given in order from most urgent to least urgent",
+        "check",
+        "check",
+        "check",
+        "check",
+        "check"
+      ],
+      "assertions": [
+        "The five levels are given in order from most urgent to least urgent"
+      ]
+    },
+    {
+      "id": "firehose-review-http-endpoint-severity",
+      "prompt": "Using the Firehose operational review skill, what severity does it assign to the HTTP endpoint destination check, and why doesn't it flag a non-HTTPS endpoint URL? No account access required.",
+      "expected_output": "Identifies the HTTP endpoint destination check as INFO, explains that Firehose only accepts https:// endpoint URLs so a non-HTTPS endpoint is not a reachable state to flag, and redirects the check to secure storage and rotation of the endpoint access key plus a VPC/PrivateLink path for private or cross-account endpoints.",
+      "files": [],
+      "expectations": [
+        "Output satisfies check: The HTTP endpoint destination check is identified as INFO severity",
+        "check",
+        "Output satisfies check: The answer explains that Firehose only accepts https:// endpoint URLs, so a non-HTTPS endpoint is not a reachable state to flag",
+        "Output satisfies check: The answer redirects the check to secure storage or rotation of the endpoint access key",
+        "Output satisfies check: The answer mentions a VPC or PrivateLink path for private or cross-account endpoints"
+      ],
+      "assertions": [
+        "The HTTP endpoint destination check is identified as INFO severity",
+        "The answer explains that Firehose only accepts https:// endpoint URLs, so a non-HTTPS endpoint is not a reachable state to flag",
+        "The answer redirects the check to secure storage or rotation of the endpoint access key",
+        "The answer mentions a VPC or PrivateLink path for private or cross-account endpoints"
+      ]
+    },
+    {
+      "id": "firehose-review-pillars",
+      "prompt": "Using the Firehose operational review skill, list the pillars it evaluates during a Firehose operational review. No account access required.",
+      "expected_output": "Names the pillars the skill evaluates: Security, Reliability, Performance, Service Quotas, Cost Optimization, Operational Excellence, and Sustainability.",
+      "files": [],
+      "expectations": [
+        "Output satisfies check: The response names the security pillar",
+        "Output satisfies check: The response names the reliability pillar",
+        "Output satisfies check: The response names the performance pillar",
+        "Output satisfies check: The response names the service quotas pillar",
+        "Output satisfies check: The response names the cost optimization pillar",
+        "Output satisfies check: The response names the operational excellence pillar",
+        "Output satisfies check: The response names the sustainability pillar"
+      ],
+      "assertions": [
+        "The response names the security pillar",
+        "The response names the reliability pillar",
+        "The response names the performance pillar",
+        "The response names the service quotas pillar",
+        "The response names the cost optimization pillar",
+        "The response names the operational excellence pillar",
+        "The response names the sustainability pillar"
+      ]
+    },
+    {
+      "id": "unrelated-python-script",
+      "prompt": "Write a Python script that sorts a list of numbers",
+      "expected_output": "Satisfies all firehose-operation-review evaluation checks.",
+      "files": [],
+      "expectations": [
+        "Satisfies all firehose-operation-review evaluation checks."
+      ]
+    },
+    {
+      "id": "unrelated-weather",
+      "prompt": "What's the weather forecast for Sydney this weekend?",
+      "expected_output": "Satisfies all firehose-operation-review evaluation checks.",
+      "files": [],
+      "expectations": [
+        "Satisfies all firehose-operation-review evaluation checks."
+      ]
+    },
+    {
+      "id": "unrelated-cloudformation-s3",
+      "prompt": "Create a CloudFormation template for an S3 bucket",
+      "expected_output": "Satisfies all firehose-operation-review evaluation checks.",
+      "files": [],
+      "expectations": [
+        "Satisfies all firehose-operation-review evaluation checks."
+      ]
+    },
+    {
+      "id": "unrelated-kinesis-data-streams",
+      "prompt": "Help me tune my Amazon Kinesis Data Streams shard count for a hot shard",
+      "expected_output": "Satisfies all firehose-operation-review evaluation checks.",
+      "files": [],
+      "expectations": [
+        "Satisfies all firehose-operation-review evaluation checks."
+      ]
+    },
+    {
+      "id": "unrelated-bedrock-review",
+      "prompt": "Review my Amazon Bedrock workload for best practices",
+      "expected_output": "Satisfies all firehose-operation-review evaluation checks.",
+      "files": [],
+      "expectations": [
+        "Satisfies all firehose-operation-review evaluation checks."
+      ]
+    }
+  ]
+}

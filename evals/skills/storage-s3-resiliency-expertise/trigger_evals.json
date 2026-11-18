@@ -13,7 +13,7 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Run an S3 resiliency review on `s3://krayak-dev-8021-as1-terraform-tfstate` across all nine protection and security dimensions."
+      "prompt": "Run an S3 resiliency review on `s3://example-prod-1234-as1-terraform-tfstate` across all nine protection and security dimensions."
     },
     {
       "id": "trig-exp-02",
@@ -34,7 +34,7 @@
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Is `arn:aws:s3:::krayak-dev-8021-as1-terraform-tfstate` safe against accidental deletion, ransomware, and public exposure?"
+      "prompt": "Is `arn:aws:s3:::example-prod-1234-as1-terraform-tfstate` safe against accidental deletion, ransomware, and public exposure?"
     },
     {
       "id": "trig-imp-02",
@@ -76,24 +76,24 @@
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "aws-backup-coverage-review",
-      "prompt": "Run an account-wide AWS Backup coverage review across all enabled Regions checking `DescribeRegionSettings` opt-in, backup plans, and Vault Lock."
+      "prompt": "Run an account-wide AWS Backup coverage review across all enabled Regions checking `DescribeRegionSettings` opt-in, backup plans, and Vault Lock.",
+      "expected_alternative_skill": "aws-backup-coverage-review"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "expected_alternative_skill": "troubleshooting-s3-files",
-      "prompt": "Mount of our Amazon S3 Files mount target on EC2 is failing with NFS timeout and POSIX UID/GID permission denied errors."
+      "prompt": "Mount of our Amazon S3 Files mount target on EC2 is failing with NFS timeout and POSIX UID/GID permission denied errors.",
+      "expected_alternative_skill": "troubleshooting-s3-files"
     },
     {
       "id": "trig-neg-03",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "aws-storage",
-      "prompt": "Compare S3 Intelligent-Tiering vs Glacier Instant Retrieval storage class lifecycle transition costs for 500 TB of archive objects."
+      "prompt": "Compare S3 Intelligent-Tiering vs Glacier Instant Retrieval storage class lifecycle transition costs for 500 TB of archive objects.",
+      "expected_alternative_skill": "aws-storage"
     }
   ]
 }

@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Write a production Python Airflow DAG (`daily_lakehouse_pipeline`) for our **MWAA Provisioned** environment (`arn:aws:airflow:ap-south-1:187382368021:environment/prod-mwaa`, Airflow 2.10) that runs daily at `02:00 UTC`, waits for an S3 prefix `s3://landing-ap-south-1/orders/{{ ds }}/` using a deferrable sensor, triggers an AWS Glue job `orders_to_iceberg`, runs an Athena validation query, and sends an SNS failure notification. Include all Path A best practices (`references/authoring-provisioned-dag.md` and `references/dag-patterns.md`).",
+      "prompt": "Write a production Python Airflow DAG (`daily_lakehouse_pipeline`) for our **MWAA Provisioned** environment (`arn:aws:airflow:ap-south-1:123456789012:environment/prod-mwaa`, Airflow 2.10) that runs daily at `02:00 UTC`, waits for an S3 prefix `s3://landing-ap-south-1/orders/{{ ds }}/` using a deferrable sensor, triggers an AWS Glue job `orders_to_iceberg`, runs an Athena validation query, and sends an SNS failure notification. Include all Path A best practices (`references/authoring-provisioned-dag.md` and `references/dag-patterns.md`).",
       "expected_output": "Routes directly to Path A (MWAA Provisioned Python DAG) based on the provisioned environment ARN, generates an idempotent Python DAG with `catchup=False`, `max_active_runs=1`, `dagrun_timeout`, task-level `execution_timeout` and `retries`/`retry_delay`, deferrable `S3KeySensor(deferrable=True)`, `GlueJobOperator(deferrable=True)`, `AthenaOperator(deferrable=True)`, least-privilege IAM policy pairs, and asks the post-write Deploy & Test options without deploying unapproved.",
       "files": [],
       "expectations": [
@@ -15,7 +15,7 @@
     },
     {
       "id": 2,
-      "prompt": "Using `SKILL.md`, `references/yaml-schema.md`, and `references/serverless-code-packaging.md` only (do NOT run any AWS CLI or MCP discovery calls and do not write files to disk), show a concise **MWAA Serverless** YAML workflow (`arn:aws:airflow-serverless:ap-south-1:187382368021:workflow/hourly_cur_sync`, manual trigger only / no schedule) with one `PythonOperator` task and one `AthenaOperator` task. Explain: (1) why Step 0 routes `YAML`/`serverless` + `PythonOperator` to Path B without ambiguity, (2) Serverless code `.zip` packaging rules (files at zip root, no `__pycache__`, <=250 MB, `manylinux2014_x86_64` Py3.12 wheels), and (3) the unscheduled Serverless deploy options (`Deploy and test` or `Deploy only`, saying 'deploy this workflow' rather than 'deploy to an environment').",
+      "prompt": "Using `SKILL.md`, `references/yaml-schema.md`, and `references/serverless-code-packaging.md` only (do NOT run any AWS CLI or MCP discovery calls and do not write files to disk), show a concise **MWAA Serverless** YAML workflow (`arn:aws:airflow-serverless:ap-south-1:123456789012:workflow/hourly_cur_sync`, manual trigger only / no schedule) with one `PythonOperator` task and one `AthenaOperator` task. Explain: (1) why Step 0 routes `YAML`/`serverless` + `PythonOperator` to Path B without ambiguity, (2) Serverless code `.zip` packaging rules (files at zip root, no `__pycache__`, <=250 MB, `manylinux2014_x86_64` Py3.12 wheels), and (3) the unscheduled Serverless deploy options (`Deploy and test` or `Deploy only`, saying 'deploy this workflow' rather than 'deploy to an environment').",
       "expected_output": "Routes deterministically to Path B (MWAA Serverless YAML workflow) explaining that `PythonOperator` alongside `serverless`/workflow ARN is NOT ambiguous, provides compliant MWAA Serverless YAML (`references/yaml-schema.md`), explains code zip packaging rules (files at zip root, no `__pycache__`, <=250 MB, `manylinux2014_x86_64` Py3.12 wheels), and presents the unscheduled Serverless deploy options (`Deploy and test` vs `Deploy only`, never saying 'deploy to an environment').",
       "files": [],
       "expectations": [
@@ -27,7 +27,7 @@
     },
     {
       "id": 3,
-      "prompt": "Inspect our live AWS environment in `ap-south-1` (`client-devops`) for any existing MWAA environments (`aws mwaa list-environments`), report what exists, and explain what happens when a user says: (1) 'Build a workflow to run my Glue ETL job every night' (with no target ARN or Python/YAML cue), vs (2) 'Convert my existing 400-line provisioned Python DAG into an MWAA Serverless YAML workflow'.",
+      "prompt": "Inspect our live AWS environment in `ap-south-1` (`default`) for any existing MWAA environments (`aws mwaa list-environments`), report what exists, and explain what happens when a user says: (1) 'Build a workflow to run my Glue ETL job every night' (with no target ARN or Python/YAML cue), vs (2) 'Convert my existing 400-line provisioned Python DAG into an MWAA Serverless YAML workflow'.",
       "expected_output": "Live read-only inspection in `ap-south-1` confirming 0 MWAA environments, followed by Step 0 disambiguation rules: (1) 'workflow'/'DAG' alone with no routing signal asks whether the target is **MWAA provisioned (Python DAG)** or **MWAA Serverless (YAML)**, and (2) converting existing DAGs between provisioned and serverless is explicitly out of scope for `authoring-mwaa-workflow`.",
       "files": [],
       "expectations": [

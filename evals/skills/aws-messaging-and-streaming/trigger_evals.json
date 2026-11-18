@@ -1,34 +1,68 @@
-[
-  {
-    "query": "Help me choose between Amazon SQS, SNS, EventBridge, Kinesis Data Streams, Amazon MSK, and Data Firehose for our new event-driven order and analytics platform in ap-south-1.",
-    "should_trigger": true
-  },
-  {
-    "query": "Audit our AWS account in ap-south-1 across messaging, streaming, and customer communication services and give me a Messaging vs. Streaming decision matrix.",
-    "should_trigger": true
-  },
-  {
-    "query": "Should we use Amazon MQ (RabbitMQ/ActiveMQ) or refactor to Amazon SQS and SNS for migrating our on-premises AMQP message broker to AWS?",
-    "should_trigger": true
-  },
-  {
-    "query": "Compare the SNS-to-SQS fan-out pattern, EventBridge Pipes for DynamoDB Streams, and the Transactional Outbox pattern with DMS and MSK.",
-    "should_trigger": true
-  },
-  {
-    "query": "Design an omnichannel AWS notification architecture that routes backend events to Amazon SES email, AWS End User Messaging SMS/RCS, and WhatsApp Business.",
-    "should_trigger": true
-  },
-  {
-    "query": "How do I configure a Route 53 failover routing policy and CloudFront Origin Access Control (OAC) for an S3 static website?",
-    "should_trigger": false
-  },
-  {
-    "query": "Help me right-size our Amazon RDS PostgreSQL instance and enable Performance Insights and RDS Proxy.",
-    "should_trigger": false
-  },
-  {
-    "query": "How do I write an AWS IAM Permissions Boundary policy and Service Control Policy (SCP) in AWS Organizations?",
-    "should_trigger": false
-  }
-]
+{
+  "skill_name": "aws-messaging-and-streaming",
+  "companion_skills": [
+    "amazon-ec2-image-builder",
+    "aws-backup-coverage-review",
+    "aws-compute",
+    "aws-containers",
+    "aws-finops-and-cost-optimization"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Help me choose between Amazon SQS, SNS, EventBridge, Kinesis Data Streams, Amazon MSK, and Data Firehose for our new event-driven order and analytics platform in ap-south-1."
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Audit our AWS account in ap-south-1 across messaging, streaming, and customer communication services and give me a Messaging vs. Streaming decision matrix."
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Should we use Amazon MQ (RabbitMQ/ActiveMQ) or refactor to Amazon SQS and SNS for migrating our on-premises AMQP message broker to AWS?"
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Compare the SNS-to-SQS fan-out pattern, EventBridge Pipes for DynamoDB Streams, and the Transactional Outbox pattern with DMS and MSK."
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Design an omnichannel AWS notification architecture that routes backend events to Amazon SES email, AWS End User Messaging SMS/RCS, and WhatsApp Business."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "How do I configure a Route 53 failover routing policy and CloudFront Origin Access Control (OAC) for an S3 static website?"
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Help me right-size our Amazon RDS PostgreSQL instance and enable Performance Insights and RDS Proxy."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "How do I write an AWS IAM Permissions Boundary policy and Service Control Policy (SCP) in AWS Organizations?"
+    }
+  ]
+}

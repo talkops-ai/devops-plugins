@@ -76,24 +76,24 @@
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "aws-iam-least-privilege-governance",
-      "prompt": "Simulate whether our IAM role `arn:aws:iam::187382368021:role/checkout-task-role` is allowed to call `s3:GetObject` and `kms:Decrypt` using the IAM Policy Simulator and check unused permissions."
+      "prompt": "Simulate whether our IAM role `arn:aws:iam::123456789012:role/checkout-task-role` is allowed to call `s3:GetObject` and `kms:Decrypt` using the IAM Policy Simulator and check unused permissions.",
+      "expected_alternative_skill": "aws-iam-least-privilege-governance"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "expected_alternative_skill": "platform-golden-path-scaffolder",
-      "prompt": "Create a Backstage Software Template (`scaffolder.backstage.io/v1beta3`) catalog offering 5 self-service IDP golden paths for our developer squads."
+      "prompt": "Create a Backstage Software Template (`scaffolder.backstage.io/v1beta3`) catalog offering 5 self-service IDP golden paths for our developer squads.",
+      "expected_alternative_skill": "platform-golden-path-scaffolder"
     },
     {
       "id": "trig-neg-03",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "aws-landing-zone-and-platform-governance",
-      "prompt": "Compare Amazon VPC Lattice vs AWS Transit Gateway for connecting microservices across two acquired AWS accounts that both use overlapping 10.0.0.0/16 CIDRs."
+      "prompt": "Compare Amazon VPC Lattice vs AWS Transit Gateway for connecting microservices across two acquired AWS accounts that both use overlapping 10.0.0.0/16 CIDRs.",
+      "expected_alternative_skill": "aws-landing-zone-and-platform-governance"
     }
   ]
 }

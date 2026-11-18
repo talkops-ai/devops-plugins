@@ -57,8 +57,8 @@
       ]
     },
     {
-      "id": "eval-06-someone-forked-users-structbinary-documents-work",
-      "prompt": "Someone forked `/Users/structbinary/Documents/work/talkops/OTEL-APP/charts/checkout` to add a `ClusterRole` with `verbs: [\"get\", \"list\", \"watch\", \"*\"]` on `secrets` and left Kubernetes ServiceAccount token automounting enabled on every `checkout` pod, even though `checkout` only communicates over gRPC (`:8080` / `:4317`) and Kafka (`:9092`). Prescribe the exact RBAC and ServiceAccount values hardening.",
+      "id": "eval-06-someone-forked-users-devops-user-documents-work",
+      "prompt": "Someone forked `<local-path>` to add a `ClusterRole` with `verbs: [\"get\", \"list\", \"watch\", \"*\"]` on `secrets` and left Kubernetes ServiceAccount token automounting enabled on every `checkout` pod, even though `checkout` only communicates over gRPC (`:8080` / `:4317`) and Kafka (`:9092`). Prescribe the exact RBAC and ServiceAccount values hardening.",
       "expected_output": "Flags `no-wildcard-rbac` (HIGH) and cluster-wide `secrets` access, points out that `OTEL-APP` `checkout` never queries the Kubernetes API server, and prescribes removing the `ClusterRole` (or scoping to a minimal namespace `Role`/`RoleBinding` with explicit `resourceNames` and verbs if needed), creating a dedicated ServiceAccount (`serviceAccount.create: true`), and setting `serviceAccount.automountServiceAccountToken: false`.",
       "files": [],
       "expectations": [

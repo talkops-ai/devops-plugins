@@ -1,0 +1,62 @@
+{
+  "skill_name": "honeycomb-verify-recent-trace",
+  "companion_skills": [
+    "honeycomb-create-board",
+    "honeycomb-metrics-queries",
+    "honeycomb-observability-fundamentals",
+    "honeycomb-production-investigation",
+    "honeycomb-query-patterns"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use `honeycomb-verify-recent-trace` to design, validate, and troubleshoot honeycomb verify recent trace."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Walk me through production best practices and operational guardrails for honeycomb verify recent trace (`honeycomb-verify-recent-trace`)."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We need an operational review and step-by-step runbook covering: Load when the operator asks to verify a recent test or deployment in Honeycomb, find the most recent trace, or show the trace a test produced. Finds the traces created since the te"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "What are the critical failure modes, configuration checks, and verification commands for honeycomb verify recent trace?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our honeycomb verify recent trace setup in read-only mode."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure and troubleshoot honeycomb create board exclusively without touching honeycomb verify recent trace.",
+      "expected_alternative_skill": "honeycomb-create-board"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+    }
+  ]
+}

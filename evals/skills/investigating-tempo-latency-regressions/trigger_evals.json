@@ -76,8 +76,8 @@
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "triaging-tempo-service-errors",
       "prompt": "`payment` is failing 50% of `Charge` gRPC calls (`paymentFailure=\"50%\"`)—pivot from error logs to Tempo traces and identify the deepest failing service.",
+      "expected_alternative_skill": "triaging-tempo-service-errors",
       "notes": "Error triage vs latency regression"
     },
     {
@@ -85,8 +85,8 @@
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "expected_alternative_skill": "authoring-traceql-and-metrics-queries",
       "prompt": "Teach me how to write a TraceQL query for `otel-demo` using sibling `~` and negated descendant `!>>` operators.",
+      "expected_alternative_skill": "authoring-traceql-and-metrics-queries",
       "notes": "Pure TraceQL syntax authoring"
     },
     {
@@ -94,8 +94,8 @@
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "expected_alternative_skill": "mapping-tempo-topology-and-alerts",
       "prompt": "Map all upstream callers of `product-catalog-service` in Tempo and generate `traces_spanmetrics_*` `PrometheusRule` YAML.",
+      "expected_alternative_skill": "mapping-tempo-topology-and-alerts",
       "notes": "Service graph topology & spanmetrics alerts"
     },
     {
@@ -103,8 +103,8 @@
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "expected_alternative_skill": "tuning-sampling-and-trace-derived-metrics",
       "prompt": "Configure an `opentelemetry-otel-collector` `tail_sampling` policy in `otel-demo` retaining `PlaceOrder` traces slower than `500ms`.",
+      "expected_alternative_skill": "tuning-sampling-and-trace-derived-metrics",
       "notes": "OTel Collector tail sampling configuration"
     }
   ]

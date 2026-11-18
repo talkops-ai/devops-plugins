@@ -27,7 +27,7 @@
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Deploy full-stack, backend, and frontend web applications (Express.js, Next.js, FastAPI, Flask, Django, Spring Boot, React/Vue/Vite) to AWS Lambda, API Gateway, S3, and CloudFront "
+      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Deploy full-stack, backend, and frontend web applications (Express.js, Next.js, FastAPI, Flask, Django, Spring Boot, React/Vue/Vite) to AWS Lambda, API Gateway, S3, and CloudFront"
     },
     {
       "id": "trig-imp-02",
@@ -45,14 +45,14 @@
     },
     {
       "id": "trig-neg-01",
-      "quadrant": "negative",
+      "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
       "prompt": "Help me configure and troubleshoot amazon eventbridge event bus exclusively without touching serverless webapp lambda adapter."
     },
     {
       "id": "trig-neg-02",
-      "quadrant": "negative",
+      "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
       "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."

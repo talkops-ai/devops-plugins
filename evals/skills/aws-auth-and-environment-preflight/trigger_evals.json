@@ -27,7 +27,7 @@
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Verify AWS credentials, IAM identity, region configuration, and local serverless toolchain readiness (SAM CLI, AWS CDK, Docker daemon, AWS CLI v2). Guides users through signing in "
+      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Verify AWS credentials, IAM identity, region configuration, and local serverless toolchain readiness (SAM CLI, AWS CDK, Docker daemon, AWS CLI v2). Guides users through signing in"
     },
     {
       "id": "trig-imp-02",
@@ -45,14 +45,14 @@
     },
     {
       "id": "trig-neg-01",
-      "quadrant": "negative",
+      "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
       "prompt": "Help me configure and troubleshoot amazon eventbridge event bus exclusively without touching aws auth and environment preflight."
     },
     {
       "id": "trig-neg-02",
-      "quadrant": "negative",
+      "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
       "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."

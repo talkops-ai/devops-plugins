@@ -1,58 +1,110 @@
-[
-  {
-    "query": "Import a 200 GB PostgreSQL orders table into Amazon S3 Tables using an existing Glue JDBC connection with parallel partitioned reads.",
-    "should_trigger": true
-  },
-  {
-    "query": "Load Parquet and CSV files from s3://raw-landing-zone/events/ into a partitioned Apache Iceberg table in our AWS data lake.",
-    "should_trigger": true
-  },
-  {
-    "query": "Pull customer analytics tables from Snowflake and Google BigQuery into our AWS Glue Data Catalog Iceberg lakehouse.",
-    "should_trigger": true
-  },
-  {
-    "query": "Export a 100 GB Amazon DynamoDB table to S3 using PITR export and ingest it into an S3 Tables Iceberg table.",
-    "should_trigger": true
-  },
-  {
-    "query": "Migrate our legacy Hive-style JSON Glue catalog tables to Apache Iceberg format using Athena CTAS and batched INSERT INTO.",
-    "should_trigger": true
-  },
-  {
-    "query": "Set up an incremental Glue PySpark ETL pipeline that loads daily delta records from SQL Server and upserts them into an Iceberg table using MERGE INTO.",
-    "should_trigger": true
-  },
-  {
-    "query": "Upload a local 50 MB CSV dataset from my laptop into a queryable table in our AWS data lake.",
-    "should_trigger": true
-  },
-  {
-    "query": "Validate row counts, null rates, and schema parity after migrating our Oracle fact table into an S3 Tables Iceberg table.",
-    "should_trigger": true
-  },
-  {
-    "query": "Create and troubleshoot a new AWS Glue VPC JDBC connection with a NAT gateway, S3 VPC endpoint, and self-referencing security group rule.",
-    "should_trigger": false
-  },
-  {
-    "query": "Stream real-time CDC change events from Aurora MySQL into S3 using AWS DMS and Amazon Data Firehose.",
-    "should_trigger": false
-  },
-  {
-    "query": "Create an empty Apache Iceberg table schema with hidden day() and bucket() partitioning before any data arrives.",
-    "should_trigger": false
-  },
-  {
-    "query": "Search our AWS Glue Data Catalog across 40 databases to find which table contains the customer_lifetime_value column.",
-    "should_trigger": false
-  },
-  {
-    "query": "Configure Lake Formation LF-Tags and column-level permissions on our governed data lake tables.",
-    "should_trigger": false
-  },
-  {
-    "query": "Troubleshoot why our Amazon OpenSearch Service cluster is in Red state with unassigned primary shards.",
-    "should_trigger": false
-  }
-]
+{
+  "skill_name": "ingesting-into-data-lake",
+  "companion_skills": [
+    "amazon-opensearch-service",
+    "analytics-opensearch-expertise",
+    "auditing-aws-system-tables",
+    "authoring-glue-and-emr-spark-jobs",
+    "authoring-mwaa-workflow"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Import a 200 GB PostgreSQL orders table into Amazon S3 Tables using an existing Glue JDBC connection with parallel partitioned reads."
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Load Parquet and CSV files from s3://raw-landing-zone/events/ into a partitioned Apache Iceberg table in our AWS data lake."
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Pull customer analytics tables from Snowflake and Google BigQuery into our AWS Glue Data Catalog Iceberg lakehouse."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Export a 100 GB Amazon DynamoDB table to S3 using PITR export and ingest it into an S3 Tables Iceberg table."
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Migrate our legacy Hive-style JSON Glue catalog tables to Apache Iceberg format using Athena CTAS and batched INSERT INTO."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Set up an incremental Glue PySpark ETL pipeline that loads daily delta records from SQL Server and upserts them into an Iceberg table using MERGE INTO."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Upload a local 50 MB CSV dataset from my laptop into a queryable table in our AWS data lake."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Validate row counts, null rates, and schema parity after migrating our Oracle fact table into an S3 Tables Iceberg table."
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Create and troubleshoot a new AWS Glue VPC JDBC connection with a NAT gateway, S3 VPC endpoint, and self-referencing security group rule."
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Stream real-time CDC change events from Aurora MySQL into S3 using AWS DMS and Amazon Data Firehose."
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Create an empty Apache Iceberg table schema with hidden day() and bucket() partitioning before any data arrives."
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Search our AWS Glue Data Catalog across 40 databases to find which table contains the customer_lifetime_value column."
+    },
+    {
+      "id": "trig-13",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure Lake Formation LF-Tags and column-level permissions on our governed data lake tables."
+    },
+    {
+      "id": "trig-14",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Troubleshoot why our Amazon OpenSearch Service cluster is in Red state with unassigned primary shards."
+    }
+  ]
+}

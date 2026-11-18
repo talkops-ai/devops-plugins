@@ -26,7 +26,7 @@
     },
     {
       "id": 3,
-      "prompt": "Inspect our live AWS environment in `ap-south-1` (`client-devops`) for any existing Amazon Redshift clusters and Redshift Serverless workgroups (`describe-clusters`, `list-workgroups`), report the live inventory, and provide the production-hardened `COPY` and `UNLOAD` commands (`references/redshift-sql-ddl-copy.md`) with least-privilege IAM role trust policy (`aws:SourceArn` + `aws:SourceAccount`) and KMS encryption.",
+      "prompt": "Inspect our live AWS environment in `ap-south-1` (`default`) for any existing Amazon Redshift clusters and Redshift Serverless workgroups (`describe-clusters`, `list-workgroups`), report the live inventory, and provide the production-hardened `COPY` and `UNLOAD` commands (`references/redshift-sql-ddl-copy.md`) with least-privilege IAM role trust policy (`aws:SourceArn` + `aws:SourceAccount`) and KMS encryption.",
       "expected_output": "Live read-only inspection in `ap-south-1` confirming 0 Redshift clusters and 0 Serverless workgroups, followed by secure `COPY` (`IAM_ROLE`, `FORMAT AS PARQUET` / `MANIFEST`) and `UNLOAD` (`ENCRYPTED KMS_KEY_ID`, `PARQUET`) statements and the least-privilege IAM role trust/permission policy.",
       "files": [],
       "expectations": [

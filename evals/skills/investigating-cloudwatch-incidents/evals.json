@@ -25,12 +25,12 @@
     },
     {
       "id": "eval-03-run-aws-devsecops-engineer-investigate-in-ap-sou",
-      "prompt": "Run `/aws-devsecops-engineer:investigate` in `ap-south-1` (`client-devops`) to perform a live 4-phase SRE triage: check for any currently firing CloudWatch Alarms (`get_active_alarms`), check CloudWatch Log Groups, and correlate recent CloudFormation stack updates and mutating CloudTrail events (`ReadOnly=false`) in account `187382368021`. Report the exact live telemetry and summarize the account's operational status.",
-      "expected_output": "Calls `aws-cloudwatch` (`get_active_alarms`) and `aws-mcp` / `aws-cloudtrail` (`lookup_events` with `ReadOnly=false`, `cloudformation:ListStacks`, `logs:DescribeLogGroups`) in read-only mode in `ap-south-1`, accurately reports `0` active alarms in `ALARM` state, `0` CloudWatch Log Groups, and `0` active CloudFormation stacks in `ap-south-1`, summarizes recent CloudTrail events for `187382368021`, and presents the 4-phase incident triage summary.",
+      "prompt": "Run `/aws-devsecops-engineer:investigate` in `ap-south-1` (`default`) to perform a live 4-phase SRE triage: check for any currently firing CloudWatch Alarms (`get_active_alarms`), check CloudWatch Log Groups, and correlate recent CloudFormation stack updates and mutating CloudTrail events (`ReadOnly=false`) in account `123456789012`. Report the exact live telemetry and summarize the account's operational status.",
+      "expected_output": "Calls `aws-cloudwatch` (`get_active_alarms`) and `aws-mcp` / `aws-cloudtrail` (`lookup_events` with `ReadOnly=false`, `cloudformation:ListStacks`, `logs:DescribeLogGroups`) in read-only mode in `ap-south-1`, accurately reports `0` active alarms in `ALARM` state, `0` CloudWatch Log Groups, and `0` active CloudFormation stacks in `ap-south-1`, summarizes recent CloudTrail events for `123456789012`, and presents the 4-phase incident triage summary.",
       "files": [],
       "expectations": [
         "Invokes `aws-cloudwatch` (`get_active_alarms`) and `aws-cloudtrail` / `aws-mcp` (`lookup_events`, `cloudformation:ListStacks`) in read-only mode in `ap-south-1` without running raw `aws` CLI commands in `Bash`",
-        "Accurately reports that `ap-south-1` in account `187382368021` currently has `0` firing CloudWatch alarms (`ALARM`), `0` CloudWatch Log Groups, and `0` active CloudFormation stacks",
+        "Accurately reports that `ap-south-1` in account `123456789012` currently has `0` firing CloudWatch alarms (`ALARM`), `0` CloudWatch Log Groups, and `0` active CloudFormation stacks",
         "Correlates recent CloudTrail control-plane events (`lookup_events`) and structures the output across the 4-Phase Incident Triage Workflow (Blast-Radius & Active Alarms -> Change Correlation -> Deep Telemetry/Trace Isolation -> Mitigation/Rollback)"
       ]
     },

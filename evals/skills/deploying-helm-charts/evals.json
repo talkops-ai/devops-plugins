@@ -46,8 +46,8 @@
       ]
     },
     {
-      "id": "eval-05-we-customized-users-structbinary-documents-work",
-      "prompt": "We customized `/Users/structbinary/Documents/work/talkops/OTEL-APP/charts/frontend` locally and rendered this multi-document YAML:\n```yaml\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: frontend-env\n  namespace: otel-demo\ndata:\n  FRONTEND_ADDR: \":8080\"\n  PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: \"http://localhost:8080/otlp-http/v1/traces\"\n---\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  namespace: otel-demo\nspec:\n  replicas: 2\n  template:\n    spec:\n      containers:\n        - name: frontend\n          image: ghcr.io/open-telemetry/demo:2.2.0-frontend\n```\nValidate the rendered Kubernetes manifests for structural completeness and explain whether this output is safe to deploy to `otel-demo`.",
+      "id": "eval-05-we-customized-users-devops-user-documents-work",
+      "prompt": "We customized `<local-path>` locally and rendered this multi-document YAML:\n```yaml\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: frontend-env\n  namespace: otel-demo\ndata:\n  FRONTEND_ADDR: \":8080\"\n  PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: \"http://localhost:8080/otlp-http/v1/traces\"\n---\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  namespace: otel-demo\nspec:\n  replicas: 2\n  template:\n    spec:\n      containers:\n        - name: frontend\n          image: ghcr.io/open-telemetry/demo:2.2.0-frontend\n```\nValidate the rendered Kubernetes manifests for structural completeness and explain whether this output is safe to deploy to `otel-demo`.",
       "expected_output": "Runs `scripts/validate_manifests.py` across both YAML documents (`ConfigMap` and `Deployment`), detects that Document #2 (`apps/v1` `Deployment`) is missing `metadata.name` (`valid: false`, plus missing `spec.selector` and template labels), blocks deployment to `otel-demo`, and instructs fixing `metadata.name: frontend` and selector/label templates, re-rendering via `helm_render_manifests`, and re-running `validate_manifests.py` before planning installation.",
       "files": [],
       "expectations": [
