@@ -130,7 +130,7 @@ def transform_dataset(df: pd.DataFrame) -> pd.DataFrame:
 
 The `<project-dir>` is the project directory established by the directory-management skill (e.g., `dpo-to-rlvr-conversion`).
 
-In notebook mode, add a `%%writefile <project-dir>/scripts/transform_fn.py` code cell AND write the file to disk for testing. In script mode, write the file to disk directly.
+In notebook mode, add a `%%writefile <project-dir>/transform_fn.py` code cell AND write the file to disk for testing. In script mode, write the file to disk directly.
 
 Continue iterating with the user's feedback — update the code in place on each revision rather than showing code inline.
 

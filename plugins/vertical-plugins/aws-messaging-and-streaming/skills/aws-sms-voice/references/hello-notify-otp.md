@@ -36,6 +36,10 @@ phone. Stop and consult the Failure modes table on any error.
    Minimum IAM actions for this task: `sms-voice:CreateNotifyConfiguration`,
    `DescribeNotifyConfigurations`, `DescribeNotifyTemplates`, `ListNotifyCountries`,
    `SendNotifyTextMessage`, and `DeleteNotifyConfiguration` (for cleanup).
+   - **Stale/older AWS CLI model fallback:** If `describe-notify-configurations`, `describe-notify-templates`, or `list-notify-countries` returns `Invalid choice` because the local AWS CLI / botocore model predates the Notify control-plane operations, do NOT stop — immediately inspect live Notify readiness and schemas using the universally supported `pinpoint-sms-voice-v2` commands:
+     - `aws pinpoint-sms-voice-v2 describe-account-limits --region <REGION>` (check the `NOTIFY_CONFIGURATIONS` quota `Used` / `Max`)
+     - `aws pinpoint-sms-voice-v2 describe-spend-limits --region <REGION>` (check `NOTIFY_MESSAGE_MONTHLY_SPEND_LIMIT` `EnforcedLimit` / `MaxLimit`)
+     - `aws pinpoint-sms-voice-v2 describe-registration-type-definitions --region <REGION> --query "RegistrationTypeDefinitions[?contains(RegistrationType,'NOTIFY')]"` and `aws pinpoint-sms-voice-v2 describe-registration-field-definitions --registration-type NOTIFY_TIER_UPGRADE_REGISTRATION --region <REGION>` (and `NOTIFY_BRAND_VERIFICATION_REGISTRATION`) to inspect the live Notify registration schemas, and advise the user to upgrade AWS CLI v2 for direct Notify control-plane commands.
 4. **Input validation** — validate display name (≤15 chars, allowed characters), phone (E.164), and country before mutating APIs.
 5. **Inputs** — ask the user for: a display name (their brand or app name, 15 chars max — this
    is what recipients may see, and it goes through an automated brand review; a made-up brand

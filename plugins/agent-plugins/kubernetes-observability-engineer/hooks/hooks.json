@@ -1,0 +1,25 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|mcp__.*|mcp__plugin_kubernetes-observability-engineer_.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'command -v python3 >/dev/null 2>&1 && exec python3 \"$0\"; command -v python >/dev/null 2>&1 && exec python \"$0\"; exec py -3 \"$0\"' \"${CLAUDE_PLUGIN_ROOT}/hooks/secret-safety.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./**/*.pem)",
+      "Read(./**/*.key)",
+      "Read(~/.aws/credentials)"
+    ]
+  }
+}

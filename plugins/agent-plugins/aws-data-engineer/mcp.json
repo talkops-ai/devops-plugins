@@ -7,10 +7,15 @@
       "args": [
         "mcp-proxy-for-aws-cli==1.7.0",
         "https://aws-mcp.us-east-1.api.aws/mcp",
-        "--skip-auth",
+        "--region",
+        "us-east-1",
         "--metadata",
         "INSTALL_SOURCE=agent-toolkit-data-analytics"
-      ]
+      ],
+      "env": {
+        "AWS_REGION": "us-east-1",
+        "AWS_DEFAULT_REGION": "us-east-1"
+      }
     },
     "dataprocessing": {
       "type": "stdio",
@@ -19,7 +24,8 @@
         "awslabs.aws-dataprocessing-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     },
     "redshift": {
@@ -29,7 +35,8 @@
         "awslabs.redshift-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_DEFAULT_REGION": "us-east-1"
       }
     },
     "s3tables": {
@@ -39,7 +46,8 @@
         "awslabs.s3-tables-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     },
     "cloudwatch": {
@@ -49,7 +57,8 @@
         "awslabs.cloudwatch-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     },
     "spark-troubleshooting": {

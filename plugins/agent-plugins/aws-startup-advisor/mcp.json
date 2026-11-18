@@ -7,14 +7,26 @@
       "args": [
         "mcp-proxy-for-aws-cli==1.7.0",
         "https://aws-mcp.us-east-1.api.aws/mcp",
+        "--region",
+        "us-east-1",
         "--metadata",
         "INSTALL_SOURCE=agent-toolkit-startup-advisor"
-      ]
+      ],
+      "env": {
+        "AWS_REGION": "us-east-1",
+        "AWS_DEFAULT_REGION": "us-east-1"
+      }
+    },
+    "awsknowledge": {
+      "type": "streamable-http",
+      "url": "https://knowledge-mcp.global.api.aws"
     },
     "aws-pricing": {
       "type": "stdio",
       "command": "uvx",
       "args": [
+        "--python",
+        "3.12",
         "awslabs.aws-pricing-mcp-server@latest"
       ],
       "env": {
@@ -25,6 +37,8 @@
       "type": "stdio",
       "command": "uvx",
       "args": [
+        "--python",
+        "3.12",
         "awslabs.billing-cost-management-mcp-server@latest"
       ],
       "env": {

@@ -1,0 +1,170 @@
+{
+  "skill_name": "aws-lambda-durable-functions",
+  "evals": [
+    {
+      "id": "eval-01-i-m-new-to-aws-lambda-durable-functions-i-instal",
+      "prompt": "I'm new to AWS Lambda durable functions. I installed `@aws/durable-execution-sdk-js` into our existing `order-service` Lambda function, wrapped the handler with `withDurableExecution`, deployed the code update, and ran `aws lambda invoke --function-name order-service --payload '{\"orderId\":\"123\"}' out.json`. It failed! What two critical rules did I violate, and how do I invoke a durable function idempotently?",
+      "expected_output": "Explains Critical Rule 1 (durable execution MUST be enabled at function creation time via `DurableConfig` and cannot be retrofitted onto an existing non-durable Lambda function—a new function must be created) and Critical Rule 2 (durable functions MUST be invoked using a qualified function identifier: a version `:1`, an alias `:live`, or `:$LATEST`, never an unqualified name), and shows idempotent invocation using `--durable-execution-name` and `--cli-binary-format raw-in-base64-out`.",
+      "files": [],
+      "expectations": [
+        "States Critical Rule 1: durable execution (`DurableConfig`) must be enabled when creating a new Lambda function and cannot be retrofitted onto an existing function",
+        "States Critical Rule 2: durable functions require a qualified function identifier (version `:1`, alias `:live`, or `:$LATEST`) and fail with an unqualified function name",
+        "Shows the correct `aws lambda invoke` command using a qualified function name (`order-service:live` or `order-service:$LATEST`), `--durable-execution-name` for idempotency, and `--cli-binary-format raw-in-base64-out`"
+      ]
+    },
+    {
+      "id": "eval-02-review-this-typescript-durable-function-handler",
+      "prompt": "Review this TypeScript durable function handler. Customers are receiving duplicate emails every time the function resumes from the 60-second wait, `attempts` is always `0` at the end, and the nested step inside `process-order` throws an error:\n```typescript\nexport const handler = withDurableExecution(async (event, context: DurableContext) => {\n  const requestId = uuid.v4();\n  const startedAt = Date.now();\n  console.log('Starting order', requestId);\n  await sendConfirmationEmail(event.email, requestId);\n\n  let attempts = 0;\n  await context.step('process-order', async () => {\n    attempts++;\n    await context.wait({ seconds: 60 });\n    return await context.step('charge', async () => charge(event.amount));\n  });\n\n  if (Math.random() > 0.5) {\n    await context.step('audit', async () => auditOrder(requestId, startedAt, attempts));\n  }\n  return { requestId, attempts };\n});\n```\nIdentify all 4 replay-model violations in this code and rewrite the handler so it is 100% replay-safe.",
+      "expected_output": "Identifies all four replay-model violations: (1) non-deterministic calls (`uuid.v4()`, `Date.now()`, `Math.random()`) outside `context.step` produce different values on every replay, (2) side effects (`console.log`, `sendConfirmationEmail`) outside steps repeat on every replay (use `context.logger` and wrap `sendConfirmationEmail` in a step), (3) closure mutation (`attempts++`) inside a step is lost on replay (return the value from the step instead), and (4) durable operations (`context.wait`, `context.step`) cannot be nested inside a `context.step` callback (use `context.runInChildContext` instead). Provides the corrected TypeScript handler.",
+      "files": [],
+      "expectations": [
+        "Identifies Violation 1 (non-deterministic `uuid.v4()`, `Date.now()`, and `Math.random()` outside steps) and Violation 2 (side effects `sendConfirmationEmail` and `console.log` outside steps repeating on replay, replacing `console.log` with `context.logger`)",
+        "Identifies Violation 3 (closure mutation `attempts++` inside a step is lost on replay and must be returned from the step) and Violation 4 (nested `context.wait` / `context.step` inside a step is forbidden and must use `context.runInChildContext`)",
+        "Provides a refactored, replay-safe `withDurableExecution` TypeScript handler fixing all four violations"
+      ]
+    },
+    {
+      "id": "eval-03-in-our-payment-durable-function-a-developer-wrot",
+      "prompt": "In our payment durable function, a developer wrote:\n```typescript\nconst payment = await context.step('charge-customer', async () => {\n  return await stripe.charges.create({ customer: event.customerId, amount: event.amount });\n});\n```\nIf the Lambda execution environment crashes right after `stripe.charges.create` succeeds but 10 milliseconds before Lambda finishes checkpointing the step result, what happens on replay under the default step semantics? How do we configure `StepSemantics` and `retryStrategy` in both TypeScript and Python so a non-idempotent payment step executes at most once?",
+      "expected_output": "Explains that the default step semantic is `AtLeastOncePerRetry`, which re-executes the step on replay if a crash occurs before post-step checkpointing—double-charging the customer! Shows switching to `StepSemantics.AtMostOncePerRetry` (`StepSemantics.AT_MOST_ONCE_PER_RETRY` in Python), which writes a pre-step checkpoint and skips re-execution on crash, AND pairing it with `retryStrategy: () => ({ shouldRetry: false })` (`RetryDecision.no_retry()` in Python) plus an idempotency key so it never retries across attempts.",
+      "files": [],
+      "expectations": [
+        "Explains that `context.step` defaults to `StepSemantics.AtLeastOncePerRetry`, which re-runs the step if the sandbox crashes before the post-step checkpoint completes, risking a duplicate charge",
+        "Shows configuring `semantics: StepSemantics.AtMostOncePerRetry` (TypeScript) and `step_semantics=StepSemantics.AT_MOST_ONCE_PER_RETRY` (Python) so the step executes at most once per retry attempt",
+        "Explicitly states that `AtMostOncePerRetry` must be paired with `retryStrategy: () => ({ shouldRetry: false })` (`RetryDecision.no_retry()`) to guarantee at-most-once execution overall across retry attempts"
+      ]
+    },
+    {
+      "id": "eval-04-we-need-our-durable-lambda-function-to-generate",
+      "prompt": "We need our durable Lambda function to generate a deployment plan, pause for up to 24 hours while waiting for a human approver to click Approve or Reject in an external portal, and also wait on an external build agent that must send a heartbeat every 5 minutes. Do we pay for 24 hours of Lambda compute while waiting? Show the TypeScript handler code (`waitForCallback`), the AWS CLI commands the external system uses to send success, failure, and heartbeats, and the required IAM permissions.",
+      "expected_output": "Clarifies that `context.waitForCallback` suspends the Lambda execution environment so you pay $0 in compute charges while waiting (up to 1 year), shows `context.waitForCallback` with `timeout: { hours: 24 }` and `heartbeatTimeout: { minutes: 5 }` plus catching `CallbackError`, shows the CLI commands `aws lambda send-durable-execution-callback-success`, `send-durable-execution-callback-failure`, and `send-durable-execution-callback-heartbeat`, and lists the IAM actions (`lambda:SendDurableExecutionCallbackSuccess`, `lambda:SendDurableExecutionCallbackFailure`, `lambda:SendDurableExecutionCallbackHeartbeat`).",
+      "files": [],
+      "expectations": [
+        "States that `context.waitForCallback` suspends Lambda execution with zero compute charges during the wait period and shows configuring `timeout: { hours: 24 }` and `heartbeatTimeout: { minutes: 5 }`",
+        "Provides the external callback CLI/SDK commands: `send-durable-execution-callback-success`, `send-durable-execution-callback-failure`, and `send-durable-execution-callback-heartbeat`",
+        "Specifies the IAM permissions required by the external callback sender (`lambda:SendDurableExecutionCallbackSuccess`, `lambda:SendDurableExecutionCallbackFailure`, `lambda:SendDurableExecutionCallbackHeartbeat`) and reminds to validate untrusted callback payloads"
+      ]
+    },
+    {
+      "id": "eval-05-using-read-only-mode-check-our-lambda-functions",
+      "prompt": "Using read-only mode, check our Lambda functions in ap-south-1 to see if any durable functions are currently deployed, and show the read-only commands to list durable executions for a qualified function (`my-function:live`) and inspect a durable execution's history.",
+      "expected_output": "Uses connected AWS MCP tools in read-only mode to list Lambda functions in ap-south-1, accurately reports the live functions (or 0 durable functions if none exist) without fabricating ARNs, and shows resolving an alias via `lambda get-alias`, listing executions via `lambda list-durable-executions-by-function --function-name <name>:<version>`, and fetching history via `lambda get-durable-execution-history`.",
+      "files": [],
+      "expectations": [
+        "Uses connected AWS MCP tools in read-only mode to inspect Lambda functions in ap-south-1 without creating, modifying, or stopping any resources",
+        "Accurately reports the live Lambda functions in ap-south-1 (or explicitly reports 0 durable functions if none exist) without fabricating function names or execution ARNs",
+        "Shows the read-only CLI/API sequence to resolve an alias (`get-alias`), list durable executions (`list-durable-executions-by-function`), and fetch execution history (`get-durable-execution-history`)"
+      ]
+    },
+    {
+      "id": "eval-06-show-how-to-implement-the-saga-pattern-with-comp",
+      "prompt": "Show how to implement the Saga pattern with compensating transactions in both TypeScript (`withDurableExecution`) and Python (`@durable_execution` with `@durable_step`) for a 3-step travel booking workflow (`book-flight` -> `book-hotel` -> `book-car`) so that if `book-car` fails, the hotel and flight are automatically cancelled in reverse order with full checkpointing.",
+      "expected_output": "Provides both TypeScript and Python Saga implementations where each forward step (`book-flight`, `book-hotel`, `book-car`) pushes its corresponding compensation onto a `compensations` array after succeeding, and the `catch` / `except` block iterates through `compensations.reverse()` / `reversed(compensations)` executing each rollback inside its own `context.step` (wrapped in an inner `try/catch` so a single compensation failure doesn't skip remaining compensations) before re-throwing.",
+      "files": [],
+      "expectations": [
+        "Provides the TypeScript `withDurableExecution` Saga pattern registering compensation functions after each forward `context.step` and executing `compensations.reverse()` inside `await context.step(comp.name, ...)` in the `catch` block",
+        "Provides the Python `@durable_execution` and `@durable_step` Saga pattern iterating `reversed(compensations)` and calling `context.step(...)` for each rollback step",
+        "Wraps each individual compensation step in a `try/catch` (`try/except`) inside the rollback loop so all remaining compensations still run even if one compensation fails"
+      ]
+    },
+    {
+      "id": "eval-07-we-are-using-context-map-in-typescript-to-proces",
+      "prompt": "We are using `context.map` in TypeScript to process an array of 10 items with `maxConcurrency: 3` and `completionConfig: { minSuccessful: 7, toleratedFailureCount: 3 }`. Explain the exact stop condition rules for combined completion policies across three scenarios: (1) 7 successes and 0 failures, (2) 5 successes and 3 failures, and (3) 7 successes and 2 failures. Also show how to inspect succeeded vs failed items on the batch result object without throwing.",
+      "expected_output": "Explains that when multiple constraints are combined in `completionConfig`, `context.map` stops as soon as the **first** constraint is met: Scenario 1 stops after the 7th success (`minSuccessful: 7` reached, remaining 3 items not processed, succeeds); Scenario 2 stops after the 3rd failure (`toleratedFailureCount: 3` reached, remaining 2 items not processed, `results.throwIfError()` throws because `minSuccessful` was not met); Scenario 3 stops after the 7th success (`minSuccessful: 7` reached before 3 failures, succeeds). Shows inspecting `results.hasFailure`, `results.successCount`, `results.failureCount`, `results.succeeded()`, and `results.failed()`.",
+      "files": [],
+      "expectations": [
+        "Explains that combined `completionConfig` constraints stop execution as soon as the FIRST condition (`minSuccessful`, `toleratedFailureCount`, or `toleratedFailurePercentage`) is met",
+        "Accurately traces all three 10-item scenarios: Scenario 1 (7 successes, 0 failures -> stops early and succeeds), Scenario 2 (5 successes, 3 failures -> stops on 3rd failure and fails `throwIfError()`), and Scenario 3 (7 successes, 2 failures -> stops on 7th success and succeeds)",
+        "Shows how to inspect batch results without throwing using `results.hasFailure`, `results.succeeded()`, `results.failed()`, `results.successCount`, and `results.failureCount`"
+      ]
+    },
+    {
+      "id": "eval-08-we-are-building-an-autonomous-genai-coding-resea",
+      "prompt": "We are building an autonomous GenAI coding/research agent that runs an iterative reasoning and tool-calling loop (`while (true)`) for up to 45 minutes. Why would a standard Lambda function fail here, and how do we write this agentic loop in TypeScript and Python using AWS Lambda Durable Functions with dynamic step naming and replay-safe logging?",
+      "expected_output": "Explains that a standard Lambda function hits the 15-minute execution limit and loses all intermediate LLM/tool turns on transient failure, whereas a Lambda Durable Function can run up to 1 year and checkpoints every `invoke-model` and `execute-tool-${tool.name}` step so a failure on turn 5 replays turns 1–4 from cache without re-billing LLM tokens. Provides both TypeScript (`withDurableExecution`) and Python (`@durable_execution` / `@durable_step`) agent loop implementations using `context.logger`.",
+      "files": [],
+      "expectations": [
+        "Explains how Lambda Durable Functions overcome the 15-minute single-invocation timeout (supporting executions up to 1 year) and replay completed `invoke-model` and tool steps from checkpointed state without re-calling the LLM",
+        "Provides the TypeScript and Python `while (true)` / `while True:` agentic loop using `context.step('invoke-model', ...)` and dynamic step naming (`execute-tool-${tool.name}` / `f\"execute-tool-{tool['name']}\"`) until `tool == null`",
+        "Uses replay-aware `context.logger` (`info`/`debug`) rather than `console.log`/`print` and notes keeping production log level at `INFO` to avoid leaking sensitive step outputs"
+      ]
+    },
+    {
+      "id": "eval-09-our-jest-tests-for-a-typescript-durable-function",
+      "prompt": "Our Jest tests for a TypeScript durable function using `LocalDurableTestRunner` are flaky and failing with type/JSON errors: the developer used `runner.getOperationByIndex(0)`, passed `{ userId: '123' }` directly to `runner.run({ userId: '123' })`, and called `callbackOp.sendCallbackSuccess({ approved: true } as any)` immediately after starting `runner.run()`. Fix all three testing bugs and show the canonical Jest test for a durable function with a wait and a callback.",
+      "expected_output": "Identifies and fixes all three testing bugs: (1) wrap input in `{ payload: { userId: '123' } }` and use `LocalDurableTestRunner.setupTestEnvironment({ skipTime: true })`, (2) always look up operations by name (`runner.getOperation('wait-for-approval')`), never by `getOperationByIndex(0)`, and (3) prevent callback race conditions by awaiting `callbackOp.waitForData(WaitingOperationStatus.STARTED)` before calling `sendCallbackSuccess(JSON.stringify({ approved: true }))` (noting the argument must be a JSON string).",
+      "files": [],
+      "expectations": [
+        "Shows setting up `LocalDurableTestRunner.setupTestEnvironment({ skipTime: true })`, wrapping the input in `runner.run({ payload: { userId: '123' } })`, and looking up operations by name (`runner.getOperation('...')`) rather than `getOperationByIndex`",
+        "Shows synchronizing callback tests by awaiting `callbackOp.waitForData(WaitingOperationStatus.STARTED)` before sending the callback response to eliminate race conditions",
+        "Shows passing a stringified JSON payload to `callbackOp.sendCallbackSuccess(JSON.stringify({ approved: true }))` and parsing/casting `execution.getResult()`"
+      ]
+    },
+    {
+      "id": "eval-10-provide-the-infrastructure-as-code-iac-templates",
+      "prompt": "Provide the Infrastructure as Code (IaC) templates in both AWS CDK (TypeScript) and AWS SAM (`template.yaml`) to deploy a production Lambda Durable Function with a 24-hour execution timeout, 30-day state retention, an explicitly managed CloudWatch Log Group with KMS encryption, required IAM checkpoint permissions, and a `live` alias for qualified ARN invocation.",
+      "expected_output": "Provides both the AWS CDK TypeScript stack (`durableConfig: { executionTimeout: cdk.Duration.hours(24), retentionPeriod: cdk.Duration.days(30) }`, explicit `logs.LogGroup` linked via `logGroup`, explicit `AWSLambdaBasicDurableExecutionRolePolicy` attachment, `currentVersion` + `lambda.Alias` `live`, `LOG_LEVEL: 'INFO'`) and the AWS SAM `template.yaml` (`AWS::Serverless::Function` with `DurableConfig: { ExecutionTimeout: 86400, RetentionPeriodInDays: 30 }`, `AWSLambdaBasicDurableExecutionRolePolicy`, and `AutoPublishAlias: live`).",
+      "files": [],
+      "expectations": [
+        "Provides the TypeScript AWS CDK definition with `durableConfig` (`executionTimeout: cdk.Duration.hours(24)`, `retentionPeriod: cdk.Duration.days(30)`), an explicit `logs.LogGroup`, and a `lambda.Alias` (`live`) pointing to `durableFunction.currentVersion`",
+        "Explicitly attaches the `service-role/AWSLambdaBasicDurableExecutionRolePolicy` managed policy (`lambda:CheckpointDurableExecution`, `lambda:GetDurableExecutionState`) when using an explicit log group in CDK and in SAM",
+        "Provides the AWS SAM `template.yaml` with `DurableConfig` (`ExecutionTimeout: 86400`, `RetentionPeriodInDays: 30`), `AutoPublishAlias: live`, and `LOG_LEVEL: INFO` (noting to avoid `DEBUG` in production so step results/secrets are not exposed in logs)"
+      ]
+    },
+    {
+      "id": "eval-11-in-our-durable-function-1-how-do-we-configure-a",
+      "prompt": "In our durable function: (1) How do we configure a custom retry strategy in TypeScript and Python so HTTP 4xx client errors (or `ValidationError`) stop immediately without retry (and how does Python's `ExecutionError` vs `InvocationError` work), while 5xx server errors retry up to 5 times with exponential backoff? (2) A teammate wrote an in-memory `CircuitBreaker` class with `private failures = 0; private lastFailureTime = 0;` at the module/handler level—what is the critical replay caveat with that circuit breaker?",
+      "expected_output": "Shows custom `retryStrategy` in TypeScript (`(error, attemptCount) => ...` returning `{ shouldRetry: false }` for 4xx and `{ shouldRetry: true, delay: { seconds: Math.pow(2, attemptCount) } }` for 5xx) and Python (`RetryDecision.no_retry()` vs `RetryDecision(should_retry=True, delay=Duration.from_seconds(2 ** attempt))`), contrasts Python's `ExecutionError` (non-retryable permanent business failure) vs `InvocationError` (transient infrastructure issue retried by Lambda), and explains that in-memory circuit breaker variables (`failures`, `lastFailureTime`) reset across replays and sandbox recycling, so production circuit breaker state must be persisted in step return values or an external store like DynamoDB.",
+      "files": [],
+      "expectations": [
+        "Shows custom conditional `retryStrategy` in TypeScript and Python that returns no-retry (`shouldRetry: false` / `RetryDecision.no_retry()`) on 4xx/validation errors and exponential backoff on 5xx errors",
+        "Distinguishes Python's SDK exception hierarchy: `ExecutionError` (permanent failure, no retry), `InvocationError` (transient failure retried by Lambda), and `CallbackError`",
+        "Explains the critical replay caveat for an in-memory `CircuitBreaker`: closure/instance variables (`failures`, `lastFailureTime`) reset on replay, so production circuit state must be stored in persisted step return values or an external store such as DynamoDB"
+      ]
+    },
+    {
+      "id": "eval-12-our-workflow-starts-an-external-transcoding-job",
+      "prompt": "Our workflow starts an external transcoding job in Step 1 (`start-job`) and needs to poll `getJobStatus(jobId)` until `status === 'completed'` (up to 60 attempts, starting at 5 seconds delay, 1.5x backoff rate, capped at 30 seconds delay). How do we implement this in TypeScript and Python using `waitForCondition` so we don't use `setTimeout` or burn Lambda compute while waiting between polls?",
+      "expected_output": "Provides both TypeScript (`context.waitForCondition` with `createWaitStrategy({ maxAttempts: 60, initialDelay: { seconds: 5 }, maxDelay: { seconds: 30 }, backoffRate: 1.5, shouldContinuePolling: (result) => result.status !== 'completed' })`) and Python (`context.wait_for_condition` with `WaitForConditionConfig` and `create_wait_strategy(WaitStrategyConfig(...))`), explaining that native `setTimeout` fails across replays while `waitForCondition` suspends compute between polls.",
+      "files": [],
+      "expectations": [
+        "Provides the TypeScript `context.waitForCondition` implementation using `createWaitStrategy` with `maxAttempts: 60`, `initialDelay: { seconds: 5 }`, `maxDelay: { seconds: 30 }`, `backoffRate: 1.5`, and `shouldContinuePolling`",
+        "Provides the Python `context.wait_for_condition` implementation using `WaitForConditionConfig`, `create_wait_strategy`, `WaitStrategyConfig`, and `Duration`",
+        "Explains that `waitForCondition` checkpoints state and suspends compute between polling intervals, whereas native timers like `setTimeout` break across replays and incur idle compute charges"
+      ]
+    },
+    {
+      "id": "eval-13-two-questions-on-typescript-lambda-durable-funct",
+      "prompt": "Two questions on TypeScript Lambda Durable Functions: (1) Our step returns a `User` class instance with `createdAt: Date` and `updatedAt: Date` fields, but after replay `user.createdAt instanceof Date` is `false` (it became a string) and class methods are gone! How do we fix this using the SDK's SerDes helpers? (2) How do we fan out from a parent orchestrator durable function to child worker durable functions using `context.invoke`, and what IAM permissions does the parent role need?",
+      "expected_output": "Shows using `createClassSerdesWithDates(User, ['createdAt', 'updatedAt'])` (and `createClassSerdes` for nested classes) passed in `{ serdes }` on `context.step` so class prototypes and `Date` instances are reconstructed after checkpoint deserialization; and shows using `context.parallel` / `context.invoke('process-batch-1', childFunctionArn, payload)` with IAM `lambda:InvokeFunction` granted on both `TargetFunction.Arn` and `${TargetFunction.Arn}:*` (for qualified versions/aliases).",
+      "files": [],
+      "expectations": [
+        "Shows using `createClassSerdesWithDates(User, ['createdAt', 'updatedAt'])` (or `createClassSerdes`) in the step config `{ serdes }` so `User` instances and `Date` properties survive checkpoint serialization and replay",
+        "Shows invoking child durable functions from a parent orchestrator using `context.invoke(name, childFunctionArn, payload)` (e.g., inside `context.parallel`)",
+        "Specifies that the parent orchestrator's IAM role requires `lambda:InvokeFunction` on both the target function ARN and its qualified version/alias wildcard (`${TargetFunction.Arn}:*`), in addition to `AWSLambdaBasicDurableExecutionRolePolicy`"
+      ]
+    },
+    {
+      "id": "eval-14-our-production-durable-execution-arn-aws-lambda",
+      "prompt": "Our production durable execution `arn:aws:lambda:ap-south-1:123456789012:function:payment-orchestrator:3/durable-execution/ord-7788/inv-9900` appears stuck in ap-south-1. A developer suggested three actions: (1) run `aws lambda stop-durable-execution` right now to kill it, (2) update the code to return the raw Stripe API secret key from Step 1 so we can see it in `get-durable-execution-history --include-execution-data`, and (3) run `aws secretsmanager get-secret-value --secret-id prod/stripe-key` in our shared shell. Explain why all three are dangerous and provide the exact read-only troubleshooting steps and console URL.",
+      "expected_output": "Refuses all three unsafe actions: (1) diagnosis must be strictly READ-ONLY—never call `StopDurableExecution` or termination APIs during triage, (2) step return values are persisted in checkpoints and visible via `--include-execution-data`, so secrets/PII must NEVER be returned from steps, and (3) never dump plaintext secrets with `secretsmanager get-secret-value`. Provides the read-only triage playbook (`aws lambda get-durable-execution-history --durable-execution-arn <arn> --region ap-south-1 --include-execution-data`, checking `CallbackStarted`/`CallbackTimedOut`/`StepFailed` events, the exact console link `https://ap-south-1.console.aws.amazon.com/lambda/home?region=ap-south-1#/functions/payment-orchestrator/versions/3/executions/ord-7788/inv-9900`, and CloudWatch Logs Insights query filtering `executionName = \"ord-7788\"`).",
+      "files": [],
+      "expectations": [
+        "Explicitly refuses calling `StopDurableExecution` (enforcing read-only diagnosis), refuses returning raw secrets/PII from steps (since step results are persisted in checkpoint history), and refuses running `secretsmanager get-secret-value`",
+        "Provides the read-only history command (`aws lambda get-durable-execution-history --durable-execution-arn ... --region ap-south-1 --include-execution-data`) and explains inspecting history events (`CallbackStarted`, `CallbackTimedOut`, `StepFailed`, `ExecutionTimedOut`)",
+        "Constructs the exact Lambda Console Execution Details URL (`https://ap-south-1.console.aws.amazon.com/lambda/home?region=ap-south-1#/functions/payment-orchestrator/versions/3/executions/ord-7788/inv-9900`) and shows the fallback CloudWatch Logs query by `inv-9900` / `executionName = \"ord-7788\"`"
+      ]
+    },
+    {
+      "id": "eval-15-we-are-designing-an-onboarding-workflow-in-ap-so",
+      "prompt": "We are designing an onboarding workflow in ap-south-1 that runs 3 quick API steps (200 ms each), waits 7 days (`context.wait({ days: 7 })`), and then sends a follow-up notification. (1) Why must we invoke this durable function with `--invocation-type Event` instead of `RequestResponse`? (2) How does compute billing work during the 7-day `context.wait`? (3) How should we configure `ExecutionTimeout`, `RetentionPeriodInDays`, and `LOG_LEVEL` between our `dev` and `prod` environments to control cost and security?",
+      "expected_output": "Explains that (1) `RequestResponse` is synchronous and only suitable for short workflows (< 15 minutes), whereas a 7-day workflow MUST use asynchronous `--invocation-type Event` (returning the execution ID immediately), (2) `context.wait({ days: 7 })` checkpoints state and terminates the active invocation so 0 GB-seconds of Lambda compute are billed during the 7-day wait, and (3) contrasts `dev` (`ExecutionTimeout: 900`, `RetentionPeriodInDays: 1`, `LOG_LEVEL: DEBUG`) vs `prod` (`ExecutionTimeout` > 7 days / up to 1 year, `RetentionPeriodInDays: 30`, `LOG_LEVEL: INFO` with explicit CloudWatch Log Group retention and KMS encryption).",
+      "files": [],
+      "expectations": [
+        "Explains that `--invocation-type RequestResponse` is only for short synchronous workflows (< 15 minutes), whereas workflows with multi-hour/multi-day waits MUST use asynchronous `--invocation-type Event`",
+        "Explains that `context.wait({ days: 7 })` suspends execution after checkpointing so zero Lambda compute (GB-seconds) is billed during the 7-day wait",
+        "Contrasts `dev` vs `prod` `DurableConfig` and logging settings (`ExecutionTimeout`, `RetentionPeriodInDays: 1` in dev vs `30` in prod, explicit CloudWatch Log Group retention, KMS encryption, and setting `LOG_LEVEL: INFO` in prod so `DEBUG` does not leak step results)"
+      ]
+    }
+  ]
+}

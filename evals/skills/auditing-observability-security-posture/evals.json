@@ -1,0 +1,115 @@
+{
+  "skill_name": "auditing-observability-security-posture",
+  "evals": [
+    {
+      "id": "eval-01-full-namespace-security-audit-across-all-four-scopes",
+      "prompt": "Verify our active local `docker-desktop` Kubernetes context and server capabilities first, then run a comprehensive OpenTelemetry security posture audit across the `otel-demo` namespace covering collectors, instrumentation CRs, eBPF pods, and RBAC roles, and render an executive Markdown compliance report.",
+      "expected_output": "Reads `otel://cluster/contexts` (confirming `docker-desktop`) and `otel://server/capabilities` via OpenTelemetry MCP resources without invoking raw `kubectl` CLI commands, calls `otel_audit_security_posture(namespace=\"otel-demo\", scope=[\"collectors\", \"instrumentation\", \"ebpf\", \"rbac\"])`, saves the audit JSON and runs `scripts/render_audit_report.py --input ...` to produce a structured Markdown compliance report (`COMPLIANT` vs `NON-COMPLIANT` badge, audited counts, risk level, and prioritized remediation table).",
+      "expectations": [
+        "Verifies the active `docker-desktop` context and server capabilities via `otel://cluster/contexts` and `otel://server/capabilities` without invoking raw `kubectl` CLI commands",
+        "Calls `otel_audit_security_posture` for `otel-demo` across `collectors`, `instrumentation`, `ebpf`, and `rbac`",
+        "Runs `scripts/render_audit_report.py` and outputs a structured Markdown compliance report with risk level, audited counts, and categorized findings"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-02-remediate-inline-secret-with-secretkeyref-and-env-placeholder",
+      "prompt": "Scan our collectors in `otel-demo` (`otel-insecure-collector`) for hardcoded bearer tokens or API keys in exporter headers, and preview remediating them safely using Kubernetes `Secret` `otel-demo-telemetry-secrets` (`secretKeyRef` key `auth-token`) and `${env:...}` variable expansion—never print any raw secret values or read `.env` files.",
+      "expected_output": "Calls `otel_audit_security_posture(namespace=\"otel-demo\", scope=[\"collectors\"])` (detecting inline credentials on `otel-insecure-collector`), honors `hooks/secret-safety.py` by never reading `.env` or dumping raw Kubernetes `Secret` payloads, configures `spec.env` with `valueFrom.secretKeyRef` (`name: otel-demo-telemetry-secrets`, `key: auth-token` -> `OTEL_EXPORTER_AUTH_TOKEN`) and replaces inline header credentials with `Authorization: \"Bearer ${env:OTEL_EXPORTER_AUTH_TOKEN}\"`, previewing via `otel_patch_collector(namespace=\"otel-demo\", name=\"otel-insecure-collector\", ..., dry_run=True)`.",
+      "expectations": [
+        "Audits `otel-demo` collectors via `otel_audit_security_posture` without dumping Kubernetes `Secret` values or reading `.env` files",
+        "Replaces inline credentials with `${env:OTEL_EXPORTER_AUTH_TOKEN}` backed by Kubernetes `secretKeyRef` (`otel-demo-telemetry-secrets`)",
+        "Previews the hardened collector via `otel_patch_collector(..., dry_run=True)` without echoing plaintext tokens"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-03-external-otlp-exporter-tls-verification-hardening",
+      "prompt": "Audit and preview hardening this external vendor exporter block on `otel-gateway` in `observability` (which forwards `otel-demo` telemetry off-cluster while also exporting internally to `tempo-distributor.observability.svc.cluster.local:4317`):\n```yaml\nexporters:\n  otlphttp/cloud:\n    endpoint: https://otlp-ingest.observability-cloud.io\n    tls:\n      insecure: true\n      insecure_skip_verify: true\n```",
+      "expected_output": "Flags both `tls.insecure: true` on an external `https://` endpoint and `tls.insecure_skip_verify: true` (MITM vulnerability), explains that `tls.insecure: true` is only acceptable on cluster-internal plaintext hops (`*.svc.cluster.local`), sets `tls: {insecure: false}` (with `ca_file` if private PKI is used) and removes `insecure_skip_verify`, previewing via `otel_patch_collector(..., dry_run=True)`.",
+      "expectations": [
+        "Flags both `tls.insecure: true` on an external endpoint and `tls.insecure_skip_verify: true`",
+        "Distinguishes cluster-internal `*.svc.cluster.local` hops from external `https://` SaaS ingress",
+        "Previews hardened `tls: {insecure: false}` config on `otel-gateway` via `otel_patch_collector(..., dry_run=True)`"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-04-ebpf-obi-daemonset-least-privilege-linux-capabilities",
+      "prompt": "Our security scanner flagged the OpenTelemetry eBPF (`obi`) DaemonSet in `otel-demo` (deployed to trace Rust `shipping` and C++ `currency` pods) for running with `securityContext.privileged: true` and `hostNetwork: true` on Linux kernel `6.1`. Audit it via MCP and provide a least-privilege Linux capabilities DaemonSet spec.",
+      "expected_output": "Calls `otel_audit_security_posture(namespace=\"otel-demo\", scope=[\"ebpf\"])` (flagging `privileged: true`), and replaces `privileged: true` and `hostNetwork: true` with `privileged: false`, `hostNetwork: false`, `hostPID: true`, `allowPrivilegeEscalation: false`, read-only `/sys/kernel/security` and `/sys/fs/cgroup` mounts, `capabilities.drop: [\"ALL\"]`, and `capabilities.add: [\"BPF\", \"PERFMON\", \"SYS_PTRACE\", \"NET_RAW\", \"CHECKPOINT_RESTORE\", \"DAC_READ_SEARCH\", \"SYS_RESOURCE\"]`.",
+      "expectations": [
+        "Audits eBPF pods via `otel_audit_security_posture` and sets `privileged: false`, `allowPrivilegeEscalation: false`, and `hostNetwork: false` (`hostPID: true`)",
+        "Drops `ALL` Linux capabilities and adds only the minimal eBPF capability set (`BPF`, `PERFMON`, `SYS_PTRACE`, `NET_RAW`, `CHECKPOINT_RESTORE`, `DAC_READ_SEARCH`, `SYS_RESOURCE`)",
+        "Enforces `readOnly: true` on `/sys/kernel/security` and `/sys/fs/cgroup` volume mounts"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-05-collector-rbac-wildcard-and-secrets-permission-remediation",
+      "prompt": "Audit the Kubernetes RBAC `ClusterRole` attached to `otel-insecure-collector` in `otel-demo` for excessive wildcard (`*`) or `secrets` read/write permissions, and generate a least-privilege `ClusterRole` for `k8sattributes` and `k8s_cluster` enriching `otel-demo` pods.",
+      "expected_output": "Calls `otel_audit_security_posture(namespace=\"otel-demo\", scope=[\"rbac\"])`, identifies wildcard `*` and `secrets` permissions on the collector `ClusterRole`, explains that OpenTelemetry Collectors only ever need read-only metadata access (`verbs: [\"get\", \"list\", \"watch\"]`) and must never hold write verbs or `secrets` access, and outputs a hardened least-privilege `ClusterRole`.",
+      "expectations": [
+        "Audits RBAC via `otel_audit_security_posture(namespace=\"otel-demo\", scope=[\"rbac\"])` and flags wildcard / `secrets` over-privilege",
+        "Restricts `ClusterRole` verbs strictly to `[\"get\", \"list\", \"watch\"]` and removes `secrets` access",
+        "Preserves required Kubernetes workload/node metadata resources for `k8sattributes` and `k8s_cluster`"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-06-debug-extensions-loopback-binding-and-otlp-receiver-auth",
+      "prompt": "Review `otel-insecure-collector` in `otel-demo`, which currently exposes `pprof` on `0.0.0.0:1777`, `zpages` on `0.0.0.0:55679`, and an unauthenticated externally reachable OTLP HTTP receiver on `0.0.0.0:4318` with wildcard CORS (`allowed_origins: [\"*\"]`) accepting browser RUM traces from `frontend`. Audit it and preview hardening the configuration.",
+      "expected_output": "Calls `otel_audit_security_posture(namespace=\"otel-demo\", scope=[\"collectors\"])`, flags `0.0.0.0` diagnostic exposure on `pprof` and `zpages`, binds `pprof` (`127.0.0.1:1777`) and `zpages` (`127.0.0.1:55679`) strictly to loopback (or disables them in prod), attaches an `oidc` or `bearertokenauth` authenticator extension + explicit origin allowlist (`cors.allowed_origins`) on externally exposed OTLP HTTP receivers, and previews via `otel_patch_collector(..., dry_run=True)`.",
+      "expectations": [
+        "Rebinds `pprof` and `zpages` from `0.0.0.0` to `127.0.0.1` (or removes them in production)",
+        "Configures `oidc` or `bearertokenauth` authentication and explicit `cors.allowed_origins` (removing wildcard `*`) on externally exposed OTLP receivers",
+        "Previews the hardened config via `otel_patch_collector(..., dry_run=True)`"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-07-restricted-pod-security-standards-for-gateway-collector",
+      "prompt": "We are enabling Kubernetes Pod Security Admission `restricted` enforcement on `otel-demo`, and our gateway collector pod (`opentelemetry-otel-collector`) currently runs without non-root user, capability drop, or `seccompProfile` settings. Preview hardening its pod and container `securityContext` so it passes `restricted` PSA cleanly.",
+      "expected_output": "Configures `runAsNonRoot: true`, `runAsUser: 10001`, `seccompProfile: {type: RuntimeDefault}`, `allowPrivilegeEscalation: false`, `readOnlyRootFilesystem: true`, and `capabilities: {drop: [\"ALL\"]}`, previewing via `otel_patch_collector(namespace=\"otel-demo\", name=\"opentelemetry-otel-collector\", workload_options=..., dry_run=True)` (or rendering the exact CRD `podSecurityContext`/`securityContext` patch).",
+      "expectations": [
+        "Configures `runAsNonRoot: true`, `runAsUser: 10001`, and `seccompProfile.type: RuntimeDefault`",
+        "Sets `allowPrivilegeEscalation: false`, `readOnlyRootFilesystem: true`, and `capabilities.drop: [\"ALL\"]`",
+        "Previews the hardened configuration via `otel_patch_collector(..., dry_run=True)`"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-08-pii-redaction-gap-remediation-via-otel-configure-processing",
+      "prompt": "During a PCI-DSS & GDPR audit of `opentelemetry-otel-collector` in `otel-demo`, we discovered customer credit card PANs from `payment`, SSNs, order confirmation emails from `email`, and `Authorization`/`Cookie` headers from `frontend-proxy` flowing unredacted through `traces` and `logs`. Preview and apply collector-side PII scrubbing.",
+      "expected_output": "Calls `otel_configure_processing(namespace=\"otel-demo\", collector_name=\"opentelemetry-otel-collector\", signals=[\"traces\", \"logs\"], rules={\"mask_pii\": [\"credit_card\", \"ssn\", \"email\", \"bearer_token\", \"jwt\"], \"drop_attributes\": [\"http.request.header.authorization\", \"http.request.header.cookie\", \"http.response.header.set_cookie\"]}, dry_run=True)`, verifies the diff, and applies with `dry_run=False`.",
+      "expectations": [
+        "Calls `otel_configure_processing` on `opentelemetry-otel-collector` in `otel-demo` with `rules={\"mask_pii\": [...], \"drop_attributes\": [...]}` on `signals=[\"traces\", \"logs\"]`",
+        "Scrubs PAN (`credit_card`), `ssn`, `email`, `bearer_token`/`jwt`, and sensitive auth/cookie headers",
+        "Runs `dry_run=True` first before applying `dry_run=False`"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-09-writable-hostpath-mount-audit-on-filelog-daemonset",
+      "prompt": "Review our `filelog` log-collection DaemonSet `otel-insecure-agent` in `observability` (which tails container logs on nodes running `otel-demo` pods) for dangerous writable host filesystem mounts (`/var/log/pods` or `/hostfs` mounted read-write), and preview fixing the volume mounts without breaking `filelog` offset checkpointing.",
+      "expected_output": "Calls `otel_audit_security_posture(namespace=\"observability\", scope=[\"collectors\"])` (flagging writable `/var/log/pods` mount on `otel-insecure-agent`), explains that `/var/log/pods`, `/var/lib/docker/containers`, and `/hostfs` MUST be mounted `readOnly: true`, while only `/var/lib/otelcol/file_storage` (`DirectoryOrCreate`) remains writable for `file_storage` checkpoint persistence across restarts, previewing via `otel_patch_collector(namespace=\"observability\", name=\"otel-insecure-agent\", ..., dry_run=True)`.",
+      "expectations": [
+        "Audits `observability` via `otel_audit_security_posture` and sets `readOnly: true` on `/var/log/pods` and `/hostfs` mounts",
+        "Preserves writable access exclusively on `/var/lib/otelcol/file_storage` (`DirectoryOrCreate`) so `filelog` offsets survive restarts",
+        "Previews the fix on `otel-insecure-agent` via `otel_patch_collector(..., dry_run=True)`"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-10-compliant-namespace-audit-and-zero-findings-report",
+      "prompt": "Run a full OpenTelemetry security posture audit across all four scopes (`collectors`, `instrumentation`, `ebpf`, and `rbac`) in our hardened `otel-demo-prod-us` namespace, and render the executive Markdown compliance report to verify it passes cleanly as `COMPLIANT`.",
+      "expected_output": "Calls `otel_audit_security_posture(namespace=\"otel-demo-prod-us\", scope=[\"collectors\", \"instrumentation\", \"ebpf\", \"rbac\"])`, feeds the clean audit JSON payload through `scripts/render_audit_report.py` verifying zero findings and `risk_level: \"low\"` renders `COMPLIANT`, and reports exact `collectors_audited`, `total_ebpf_pods`, and `rbac_roles_audited` counts.",
+      "expectations": [
+        "Calls `otel_audit_security_posture` on `otel-demo-prod-us` with all four scopes (`collectors`, `instrumentation`, `ebpf`, `rbac`)",
+        "Runs `scripts/render_audit_report.py` and renders `COMPLIANT` when zero findings are present",
+        "Accurately reports `collectors_audited`, `total_ebpf_pods`, and `rbac_roles_audited` totals"
+      ],
+      "files": []
+    }
+  ]
+}

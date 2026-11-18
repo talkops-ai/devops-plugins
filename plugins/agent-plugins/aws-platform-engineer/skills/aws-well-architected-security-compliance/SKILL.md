@@ -11,6 +11,11 @@ metadata:
 
 Embed the **AWS Well-Architected Framework Security Pillar** (`SEC01` through `SEC11`) directly into Day-0 design, Day-1 provisioning, and Day-2 posture auditing. This skill coordinates the `well-architected-security` MCP server (`awslabs.well-architected-security-mcp-server`), `aws-iac` (`cfn-guard`), `iam`, and the bundled edge/network security skills (`waf`, `shieldadvanced`, `route53`, `cloudfront`, `configuring-vpc-endpoints-for-private-aws-service-access`).
 
+## MCP-Only Execution & Edge-Case Fallback Rules (Mandatory)
+
+1. **MCP-Only Execution (Zero Raw Shell CLI):** Execute **all** live security posture assessments, IaC compliance checks, IAM simulations, and audit trail lookups **exclusively via connected MCP servers**: `well-architected-security` (`ListServicesInRegion`, `GetStoredSecurityContext`, `CheckSecurityServices`, `GetSecurityFindings`, `CheckStorageEncryption`, `CheckNetworkSecurity`), `aws-iac` (`validate_cloudformation_template`, `check_cloudformation_template_compliance`), `iam` (`list_roles`, `get_role`, `simulate_principal_policy`), `cloudtrail` (`lookup_events`), and `aws-mcp` (`aws___run_script` using read-only `call_boto3`). **Never** run raw `aws ...` CLI or `python3 -c` commands in Bash/`run_command`, **never** fetch plaintext secrets (`GetSecretValue`), and **never** mutate live AWS resources.
+2. **`awsknowledge` Fallback:** If a question involves a specialized AWS security service or compliance feature not covered locally (e.g., AWS Audit Manager custom frameworks, AWS Verified Access zero-trust policies, KMS External Key Store XKS), query `awsknowledge` / `aws-mcp` (`aws___search_documentation` / `aws___read_documentation` — 1–2 focused searches) and answer directly.
+
 ---
 
 ## Mandatory 4-Step Security & Compliance Assessment Protocol

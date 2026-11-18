@@ -1,0 +1,34 @@
+[
+  {
+    "query": "Debug why our MWAA DAG daily_orders_etl failed last night by inspecting task instance states and CloudWatch task logs.",
+    "should_trigger": true
+  },
+  {
+    "query": "Diagnose why a newly uploaded Python DAG is not showing up in the Amazon MWAA Airflow UI by checking /importErrors and DAGProcessing logs.",
+    "should_trigger": true
+  },
+  {
+    "query": "Investigate why our MWAA Serverless workflow run (`arn:aws:airflow-serverless:...`) failed using GetWorkflowRun, ListTaskInstances, and CloudWatch logs.",
+    "should_trigger": true
+  },
+  {
+    "query": "Troubleshoot why requirements.txt installation failed during an Amazon MWAA environment update by checking the Worker and WebServer startup logs.",
+    "should_trigger": true
+  },
+  {
+    "query": "Find out why tasks in our MWAA environment are stuck in queued state or dying as zombie tasks with SIGKILL (-9).",
+    "should_trigger": true
+  },
+  {
+    "query": "Upgrade our Amazon MWAA environment from Apache Airflow 2.8.1 to Airflow 3.0.",
+    "should_trigger": false
+  },
+  {
+    "query": "Author a brand-new Python Airflow DAG from scratch to orchestrate an EMR Serverless Spark job.",
+    "should_trigger": false
+  },
+  {
+    "query": "Configure an Amazon OpenSearch Service cluster with UltraWarm storage tiers.",
+    "should_trigger": false
+  }
+]

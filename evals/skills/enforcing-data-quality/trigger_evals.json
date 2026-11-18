@@ -1,0 +1,34 @@
+[
+  {
+    "query": "Use /aws-analytics:glue-data-quality to write a DQDL ruleset checking completeness, primary key uniqueness, regex patterns, and referential integrity on our Glue table.",
+    "should_trigger": true
+  },
+  {
+    "query": "Configure EvaluateDataQuality in an AWS Glue PySpark job to route failed rows to a quarantine S3 table and passed rows to our Silver Iceberg table.",
+    "should_trigger": true
+  },
+  {
+    "query": "Start a Glue Data Quality ruleset recommendation run (`start-data-quality-rule-recommendation-run`) on an existing Glue Data Catalog table.",
+    "should_trigger": true
+  },
+  {
+    "query": "Set up DQDL Analyzers for dynamic row-count anomaly detection and EventBridge alerts on Glue Data Quality evaluation failures.",
+    "should_trigger": true
+  },
+  {
+    "query": "Validate data freshness (`DataFreshness`) and custom SQL aggregate invariants (`CustomSql`) using AWS Glue Data Quality.",
+    "should_trigger": true
+  },
+  {
+    "query": "Configure Lake Formation LF-Tag access control policies and column masking on our Glue catalog.",
+    "should_trigger": false
+  },
+  {
+    "query": "Upgrade an Amazon MWAA environment from Apache Airflow 2.8 to Airflow 3.0.",
+    "should_trigger": false
+  },
+  {
+    "query": "Size an Amazon MSK Express cluster for 100 MB/s Kafka streaming.",
+    "should_trigger": false
+  }
+]

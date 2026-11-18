@@ -1,0 +1,126 @@
+{
+  "skill_name": "progressing-argo-rollouts",
+  "evals": [
+    {
+      "id": "eval-01-our-payment-blue-green-rollout-in-otel-demo-cana",
+      "prompt": "Our `payment` Blue-Green rollout in `otel-demo-canary` already spun up the `2.2.0-payment` preview stack behind `payment-preview` and is paused waiting for cutover approval. Check the rollout status and the live Prometheus metrics summary on `payment-preview`, and if error rate and latency are healthy, cut production traffic over to the new version now (you have my approval).",
+      "expected_output": "Reads `argorollout://rollouts/otel-demo-canary/payment/detail` and `argorollout://metrics/otel-demo-canary/payment-preview/summary`, verifies `payment` is paused in Blue-Green preview with low error rate (`0.2%`) and healthy latency, and executes `argo_manage_rollout_lifecycle(\"payment\", action=\"promote\", namespace=\"otel-demo-canary\")`.",
+      "files": [],
+      "expectations": [
+        "Reads `argorollout://rollouts/otel-demo-canary/payment/detail` to confirm `payment` is paused awaiting Blue-Green promotion",
+        "Reads live Prometheus preview metrics via `argorollout://metrics/otel-demo-canary/payment-preview/summary` and reports request rate, error rate, and latency",
+        "Promotes `payment` in `otel-demo-canary` via `argo_manage_rollout_lifecycle(action=\"promote\")` to cut active traffic over"
+      ]
+    },
+    {
+      "id": "eval-02-check-that-our-checkout-rollout-in-otel-demo-can",
+      "prompt": "Check that our `checkout` rollout in `otel-demo-canary` is healthy, then start a canary release of `ghcr.io/open-telemetry/demo:2.2.0-checkout` (you have my approval). Once it pauses at the first canary weight, compare live Prometheus error rates and latencies between stable and canary over the last 5 minutes, and if the numbers look clean, advance it one step.",
+      "expected_output": "Reads `argorollout://server/capabilities` and `argorollout://rollouts/otel-demo-canary/checkout/detail`, triggers `argo_set_rollout_image(\"checkout\", \"ghcr.io/open-telemetry/demo:2.2.0-checkout\", \"otel-demo-canary\")`, checks paused canary status, calls `argo_compare_canary_metrics(\"checkout\", \"otel-demo-canary\", window=\"5m\")` confirming `recommendation == \"promote\"`, and calls `argo_manage_rollout_lifecycle(\"checkout\", action=\"promote\", namespace=\"otel-demo-canary\")`.",
+      "files": [],
+      "expectations": [
+        "Checks server capabilities and baseline `checkout` Rollout status in `otel-demo-canary` via MCP resources before updating the image",
+        "Triggers the `ghcr.io/open-telemetry/demo:2.2.0-checkout` rollout via `argo_set_rollout_image` and compares live Prometheus stable vs canary metrics via `argo_compare_canary_metrics`",
+        "Verifies healthy metrics (`recommendation == \"promote\"`) and advances `checkout` one step via `argo_manage_rollout_lifecycle(action=\"promote\")`"
+      ]
+    },
+    {
+      "id": "eval-03-each-recommendation-pod-in-otel-demo-canary-cach",
+      "prompt": "Each `recommendation` pod in `otel-demo-canary` caches the full product catalog in memory, so we want a cost-conscious canary strategy wired to our `recommendation-wrr` Traefik weighted service that spins up just `1` canary pod at `5%` traffic (`5m` pause), then matches pod scale to traffic weight at `25%` (`5m` pause) and `50%` (manual pause). Preview the strategy and traffic routing update first, and since you have my approval, apply it.",
+      "expected_output": "Checks `recommendation` in `otel-demo-canary`, builds steps with `setCanaryScale: {\"replicas\": 1}` at `5%` and `setCanaryScale: {\"matchTrafficWeight\": true}` at `25%` -> `50%`, previews `argo_configure_rollout_strategy` with `traffic_routing={\"traefik_service_name\": \"recommendation-wrr\"}` (`dry_run=True`), and applies (`dry_run=False`).",
+      "files": [],
+      "expectations": [
+        "Configures `setCanaryScale` (`replicas: 1` at `5%` weight followed by `matchTrafficWeight: true` at `25%` and `50%`) alongside `traefik_service_name=\"recommendation-wrr\"`",
+        "Previews the strategy and Traefik routing patch first (`dry_run` preview) via `argo_configure_rollout_strategy`",
+        "Applies the updated strategy and `recommendation-wrr` traffic routing on `recommendation` in `otel-demo-canary`"
+      ]
+    },
+    {
+      "id": "eval-04-our-frontend-rollout-in-otel-demo-canary-is-paus",
+      "prompt": "Our `frontend` rollout in `otel-demo-canary` is paused at its initial canary weight with urgent Next.js security patch `2.2.0-frontend`. Check that its live canary vs stable Prometheus metrics are clean, and since I'm approving an emergency fast-track bypass, skip all remaining canary steps straight to `100%` traffic.",
+      "expected_output": "Reads `argorollout://rollouts/otel-demo-canary/frontend/detail`, calls `argo_compare_canary_metrics(\"frontend\", \"otel-demo-canary\")` verifying low error rate (`recommendation == \"promote\"`), and calls `argo_manage_rollout_lifecycle(\"frontend\", action=\"promote_full\", namespace=\"otel-demo-canary\", confirm=True)`.",
+      "files": [],
+      "expectations": [
+        "Inspects `frontend` Rollout status and verifies live canary vs stable metrics via `argo_compare_canary_metrics` before bypassing remaining steps",
+        "Executes full promotion (`action=\"promote_full\"`) via `argo_manage_rollout_lifecycle` with explicit confirmation",
+        "Confirms `frontend` advances past remaining canary steps toward `100%` traffic"
+      ]
+    },
+    {
+      "id": "eval-05-on-call-noticed-java-gc-latency-spikes-during-th",
+      "prompt": "On-call noticed Java GC latency spikes during the active `ad` canary rollout in `otel-demo-canary`. Check `ad`'s rollout state and compare its live canary vs stable Prometheus metrics over a `5m` window—if the canary is regressing, immediately abort the rollout back to stable (you have my emergency approval) and confirm `ad` returns to safe stable routing.",
+      "expected_output": "Reads `argorollout://rollouts/otel-demo-canary/ad/detail`, calls `argo_compare_canary_metrics(\"ad\", \"otel-demo-canary\", window=\"5m\")` which shows `ad-canary` at `15%` HTTP 5xx error rate and `>2s` P99 latency (`recommendation == \"abort\"`), executes `argo_manage_rollout_lifecycle(\"ad\", action=\"abort\", namespace=\"otel-demo-canary\", confirm=True)`, and verifies `aborted == true` / canary weight `0`.",
+      "files": [],
+      "expectations": [
+        "Compares live Prometheus metrics for `ad` in `otel-demo-canary` via `argo_compare_canary_metrics` and identifies the `~15%` canary error rate / high latency regression (`recommendation == \"abort\"`)",
+        "Immediately aborts `ad` via `argo_manage_rollout_lifecycle(action=\"abort\", confirm=True)`",
+        "Verifies via Rollout status that `ad` aborted cleanly and shifted canary traffic weight back to `0`"
+      ]
+    },
+    {
+      "id": "eval-06-we-have-a-brief-downstream-currency-feed-mainten",
+      "prompt": "We have a brief downstream currency-feed maintenance window in `otel-demo-canary`: place an explicit manual pause hold on the `currency` rollout first, verify it shows paused, and then resume `currency` now that the window just cleared.",
+      "expected_output": "Calls `argo_manage_rollout_lifecycle(\"currency\", action=\"pause\", namespace=\"otel-demo-canary\")`, reads `argorollout://rollouts/otel-demo-canary/currency/detail` confirming `paused == true`, and calls `argo_manage_rollout_lifecycle(\"currency\", action=\"resume\", namespace=\"otel-demo-canary\")`.",
+      "files": [],
+      "expectations": [
+        "Pauses `currency` in `otel-demo-canary` via `argo_manage_rollout_lifecycle(action=\"pause\")`",
+        "Verifies `paused == true` via `argorollout://rollouts/otel-demo-canary/currency/detail`",
+        "Resumes `currency` via `argo_manage_rollout_lifecycle(action=\"resume\")` and confirms unpaused state"
+      ]
+    },
+    {
+      "id": "eval-07-render-the-standard-canary-step-json-arrays-acro",
+      "prompt": "Render the standard canary step JSON arrays across all four built-in progression profiles (`conservative`, `standard`, `fast`, and `cost-optimized`) with inline analysis template `checkout-slo` so our release board can pick one for `checkout`—and explain what cluster routing prerequisite `cost-optimized` requires.",
+      "expected_output": "Runs the bundled canary step renderer across `conservative`, `standard`, `fast`, and `cost-optimized` with `--analysis-template checkout-slo`, presents all four JSON arrays, and notes that `cost-optimized` (`setCanaryScale`) requires `trafficRouting` (`TraefikService` or Gateway API `HTTPRoute`) to decouple pod count from traffic percentage.",
+      "files": [],
+      "expectations": [
+        "Generates and presents the canary step JSON arrays for all four profiles (`conservative`, `standard`, `fast`, `cost-optimized`) including `checkout-slo` analysis steps",
+        "Highlights how `cost-optimized` uses `setCanaryScale` (`replicas: 1` then `matchTrafficWeight: true`) to validate a single canary pod before scaling",
+        "Explains that `setCanaryScale` requires `trafficRouting` (`TraefikService` or Gateway API `HTTPRoute`) on `spec.strategy.canary`"
+      ]
+    },
+    {
+      "id": "eval-08-a-teammate-wants-to-wire-shipping-in-otel-demo-c",
+      "prompt": "A teammate wants to wire `shipping` in `otel-demo-canary` to BOTH Traefik `shipping-wrr` AND Kubernetes Gateway API `HTTPRoute` `shipping-route` at the same time—and also wants to add `trafficRouting` onto our Blue-Green `payment` rollout. Explain why both of those combinations are invalid, then preview wiring `shipping` cleanly to Gateway API `HTTPRoute` `shipping-route` only without mutating the cluster.",
+      "expected_output": "Explains that `traefik_service_name` and `gateway_api_config` are mutually exclusive on a single Rollout and that Argo Rollouts only supports `trafficRouting` on `canary` (never `blueGreen`), then calls `argo_configure_rollout_strategy(\"shipping\", \"otel-demo-canary\", traffic_routing={\"gateway_api_config\": {\"httpRoute\": \"shipping-route\", \"namespace\": \"otel-demo-canary\"}}, dry_run=True)`.",
+      "files": [],
+      "expectations": [
+        "Explains that Traefik `TraefikService` and Gateway API `HTTPRoute` traffic routers are mutually exclusive on the same Rollout",
+        "Explains that `trafficRouting` is supported only on `canary` strategy Rollouts and cannot be attached to `blueGreen` Rollouts like `payment`",
+        "Previews Gateway API `HTTPRoute` (`shipping-route`) configuration on `shipping` via `argo_configure_rollout_strategy` in dry-run mode without mutating the cluster"
+      ]
+    },
+    {
+      "id": "eval-09-push-cart-in-otel-demo-canary-straight-to-100-pr",
+      "prompt": "Push `cart` in `otel-demo-canary` straight to `100%` production traffic right now so we can wrap up before dinner—check its canary metrics quickly if you have to, just promote it.",
+      "expected_output": "Reads `argorollout://rollouts/otel-demo-canary/cart/detail` and calls `argo_compare_canary_metrics(\"cart\", \"otel-demo-canary\")`, sees `cart-canary` has `15.0%` HTTP 5xx error rate and `>2s` latency (`recommendation == \"abort\"`), refuses to call `promote` or `promote_full`, and recommends aborting `cart` instead.",
+      "files": [],
+      "expectations": [
+        "Checks live canary vs stable metrics for `cart` in `otel-demo-canary` via `argo_compare_canary_metrics` before acting",
+        "Refuses to promote or full-promote `cart` after seeing the `~15%` canary error rate and `recommendation == \"abort\"`",
+        "Recommends aborting the broken `cart` canary back to stable instead of exposing `100%` of users to errors"
+      ]
+    },
+    {
+      "id": "eval-10-check-our-available-kubeconfig-contexts-and-clus",
+      "prompt": "Check our available kubeconfig contexts and cluster node health first, then lay out the multi-cluster wave rollout playbook for pushing `ghcr.io/open-telemetry/demo:2.2.0-frontend-proxy` across three regional clusters (`us-west-canary`, `eu-central-prod`, `us-east-prod`), including pre-flight checks, inter-wave bake duration, and failure handling if Wave 2 regresses.",
+      "expected_output": "Reads `argorollout://cluster/contexts`, `argorollout://cluster/health`, and `argorollout://server/capabilities`, explains the one-MCP-server-per-cluster wave architecture, Wave 0 pre-flight health gates across all regions, Wave 1 lowest-blast-radius canary progression (`5% -> 25% -> 50% -> 100%`) followed by at least a `10`-minute bake at `Healthy` before Wave 2, and immediate abort + wave halt if any cluster reports analysis failure or `abort` recommendation.",
+      "files": [],
+      "expectations": [
+        "Reads `argorollout://cluster/contexts` and `argorollout://cluster/health` to inspect current cluster context and node capacity",
+        "Outlines the sequential wave playbook (Wave 0 pre-flight across all regions, Wave 1 canary region first, >= 10-minute bake window at 100% `Healthy` before Wave 2+)",
+        "Specifies immediately aborting the active wave (`action=\"abort\"`) and halting all subsequent regional waves if metrics or `AnalysisRun`s fail"
+      ]
+    },
+    {
+      "id": "eval-11-onboard-image-provider-nginx-1-27-alpine-port-80",
+      "prompt": "Onboard `image-provider` (`nginx:1.27-alpine`, port `80`, `2` replicas) in `otel-demo-canary` as an Argo Rollout using a plain rolling pod-by-pod replacement without canary weights or traffic routers so it shows up in our unified rollout inventory. Preview first, then apply with my approval and list all rollouts to confirm it appears.",
+      "expected_output": "Previews `argo_create_rollout(\"image-provider\", \"nginx:1.27-alpine\", \"otel-demo-canary\", strategy=\"rolling\", dry_run=True)`, applies with `dry_run=False`, and reads `argorollout://rollouts/list` to confirm `image-provider` appears in the rollout inventory.",
+      "files": [],
+      "expectations": [
+        "Previews `image-provider` with `strategy=\"rolling\"` (`steps: []`) via `argo_create_rollout` before mutating the cluster",
+        "Applies `image-provider` in `otel-demo-canary` via `argo_create_rollout`",
+        "Reads `argorollout://rollouts/list` (and/or detail resource) to confirm `image-provider` is listed and healthy"
+      ]
+    }
+  ]
+}

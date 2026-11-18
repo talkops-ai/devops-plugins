@@ -1,0 +1,17 @@
+{
+  "skill_name": "creating-secrets-using-best-practices",
+  "evals": [
+    {
+      "id": "eval-01-our-platform-engineering-team-is-standardizing-a",
+      "prompt": "Our platform engineering team is standardizing AWS Secrets Manager templates across the company. Provide: (1) the mandatory `<environment>/<application>/<purpose>` naming convention and 6 required governance tags, (2) the standard JSON `SecretString` structure for all 4 secret types (`database`, `api-key`, `oauth`, and `custom`), and (3) how to pass the secret payload safely to `aws secretsmanager create-secret` without leaking it into shell history or process listings.",
+      "expected_output": "Provides the hierarchical naming pattern, 6 required governance tags, JSON schemas for all 4 secret types, and the `chmod 600` + `file://` + `shred -u` / `rm -P` file-based secret creation workflow.",
+      "files": [],
+      "expectations": [
+        "Specifies the `<environment>/<application>/<purpose>` naming convention and the required governance tags (`Environment`, `Application`, `Owner`, `CostCenter`, `ManagedBy`, and `RotationEnabled` or `SecretType`)",
+        "Provides the JSON schemas for all 4 secret types: `database` (`host`, `username`, `password`, `engine`, `port`, `dbname`), `api-key` (`api_key`/`key`, `service_name`/`provider`, `endpoint`, and optional `api_secret`/metadata), `oauth` (`client_id`, `client_secret`, `token_url`, `scopes`), and `custom`",
+        "Warns against passing plaintext secrets inline via `--secret-string '{...}'` on the CLI command line because CLI arguments are recorded in `~/.bash_history`/`~/.zsh_history` and visible in `ps aux`",
+        "Shows the safe temporary file workflow: `umask 077` / `chmod 600`, passing `--secret-string file:///tmp/secret-payload.json`, and immediately shredding/deleting (`shred -u` or `rm -P`) the file after `create-secret`"
+      ]
+    }
+  ]
+}

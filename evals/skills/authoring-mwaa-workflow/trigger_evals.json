@@ -1,0 +1,42 @@
+[
+  {
+    "query": "Create a Python Airflow DAG for our provisioned Amazon MWAA environment that runs a Glue ETL job and Athena validation query daily.",
+    "should_trigger": true
+  },
+  {
+    "query": "Author an MWAA Serverless YAML workflow (`arn:aws:airflow-serverless:...`) that orchestrates an EMR Serverless Spark job and SNS notification.",
+    "should_trigger": true
+  },
+  {
+    "query": "Package a PythonOperator helper module and manylinux2014_x86_64 wheels into a code zip for an MWAA Serverless workflow deployment.",
+    "should_trigger": true
+  },
+  {
+    "query": "Write an idempotent Airflow DAG with deferrable S3KeySensor, dynamic task mapping, execution_timeout, and dagrun_timeout for MWAA.",
+    "should_trigger": true
+  },
+  {
+    "query": "Deploy a newly authored Python DAG to our MWAA environment's DagS3Path and verify the scheduler parsed it with zero import errors.",
+    "should_trigger": true
+  },
+  {
+    "query": "Build a scheduled data pipeline workflow on Amazon MWAA with least-privilege execution role IAM permissions.",
+    "should_trigger": true
+  },
+  {
+    "query": "Upgrade our Amazon MWAA environment from Apache Airflow 2.7.2 to Airflow 3.0 using a rehearsed in-place upgrade.",
+    "should_trigger": false
+  },
+  {
+    "query": "Diagnose why yesterday's run of our existing finance_recon DAG failed with a task zombie error in CloudWatch logs.",
+    "should_trigger": false
+  },
+  {
+    "query": "Smoke-test an already-deployed MWAA DAG by triggering a test run and checking task instance states.",
+    "should_trigger": false
+  },
+  {
+    "query": "Design an AWS Step Functions Distributed Map state machine to process 10,000 S3 objects in parallel with Lambda.",
+    "should_trigger": false
+  }
+]

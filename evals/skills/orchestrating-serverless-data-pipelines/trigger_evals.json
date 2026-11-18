@@ -1,0 +1,34 @@
+[
+  {
+    "query": "Design an AWS Step Functions state machine in ASL that orchestrates Glue startJobRun.sync, Glue Data Quality, Athena startQueryExecution.sync, and SNS failure alerts.",
+    "should_trigger": true
+  },
+  {
+    "query": "Configure an AWS Step Functions Distributed Map state (`Mode: DISTRIBUTED`) with S3 listObjectsV2 ItemReader and MaxConcurrency to process 100,000 Parquet files.",
+    "should_trigger": true
+  },
+  {
+    "query": "Set up an Amazon EventBridge Scheduler schedule and S3 Object Created rule with an SQS DLQ to trigger our serverless data lake pipeline.",
+    "should_trigger": true
+  },
+  {
+    "query": "Compare AWS Step Functions vs AWS Glue Workflows vs Amazon MWAA for orchestrating a serverless daily batch ETL pipeline.",
+    "should_trigger": true
+  },
+  {
+    "query": "Orchestrate an Amazon EMR Serverless application run (`emr-serverless:startJobRun.sync`) and Redshift Data API load using AWS Step Functions.",
+    "should_trigger": true
+  },
+  {
+    "query": "Upgrade an Amazon MWAA provisioned Apache Airflow 2.8 environment to Airflow 3.0.",
+    "should_trigger": false
+  },
+  {
+    "query": "Size an Amazon OpenSearch Service cluster for k-NN vector search.",
+    "should_trigger": false
+  },
+  {
+    "query": "Migrate a self-managed Apache Kafka cluster on EC2 to Amazon MSK Express.",
+    "should_trigger": false
+  }
+]

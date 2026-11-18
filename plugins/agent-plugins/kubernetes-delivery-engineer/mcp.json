@@ -1,0 +1,87 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "helm": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "talkops-helm-mcp-server==0.5.1",
+        "helm-mcp-server",
+        "--transport",
+        "stdio"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "MCP_ALLOW_WRITE": "false",
+        "HELM_CACHE_HOME": "${PLUGIN_DATA}/helm-cache",
+        "HELM_CONFIG_HOME": "${PLUGIN_DATA}/helm-config"
+      }
+    },
+    "argocd": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "run",
+        "--no-project",
+        "--quiet",
+        "python",
+        "${PLUGIN_ROOT}/scripts/launch_argocd_mcp.py",
+        "--from",
+        "talkops-argocd-mcp-server==0.4.1",
+        "argocd-mcp-server",
+        "--transport",
+        "stdio"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "MCP_ALLOW_WRITE": "false"
+      }
+    },
+    "argo-rollout": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "talkops-argo-rollout-mcp-server==0.2.1",
+        "argo-rollout-mcp-server",
+        "--transport",
+        "stdio"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "MCP_ALLOW_WRITE": "false"
+      }
+    },
+    "kargo": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "talkops-kargo-mcp-server==0.2.1",
+        "kargo-mcp-server",
+        "--transport",
+        "stdio"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "MCP_ALLOW_WRITE": "false"
+      }
+    },
+    "traefik": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "talkops-traefik-mcp-server==0.2.1",
+        "traefik-mcp-server",
+        "--transport",
+        "stdio"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "MCP_ALLOW_WRITE": "false"
+      }
+    }
+  }
+}

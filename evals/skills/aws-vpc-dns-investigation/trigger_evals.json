@@ -1,0 +1,99 @@
+{
+  "skill_name": "aws-vpc-dns-investigation",
+  "companion_skills": [
+    "route53",
+    "network-log-analyzer",
+    "aws-routing",
+    "configuring-vpc-endpoints-for-private-aws-service-access",
+    "aws-natgw-traffic-analysis"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Investigate why VPC DNS resolution in `vpc-0167f5c4bb94b89db` is returning NXDOMAIN and check `enableDnsSupport`, `enableDnsHostnames`, and DHCP options."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Simulate the VPC DNS blast radius before we add a Route 53 Resolver `FORWARD` rule for `.` and enable Private DNS on a VPC Interface Endpoint."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Check whether associating Route 53 Profile `rp-012345` or DNS Firewall with our VPC will break any currently resolving Private Hosted Zone or PrivateLink names."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Inside our staging subnet, `db.internal.corp` hangs and times out even though the Private Hosted Zone `internal.corp` is associated with the VPC, while `github.com` resolves fine."
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "After we turned on `PrivateDnsEnabled` for an endpoint on `api.vendor.io`, `auth.api.vendor.io` suddenly started returning `NXDOMAIN` from every EC2 instance in the VPC!"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "`secretsmanager.ap-south-1.amazonaws.com` resolves to public internet IPs from one EC2 instance in our VPC and private ENI IPs from another—why are they getting different answers?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "On our IPv6-only worker node `i-0abc1234`, `dig @169.254.169.253 internal.api AAAA` times out and `A` works while `AAAA` returns empty `NOERROR`. Diagnose the resolver and zone behavior."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Our VPC Lattice `ResourceConfiguration` shows `privateDnsEntry.domainName: billing.corp.internal` and `SNVA` has `ALL_DOMAINS`, yet pods in the consumer VPC still get `NXDOMAIN`."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Before change ticket CHG-4412 adds a hybrid `.corp` Resolver `FORWARD` rule in `ap-south-1`, predict whether `auth.corp` PHZ records will be shadowed or redirected."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "expected_alternative_skill": "network-log-analyzer",
+      "prompt": "VPC Flow Logs on `eni-0998877` show `ACCEPT` on TCP SYN to `10.20.4.15:5432` and `REJECT` on the return packet—tell me whether a Security Group or NACL dropped it."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "expected_alternative_skill": "aws-routing",
+      "prompt": "Why is AWS Transit Gateway preferring our remote `eu-west-1` Direct Connect VIF over `ap-south-1` and how do BGP communities `7224:7300` vs `7224:7100` change path selection?"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "expected_alternative_skill": "aws-natgw-traffic-analysis",
+      "prompt": "Analyze our NAT Gateway ENI flow logs in GB and % to see how much traffic is going to cross-region S3 buckets."
+    }
+  ]
+}

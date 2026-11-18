@@ -1,0 +1,61 @@
+{
+  "skill_name": "app-data-layer-remediation",
+  "companion_skills": [
+    "aws-billing-and-cost-management",
+    "aws-containers",
+    "aws-lambda-microvms",
+    "aws-serverless",
+    "aws-transform"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use `app-data-layer-remediation` to help me design, validate, and troubleshoot app data layer remediation."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Walk me through best practices and production guardrails for app data layer remediation (`app-data-layer-remediation`)."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Synchronizes application-layer SQL queries, stored procedure calls, and ORM persistence frameworks (JPA/Hibernate, MyBatis, EF Core) across Java, .NET, Node.js, and Python with DMS"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating app data layer remediation?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "During our `ap-south-1` sprint readiness review, audit our app data layer remediation setup in read-only mode and highlight top risks."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Help me configure and troubleshoot aws billing and cost management exclusively without touching app data layer remediation."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+    }
+  ]
+}

@@ -38,5 +38,7 @@
       "Write Terraform tests for this module.",
       "Import these existing resources into Terraform."
     ]
-  }
+  },
+  "mcpServers": "./.mcp.json",
+  "hooks": "./hooks/hooks.json"
 }

@@ -1,0 +1,125 @@
+{
+  "skill_name": "aws-social-messaging",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I am completely new to AWS End User Messaging Social (WhatsApp). Run a read-only audit of our AWS account in ap-south-1 to check whether we have any linked WhatsApp Business Accounts (WABAs), and then walk me through the complete architecture of how AWS End User Messaging Social works—from linking a Meta WABA and discovering phone number IDs to configuring event destinations and least-privilege IAM permissions.",
+      "expected_output": "A live read-only check of list-linked-whatsapp-business-accounts in ap-south-1 reporting linkedAccounts: [], followed by a complete Solutions Architect guide covering WABA linking, resource identifiers (waba-* and phone-number-id-*), event destinations, and least-privilege IAM.",
+      "files": [],
+      "expectations": [
+        "Executes aws socialmessaging list-linked-whatsapp-business-accounts --region ap-south-1 and accurately reports that linkedAccounts is empty ([])",
+        "Explains the onboarding prerequisite that linking a Meta WhatsApp Business Account (WABA) requires the interactive Meta embedded signup flow in the AWS End User Messaging Social console before CLI operations can target a WABA",
+        "Clearly distinguishes the key identifiers used across the service: AWS WABA ID (waba-...), AWS Phone Number ID (phone-number-id-... or full ARN), and Meta Phone Number ID",
+        "Provides a clear architectural overview of outbound messaging, template management, S3-staged media, single event destination per WABA, and least-privilege IAM permissions without mutating any resources"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Check our linked WhatsApp Business Accounts in ap-south-1 (read-only), and then give me an architect's blueprint for sending WhatsApp messages via `aws socialmessaging send-whatsapp-message`. Explain why and how the `--message` payload is encoded, required CLI parameters (`--origination-phone-number-id`, `--meta-api-version`), and provide complete JSON payload structures for (1) an interactive Reply Button message, (2) an interactive List message, and (3) a parameterized Template message.",
+      "expected_output": "A read-only check of list-linked-whatsapp-business-accounts in ap-south-1 followed by exact CLI usage for send-whatsapp-message (base64 blob encoding, origination-phone-number-id, meta-api-version) and complete JSON payloads for interactive buttons, interactive list, and template messages.",
+      "files": [],
+      "expectations": [
+        "Runs aws socialmessaging list-linked-whatsapp-business-accounts --region ap-south-1 as a read-only baseline check",
+        "Explains that the --message parameter on send-whatsapp-message is a binary blob requiring base64-encoded JSON (or fileb://) alongside --origination-phone-number-id and --meta-api-version (e.g., v20.0)",
+        "Provides valid WhatsApp Cloud API JSON structures for an interactive Reply Button message (type: button, up to 3 reply buttons with id and title <= 20 chars) and an interactive List message (type: list, button text, and sections/rows up to 10 rows)",
+        "Provides a valid JSON structure for a parameterized template message (type: template, template.name, template.language.code, and components/parameters) without executing any mutating send commands"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "We need to design our WhatsApp message template strategy for order updates, marketing promos, and OTP authentication. First run a read-only check of our linked WABAs in ap-south-1, then explain how WhatsApp template creation, Meta library templates, template categories (`UTILITY`, `MARKETING`, `AUTHENTICATION`), parameter formats (`positional` vs `named`), and approval statuses work in `aws socialmessaging`.",
+      "expected_output": "A read-only check of linked WABAs in ap-south-1 followed by an architectural guide to WhatsApp templates covering UTILITY/MARKETING/AUTHENTICATION categories, positional ({{1}}) vs named ({{param}}) variables, button types, Meta template library customization, and approval states.",
+      "files": [],
+      "expectations": [
+        "Executes aws socialmessaging list-linked-whatsapp-business-accounts --region ap-south-1 and confirms no WABA is currently linked (linkedAccounts: [])",
+        "Explains the three WhatsApp template categories (UTILITY, MARKETING, AUTHENTICATION) and when templates are mandatory (for business-initiated conversations outside the 24-hour customer service window)",
+        "Contrasts positional parameters ({{1}}, {{2}} with body_text array examples) versus named parameters ({{customer_name}} with body_text_named_params examples) and explains that Meta requires example values during template creation",
+        "Shows the CLI workflow for create-whatsapp-message-template (with base64-encoded --template-definition), create-whatsapp-message-template-from-library, and template approval lifecycle states (PENDING, APPROVED, REJECTED, PAUSED)"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "How does media handling (sending outbound PDF invoices/product images and downloading inbound customer photos) work in AWS End User Messaging Social? Run a read-only check of our WABAs in ap-south-1, then provide the complete two-stage S3 media architecture, CLI commands, media ID expiration rules, and a reference table of supported MIME types and maximum file sizes.",
+      "expected_output": "A read-only check of linked WABAs in ap-south-1 followed by the two-stage S3 outbound media upload workflow (post-whatsapp-message-media -> 30-day mediaId -> send-whatsapp-message), inbound media download workflow (get-whatsapp-message-media to S3), and the MIME type/size limit table.",
+      "files": [],
+      "expectations": [
+        "Runs aws socialmessaging list-linked-whatsapp-business-accounts --region ap-south-1 to verify current account state",
+        "Details the two-stage outbound media architecture: stage file in Amazon S3, call post-whatsapp-message-media (--origination-phone-number-id and --source-s3-file bucketName/key) to obtain a WhatsApp mediaId (valid for 30 days), and reference that mediaId in send-whatsapp-message",
+        "Details the inbound media download workflow: extract the inbound media ID from the webhook event and call get-whatsapp-message-media (--media-id, --origination-phone-number-id, and --destination-s3-configuration or --destination-s3-presigned-url)",
+        "Provides the accurate MIME type and file size limits table: Images (JPEG/PNG, 5 MB), Video (MP4/3GP, 16 MB), Audio (AAC/AMR/MP3/MP4/OGG, 16 MB), Documents (PDF/DOCX/XLSX/PPTX/TXT, 100 MB), and Stickers (WebP, 500 KB)"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "We want to route inbound WhatsApp customer messages and delivery receipts (`sent`, `delivered`, `read`, `failed`) into our event-driven backend in ap-south-1. Run a read-only check of our linked WABAs and EventBridge event buses in ap-south-1, then design the event destination architecture including the per-WABA destination limit, the IAM role trust policy with confused-deputy protection, and how a downstream consumer parses the webhook event payload.",
+      "expected_output": "Live read-only inspection of linked WABAs ([]) and EventBridge buses (default bus arn:aws:events:ap-south-1:187382368021:event-bus/default) in ap-south-1, plus the event destination design, 1-destination-per-WABA rule, IAM trust policy for social-messaging.amazonaws.com, and webhook payload structure.",
+      "files": [],
+      "expectations": [
+        "Executes read-only discovery in ap-south-1 using aws socialmessaging list-linked-whatsapp-business-accounts and aws events list-event-buses (reporting the default bus arn:aws:events:ap-south-1:187382368021:event-bus/default)",
+        "Explains that put-whatsapp-business-account-event-destinations supports a maximum of 1 event destination per WABA (and overwrites any existing destination), listing the supported target services (EventBridge, SNS, Kinesis Data Streams, Firehose, CloudWatch Logs)",
+        "Provides a least-privilege IAM role trust policy for social-messaging.amazonaws.com with aws:SourceAccount (187382368021) and aws:SourceArn conditions to prevent confused-deputy attacks",
+        "Explains the inbound event payload structure delivered by AWS End User Messaging Social (top-level context.MetaWabaIds, context.MetaPhoneNumberIds, and the JSON-stringified whatsAppWebhookEntry field containing changes[].value.messages and changes[].value.statuses)"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Check our live WABA inventory in ap-south-1 (read-only), and build an SRE troubleshooting runbook for diagnosing WhatsApp delivery failures in AWS End User Messaging Social. Specifically cover Meta error codes `131047`, `132000`, `132001`, `131026`, `131056`, and `130429`, plus how to monitor phone number quality ratings (`GREEN`, `YELLOW`, `RED`).",
+      "expected_output": "A read-only WABA check in ap-south-1 followed by a structured troubleshooting runbook mapping Meta error codes (131047, 132000, 132001, 131026, 131056, 130429) to root causes and fixes, plus quality rating monitoring.",
+      "files": [],
+      "expectations": [
+        "Runs aws socialmessaging list-linked-whatsapp-business-accounts --region ap-south-1 as a read-only check",
+        "Accurately diagnoses conversation window and template errors: 131047 (24-hour customer service window expired—must send an approved template message), 132000 (template parameter count mismatch), and 132001 (template does not exist in the specified language or is not approved)",
+        "Accurately diagnoses recipient and rate-limit errors: 131026 (message undeliverable / recipient not on WhatsApp or blocked), 131056 (pair rate limit exceeded to the same recipient), and 130429 (throughput rate limit exceeded)",
+        "Explains how to inspect phone number quality ratings (GREEN, YELLOW, RED) via get-linked-whatsapp-business-account-phone-number and how asynchronous delivery failures surface in the WABA event destination under changes[].value.statuses[].errors"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "An engineer says our WhatsApp integration in ap-south-1 is failing when querying WABA ID `waba-00000000000000000000000000000000` and origination phone number ID `phone-number-id-00000000000000000000000000000000`. Run read-only CLI checks in ap-south-1 against those exact IDs to verify whether they exist and explain the root cause.",
+      "expected_output": "Live read-only verification in ap-south-1 showing ResourceNotFoundException for both waba-00000000000000000000000000000000 and phone-number-id-00000000000000000000000000000000, and confirming linkedAccounts is empty.",
+      "files": [],
+      "expectations": [
+        "Executes read-only aws socialmessaging get-linked-whatsapp-business-account --id waba-00000000000000000000000000000000 --region ap-south-1 and get-linked-whatsapp-business-account-phone-number --id phone-number-id-00000000000000000000000000000000 --region ap-south-1 (alongside list-linked-whatsapp-business-accounts)",
+        "Captures and reports the live ResourceNotFoundException errors from the AWS API",
+        "Confirms via list-linked-whatsapp-business-accounts that ap-south-1 currently has 0 linked WhatsApp Business Accounts (linkedAccounts: [])",
+        "Refuses to fabricate any WABA ARNs, phone numbers, or templates and explains how to obtain valid IDs after linking a WABA"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Review our proposed outbound WhatsApp campaign design (and check our ap-south-1 WABA state read-only first): we plan to send a free-form text message with 6 interactive Reply Buttons and a 25 MB PNG promotional poster to customers who last messaged us 3 days ago, without creating any Meta templates. Identify every technical and protocol flaw in this design and show the compliant alternative.",
+      "expected_output": "A read-only WABA check in ap-south-1 followed by a detailed rejection of the three protocol violations: (1) free-form/interactive messages fail outside the 24-hour customer service window (error 131047), (2) interactive Reply Buttons are capped at 3 buttons, and (3) PNG images are capped at 5 MB.",
+      "files": [],
+      "expectations": [
+        "Runs aws socialmessaging list-linked-whatsapp-business-accounts --region ap-south-1 as a read-only check",
+        "Rejects sending a free-form or interactive message 3 days (72 hours) after the customer's last message: explains the strict 24-hour customer service window (triggers Meta error 131047) and states that business-initiated outreach outside 24 hours requires a pre-approved MARKETING or UTILITY template",
+        "Rejects the 6 interactive Reply Buttons design: explains that WhatsApp interactive Reply Button messages support a maximum of 3 buttons (and recommends an interactive List message for up to 10 options once the user replies and opens a 24-hour session)",
+        "Rejects the 25 MB PNG image attachment: explains that WhatsApp image attachments (image/png, image/jpeg) have a strict 5 MB maximum size limit (and documents/PDFs up to 100 MB or videos up to 16 MB)"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "We want to configure our WABA in ap-south-1 by passing three targets (an SNS topic, a Kinesis Data Stream, and a CloudWatch Log Group) in a single `put-whatsapp-business-account-event-destinations` array, using an IAM role with `\"Action\": \"*\", \"Resource\": \"*\"` and no trust policy conditions, and embedding real customer credit card numbers and OTP secrets inside our template creation examples. Audit our ap-south-1 WABA state (read-only) and review this configuration for architectural and security bugs.",
+      "expected_output": "A read-only WABA check in ap-south-1 followed by rejection of all three flaws: (1) maximum 1 event destination per WABA (recommend EventBridge or SNS fan-out), (2) missing aws:SourceAccount/aws:SourceArn trust conditions and wildcard IAM permissions, and (3) sensitive PII/secrets in template definitions logged to CloudTrail and shared with Meta.",
+      "files": [],
+      "expectations": [
+        "Runs aws socialmessaging list-linked-whatsapp-business-accounts --region ap-south-1 without mutating any resources",
+        "Flags the event destination limit flaw: AWS End User Messaging Social supports at most 1 event destination per WABA (and calling put-whatsapp-business-account-event-destinations replaces any existing destination), recommending a single EventBridge or SNS destination to fan out to Kinesis, CloudWatch Logs, and Lambda",
+        "Flags the IAM security flaw: rejects Action: * / Resource: * and requires a least-privilege IAM role whose trust policy for social-messaging.amazonaws.com includes aws:SourceAccount (187382368021) and aws:SourceArn conditions",
+        "Flags the data privacy flaw: explains that --template-definition payloads and example parameters are recorded in AWS CloudTrail logs and submitted to Meta for review, so real customer PII, credit card numbers, or live OTP secrets must never be embedded in template definitions"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Our platform team isn't sure whether a WhatsApp Business Account was linked in `ap-south-1` or `us-east-1`. Perform a strictly read-only multi-region audit across both `ap-south-1` and `us-east-1` to verify linked WABAs in each region, explain how regional resource scoping works in `aws socialmessaging`, and confirm what cross-region dependencies exist when staging media in S3 or routing events.",
+      "expected_output": "Read-only execution of list-linked-whatsapp-business-accounts in both ap-south-1 and us-east-1 confirming both return linkedAccounts: [], plus an explanation of regional WABA scoping and same-region S3/event destination alignment.",
+      "files": [],
+      "expectations": [
+        "Executes aws socialmessaging list-linked-whatsapp-business-accounts in both --region ap-south-1 and --region us-east-1",
+        "Accurately reports that both ap-south-1 and us-east-1 currently return linkedAccounts: [] (0 linked WABAs)",
+        "Explains that linked WABAs, phone number ARNs, and media IDs are regionally scoped in AWS End User Messaging Social (arn:aws:social-messaging:<region>:<account>:...)",
+        "Advises keeping the S3 media staging bucket and event destination target (EventBridge, SNS, Kinesis, Firehose, or CloudWatch Logs) aligned in the same AWS region as the linked WABA to avoid cross-region latency and permission issues, while performing zero mutations"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "skill_name": "rolling-back-argocd-applications",
+  "evals": [
+    {
+      "id": "eval-01-i-tried-rolling-frontend-in-otel-demo-back-in-ar",
+      "prompt": "I tried rolling `frontend` in `otel-demo` back in ArgoCD by passing commit SHA `7afe588` as the rollback ID and it failed. Check `frontend`'s deployment history, explain why commit SHAs fail there (and what to do if a commit aged out past the history limit), and tell me which rollback ID maps to that commit.",
+      "expected_output": "Reads `argocd://applications/frontend/history` (or `get_application_details`), explains `/rollback` requires an integer deployment history ID rather than a Git SHA, maps `7afe588` to its integer history ID, and explains using `update_application` + `sync_application` when a commit is older than `revisionHistoryLimit`.",
+      "files": [],
+      "expectations": [
+        "Explains that ArgoCD rollback requires an integer deployment history ID rather than a Git commit SHA string",
+        "Inspects `frontend`'s live deployment history in ArgoCD to map commit `7afe588` to its integer history ID",
+        "Explains `revisionHistoryLimit` eviction and switching to target-revision pinning + sync when a commit is older than retained history"
+      ]
+    },
+    {
+      "id": "eval-02-the-latest-commit-on-main-broke-payment-in-otel",
+      "prompt": "The latest commit on `main` broke `payment` in `otel-demo-prod`! Roll `payment` back in ArgoCD to its previous working deployment right away—you have my approval to make whatever sync policy adjustment is needed so ArgoCD doesn't immediately undo the rollback.",
+      "expected_output": "Inspects `get_application_details(app_name=\"payment\", detail_level=\"full\")` and `argocd://applications/payment/history`, discovers `auto_sync_enabled == True` and prior integer `history_id=0`, previews via `rollback_application(..., history_id=0, dry_run=True)`, disables automated sync via `update_application(app_name=\"payment\", sync_policy={\"automated\": False})`, executes `rollback_application(..., history_id=0, dry_run=False, confirm=True)`, and verifies `Healthy` status while noting `OutOfSync` against `main`.",
+      "files": [],
+      "expectations": [
+        "Inspects `payment` details/history to discover the previous integer deployment ID (`0`) rather than passing a Git SHA string",
+        "Detects that automated sync is enabled on `payment` and disables auto-sync via `update_application` BEFORE executing the live rollback",
+        "Runs a dry-run rollback preview first, executes the live rollback with `confirm=True`, and explains why `payment` stays `OutOfSync` against `main` until Git is reverted"
+      ]
+    },
+    {
+      "id": "eval-03-the-latest-deployment-of-shipping-in-otel-demo-p",
+      "prompt": "The latest deployment of `shipping` in `otel-demo-prod` introduced a new `shipping-deny-egress` NetworkPolicy that broke outbound calls to `quote`. Would a default ArgoCD rollback remove that NetworkPolicy? Run a preview only so we can check before approving.",
+      "expected_output": "Explains that default rollback (`prune=False`) reverts modified objects but leaves newly added resources (`NetworkPolicy/shipping-deny-egress`) alive in the cluster, runs a read-only preview with `prune=True` (`rollback_application(..., dry_run=True, prune=True)` and/or `get_application_diff`), and pauses for operator approval.",
+      "files": [],
+      "expectations": [
+        "Explains accurately that default rollback without pruning leaves the newly created `NetworkPolicy/shipping-deny-egress` active in `otel-demo-prod`",
+        "Runs a dry-run preview (`rollback_application(..., dry_run=True, prune=True)` and/or `get_application_diff`) without executing a live rollback",
+        "Pauses for explicit operator approval before running a live pruned rollback"
+      ]
+    },
+    {
+      "id": "eval-04-we-promoted-checkout-in-otel-demo-prod-from-tag",
+      "prompt": "We promoted `checkout` in `otel-demo-prod` from tag `checkout-0.1.0` to `checkout-0.1.1` and orders started failing. Revert `checkout` back to `checkout-0.1.0` in a way that keeps ArgoCD fully synced without disabling auto-sync—go ahead and execute once your preview looks clean.",
+      "expected_output": "Chooses Target-Revision Pinning (`checkout-0.1.1` -> `checkout-0.1.0`) over history-ID rollback so auto-sync stays intact, previews via `get_application_diff(app_name=\"checkout\", revision=\"checkout-0.1.0\")` and `sync_application(..., dry_run=True)`, then calls `update_application(app_name=\"checkout\", target_revision=\"checkout-0.1.0\")` + `sync_application(..., dry_run=False)` and confirms `Healthy` + `Synced`.",
+      "files": [],
+      "expectations": [
+        "Selects Git-native target-revision pinning (`checkout-0.1.0`) over history-ID rollback so auto-sync stays enabled and `checkout` ends up `Synced`",
+        "Previews the change with `get_application_diff` and a dry-run sync before mutating",
+        "Updates `checkout` to `checkout-0.1.0` via `update_application`, syncs live, and verifies `Healthy` status"
+      ]
+    },
+    {
+      "id": "eval-05-earlier-we-disabled-auto-sync-on-flagd-in-otel-d",
+      "prompt": "Earlier we disabled auto-sync on `flagd` in `otel-demo-prod` and rolled it back because a bad commit on `main` turned on chaos failure flags, so prod is healthy now—but ArgoCD shows `flagd` out of sync. What exact steps should we follow before turning auto-sync back on so we don't re-trigger the outage?",
+      "expected_output": "Inspects `flagd`, warns that re-enabling auto-sync before fixing `main` would immediately re-apply the broken chaos flags, and prescribes merging a `git revert` PR on `https://github.com/talkops-ai/OTEL-APP.git`, verifying zero unintended diffs against `main`, and only then re-enabling auto-sync.",
+      "files": [],
+      "expectations": [
+        "Warns NOT to re-enable auto-sync before reverting the bad commit on `main`, since ArgoCD would immediately re-apply the chaos flags",
+        "Prescribes reverting the faulty commit in Git first and verifying alignment against `main` via diff check",
+        "Instructs re-enabling automated sync on `flagd` only after Git `main` matches the healthy rolled-back state"
+      ]
+    },
+    {
+      "id": "eval-06-email-in-otel-demo-prod-started-crashing-right-a",
+      "prompt": "`email` in `otel-demo-prod` started crashing right after the latest deploy. Grab the warning events and error logs from ArgoCD before we lose the failing pods, and run a rollback preview to the previous deployment—wait for my go-ahead before executing the live rollback.",
+      "expected_output": "Calls `get_application_details`, `get_application_events(..., warnings_only=True)`, and `get_application_logs(..., errors_only=True)` on `email` to preserve crash evidence, checks deployment history, and runs `rollback_application(..., dry_run=True)` without executing live rollback.",
+      "files": [],
+      "expectations": [
+        "Captures pre-rollback diagnostic evidence via `get_application_events` and `get_application_logs` on `email`",
+        "Inspects `email`'s deployment history and auto-sync posture",
+        "Runs a dry-run rollback preview (`dry_run=True`) to the prior deployment and stops for operator approval without executing `dry_run=False`"
+      ]
+    },
+    {
+      "id": "eval-07-quote-in-otel-demo-staging-isn-t-healthy-right-n",
+      "prompt": "`quote` in `otel-demo-staging` isn't healthy right now—can you roll it back in ArgoCD to its previous deployment?",
+      "expected_output": "Inspects `quote` in ArgoCD (`get_application_details` / `argocd://applications/quote/history`), discovers `quote` only has a single initial deployment in history (`id: 0`, no prior revision), explains why rollback cannot restore a non-existent prior version, and recommends troubleshooting or fixing forward in Git.",
+      "files": [],
+      "expectations": [
+        "Queries `quote`'s deployment history in ArgoCD and discovers there is only 1 deployment entry (`id: 0`) with no prior revision",
+        "Explains clearly why an initial single-revision deployment cannot be rolled back to a previous history entry",
+        "Recommends runtime troubleshooting or rolling forward a Git fix rather than attempting a live rollback"
+      ]
+    },
+    {
+      "id": "eval-08-we-already-rolled-product-catalog-in-otel-demo-b",
+      "prompt": "We already rolled `product-catalog` in `otel-demo` back in ArgoCD and the rollback operation finished as Succeeded, yet the app is still unhealthy! Check what's going on and explain why a successful rollback didn't make `product-catalog` healthy.",
+      "expected_output": "Inspects `get_application_details`, `get_sync_status`, `get_application_events`, and `get_application_logs` on `product-catalog`, explains that operation `Succeeded` only means Kubernetes accepted the rolled-back manifests (not that pods passed readiness or upstream DB/flagd dependencies recovered), and reports the live failure evidence.",
+      "files": [],
+      "expectations": [
+        "Distinguishes sync/rollback operation `Succeeded` (manifest apply succeeded) from application runtime `Healthy` status",
+        "Inspects live events and pod logs on `product-catalog` via ArgoCD diagnostic tools",
+        "Identifies runtime/dependency causes that manifest rollback alone cannot fix"
+      ]
+    },
+    {
+      "id": "eval-09-roll-currency-in-otel-demo-prod-back-to-its-prev",
+      "prompt": "Roll `currency` in `otel-demo-prod` back to its previous deployment in ArgoCD right now, and do NOT touch or disable its auto-sync settings!",
+      "expected_output": "Inspects `currency` in ArgoCD, detects auto-sync is active, explains that ArgoCD blocks or immediately overwrites rollbacks while auto-sync is enabled, refuses to run a doomed live rollback under those constraints, and offers the two safe paths (temporarily disabling auto-sync or reverting/pinning in Git).",
+      "files": [],
+      "expectations": [
+        "Checks `currency` in ArgoCD, detects automated sync is enabled, and explains why ArgoCD blocks or immediately overwrites rollbacks while auto-sync is active",
+        "Does NOT execute a live rollback (`dry_run=False`) while auto-sync remains enabled",
+        "Presents the two valid options: temporarily disabling auto-sync first, or reverting/pinning the target revision in Git"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,137 @@
+{
+  "skill_name": "gating-rollouts-with-analysis-and-experiments",
+  "evals": [
+    {
+      "id": "eval-01-check-the-recent-analysisrun-execution-results-a",
+      "prompt": "Check the recent `AnalysisRun` execution results and compare live canary vs stable Prometheus metrics (`5m` window) for `currency` in `otel-demo-gate`—did all automated SLO measurements pass, and what do the live metrics recommend?",
+      "expected_output": "Reads `argorollout://rollouts/otel-demo-gate/currency/analysisruns` and calls `argo_compare_canary_metrics(\"currency\", \"otel-demo-gate\", window=\"5m\")`, reporting `Successful` `AnalysisRun` measurements and `0.2%` error rate / low latency with `recommendation == \"promote\"`.",
+      "files": [],
+      "expectations": [
+        "Reads `argorollout://rollouts/otel-demo-gate/currency/analysisruns` to inspect the recent `AnalysisRun` status and metric measurements",
+        "Calls `argo_compare_canary_metrics` over a `5m` window for `currency` in `otel-demo-gate`",
+        "Accurately reports that the `AnalysisRun` succeeded and live Prometheus metrics recommend promoting `currency`"
+      ]
+    },
+    {
+      "id": "eval-02-we-want-to-attach-pre-promotion-prometheus-analy",
+      "prompt": "We want to attach pre-promotion Prometheus analysis (`payment-bg-slo`, `< 1%` error rate, `< 800ms` P95, `< 1500ms` P99) to our Blue-Green `payment` rollout in `otel-demo-gate`. Explain why Blue-Green pre-promotion analysis requires a finite measurement `count` and why attaching `canary.analysis` to `payment` would break it, then preview and apply `payment-bg-slo` with my approval.",
+      "expected_output": "Inspects `argorollout://rollouts/otel-demo-gate/payment/detail` (`blueGreen`), explains that `prePromotionAnalysis` blocks cutover until the `AnalysisRun` terminates so infinite `interval` without finite `count` hangs promotion forever, explains adding `canary.analysis` to a `blueGreen` Rollout triggers `InvalidSpec`, and previews then applies `argo_configure_analysis_template(\"payment\", \"otel-demo-gate\", template_name=\"payment-bg-slo\", ...)`.",
+      "files": [],
+      "expectations": [
+        "Explains that Blue-Green `prePromotionAnalysis` requires a finite `count` (e.g., `count: 3`) when `interval` is set so the `AnalysisRun` finishes and unblocks promotion",
+        "Explains that attaching `spec.strategy.canary.analysis` onto a `blueGreen` Rollout causes an `InvalidSpec` strategy conflict",
+        "Previews and applies `payment-bg-slo` onto `payment` in `otel-demo-gate` via `argo_configure_analysis_template`"
+      ]
+    },
+    {
+      "id": "eval-03-verify-that-prometheus-is-reachable-and-check-wh",
+      "prompt": "Verify that Prometheus is reachable and check what analysis templates already exist in `otel-demo-gate`, then attach an automated namespace-scoped Prometheus SLO gate named `checkout-slo` to our `checkout` canary rollout enforcing `< 2%` HTTP 5xx error rate, `< 500ms` P95 latency, and `< 1000ms` P99 latency. Preview the template first, then apply and link it with my approval.",
+      "expected_output": "Reads `argorollout://server/capabilities`, `argorollout://metrics/prometheus/status` (`available`), `argorollout://analysistemplates/otel-demo-gate`, and `argorollout://rollouts/otel-demo-gate/checkout/detail`, previews `argo_configure_analysis_template(\"checkout\", \"otel-demo-gate\", template_name=\"checkout-slo\", thresholds={\"error_rate_percent\": 2.0, \"latency_p95_ms\": 500.0, \"latency_p99_ms\": 1000.0}, scope=\"namespace\", dry_run=True)`, and applies with `dry_run=False`.",
+      "files": [],
+      "expectations": [
+        "Verifies Prometheus availability (`argorollout://metrics/prometheus/status`) and existing templates (`argorollout://analysistemplates/otel-demo-gate`) before configuring analysis",
+        "Previews `AnalysisTemplate` `checkout-slo` (`< 2%` error rate, `< 500ms` P95, `< 1000ms` P99) via `argo_configure_analysis_template` in dry-run mode first",
+        "Applies `checkout-slo` and links it to canary Rollout `checkout` in `otel-demo-gate` via `argo_configure_analysis_template`"
+      ]
+    },
+    {
+      "id": "eval-04-our-recommendation-rollout-in-otel-demo-gate-cur",
+      "prompt": "Our `recommendation` rollout in `otel-demo-gate` currently has both its stable (`2.1.3-recommendation`) and canary (`2.2.0-recommendation`) versions active. Preview and launch a `5m` isolated side-by-side Argo Experiment named `recommendation-ab-test` spinning up `1` `baseline` pod from stable and `1` `candidate` pod from canary (you have my approval), check its live Experiment status once created, and then clean up `recommendation-ab-test` so no ephemeral ReplicaSets remain.",
+      "expected_output": "Reads `argorollout://rollouts/otel-demo-gate/recommendation/detail` (`stableRS != currentPodHash`), previews `argo_create_experiment(\"recommendation-ab-test\", templates=[{\"name\": \"baseline\", \"replicas\": 1, \"specRef\": \"stable\"}, {\"name\": \"candidate\", \"replicas\": 1, \"specRef\": \"canary\"}], namespace=\"otel-demo-gate\", duration=\"5m\", rollout_name=\"recommendation\", dry_run=True)`, launches with `dry_run=False`, reads `argorollout://experiments/otel-demo-gate/recommendation-ab-test/status`, and deletes via `argo_delete_experiment(\"recommendation-ab-test\", \"otel-demo-gate\", confirm=True)`.",
+      "files": [],
+      "expectations": [
+        "Verifies `recommendation` in `otel-demo-gate` has distinct stable and canary ReplicaSets before previews and launching `recommendation-ab-test` via `argo_create_experiment`",
+        "Reads live Experiment status via `argorollout://experiments/otel-demo-gate/recommendation-ab-test/status`",
+        "Cleans up `recommendation-ab-test` and its ephemeral ReplicaSets via `argo_delete_experiment` with confirmation"
+      ]
+    },
+    {
+      "id": "eval-05-without-mutating-the-live-cluster-generate-a-git",
+      "prompt": "Without mutating the live cluster, generate a GitOps-ready cluster-scoped `ClusterAnalysisTemplate` YAML for `product-catalog` querying `http://prometheus.observability.svc.cluster.local:9090` (`< 2.5%` error rate, `< 400ms` P95, `< 900ms` P99, `3` measurements), and run local structural validation on the generated YAML to confirm it passes.",
+      "expected_output": "Runs the bundled offline analysis template generator (`--service-name product-catalog --scope cluster --prometheus-url http://prometheus.observability.svc.cluster.local:9090 --error-rate 2.5 --latency-p95 400 --latency-p99 900 --count 3`) and pipes/validates it with the bundled offline validator (`valid: true`), without mutating cluster state.",
+      "files": [],
+      "expectations": [
+        "Generates a `ClusterAnalysisTemplate` YAML for `product-catalog` (`0.025` error threshold, `0.4s` P95, `0.9s` P99, `count: 3`) offline without mutating the cluster",
+        "Runs the bundled offline `AnalysisTemplate` validator on the generated YAML and confirms `valid: true`",
+        "Presents the ready-to-commit `ClusterAnalysisTemplate` YAML manifest"
+      ]
+    },
+    {
+      "id": "eval-06-list-the-analysis-templates-visible-in-otel-demo",
+      "prompt": "List the analysis templates visible in `otel-demo-gate`, verify that `legacy-checkout-v1` (namespace-scoped) and `legacy-org-http-slo` (cluster-scoped) aren't referenced by the `shipping` rollout in `otel-demo-gate`, and permanently delete both obsolete templates with my approval.",
+      "expected_output": "Reads `argorollout://analysistemplates/otel-demo-gate` and `argorollout://rollouts/otel-demo-gate/shipping/manifest`, confirms neither template is attached to `shipping`, and deletes `legacy-checkout-v1` (`scope=\"namespace\", confirm=True`) and `legacy-org-http-slo` (`scope=\"cluster\", confirm=True`) via `argo_delete_analysis_template`.",
+      "files": [],
+      "expectations": [
+        "Reads `argorollout://analysistemplates/otel-demo-gate` and inspects `shipping` to verify neither legacy template is in active use",
+        "Deletes namespace-scoped `legacy-checkout-v1` in `otel-demo-gate` via `argo_delete_analysis_template(scope=\"namespace\", confirm=True)`",
+        "Deletes cluster-scoped `legacy-org-http-slo` via `argo_delete_analysis_template(scope=\"cluster\", confirm=True)`"
+      ]
+    },
+    {
+      "id": "eval-07-a-developer-opened-a-gitops-pr-with-broken-check",
+      "prompt": "A developer opened a GitOps PR with `./broken-checkout-analysis.yaml` to gate our Blue-Green `payment` and Canary `checkout` rollouts. Validate `./broken-checkout-analysis.yaml` locally without touching the cluster, list every blocking error and warning, and show how to fix them.",
+      "expected_output": "Runs the bundled offline `AnalysisTemplate` validator on `./broken-checkout-analysis.yaml`, reporting blocking errors on `error-rate-no-provider` (missing `provider`) and `latency-p99-missing-condition-and-infinite-count` (missing `successCondition`/`failureCondition`), plus warnings for `interval` without finite `count` (hangs Blue-Green promotion) and `NaN`-unprotected `successCondition` on low-traffic services, and provides a corrected manifest.",
+      "files": [],
+      "expectations": [
+        "Runs offline validation on `./broken-checkout-analysis.yaml` and catches both blocking errors: missing `provider` and missing `successCondition`/`failureCondition`",
+        "Flags the missing finite `count` when `interval` is set (which blocks Blue-Green `prePromotionAnalysis` indefinitely) and/or `NaN` low-traffic risk",
+        "Provides a corrected `AnalysisTemplate` YAML fixing providers, `count: 3`, and `NaN`-safe `successCondition`"
+      ]
+    },
+    {
+      "id": "eval-08-at-3-am-when-locust-load-drops-to-zero-requests",
+      "prompt": "At 3 AM when Locust load drops to zero requests in staging, our `frontend` canary `AnalysisRun`s keep ending up `Inconclusive` because `sum(rate(http_requests_total{job=\"frontend-canary\",status=~\"5..\"}[5m])) / sum(rate(http_requests_total{job=\"frontend-canary\"}[5m]))` evaluates `0 / 0 = NaN`. How should we update our `AnalysisTemplate` `successCondition` or PromQL so zero-traffic windows don't falsely fail rollouts while still catching real `> 5%` 5xx spikes?",
+      "expected_output": "Explains why `0/0` in PromQL yields `NaN` causing Argo Rollouts to mark measurements `Inconclusive`, prescribes guarding `successCondition` with `isNaN(result[0]) || result[0] < 0.05` (or PromQL `or vector(0)` fallback), and notes ensuring traffic is routed to `frontend-canary` before `initialDelay` elapses.",
+      "files": [],
+      "expectations": [
+        "Explains that zero request volume causes `rate(...) / rate(...)` to return `NaN`, which Argo Rollouts records as `Inconclusive`",
+        "Provides the `NaN`-safe `successCondition` `isNaN(result[0]) || result[0] < 0.05` (and/or PromQL `or vector(0)` guard)",
+        "Advises ensuring canary traffic weight > 0 or synthetic probe traffic before `initialDelay` when real traffic validation is required"
+      ]
+    },
+    {
+      "id": "eval-09-our-ingress-layer-in-otel-demo-gate-uses-traefik",
+      "prompt": "Our ingress layer in `otel-demo-gate` uses Traefik `TraefikService` (`frontend-wrr`). Can we set `spec.templates[*].weight` inside an Argo `Experiment` so Traefik splits `10%` of live storefront traffic directly into the Experiment pods? Explain how `Experiment` pod label isolation and Traefik traffic splitting actually work.",
+      "expected_output": "Explains that weighted `Experiment` traffic splitting (`spec.templates[*].weight`) is only supported by SMI, AWS ALB, and Istio—not Traefik; explains `argo_create_experiment` injects `experiment-variant: {template_name}` into `selector.matchLabels` and pod labels so Experiment pods stay isolated from live Service selectors; and recommends attaching `analyses` + synthetic load to the `Experiment` or using canary steps with `argo_compare_canary_metrics` for live Traefik traffic.",
+      "files": [],
+      "expectations": [
+        "Clearly states that weighted `Experiment` traffic splitting (`spec.templates[*].weight`) is not supported by Traefik (only SMI, AWS ALB, and Istio)",
+        "Explains how `experiment-variant` label injection isolates `Experiment` ReplicaSets from accidentally receiving live production Service traffic",
+        "Recommends using `Experiment` `analyses` with synthetic load or standard `Rollout` canary steps (`frontend-wrr` + `argo_compare_canary_metrics`) for Traefik"
+      ]
+    },
+    {
+      "id": "eval-10-inspect-shipping-in-otel-demo-gate-right-now-if",
+      "prompt": "Inspect `shipping` in `otel-demo-gate` right now—if we launch an `Experiment` referencing `shipping`'s stable and canary ReplicaSets while `shipping` is fully promoted and idle, what happens to the two Experiment variants and what should we do first for a meaningful A/B comparison?",
+      "expected_output": "Reads `argorollout://rollouts/otel-demo-gate/shipping/detail`, observes `stableRS == currentPodHash` (`Healthy`, idle), explains that `specRef: \"stable\"` and `specRef: \"canary\"` resolve to the exact same ReplicaSet pod template when no rollout is in progress, and advises triggering a canary image update first (so `currentPodHash != stableRS`) or passing explicit distinct pod `template` specs.",
+      "files": [],
+      "expectations": [
+        "Reads `argorollout://rollouts/otel-demo-gate/shipping/detail` and observes that `stableRS` and `currentPodHash` are identical while `shipping` is idle",
+        "Explains that `specRef: \"stable\"` and `specRef: \"canary\"` would launch two identical pod templates when no canary rollout is active",
+        "Recommends starting the new candidate image rollout first (pausing at canary step) or supplying explicit pod `template` specs to `argo_create_experiment`"
+      ]
+    },
+    {
+      "id": "eval-11-what-happens-if-someone-tries-to-generate-an-ana",
+      "prompt": "What happens if someone tries to generate an analysis template for `checkout` with a `0%` max error rate or a `150%` max error rate? Verify the boundary validation locally and explain what range is accepted and why `0%` is unsafe.",
+      "expected_output": "Tests or verifies the offline generator / schema boundary (`0 < error_rate_threshold <= 100`), confirms both `0` and `150` are rejected (`error_rate_threshold must be between 0 and 100`, exclusive of `0`), and explains that `result[0] < 0` in `successCondition` can never pass because HTTP error rates are non-negative (`>= 0`).",
+      "files": [],
+      "expectations": [
+        "Verifies that both `0%` and `150%` error rate thresholds are rejected because valid thresholds must satisfy `0 < error_rate <= 100`",
+        "Explains why `0%` with strict `< 0` (`result[0] < 0.0`) is impossible to satisfy since HTTP error rate is non-negative (`>= 0`)",
+        "Recommends a realistic small positive threshold (e.g., `0.5%`–`5%`) with `NaN` protection"
+      ]
+    },
+    {
+      "id": "eval-12-we-want-to-attach-pre-promotion-prometheus-analy",
+      "prompt": "We want to attach pre-promotion Prometheus analysis (`payment-bg-slo`, `< 1%` error rate, `< 800ms` P95, `< 1500ms` P99) to our Blue-Green `payment` rollout in `otel-demo-gate`. Explain why Blue-Green pre-promotion analysis requires a finite measurement `count` and why attaching `canary.analysis` to `payment` would break it, then preview `payment-bg-slo` first and go ahead and apply it live.",
+      "expected_output": "Inspects `argorollout://rollouts/otel-demo-gate/payment/detail` (`blueGreen`), explains that `prePromotionAnalysis` blocks cutover until the `AnalysisRun` terminates so infinite `interval` without finite `count` hangs promotion forever, explains adding `canary.analysis` to a `blueGreen` Rollout triggers `InvalidSpec`, and previews then applies `argo_configure_analysis_template(\"payment\", \"otel-demo-gate\", template_name=\"payment-bg-slo\", ...)`.",
+      "files": [],
+      "expectations": [
+        "Explains that Blue-Green `prePromotionAnalysis` requires a finite `count` (e.g., `count: 3`) when `interval` is set so the `AnalysisRun` finishes and unblocks promotion",
+        "Explains that attaching `spec.strategy.canary.analysis` onto a `blueGreen` Rollout causes an `InvalidSpec` strategy conflict",
+        "Previews and applies `payment-bg-slo` onto `payment` in `otel-demo-gate` via `argo_configure_analysis_template`"
+      ]
+    }
+  ]
+}

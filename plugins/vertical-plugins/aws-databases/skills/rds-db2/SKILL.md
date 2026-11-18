@@ -3,6 +3,7 @@ name: rds-db2
 version: 2
 description: Provisions, connects, migrates, and operates Amazon RDS for Db2. Applies when provisioning with IBM customer and site IDs (License Manager, BYOL, GovCloud), connecting over TLS, fixing SQL30082N after Secrets Manager rotation, migration from Db2 LUW (Linux, AIX, Windows, AS400) or z/OS mainframe (ADB2GEN, Q Replication), choosing code page/collation (EBCDIC, CCSID), S3 backup/restore, Multi-AZ and cross-region standby replicas, RDSADMIN procedures, customer-managed KMS BYOK, self-managed Active Directory Kerberos, Db2 audit to S3, minimum IAM, or colocation.
 ---
+
 # Amazon RDS for Db2
 
 ## Overview
@@ -229,10 +230,10 @@ The authoritative list of published RDS for Db2 blogs and sample tools is mainta
 
 ## Handoff from aws-database-selection
 
-This skill can be invoked directly, or it can be entered from the `aws-database-selection` parent skill after that skill has run a requirements interview and produced a `requirements.json` artifact. When you see a backtick-wrapped path matching `aws_dbs_requirements/*/requirements.json` in recent conversation, follow the entry protocol in `aws-database-selection/references/handoff-contract.md`:
+This skill can be invoked directly, or it can be entered from the `aws-database-selection` parent skill after that skill has run a requirements interview and produced a `requirements.json` artifact. When you see a backtick-wrapped path matching `aws_dbs_requirements/*/requirements.json` in recent conversation, follow the entry protocol in `aws-database-selection/handoff-contract.md`:
 
 1. Read the artifact using `file_read`.
-2. Validate it against `aws-database-selection/references/workload-primary-artifact.schema.json`. If malformed or unreadable, tell the user and proceed without it.
+2. Validate it against `aws-database-selection/workload-primary-artifact.schema.json`. If malformed or unreadable, tell the user and proceed without it.
 3. Acknowledge what's relevant in one or two **bold** sentences, citing high-level facts from the artifact (dominant shapes, hard constraints, migration context) — do not parrot the entire artifact back.
 4. Scope-check: this skill is scoped to Amazon RDS for Db2 — migrations from Db2 z/OS or LUW, HADR, standby replicas, SQL PL routines, Q Replication cutovers. If the artifact's `workload_primaries.dominant_shapes` or `migration_context` don't match that scope, emit weak backpressure per the handoff contract: suggest `amazon-aurora` for refactor-to-PostgreSQL from Db2, or go back to `aws-database-selection` if Db2 isn't the source, then ask the user whether to go back or proceed anyway. Do not silently misuse the artifact.
 5. Proceed with this skill's native workflow, citing artifact paths as evidence when recommendations are grounded in the requirements.

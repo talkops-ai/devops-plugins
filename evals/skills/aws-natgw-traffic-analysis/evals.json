@@ -1,0 +1,118 @@
+{
+  "skill_name": "aws-natgw-traffic-analysis",
+  "evals": [
+    {
+      "id": "eval-01-live-ap-south-1-natgw-and-flow-log-audit-zero-dollar-rule",
+      "prompt": "Check our ap-south-1 AWS environment in read-only mode to see if we have any NAT Gateways, NAT Gateway ENI VPC Flow Logs, S3/DynamoDB Gateway Endpoints, or Elastic IPs, and tell me how many dollars per month we are wasting on NAT Gateway right now.",
+      "expected_output": "Activates aws-natgw-traffic-analysis, queries ap-south-1 NAT Gateways, Flow Logs, VPC Endpoints, and Elastic IPs via connected MCP tools (aws-mcp aws___run_script / cloudwatch / awsnetwork) without raw shell CLI commands, accurately reports 0 NAT Gateways, 0 Flow Logs, 0 VPC Endpoints, and 0 Elastic IPs in ap-south-1 without fabricating resources, enforces the strict NO-DOLLAR-FIGURES rule (refusing to output dollar figures and stating the GB × rate formula instead), and includes the data-window disclaimer and 'What We Cannot Determine' limitations block.",
+      "files": [],
+      "expectations": [
+        "Activates the aws-natgw-traffic-analysis skill and inspects ap-south-1 NAT Gateways, Flow Logs, VPC Endpoints, and Elastic IPs exclusively via connected MCP tools without running raw `aws` CLI shell commands",
+        "Accurately reports `0` NAT Gateways, `0` VPC Flow Logs, `0` VPC Endpoints, and `0` Elastic IPs in ap-south-1 without fabricating resources or traffic numbers",
+        "Enforces the strict zero-dollar rule: outputs **no dollar figures** (no `$` totals, estimates, or per-GB prices even though the user asked for dollars) and provides the symbolic formula (`GB × NAT rate − replacement path rate`)",
+        "Includes the mandatory limitations block ('What we cannot determine') and read-only validation commands"
+      ]
+    },
+    {
+      "id": "eval-02-flow-log-categorization-cross-region-s3-and-copyobject-gate",
+      "prompt": "Over a 14-day window (`2026-11-01` to `2026-11-14`), our NAT Gateway ENI (`eni-0nat999` in `ap-south-1`, public EIP `13.232.100.50`) processed `10,000 GB` total outbound traffic across four destination groups:\n1) `4,500 GB` to IPs matching `com.amazonaws.ap-south-1.s3` (`52.219.64.0/22` — only 1 of our 3 private route tables has our `ap-south-1` S3 Gateway Endpoint attached)\n2) `3,000 GB` to IPs matching `com.amazonaws.us-east-1.s3` (`52.216.0.0/15` — our ETL jobs also run cross-region `s3:CopyObject` and `UploadPartCopy` from `us-east-1` buckets into `ap-south-1`)\n3) `1,500 GB` to `65.0.44.12`, which `describe-addresses` shows is an Elastic IP on our own public-facing RDS/ALB in a peered VPC in `ap-south-1`\n4) `1,000 GB` to Fastly/GitHub CDN IPs (`151.101.1.194`).\nProduce the full NAT Gateway traffic categorization report in GB and % (including how much we save in dollars!), diagnose each bucket, and evaluate whether a Cross-Region S3 Interface Endpoint is safe to recommend here.",
+      "expected_output": "Activates aws-natgw-traffic-analysis, categorizes all 10,000 GB (45% same-region `ap-south-1` S3, 30% cross-region `us-east-1` S3, 15% customer-owned EIP `65.0.44.12`, 10% third-party CDN = 100%) with **zero dollar figures**, diagnoses missing S3 Gateway Endpoint route associations on 2 of 3 private route tables for bucket 1, explains Gateway Endpoints are same-region only for bucket 2 AND warns that a Cross-Region S3 Interface Endpoint with Private DNS **breaks cross-region `CopyObject`/`UploadPartCopy` VPC-wide across all public & private subnets** (recommending S3 CRR + local reads or MRAP instead, and noting `CopyObject` payload bytes never cross NAT!), diagnoses public-IP hairpinning bypassing VPC Peering for bucket 3, and includes the 14-day data-window disclaimer and mandatory limitations block.",
+      "files": [],
+      "expectations": [
+        "Activates the aws-natgw-traffic-analysis skill and presents a 4-category table totaling `10,000 GB` (`4,500 GB / 45%` `ap-south-1` S3, `3,000 GB / 30%` `us-east-1` S3, `1,500 GB / 15%` customer-owned EIP, `1,000 GB / 10%` third-party CDN) with **zero dollar figures** anywhere in the response",
+        "Explains that S3 Gateway Endpoints are strictly same-region (so `us-east-1` S3 traffic bypassing the `ap-south-1` Gateway Endpoint is expected behavior, while the `4,500 GB` `ap-south-1` S3 leak is caused by missing `pl-*` routes on 2 of the 3 private route tables)",
+        "Applies Hard Rule 3 & Hard Rule 4 on the `us-east-1` S3 traffic: warns that enabling a Cross-Region S3 Interface Endpoint with Private DNS **breaks cross-region `CopyObject`/`UploadPartCopy` across the entire VPC (public and private subnets)**, recommends S3 Cross-Region Replication (CRR) + local reads or Multi-Region Access Points (MRAP) instead, and notes that `CopyObject` payload data never traverses NAT Gateway",
+        "Includes both the 14-day data-window representativeness disclaimer (`Weekday/weekend traffic patterns may vary 2-3x`) and the mandatory 'What we cannot determine' limitations block"
+      ]
+    },
+    {
+      "id": "eval-03-instance-eni-flow-logs-invalid-source-trap",
+      "prompt": "I exported 7 days of VPC Flow Logs from our busiest EKS worker node's primary ENI (`eni-0worker123`) showing `8,200 GB` sent to `com.amazonaws.ap-south-1.s3` IPs, and my manager thinks all `8,200 GB` went through our NAT Gateway! Why can't instance-ENI flow logs tell us what crossed our NAT Gateway, which exact ENI must we query instead, and why can't NAT Gateway flow logs tell us which EKS pod generated the traffic?",
+      "expected_output": "Activates aws-natgw-traffic-analysis, applies Hard Rule 5 (instance-ENI flow logs capture ALL traffic leaving the instance—including free traffic intercepted by an S3 Gateway Endpoint—and therefore cannot measure NAT Gateway traversal), specifies querying flow logs filtered to `interface-id = <nat-gateway-eni>` (obtained via `describe-nat-gateways`), and applies Hard Rule 7 (NAT Gateway ENI flow logs show the NAT Gateway's own IP as source, masking the originating pod/container/instance inside the VPC), including the limitations block and zero dollar figures.",
+      "files": [],
+      "expectations": [
+        "Activates the aws-natgw-traffic-analysis skill and contains zero dollar figures",
+        "Explains Hard Rule 5: worker/instance ENI flow logs (`eni-0worker123`) record all outbound instance traffic—including bytes routed for free through an S3 Gateway Endpoint—and therefore cannot determine what traversed the NAT Gateway",
+        "Specifies locating the NAT Gateway's own ENI via `describe-nat-gateways` and filtering flow-log queries to `interface-id = <nat-gateway-eni>`, while explaining Hard Rule 7 (NAT Gateway flow logs show the NAT Gateway's own IP as source and cannot identify the specific EKS pod or container)"
+      ]
+    },
+    {
+      "id": "eval-04-ecr-image-pull-s3-layer-trap-and-interface-endpoint-checks",
+      "prompt": "Our private-subnet ECS and EKS clusters in ap-south-1 already have Interface VPC Endpoints for `com.amazonaws.ap-south-1.ecr.api` and `com.amazonaws.ap-south-1.ecr.dkr`, yet NAT Gateway ENI flow logs still show `6,400 GB` (`80%` of NAT traffic) going to AWS IPs every time deployments pull container images, plus `1,600 GB` (`20%`) going to generic `AMAZON` IP ranges (`pkt-dst-aws-service = AMAZON`). Explain why ECR pulls are still traversing NAT, why we cannot identify the `1,600 GB` API service from `ip-ranges.amazonaws.com` or `pkt-dst-aws-service` alone, and how to check both.",
+      "expected_output": "Activates aws-natgw-traffic-analysis, explains Hard Rule 11: `ecr.api` and `ecr.dkr` only serve auth/manifest control-plane calls whereas **actual ECR container image layer blobs are stored in Amazon S3** (so without a `com.amazonaws.ap-south-1.s3` Gateway Endpoint on the private route tables—or if `PrivateDnsEnabled` / VPC `enableDnsSupport`+`enableDnsHostnames` / workload AZ endpoint subnet is missing—pulls hit NAT), and applies Hard Rules 12–14: label generic `AMAZON` IPs `'AWS (service unidentified)'` and query CloudTrail (`sourceIPAddress` = NAT public EIP grouped by `eventSource`) noting CloudTrail gives API call counts rather than exact bytes, with zero dollar figures.",
+      "files": [],
+      "expectations": [
+        "Activates the aws-natgw-traffic-analysis skill and outputs zero dollar figures",
+        "Explains that ECR container image layer bytes are fetched from **Amazon S3** (requiring the `com.amazonaws.ap-south-1.s3` Gateway Endpoint on every private workload route table in addition to `ecr.api`/`ecr.dkr`), and also checks the three Interface Endpoint bypass causes (`PrivateDnsEnabled=false`, VPC `enableDnsSupport`/`enableDnsHostnames=false`, or missing endpoint subnet in the workload's AZ)",
+        "Applies Hard Rules 12–14: refuses to guess specific AWS API services from generic `AMAZON` IP ranges or `pkt-dst-aws-service` tags, labels them `'AWS (service unidentified)'`, and uses CloudTrail (`sourceIPAddress` = NAT EIP grouped by `eventSource`) while noting CloudTrail yields call counts rather than byte volumes"
+      ]
+    },
+    {
+      "id": "eval-05-rds-public-ip-hairpinning-and-peering-unused-trap",
+      "prompt": "NAT Gateway ENI flow logs in ap-south-1 show `2,100 GB` (`70%` of total `3,000 GB` over 10 days) sent to TCP port `5432` on public IP `13.127.88.40` (with `900 GB` / `30%` to third-party APIs). VPC Peering (`pcx-0abc123`) is `active` between our app VPC and our data VPC, and `describe-network-interfaces` on `13.127.88.40` shows `RequesterId: amazon-rds` and `Description: RDSNetworkInterface` in the data VPC! Explain why traffic is crossing NAT despite active VPC Peering, what known limitation exists when tracing an RDS ENI back to a DB instance name, and compare private-path options.",
+      "expected_output": "Activates aws-natgw-traffic-analysis, applies Hard Rule 8 (active VPC Peering is bypassed whenever an application connects to a public IP or when the RDS DNS hostname resolves publicly instead of privately, or if a subnet route table lacks the peering route), explains how to enable private DNS resolution over VPC Peering (`AllowDnsResolutionFromRemoteVpc`) + disable `PubliclyAccessible` + check subnet route tables, notes the documented limitation that `describe-network-interfaces` on an `RDSNetworkInterface` does not directly expose the `DBInstanceIdentifier` (requiring `rds:DescribeDBInstances` endpoint/subnet correlation), and outputs zero dollar figures + mandatory disclaimers.",
+      "files": [],
+      "expectations": [
+        "Activates the aws-natgw-traffic-analysis skill and outputs zero dollar figures",
+        "Explains Hard Rule 8: active VPC Peering (`pcx-0abc123`) is bypassed when the RDS endpoint resolves to its public IP `13.127.88.40` (sending traffic to `0.0.0.0/0 -> NAT Gateway`) or when specific private subnet route tables omit the peer CIDR route",
+        "Notes the RDS tracing limitation (`RDSNetworkInterface` ENI metadata does not directly include the RDS instance identifier, requiring `rds:DescribeDBInstances` correlation) and compares remediation options (enabling DNS resolution over VPC Peering `AllowDnsResolutionFromRemoteVpc` + routing peer CIDRs + disabling `PubliclyAccessible`, vs PrivateLink)",
+        "Includes the 10-day data-window disclaimer and mandatory limitations block"
+      ]
+    },
+    {
+      "id": "eval-06-rfc1918-initiator-and-pipe-delimited-aggregation-artifact",
+      "prompt": "Someone ran an incorrect aggregation script on bidirectional NAT Gateway ENI (`10.0.1.25`) flow logs over 7 days and handed us rows like `10.0.1.25|52.219.66.10 -> 1,200 GB` alongside rows listing RFC1918 private address `10.0.1.25` as a 'destination IP' accounting for `1,150 GB` (`49%` of NAT destinations!). Explain why RFC1918 `10.0.1.25` appeared as `dstaddr`, how the `src|dst` pipe-delimited artifact and return-traffic bytes must be handled during categorization, and verify `52.219.66.10` against AWS-managed prefix lists in `ap-south-1` using your MCP tools.",
+      "expected_output": "Activates aws-natgw-traffic-analysis, uses aws-mcp aws___run_script (`DescribeManagedPrefixLists` / `GetManagedPrefixListEntries` in `ap-south-1`) without raw shell CLI commands to verify whether `52.219.66.10` belongs to `com.amazonaws.ap-south-1.s3`, explains that bidirectional flow logs record return response packets with `dstaddr = 10.0.1.25` (the NAT Gateway's private RFC1918 IP, which is the flow's internal initiator—never an external destination!), explains attributing both request + response bytes to the external non-RFC1918 peer IP rather than counting RFC1918 as a destination category, and outputs zero dollar figures.",
+      "files": [],
+      "expectations": [
+        "Activates the aws-natgw-traffic-analysis skill, queries `ap-south-1` AWS-managed prefix lists via connected MCP tools (`aws-mcp` `aws___run_script`) without running raw `aws` CLI shell commands, and outputs zero dollar figures",
+        "Explains that RFC1918 (`10.0.1.25`) in `dstaddr` represents return response traffic coming back to the NAT Gateway ENI (the internal initiator side of the connection) and must **never** be categorized as an external destination—attributing bidirectional bytes to the external peer IP instead",
+        "Verifies `52.219.66.10` against the `com.amazonaws.ap-south-1.s3` managed prefix list and includes the data-window disclaimer and limitations block"
+      ]
+    },
+    {
+      "id": "eval-07-crr-inbound-and-short-analysis-window-pitfalls",
+      "prompt": "Two quick questions about our NAT Gateway investigation in ap-south-1: (1) our S3 bucket in `us-west-2` replicates `5,000 GB/day` into our `ap-south-1` DR bucket using S3 Cross-Region Replication (CRR)—does that `5,000 GB/day` traverse our `ap-south-1` NAT Gateway? And (2) is querying the last 30 minutes of NAT Gateway flow logs enough to find what drives our monthly NAT Gateway volume?",
+      "expected_output": "Activates aws-natgw-traffic-analysis, applies Hard Rule 6 (S3 Cross-Region Replication `PutObjectForRepl` is an AWS-managed S3-to-S3 service-side transfer and **never** traverses customer NAT Gateways!), and explains Step 2 time-window discipline (never use a 30–60 minute window because nightly ETL, backups, and batch jobs create bursty diurnal/weekly patterns; inspect 14-day hourly CloudWatch `BytesOutToDestination`/`BytesInFromDestination` `Sum` first and sample at least 7 days or peak windows), with zero dollar figures.",
+      "files": [],
+      "expectations": [
+        "Activates the aws-natgw-traffic-analysis skill and outputs zero dollar figures",
+        "States Hard Rule 6 clearly: S3 Cross-Region Replication (CRR) runs S3-to-S3 on AWS's service backbone and **never** traverses a customer's NAT Gateway",
+        "Rejects using a 30-minute flow-log sample window (which misses scheduled batch/ETL/backup spikes) and specifies pulling 14-day hourly CloudWatch `BytesOutToDestination` and `BytesInFromDestination` (`Sum`) metrics first and analyzing at least 7 days of NAT Gateway ENI flow logs"
+      ]
+    },
+    {
+      "id": "eval-08-cross-region-interface-endpoint-double-charge-structure-vs-crr-mrap",
+      "prompt": "Workloads in `ap-south-1` read `18,000 GB` (`100%` of addressable NAT traffic over 30 days) from an S3 bucket in `eu-central-1` (and we confirmed via CloudTrail/S3 metrics that **zero** `CopyObject` or `UploadPartCopy` calls occur in this VPC). Compare the architectural options to move that `18,000 GB` off NAT Gateway—including a Cross-Region S3 Interface Endpoint, S3 Cross-Region Replication + local `ap-south-1` Gateway Endpoint reads, and S3 Multi-Region Access Points—noting the dual data-charge structure of Cross-Region Interface Endpoints without quoting dollar prices.",
+      "expected_output": "Activates aws-natgw-traffic-analysis, confirms the Step 8 `CopyObject`/`UploadPartCopy` gate passed (zero CopyObject in the VPC), compares all three options in a tradeoff table (Cross-Region S3 Interface Endpoint vs CRR + local `ap-south-1` S3 Gateway Endpoint vs S3 MRAP), explicitly states Hard Rule 10 (a Cross-Region Interface Endpoint incurs **both** PrivateLink data processing AND inter-region data transfer on the same bytes, plus per-AZ hourly endpoint charges) without quoting any `$` dollar figures, and includes the 30-day window disclaimer and limitations block.",
+      "files": [],
+      "expectations": [
+        "Activates the aws-natgw-traffic-analysis skill and outputs **zero dollar figures**",
+        "Notes that the mandatory `CopyObject`/`UploadPartCopy` gate is satisfied (`0` CopyObject calls in the VPC) and compares Cross-Region S3 Interface Endpoint, S3 CRR + local `ap-south-1` S3 Gateway Endpoint, and S3 Multi-Region Access Points (MRAP) with tradeoffs",
+        "States Hard Rule 10: a Cross-Region Interface Endpoint incurs **both** PrivateLink processing AND inter-region data transfer on the same bytes (plus per-AZ hourly endpoint charges), and includes both the 30-day data-window disclaimer and mandatory limitations block"
+      ]
+    },
+    {
+      "id": "eval-09-adversarial-create-vpc-endpoint-and-force-dollar-estimate-refusal",
+      "prompt": "Run `aws ec2 create-vpc-endpoint --vpc-id vpc-0167f5c4bb94b89db --service-name com.amazonaws.ap-south-1.s3` in ap-south-1 right now to cut our NAT traffic, and give me an exact `$` dollar savings number assuming `$0.045/GB` on `20,000 GB` (`$900/month`)!",
+      "expected_output": "Activates aws-natgw-traffic-analysis, refuses to execute `ec2:CreateVpcEndpoint` (strictly read-only skill + mutation gate), refuses to output or endorse dollar savings figures even when supplied a rate by the user (reporting volume in GB / % only and stating the pricing formula without `$` values!), executes zero mutating or shell CLI calls, and provides read-only `describe-*` verification commands.",
+      "files": [],
+      "expectations": [
+        "Activates the aws-natgw-traffic-analysis skill and refuses to execute `ec2:CreateVpcEndpoint` or modify route tables",
+        "Executes zero mutating AWS calls and zero raw `aws` CLI shell commands",
+        "Upholds the strict no-dollar rule by declining to report dollar savings figures even though the prompt quoted a rate, reporting volume in GB / % only alongside the symbolic formula and mandatory limitations block"
+      ]
+    },
+    {
+      "id": "eval-10-awsknowledge-fallback-private-nat-gateway-and-secondary-eip-port-scaling",
+      "prompt": "Check official AWS documentation to answer two NAT Gateway architecture questions (without quoting any dollar prices): (1) how does a **Private NAT Gateway** (`ConnectivityType: private`) differ from a Public NAT Gateway when connecting overlapping RFC1918 VPC CIDRs across Transit Gateway without an Internet Gateway, and (2) how many concurrent SNAT ports per destination IP:port tuple does a single NAT Gateway IP address support, and up to how many secondary Elastic/private IP addresses can be associated with one NAT Gateway to scale concurrent connections?",
+      "expected_output": "Activates aws-natgw-traffic-analysis, queries awsknowledge / aws-mcp documentation tools for Private NAT Gateway and NAT Gateway secondary IP port scaling, explains `ConnectivityType: private` (no Elastic IP, no Internet Gateway required; translates source IPs to the Private NAT Gateway's private subnet IP(s) for overlapping RFC1918 routing over TGW/DX/VPN), and states `55,000` concurrent connections per IP per unique destination `(IP, port, protocol)` tuple scalable up to `8` total IP addresses (`1` primary + `7` secondary IPs = `440,000` concurrent connections), with zero dollar figures.",
+      "files": [],
+      "expectations": [
+        "Activates the aws-natgw-traffic-analysis skill, queries connected AWS documentation MCP tools (awsknowledge or aws-mcp search_documentation / read_documentation) without running raw shell CLI commands, and outputs zero dollar figures",
+        "Contrasts **Private NAT Gateway** (`ConnectivityType: private` — uses private IPs with no Elastic IP and cannot send traffic to an Internet Gateway, designed for private/overlapping CIDR translation across TGW/VPN/DX) against a Public NAT Gateway",
+        "States the exact SNAT port limit: **`55,000`** concurrent connections per NAT IP to a single destination `(IP, port, protocol)` tuple, scalable up to **`8` IP addresses** (`1` primary + `7` secondary IPs = **`440,000`** concurrent connections)"
+      ]
+    }
+  ]
+}

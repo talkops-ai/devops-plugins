@@ -1,0 +1,58 @@
+[
+  {
+    "query": "Run msk_sizing.py to size an Amazon MSK Express vs Standard cluster for 100 MB/s ingress, 300 MB/s egress, 500 partitions, and 7 days retention.",
+    "should_trigger": true
+  },
+  {
+    "query": "Use /aws-messaging-and-streaming:msk-troubleshoot to diagnose why our MSK cluster has UnderReplicatedPartitions > 0 and hot broker CPU skew.",
+    "should_trigger": true
+  },
+  {
+    "query": "Configure MSK Multi-VPC Private Connectivity with AWS RAM and IAM SASL_SSL authentication so consumers in another AWS account can read topics.",
+    "should_trigger": true
+  },
+  {
+    "query": "Plan an upgrade of our Amazon MSK cluster from Apache Kafka 3.5 ZooKeeper mode to Kafka 3.9 KRaft mode.",
+    "should_trigger": true
+  },
+  {
+    "query": "Set up Amazon MSK Replicator and active-active cross-region disaster recovery between us-east-1 and us-west-2.",
+    "should_trigger": true
+  },
+  {
+    "query": "Configure Prometheus JMX Exporter (`OpenMonitoring`) and CloudWatch alarms for an Amazon MSK Provisioned cluster.",
+    "should_trigger": true
+  },
+  {
+    "query": "Compare Amazon MSK Express brokers, MSK Provisioned Standard brokers with Tiered Storage, and MSK Serverless for a variable-traffic event bus.",
+    "should_trigger": true
+  },
+  {
+    "query": "Rebalance skewed Kafka partitions across new brokers after scaling out an Amazon MSK cluster from 3 to 6 brokers.",
+    "should_trigger": true
+  },
+  {
+    "query": "Size Amazon Kinesis Data Streams shards and configure Enhanced Fan-Out (EFO) consumers for a real-time log stream.",
+    "should_trigger": false
+  },
+  {
+    "query": "Configure an Amazon SQS FIFO queue with a dead-letter queue and redrive policy.",
+    "should_trigger": false
+  },
+  {
+    "query": "Migrate a 20 TB Teradata data warehouse to Amazon Redshift Serverless.",
+    "should_trigger": false
+  },
+  {
+    "query": "Upgrade an Amazon MWAA environment from Apache Airflow 2.9 to Airflow 3.0.",
+    "should_trigger": false
+  },
+  {
+    "query": "Design an Amazon OpenSearch Service cluster with UltraWarm storage for 30 days of application logs.",
+    "should_trigger": false
+  },
+  {
+    "query": "Create an Apache Iceberg table in Amazon S3 Tables with hidden day() partitioning.",
+    "should_trigger": false
+  }
+]

@@ -22,6 +22,8 @@ This is an **agent plugin**: every skill, command, hook, and MCP server below is
 
 | Skill | What it does |
 |---|---|
+| `agentcore-observability-setup` | Validates and bootstraps Amazon Bedrock AgentCore observability so customers can trace agent reasoning, detect silent failures, and measure performance before an outage. |
+| `agentcore-ops-review` | Comprehensive operational review procedures for Amazon Bedrock AgentCore resources aligned with the AWS Well-Architected Framework. |
 | `agents-build` | Use to extend an existing agent project with memory, app integration, VPC, multi-agent, migration, model, browser, code interpreter, payments, or resource removal. |
 | `agents-connect` | Use when connecting your agent to external APIs, tools, or services via Gateway, or restricting tool access with Cedar policies. |
 | `agents-debug` | Use when your agent or environment is broken — wrong answers, errors, timeouts, tool failures, or CLI issues. |
@@ -30,6 +32,9 @@ This is an **agent plugin**: every skill, command, hook, and MCP server below is
 | `agents-harden` | Use when preparing your agent for production — IAM scoping, inbound auth (JWT, SigV4), secrets management, cold start optimization, session lifecycle, rate limiting, input validation, and quota guidance. |
 | `agents-optimize` | Use when measuring or improving agent quality and performance — set up evaluators, online monitoring, CI/CD quality gates, observability, or cost optimization. |
 | `agents-pay` | Use when THIS agent needs to pay for x402-protected content at runtime: hitting a paywall mid-task, settling it via AgentCore Payments, and applying operator-defined spend limits. |
+| `arize-incident-investigation` | Investigates production incidents in LLM applications and AI agents traced in Arize AX, using the Arize AX MCP server tools (not the ax CLI). |
+| `bedrock-adoption-readiness` | Amazon Bedrock production readiness assessment covering IAM governance, data retention (ZDR), quota and capacity headroom, and operational observability across Standard Bedrock and Mantle surfaces. |
+| `bedrock-operation-review` | Comprehensive Amazon Bedrock review aligned with the AWS Well-Architected Framework and Bedrock best practices. |
 | `signing-in-to-aws` | Gets AWS credentials for CLI/SDK access via `aws login`. |
 
 ## MCP servers

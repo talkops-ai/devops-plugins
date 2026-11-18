@@ -23,7 +23,12 @@ This is an **agent plugin**: every skill, command, hook, and MCP server below is
 
 | Skill | What it does |
 |---|---|
-| `aws-billing-and-cost-management` | Principal AWS FinOps and Cloud Financial Management (CFM) skill across the full FinOps Foundation lifecycle (Inform, Optimize, Operate, Shift-Left): analyze AWS costs, run 7-stage forensic cost audits, isolate MoM varia… |
+| `aws-billing-and-cost-management` | Principal AWS FinOps and Cloud Financial Management (CFM) skill across the FinOps lifecycle (Inform, Optimize, Operate, Shift-Left): analyze AWS spend, run 7-stage cost audits, isolate MoM variance drivers with Cost Com… |
+| `aws-natgw-traffic-analysis` | Use this skill when a user wants to understand what traffic is going through an AWS NAT Gateway, why it takes that path, or how to reduce NAT Gateway cost - for example "why is my NAT Gateway bill so high", "what is goi… |
+| `cloudtrail-cost-optimization` | Identify and quantify AWS CloudTrail cost optimization opportunities. |
+| `config-cost-optimization` | Identify and quantify AWS Config cost optimization opportunities. |
+| `eos-cost-analysis` | Use this skill whenever a user asks about End of Standard Support (EOS) or Extended Support (ES) cost, exposure, or inventory for EKS, RDS/Aurora, Lambda, ElastiCache, or OpenSearch — for example "what's my EOS cost exp… |
+| `guardduty-cost-optimization` | Identify and quantify Amazon GuardDuty cost optimization opportunities. |
 | `signing-in-to-aws` | Gets AWS credentials for CLI/SDK access via `aws login`. |
 
 ## MCP servers

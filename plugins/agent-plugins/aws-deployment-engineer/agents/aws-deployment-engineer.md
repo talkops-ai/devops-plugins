@@ -75,4 +75,12 @@ For every deployment engagement, you systematically produce:
 
 ## Skills this agent uses
 
-`signing-in-to-aws` · `preflight-discovery` · `aws-architecture-diagram` · `deploy` · `container-ecs-deploy` · `serverless-sam-deploy` · `elastic-beanstalk` · `aws-deployment` · `verify-and-rollback`
+- `signing-in-to-aws`
+- `preflight-discovery`
+- `aws-architecture-diagram`
+- `deploy`
+- `container-ecs-deploy`
+- `serverless-sam-deploy`
+- `elastic-beanstalk`
+- `aws-deployment`
+- `verify-and-rollback`

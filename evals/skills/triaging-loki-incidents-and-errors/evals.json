@@ -1,0 +1,128 @@
+{
+  "skill_name": "triaging-loki-incidents-and-errors",
+  "description": "Outcome & Expectation evaluations for triaging-loki-incidents-and-errors covering N-to-1 log triage, period-over-period & canary-vs-stable cohort comparisons, chronological cross-service trace/order ID correlation, unpropagated trace +-5s fallback, deterministic signature clustering, CrashLoopBackOff/latency/silent-service SOPs, A2UI views, and /triage.",
+  "evals": [
+    {
+      "id": "eval-01-n-to-1-http-5xx-outage-triage-and-period-comparison",
+      "prompt": "`checkout-service` in namespace `otel-demo` (Loki tenant `otel-demo`) started paging on `OtelCheckoutErrorBudgetBurn` 15 minutes ago right after a `flagd` config change (`paymentUnreachable=\"on\"`)! Triage the logs in Grafana Loki without dumping raw log floods, compare error signatures against 1 hour ago, correlate a failing trace across services, and deliver a structured Incident Brief.",
+      "expected_output": "Checks `loki://system/health` + `loki://config/backends`, runs `loki_summarize_service_logs(selector='{service_name=\"checkout-service\", namespace=\"otel-demo\"}', start='now-15m', org_id='otel-demo')` first ($N \\to 1$ aggregation), calls `loki_compare_periods(selector='{service_name=\"checkout-service\", namespace=\"otel-demo\"}', start='now-15m', baseline_offset='1h', org_id='otel-demo')` to isolate `new_error_signatures` (`could not charge the card: rpc error: code = Unavailable` on `payment`, `0` in baseline), correlates extracted `trace_id`s across `frontend-proxy -> frontend -> checkout-service -> payment` via `loki_correlate_trace_logs`, and outputs the 5-section Incident Brief.",
+      "expectations": [
+        "Starts with `loki_summarize_service_logs` ($N \\to 1$) on `checkout-service` instead of dumping hundreds of raw `loki_query_range` lines",
+        "Calls `loki_compare_periods` against the 1-hour baseline (`1h`) and highlights newly introduced error signatures (`payment` `Charge` `Unavailable` failures)",
+        "Calls `loki_correlate_trace_logs` on an extracted `trace_id` to pinpoint the earliest failing service (`payment`) in the `otel-demo` call chain",
+        "Outputs a structured 5-section Incident Brief (`references/incident-brief-template.md`) covering impact, new signatures, cross-service timeline, and `flagd` `paymentUnreachable` mitigation"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-02-cross-service-trace-log-chronological-root-cause",
+      "prompt": "Correlate all logs across namespace `otel-demo` (tenant `otel-demo`) for failing trace `4bf92f3577b34da6a3ce929d0e0e4736` in Grafana Loki, where `postgresql`, `product-catalog-service`, `recommendation`, and `frontend-proxy` all logged errors during the same request. Reconstruct the exact chronological timeline and distinguish the true root failure from cascading victims.",
+      "expected_output": "Calls `loki_correlate_trace_logs(correlation_id=\"4bf92f3577b34da6a3ce929d0e0e4736\", scope_selector='{namespace=\"otel-demo\"}', org_id=\"otel-demo\")`, orders log events chronologically, identifies `postgresql` (`FATAL: remaining connection slots are reserved for superuser (db=otel)`) as the earliest root failure point, and classifies `product-catalog-service` (`too many clients already`), `recommendation` (`Unavailable`), and `frontend-proxy` (`HTTP 503`) as upstream cascading victims.",
+      "expectations": [
+        "Calls `loki_correlate_trace_logs` with `correlation_id=\"4bf92f3577b34da6a3ce929d0e0e4736\"` and `scope_selector='{namespace=\"otel-demo\"}'`",
+        "Applies the earliest-chronological-error rule to identify `postgresql` connection slot exhaustion as the true root cause",
+        "Exonerates `product-catalog-service`, `recommendation`, and `frontend-proxy` as cascading 503/Unavailable victims"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-03-deterministic-error-signature-normalization-and-clustering",
+      "prompt": "Normalize and cluster these raw `otel-demo` error lines (`cart-service` -> `valkey-cart:6379` and `email` OOM under `emailMemoryLeak`) to deduplicate dynamic tokens and extract `trace_id`s and `session` UUIDs:\n```\n2026-06-01T10:00:01Z ERROR cart-service conn 10.42.1.18:6379 valkey-cart failed for session 550e8400-e29b-41d4-a716-446655440000 trace_id=4bf92f3577b34da6a3ce929d0e0e4736 retry=1\n2026-06-01T10:00:04Z ERROR cart-service conn 10.42.2.99:6379 valkey-cart failed for session 6ba7b810-9dad-11d1-80b4-00c04fd430c8 trace_id=8899aabbccddeeff0011223344556677 retry=2\n2026-06-01T10:00:05Z FATAL email NoMemoryError failed to allocate memory in worker 7\n```",
+      "expected_output": "Runs `scripts/extract_error_signatures.py` to normalize timestamps (`<TIMESTAMP>`), UUIDs (`<UUID>`), 32-char hex (`<TRACE_HEX>`), IPv4:port (`<IP>`), and integers (`<NUM>`)—collapsing the two `cart-service` `valkey-cart:6379` lines into a single cluster (`count: 2`, `66.67%`) and the Ruby `email` `NoMemoryError` into a second cluster (`count: 1`, `33.33%`), while extracting both 32-hex `trace_id`s and UUID `session_ids`.",
+      "expectations": [
+        "Runs `extract_error_signatures.py` collapsing variable timestamps, IPv4:port (`:6379`), UUIDs, 32-hex trace IDs, and retry integers on `cart-service` into one normalized signature (`count: 2`)",
+        "Separates the distinct `email` `FATAL ... NoMemoryError` signature (`count: 1`)",
+        "Extracts both 32-hex `trace_id`s (`4bf92f3577b34da6a3ce929d0e0e4736`, `8899aabbccddeeff0011223344556677`) and session UUIDs"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-04-pod-crashloopbackoff-startup-log-triage",
+      "prompt": "Pod `email-5d9c8b-k2m9q` in namespace `otel-demo` (`100Mi` memory limit, `emailMemoryLeak=\"10000x\"` active in `flagd`) is stuck in `CrashLoopBackOff` and firing `OtelEmailPodOOMKilled`. Investigate its last crash death-rattle logs and initial container startup configuration logs in Grafana Loki.",
+      "expected_output": "Queries Loki scoped to `{namespace=\"otel-demo\", service_name=\"email\"}` filtered to `email-5d9c8b-k2m9q`, runs `loki_summarize_service_logs`, `loki_compare_periods`, `loki_query_range(..., direction=\"backward\", max_log_lines=50)` for the final Ruby `NoMemoryError` / OOM death rattle on `/send_order_confirmation`, and `loki_query_range(..., direction=\"forward\", max_log_lines=50)` on container startup to inspect `FLAGD_HOST:8013` / port `:8080` bind messages.",
+      "expectations": [
+        "Uses `loki_query_range` on `email-5d9c8b-k2m9q` with bounded `max_log_lines <= 100` (`direction=\"backward\"` for death rattle and `direction=\"forward\"` for startup logs)",
+        "Pinpoints Ruby `NoMemoryError` / OOM (`emailMemoryLeak` exceeding `100Mi` limit) and verifies startup `flagd:8013` / port `:8080` bind logs",
+        "Runs `loki_summarize_service_logs` and `loki_compare_periods` to compare against healthy windows"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-05-latency-degradation-without-5xx-errors-playbook",
+      "prompt": "`checkout-service` -> `kafka` order processing latency tripled over the last 30 minutes in `otel-demo` (`kafkaQueueProblems=\"on\"` and `adManualGc=\"on\"`), yet HTTP 5xx error logs on `frontend-proxy` are zero! Investigate the non-5xx latency degradation in Grafana Loki.",
+      "expected_output": "Runs `loki_summarize_service_logs` across `{namespace=\"otel-demo\", service_name=~\"checkout-service|kafka|ad\"}`, searches slow access/application logs (`duration_ms > 1000`) plus warning signatures (`kafka` consumer lag / queue overload, JVM `ManualGC`, `context deadline exceeded`, `retrying`), computes `quantile_over_time(0.95, ... | unwrap duration_ms | __error__=\"\" [5m]) by (route)` via `loki_query_instant` / `loki_query_range`, and correlates slow `trace_id`s via `loki_correlate_trace_logs` + Tempo handoff.",
+      "expectations": [
+        "Searches non-5xx degradation signals in `otel-demo` (`kafka` consumer lag/queue overload, `ManualGC`, `retry`, `deadline exceeded`, `duration_ms > 1000`)",
+        "Computes route-level latency quantiles (`| unwrap duration_ms | __error__=\"\"`) via `loki_query_instant` or `loki_query_range`",
+        "Correlates extracted slow `trace_id`s via `loki_correlate_trace_logs` (with Tempo trace waterfall handoff)"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-06-silent-service-missing-logs-playbook",
+      "prompt": "`recommendation` (Python gRPC `:8080` in `otel-demo`) stopped emitting logs in Grafana Loki 25 minutes ago right after a Helm upgrade. Check Loki to determine whether the `recommendation` pod / `otel.enabled` chart flag stopped sending logs or `observability` Loki is throttling and dropping its stream.",
+      "expected_output": "Executes the Silent Service SOP (`references/incident-triage-sop.md`): (1) calls `loki_get_series(match='{service_name=\"recommendation\", namespace=\"otel-demo\"}', start=\"now-2h\")` to verify when the stream was last active, and (2) calls `loki_get_diagnostics(include_metrics=True)` to check whether `loki_discarded_samples_total` (`per_stream_rate_limit`, `rate_limited`, or `line_too_long`) is dropping `recommendation`'s logs vs the pod crashing or `helm upgrade recommendation` resetting `otel.enabled=false`.",
+      "expectations": [
+        "Calls `loki_get_series` over a wider lookback (`>= 2h`) to verify `recommendation` stream existence and last-seen activity",
+        "Calls `loki_get_diagnostics(include_metrics=True)` to check `loki_discarded_samples_total` ingestion drop reasons",
+        "Clearly distinguishes Loki ingestion throttling (`per_stream_rate_limit` / `rate_limited`) from crashed pods or `otel.enabled=false` Helm value resets"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-07-canary-vs-stable-baseline-selector-comparison",
+      "prompt": "We are rolling out a canary of `product-catalog-service` in namespace `otel-demo` (`version=\"2.3.0-canary\"` alongside stable `version=\"2.2.0\"`). Compare error log signatures between the `2.3.0-canary` cohort and the `2.2.0` stable cohort over the last 20 minutes in Loki and tell us whether to promote or roll back.",
+      "expected_output": "Calls `loki_compare_periods(selector='{service_name=\"product-catalog-service\", namespace=\"otel-demo\", version=\"2.3.0-canary\"}', baseline_selector='{service_name=\"product-catalog-service\", namespace=\"otel-demo\", version=\"2.2.0\"}', start='now-20m', end='now')` to isolate error signatures unique to `2.3.0-canary` over the identical 20-minute window and recommends rolling back `2.3.0-canary` based on new error signatures.",
+      "expectations": [
+        "Calls `loki_compare_periods` comparing the `version=\"2.3.0-canary\"` selector against the `version=\"2.2.0\"` `baseline_selector` over the last 20 minutes",
+        "Highlights `new_error_signatures` present only in `2.3.0-canary` alongside `error_count_delta_pct`",
+        "Recommends aborting/rolling back the canary deployment based on new error signature evidence"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-08-custom-correlation-key-order-id-when-otel-traces-absent",
+      "prompt": "In Loki tenant `otel-staging` (`namespace=\"otel-staging\"`), `shipping-service` (Rust HTTP) and `quote` (PHP HTTP) have `otel.enabled=false` so W3C `trace_id` is absent, but every checkout and fulfillment log line includes `order_id=\"ord_01J9Z8K7M6N5P4Q3R2\"`. Reconstruct the chronological cross-service failure timeline across `checkout-service`, `shipping-service`, `quote`, and `email`.",
+      "expected_output": "Calls `loki_correlate_trace_logs(correlation_id=\"ord_01J9Z8K7M6N5P4Q3R2\", correlation_key=\"order_id\", scope_selector='{namespace=\"otel-staging\"}', start=\"now-2h\", org_id=\"otel-staging\")` to stitch together the chronological `checkout-service -> shipping-service -> quote -> email` log timeline using `order_id`.",
+      "expectations": [
+        "Calls `loki_correlate_trace_logs` with `correlation_key=\"order_id\"`, `correlation_id=\"ord_01J9Z8K7M6N5P4Q3R2\"`, and `org_id=\"otel-staging\"`",
+        "Scopes `scope_selector` to `{namespace=\"otel-staging\"}` without putting `order_id` inside `{}`",
+        "Reconstructs the chronological cross-service failure sequence across `checkout-service`, `shipping-service`, `quote`, and `email`"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-09-unpropagated-trace-timestamp-window-fallback",
+      "prompt": "Correlate logs across `otel-demo` in Grafana Loki for failing trace `abcdef1234567890abcdef1234567890`—note that PHP service `quote` (`:8080`) was running with `otel.enabled=false` and didn't propagate `trace_id` into its `/getquote` log lines! Verify whether `quote` logged an error at the exact moment `shipping-service` called it.",
+      "expected_output": "Calls `loki_correlate_trace_logs(correlation_id=\"abcdef1234567890abcdef1234567890\", scope_selector='{namespace=\"otel-demo\"}')` to locate the exact timestamp when `shipping-service` called `quote`, then runs a tightly bounded `±5s` `loki_query_range` scoped strictly to `{service_name=\"quote\", namespace=\"otel-demo\"}` (`max_log_lines <= 50`) around that timestamp (`references/cross-pillar-correlation-guide.md`) to confirm the `/getquote` PHP division-by-zero / NaN error without scanning wide windows.",
+      "expectations": [
+        "Correlates `abcdef1234567890abcdef1234567890` across `otel-demo` first to find the exact `shipping-service` -> `quote` failure timestamp",
+        "Runs a tightly bounded (`±5s`–`±15s`) `loki_query_range` scoped strictly to `{service_name=\"quote\", namespace=\"otel-demo\"}` rather than scanning wide multi-hour windows",
+        "Matches `/getquote` error details at that timestamp to confirm `quote` triggered the `shipping-service` failure"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-10-a2ui-timeline-rendering-for-incident-commander",
+      "prompt": "Summarize the root cause of the `PlaceOrder` error spike on `checkout-service` in `otel-demo` over the last 30 minutes (`paymentFailure=\"50%\"`) and render an interactive A2UI log view for the SRE incident commander channel.",
+      "expected_output": "Runs `loki_summarize_service_logs` first to confirm the `PaymentService/Charge` root error signature, then calls `loki_query_a2ui(query='{service_name=\"checkout-service\", namespace=\"otel-demo\"} |~ \"(?i)error\"', title='otel-demo checkout-service Error Triage (30m)', start='now-30m', max_log_lines=100)` alongside a concise Incident Brief summary.",
+      "expectations": [
+        "Summarizes `checkout-service` error signatures via `loki_summarize_service_logs` before rendering raw lines",
+        "Calls `loki_query_a2ui` with a bounded 30-minute window and `max_log_lines <= 100`",
+        "Pairs the interactive A2UI view with a concise executive incident summary"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-11-slash-command-triage-workflow",
+      "prompt": "/triage checkout-service in otel-demo --window 30m",
+      "expected_output": "Reads `commands/triage.md`, verifies Loki health (`loki://system/health`), executes 30-minute $N \\to 1$ log summarization (`loki_summarize_service_logs`), baseline regression comparison (`loki_compare_periods`), and cross-service trace log correlation (`loki_correlate_trace_logs`), cross-checking firing alerts/metrics where available to deliver an evidence-backed root-cause remediation brief.",
+      "expectations": [
+        "Reads `commands/triage.md` and follows the structured incident triage workflow for `checkout-service` in `otel-demo` over `30m`",
+        "Executes `loki_summarize_service_logs`, `loki_compare_periods`, and `loki_correlate_trace_logs` on `checkout-service`",
+        "Delivers an evidence-backed root-cause summary with concrete mitigation steps"
+      ],
+      "files": []
+    }
+  ]
+}

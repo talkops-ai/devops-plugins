@@ -1,0 +1,34 @@
+[
+  {
+    "query": "Use /aws-analytics:lake-formation-governance to design an LF-Tag ontology (LF-TBAC) and DataCellsFilter row and column security for our data lake.",
+    "should_trigger": true
+  },
+  {
+    "query": "Configure an AWS Lake Formation DataCellsFilter to hide SSN and salary columns and restrict EU analysts to rows where region = 'EU'.",
+    "should_trigger": true
+  },
+  {
+    "query": "Migrate a brownfield Glue Data Catalog database from IAMAllowedPrincipals to AWS Lake Formation using Hybrid Access Mode without breaking Glue jobs.",
+    "should_trigger": true
+  },
+  {
+    "query": "Share a Lake Formation-governed Iceberg table across AWS accounts using LF-TBAC, AWS RAM, and Glue Resource Links.",
+    "should_trigger": true
+  },
+  {
+    "query": "Troubleshoot 'Insufficient Lake Formation permission(s)' when querying a governed table in Amazon Athena.",
+    "should_trigger": true
+  },
+  {
+    "query": "Write a Glue Data Quality DQDL ruleset to check null rates and uniqueness on a table.",
+    "should_trigger": false
+  },
+  {
+    "query": "Upgrade an Amazon MWAA Apache Airflow 2.8 environment to Airflow 3.0.",
+    "should_trigger": false
+  },
+  {
+    "query": "Size an Amazon OpenSearch Service cluster for 2 TB/day of log analytics.",
+    "should_trigger": false
+  }
+]

@@ -1,67 +1,100 @@
 ---
 name: signing-in-to-aws
-description: >-
-  Gets AWS credentials for CLI, SDK, and MCP server access via `aws login` or `aws sso login`,
-  validates caller identity across single or multi-account named profiles, and verifies SigV4
-  readiness for `mcp-proxy-for-aws`. Activates when a developer needs to authenticate to AWS,
-  when an AWS or MCP operation fails due to missing or expired credentials (`ExpiredToken`,
-  `NoCredentialsError`, `InvalidClientTokenId`), or when configuring named profiles for
-  multi-account DevSecOps operations.
+description: |
+  Gets AWS credentials for CLI/SDK access via `aws login`. Activates when a developer needs to authenticate to AWS for local development, when an AWS operation fails due to missing or expired credentials, or when someone asks about setting up AWS access. Triggers: "set up AWS", "configure AWS", "aws login", "get credentials", "authenticate", "session expired", "token expired", "no credentials", "AccessDeniedException" with no configured credentials.
 ---
 
-# Sign In — Get CLI, SDK & MCP Credentials
+# Sign In — Get CLI/SDK Credentials
 
-Help developers authenticate to AWS for local development and cloud-native MCP execution using short-term, auto-rotating credentials (`aws login` or `aws sso login`). All bundled MCP servers (`aws-mcp`, `aws-security-agent`, `aws-cloudwatch`, `aws-cloudtrail`, `aws-well-architected-security`, `aws-billing`) authenticate locally via standard AWS SigV4 credential chains—no bearer tokens or custom HTTP headers are required.
+Help developers get AWS credentials for local development using `aws login`. This provides short-term, auto-rotating credentials that refresh every 15 minutes and remain valid for up to 12 hours.
 
 **Important:**
 
-- You MUST run `aws login`, `aws sso login`, and `aws --version` in the user's local shell — NOT via MCP/API tools.
-- You MUST ask the user for confirmation before running `aws login` or `aws sso login`. Do not tell the user to run the command themselves — ask if YOU should run it (e.g., "Ready for me to run `aws login`?" or "Shall I proceed with `aws sso login --profile prod`?"). Wait for their response before proceeding.
-- Never read or print `~/.aws/credentials`, `.env`, or secret files.
+- You MUST run `aws login` and `aws --version` in the user's local shell — NOT via MCP/API tools.
+- You MUST ask the user for confirmation before running `aws login`. Do not tell the user to run the command themselves — ask if YOU should run it (e.g., "Ready for me to run `aws login`?" or "Shall I proceed with `aws login`?"). Wait for their response before proceeding.
 
 ## Prerequisites
 
 The `aws login` command requires **AWS CLI version 2.32.0 or later**.
 
+Check the installed version:
+
 ```bash
 aws --version
 ```
 
-If the CLI is not installed or is below 2.32.0, inform the user and link them to the [AWS CLI installation guide](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
+If the CLI is not installed or is below 2.32.0, inform the user and ask if they'd like to install/update (link them to the [AWS CLI installation guide](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)), or if they'd prefer to continue without this skill's guidance. If they choose to continue without upgrading, respond to their original request as you normally would without this skill.
 
 ## Flow
 
-### 1. Lead with the recommendation
+### Lead with the recommendation
 
-In your first response, tell the user that `aws login` (or `aws sso login` if they use IAM Identity Center) is the fix — explain that it provides short-term, auto-rotating credentials used directly by the AWS CLI and all bundled MCP servers.
+In your first response, always tell the user that `aws login` is the fix — explain that it provides short-term, auto-rotating credentials and that it requires AWS CLI 2.32.0 or later. Do not stop at "let me check your CLI version" — name the remediation up front so the user knows where this is going, then describe the precondition checks you'll run before invoking it.
 
-### 2. Precondition checks (run silently before asking confirmation)
+### Precondition checks (run silently before asking confirmation)
 
-1. `aws --version` — confirm AWS CLI 2.32.0+ is installed.
-2. `aws sts get-caller-identity` (or with `--profile <name>` if a target profile was specified) — check current credentials:
-   - **Succeeds**: Display `Account`, `Arn`, and active `AWS_REGION` (`aws configure get region`). Ask whether to keep these credentials or authenticate a different profile (`aws login --profile <name>`).
-   - **Fails** (`ExpiredToken`, `Unable to locate credentials`, `SSO session token has expired`): check `aws configure list-profiles` to see if an SSO profile is configured; otherwise proceed with `aws login`.
-3. *(Only if Step 2 succeeded and the user wants different credentials)* `aws configure list` — if `access_key` starts with `AKIA`, explain that long-term static access keys persist on disk and never expire, whereas `aws login` issues short-term rotating tokens.
+Run these via the local shell to inform your plan. Report what you find, but do not gate the recommendation on user-supplied output:
 
-### 3. Confirm and run authentication
+1. `aws --version` — confirm the CLI is 2.32.0 or later. If not installed or too old, point the user to the [AWS CLI installation guide](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) and stop.
+2. `aws sts get-caller-identity` — check current credentials.
+   - **Succeeds**: Show the user their Account and Arn. Ask whether to keep these or set up different credentials. If they want to switch, recommend `aws login --profile <name>` so the existing default isn't overwritten.
+   - **Fails** (missing or expired): proceed with `aws login` on the default profile.
+3. *(Only if Step 2 succeeded and the user wants different credentials)* `aws configure list` — if `access_key` starts with `AKIA`, explain that long-term access keys are less secure (never expire, persist on disk as secrets, grant indefinite access if leaked) and that `aws login` provides short-term credentials that auto-rotate every 15 minutes, expire automatically, and require no manual rotation.
 
-Ask the user for confirmation specifically for the `aws login` (or `aws sso login --profile <name>`) invocation. Wait for their confirmation, then execute it in the local shell.
+### Confirm and run aws login
 
-### 4. Verify & Multi-Account Profile Check
+Once preconditions are clear, ask the user for confirmation specifically for the `aws login` invocation — and only there. Do not tell the user to run the command themselves; ask if you should run it (e.g., "Ready for me to run `aws login`?" or "Shall I proceed with `aws login --profile staging`?"). Wait for their response, then run `aws login` (or `aws login --profile <name>`).
 
-After login completes, verify caller identity and region:
+### Verify
 
-```bash
-aws sts get-caller-identity --output json
-aws configure get region
-```
-
-If the user operates across multiple environments (`dev`, `staging`, `prod`, `security-audit`), remind them that `aws-mcp` tools (`aws___call_aws`, `aws___run_script`) accept `aws_profile: "<profile-name>"` per call without requiring shell restarts.
+After `aws login` completes, run `aws sts get-caller-identity` (with `--profile` if used) to confirm success. If a named profile was used, remind the user to pass `--profile` or set `AWS_PROFILE`.
 
 ## Handling Errors
 
-- **Browser doesn't open**: Suggest `aws login --remote` for cross-device URL/code authentication.
-- **Permission error after login**: The IAM principal needs the `SignInLocalDevelopmentAccess` managed policy attached.
-- **IAM Identity Center (`aws sso login`)**: Respect existing `~/.aws/config` SSO profiles. If `aws sso login` fails, check expired SSO sessions or `~/.aws/sso/cache/` token state.
-- **GovCloud or China regions**: `aws login` is not supported in `aws-us-gov` or `aws-cn`; fall back to `aws sso login` or `aws configure` only when operating in those partitions.
-- **CI/CD Pipelines**: Do not use `aws login` for GitHub Actions or GitLab CI — use the `engineering-iam-least-privilege` skill to configure keyless OIDC federation (`sts:AssumeRoleWithWebIdentity`).
+### "command not found" or version too old
+
+The CLI is not installed or below 2.32.0. Direct the user to install or update: [AWS CLI installation guide](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
+
+### Browser doesn't open
+
+Suggest `aws login --remote` which provides a URL and code for cross-device authentication (e.g., when using a remote server without a browser).
+
+### Permission error after login
+
+The IAM identity needs the `SignInLocalDevelopmentAccess` managed policy attached (to the user, role, or group). Root users do not need it. Tell the user to ask their administrator to add it, or attach it themselves if they have IAM permissions.
+
+### GovCloud or China regions
+
+`aws login` is not available in AWS GovCloud (US) or AWS China regions. Do not mention this exception proactively — only relevant if the user explicitly states they are in one of these partitions.
+
+## Users With Existing `aws sso login` Workflows
+
+If the user mentions `aws sso login` or has an existing SSO configuration, do NOT redirect them to `aws login`. These are different commands for different situations:
+
+- `aws sso login` is for users whose organization has configured AWS IAM Identity Center (SSO). They have profiles in `~/.aws/config` pointing at an SSO start URL. Respect their established workflow.
+- If their `aws sso login` is failing, help troubleshoot within their context: expired SSO session, revoked authorization, cached token issues (`~/.aws/sso/cache/`), or Identity Center configuration changes.
+
+## Fallback to `aws configure`
+
+Do NOT mention `aws configure` in your initial response or include it as a table row alongside `aws login`. Only offer it as an alternative if:
+
+1. The user explicitly declines `aws login` or asks for alternatives
+2. The user states they are in GovCloud or China regions (where `aws login` is unavailable)
+
+When offering it, explain that long-term access keys are less secure: they persist on disk as plaintext, never expire automatically, and grant indefinite access if leaked.
+
+## When NOT to Use This Skill
+
+- User is setting up CI/CD credentials — they need IAM roles or OIDC federation, not `aws login`
+
+## Key Points
+
+- Do not front-load troubleshooting — keep the initial response simple and address errors only if they occur
+- `aws login` works with root users, IAM users and federation with IAM
+
+## Additional Resources
+
+- [Sign in through the AWS CLI](https://docs.aws.amazon.com/signin/latest/userguide/command-line-sign-in.html)
+- [Installing or updating the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+- [SignInLocalDevelopmentAccess managed policy](https://docs.aws.amazon.com/aws-managed-policy/latest/reference/SignInLocalDevelopmentAccess.html)
+- [IAM security best practices](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html)

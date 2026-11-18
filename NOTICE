@@ -11,6 +11,13 @@ selected files were modified (e.g. hook paths, cross-plugin references). The
 agent definitions (agents/<plugin>.md), the aws-mutation-gate hook (src/hooks/),
 and repository tooling are original work.
 
+The partner-built plugins under plugins/partner-built/{launchdarkly,coralogix,
+honeycomb,elastic,neo4j,bronto}/ redistribute official vendor skills published
+in aws/tools-for-devops-agent, unmodified, under the Apache License, Version 2.0,
+and specialist engineers under plugins/agent-plugins/ incorporate AWS operational
+skills and partner connector specifications from aws/tools-for-devops-agent
+under the Apache License, Version 2.0.
+
 The partner-built plugin under plugins/partner-built/terraform/ redistributes all
 skills from the HashiCorp Agent Skills "terraform" plugin, unmodified, under the
 Mozilla Public License, Version 2.0 (MPL-2.0); see the project link below for the
@@ -46,6 +53,21 @@ https://mozilla.org/MPL/2.0/
 HashiCorp Terraform MCP Server (optional connector, launched via Docker; not vendored)
 https://github.com/hashicorp/terraform-mcp-server
 Licensed under the Mozilla Public License, Version 2.0.
+
+--------------------------------------------------------------------------------
+AWS Samples — EKS Upgrade Readiness Skill
+https://github.com/aws-samples/sample-eks-upgrade-skill
+Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+Licensed under the MIT No Attribution (MIT-0) License.
+
+--------------------------------------------------------------------------------
+AWS DevOps Agent Tools (tools-for-devops-agent)
+https://github.com/aws/tools-for-devops-agent
+Copyright Amazon.com, Inc. or its affiliates, and contributing Partner Connector
+vendors (LaunchDarkly, Coralogix, Honeycomb.io, Elastic, Neo4j, Inc., Bronto,
+Grafana Labs, Cribl, ClickHouse, Inc., Dynatrace Bluebox, Sumo Logic, Inc.,
+Wiz, Inc., and Arize AI, Inc.). All Rights Reserved.
+Licensed under the Apache License, Version 2.0.
 
 --------------------------------------------------------------------------------
 Marketplace structure inspired by Claude for Financial Services

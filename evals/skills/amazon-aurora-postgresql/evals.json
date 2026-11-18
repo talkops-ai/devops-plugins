@@ -1,0 +1,229 @@
+{
+  "skill_name": "amazon-aurora-postgresql",
+  "evals": [
+    {
+      "id": "eval-01-io-optimized-cost-advisory",
+      "prompt": "We are running an Aurora PostgreSQL cluster in ap-south-1 with 2 db.r6g.2xlarge instances, 800 GiB of storage, and 1,200 million monthly I/O requests. Check our ap-south-1 environment and pricing, and tell me whether we should switch to Aurora I/O-Optimized or stay on Standard storage with a full monthly cost breakdown.",
+      "expected_output": "Activates the amazon-aurora-postgresql skill, uses connected MCP tools or bundled skill tools in read-only mode against ap-south-1, and presents a side-by-side monthly cost comparison for 2x db.r6g.2xlarge (800 GiB storage, 1,200M I/Os): Aurora Standard (~$2,052.26/mo: $1,724.26 compute, $88.00 storage, $240.00 I/O) vs Aurora I/O-Optimized (~$2,421.54/mo: $2,241.54 compute, $180.00 storage, $0.00 I/O). Notes that I/O is ~11.7%–12.7% of the Standard total (below the ~25% breakeven threshold) and recommends staying on Aurora Standard.",
+      "files": [],
+      "expectations": [
+        "Activates the amazon-aurora-postgresql skill and performs only read-only operations in ap-south-1",
+        "Uses connected AWS MCP tools (rather than raw aws CLI shell commands when an MCP tool is available) to query AWS state or pricing",
+        "Includes a side-by-side monthly cost breakdown comparing Aurora Standard and Aurora I/O-Optimized across compute, storage, I/O, and total cost in ap-south-1",
+        "States I/O cost as a percentage of the Standard total (~11.7%–12.7%), compares it against the ~25% breakeven threshold, and recommends staying on Aurora Standard"
+      ]
+    },
+    {
+      "id": "eval-02-serverless-v2-sizing-and-cost-advisory",
+      "prompt": "We have a single db.r6g.xlarge Aurora PostgreSQL instance in ap-south-1 with 500 GiB of storage, P95 CPU utilization of 35%, and peak CPU utilization of 72%. Evaluate whether we should migrate this instance to Aurora Serverless v2, including recommended min/max ACU settings and a monthly cost comparison in ap-south-1.",
+      "expected_output": "Activates the amazon-aurora-postgresql skill, evaluates ACU sizing and live ap-south-1 pricing for a single db.r6g.xlarge instance (CPU P95 35%, CPU max 72%, 500 GiB storage), recommends min 3.5 ACU and max 16.0 ACU (typical ~6.0 ACU, peak ~12.0 ACU), compares monthly Provisioned cost (~$486.43/mo) vs Serverless v2 cost (~$843.40/mo), and concludes that migrating to Serverless v2 is not recommended (`not_recommended`).",
+      "files": [],
+      "expectations": [
+        "Activates the amazon-aurora-postgresql skill and performs only read-only operations in ap-south-1",
+        "Uses connected AWS MCP tools when querying AWS pricing or cluster metadata instead of raw aws CLI shell commands",
+        "Provides concrete ACU sizing recommendations (min ACU 3.5, max ACU 16.0, typical ACU 6.0, peak ACU 12.0) for the 35% P95 / 72% max CPU workload",
+        "Presents a side-by-side monthly cost comparison between Provisioned db.r6g.xlarge (~$486.43/mo) and Serverless v2 (~$843.40/mo) in ap-south-1 and states the recommendation as not_recommended"
+      ]
+    },
+    {
+      "id": "eval-03-commitment-pricing-ri-vs-dsp",
+      "prompt": "We run 2 db.r6g.2xlarge Aurora PostgreSQL instances on Standard storage in ap-south-1 and want to reduce our compute bill. Compare 1-year and 3-year Reserved Instances against 1-year and 3-year Database Savings Plans in ap-south-1 and recommend the best commitment strategy.",
+      "expected_output": "Activates the amazon-aurora-postgresql skill, checks ap-south-1 commitment pricing in read-only mode, definitively states that db.r6g is NOT eligible for Database Savings Plans (Reserved Instances are the only commitment option for r6g unless migrating to db.r7g or db.r8g), explains that 3-year Database Savings Plans and 3-year No Upfront RIs do not exist for Aurora, and presents a comparison table of On-Demand (~$1,724.26/mo) vs 1-year RI (~$950.50/mo, ~44.9% savings) and 3-year RI (~$624.33/mo, ~63.8% savings).",
+      "files": [],
+      "expectations": [
+        "Activates the amazon-aurora-postgresql skill and performs only read-only pricing/offering lookups in ap-south-1",
+        "Uses connected AWS MCP tools when querying AWS pricing or offerings instead of raw aws CLI shell commands",
+        "Definitively states that db.r6g is not eligible for Database Savings Plans and recommends migrating to db.r7g or db.r8g to unlock Database Savings Plan eligibility",
+        "Explains that 3-year Database Savings Plans do not exist for Aurora (DSP is 1-year No Upfront only) and presents a comparison table showing On-Demand vs 1-year and 3-year Reserved Instances with monthly costs and savings percentages"
+      ]
+    },
+    {
+      "id": "eval-04-major-version-upgrade-planning",
+      "prompt": "We are planning a major version upgrade for an Aurora PostgreSQL 14.17 cluster in ap-south-1. Check the valid upgrade targets in ap-south-1, recommend which target version we should upgrade to and why, and outline the read-only pre-upgrade checks we should run before upgrading.",
+      "expected_output": "Activates the amazon-aurora-postgresql skill, queries valid upgrade targets for Aurora PostgreSQL 14.17 in ap-south-1 using read-only AWS MCP tools, leads with the Aurora PostgreSQL Long-Term Support (LTS) version recommendation (16.8 / 17.7) and explains the ~3-year support window rationale, and lists the read-only pre-upgrade checks (prepared transactions, logical replication slots, extension compatibility, and Blue/Green deployment strategy).",
+      "files": [],
+      "expectations": [
+        "Activates the amazon-aurora-postgresql skill and uses connected AWS MCP tools in read-only mode to inspect valid upgrade targets for Aurora PostgreSQL 14.17 in ap-south-1",
+        "Recommends the designated Aurora PostgreSQL LTS release (16.8 and/or 17.7) and explains the LTS support lifecycle rationale (~3-year support window, fewer forced major upgrades)",
+        "Outlines concrete read-only pre-upgrade readiness checks (orphan prepared transactions, logical replication slots, extension compatibility, and Blue/Green deployment)"
+      ]
+    },
+    {
+      "id": "eval-05-cluster-discovery-and-security-posture-audit",
+      "prompt": "Can you check our existing Aurora PostgreSQL clusters in ap-south-1 and show what read-only checks we should use to verify whether a cluster uses a customer-managed KMS key, has deletion protection enabled, and uses IAM database authentication or Secrets Manager instead of plaintext passwords?",
+      "expected_output": "Activates the amazon-aurora-postgresql skill, performs a read-only check of Aurora clusters in ap-south-1 via connected AWS MCP tools (reporting accurately that 0 clusters currently exist in ap-south-1 without fabricating cluster names), and outlines the read-only verification checks for KMS encryption (StorageEncrypted, KmsKeyId), deletion protection (DeletionProtection), IAM database authentication (EnableIAMDatabaseAuthentication), and Secrets Manager integration (MasterUserSecret / ManageMasterUserPassword).",
+      "files": [],
+      "expectations": [
+        "Activates the amazon-aurora-postgresql skill and checks existing Aurora clusters in ap-south-1 in read-only mode via connected AWS MCP tools",
+        "Accurately reports that there are currently 0 active Aurora clusters in ap-south-1 without fabricating cluster names or findings",
+        "Explains how to verify KMS encryption (StorageEncrypted and KmsKeyId), deletion protection (DeletionProtection), IAM database authentication (EnableIAMDatabaseAuthentication), and Secrets Manager password management without exposing plaintext secrets"
+      ]
+    },
+    {
+      "id": "eval-06-beginner-express-quickstart-no-vpc",
+      "prompt": "I'm a backend developer with almost no AWS database experience. I just need a managed Aurora PostgreSQL database in ap-south-1 for our new prototype microservice as quickly as possible without dealing with VPCs, subnets, or storing database passwords in config files. Check if we already have any Aurora clusters in ap-south-1, and tell me the simplest way to set up and connect to one without creating anything yet.",
+      "expected_output": "Activates the amazon-aurora-postgresql skill, checks ap-south-1 in read-only mode via MCP (reporting 0 existing clusters), routes to Aurora PostgreSQL Express Configuration (`create-db-cluster --with-express-configuration`) which requires no VPC setup and uses AWS-managed Internet Access Gateway connectivity, and explains how to connect using short-lived 15-minute IAM authentication tokens (`aws rds generate-db-auth-token`) with zero stored passwords.",
+      "files": [],
+      "expectations": [
+        "Activates the amazon-aurora-postgresql skill and performs only read-only checks in ap-south-1 via connected AWS MCP tools without creating any cluster",
+        "Recommends Aurora PostgreSQL Express Configuration (`--with-express-configuration`) as the simplest single-API-call option that requires no customer VPC or subnet setup",
+        "Explains that Express Configuration uses IAM-only authentication over the Internet Access Gateway (no master password) and shows how to generate a short-lived IAM auth token (`generate-db-auth-token`) to connect"
+      ]
+    },
+    {
+      "id": "eval-07-vague-workload-acu-sizing-inquiry",
+      "prompt": "We are launching a new internal admin portal on Aurora PostgreSQL in ap-south-1 that will only get light traffic from 20 employees during business hours and sit idle overnight. How many ACUs should I configure for Aurora Serverless v2, and how much will it cost per month?",
+      "expected_output": "Activates the amazon-aurora-postgresql skill, applies the vague-workload guard by refusing to fabricate or guess specific ACU numbers or monthly dollar figures without real workload metrics, names the required inputs (instance type, CPU P95, CPU max, storage GiB), points the user to CloudWatch (`CPUUtilization`, `DatabaseConnections`) and Performance Insights, and advises starting with the AWS-default ACU range (with auto-pause / scale-to-zero for overnight idle periods) and tuning after observing real metrics.",
+      "files": [],
+      "expectations": [
+        "Activates the amazon-aurora-postgresql skill and performs only read-only operations",
+        "States explicitly that specific ACU numbers and monthly dollar estimates cannot be recommended without real workload metrics, naming the missing inputs (instance type, CPU P95, CPU max, storage GiB)",
+        "Points the user to CloudWatch (`CPUUtilization`, `DatabaseConnections`) and Performance Insights to gather metrics, or advises starting with the AWS-default Aurora Serverless v2 range and tuning after observing traffic",
+        "Does not fabricate specific recommended min/max ACU numbers (e.g. 'set Min 0.5, Max 4 ACU') or fabricated monthly dollar totals for the unmeasured workload"
+      ]
+    },
+    {
+      "id": "eval-08-connection-exhaustion-and-pooling-strategy",
+      "prompt": "Our Node.js Lambda functions in ap-south-1 keep hitting `FATAL: remaining connection slots are reserved for non-replication superuser connections` on our Aurora PostgreSQL database during traffic spikes. Why does this happen on PostgreSQL, how is `max_connections` determined on Aurora PostgreSQL, and how should we choose between RDS Proxy and PgBouncer (especially if we want the database to scale to zero at night)?",
+      "expected_output": "Activates the relevant database skill(s), explains PostgreSQL's process-per-connection model and why serverless Lambda concurrency exhausts `max_connections`, explains how Aurora PostgreSQL calculates `max_connections` from instance memory (and that on Serverless v2 `max_connections` is derived from `MaxCapacity` and requires a reboot to change), compares RDS Proxy vs PgBouncer, warns about RDS Proxy connection pinning triggers (prepared statements, session state), and explicitly notes that RDS Proxy is incompatible with Aurora Serverless v2 scale-to-zero (0 ACU).",
+      "files": [],
+      "expectations": [
+        "Activates the amazon-aurora-postgresql skill (and/or db-ha-dr-and-schema-evolution) and explains why Lambda concurrency exhausts PostgreSQL connections and how `max_connections` is sized on Aurora PostgreSQL (derived from memory / maximum ACU)",
+        "Compares Amazon RDS Proxy and PgBouncer for connection pooling and identifies what causes RDS Proxy connection pinning (such as session variables, prepared statements, or temporary tables)",
+        "Explicitly states that RDS Proxy is incompatible with Aurora Serverless v2 scale-to-zero (auto-pause at 0 ACU)"
+      ]
+    },
+    {
+      "id": "eval-09-high-cpu-and-slow-query-triage",
+      "prompt": "Our Aurora PostgreSQL writer instance in ap-south-1 suddenly spiked to 95% CPU and application queries are timing out. I'm new to AWS database monitoring — how do I check in AWS and inside PostgreSQL whether this is caused by missing indexes, lock contention, or a bad query plan, and what exact read-only diagnostic SQL queries should I run?",
+      "expected_output": "Activates the relevant database skill(s), explains how to triage the spike in AWS using CloudWatch (`CPUUtilization`, `DBLoad`, `DatabaseConnections`) and Performance Insights (`DBLoad` vs `Max vCPU`, top wait events such as `CPU`, `LWLock:BufferMapping`, `Lock:transactionid`, `IO:DataFileRead`), and provides concrete read-only PostgreSQL SQL queries against `pg_stat_activity` (active and blocking sessions), `pg_locks`, `pg_stat_statements` (top CPU/time-consuming queries), and `EXPLAIN (ANALYZE, BUFFERS)`.",
+      "files": [],
+      "expectations": [
+        "Activates the amazon-aurora-postgresql skill (and/or db-observability-and-wait-triage) and performs only read-only operations",
+        "Explains how to use Performance Insights (`DBLoad` vs `Max vCPU` and wait events such as `CPU`, `LWLock`, `Lock`, `IO`) and CloudWatch metrics to isolate the bottleneck",
+        "Provides concrete read-only SQL diagnostic queries using `pg_stat_activity`, `pg_locks`, `pg_stat_statements`, and `EXPLAIN (ANALYZE, BUFFERS)`"
+      ]
+    },
+    {
+      "id": "eval-10-autovacuum-bloat-and-xid-wraparound",
+      "prompt": "We have a high-write `orders` table in Aurora PostgreSQL where updates and deletes have slowed down and storage usage keeps growing even though the row count is flat. How do we diagnose dead-tuple bloat and transaction ID (XID) wraparound risk in Aurora PostgreSQL, and which autovacuum settings should we tune?",
+      "expected_output": "Activates the relevant database skill(s), provides read-only SQL queries to inspect dead tuples and autovacuum history (`pg_stat_user_tables`: `n_dead_tup`, `n_live_tup`, `last_autovacuum`) and transaction ID age (`age(datfrozenxid)` in `pg_database` and `age(relfrozenxid)` in `pg_class`), explains how long-running transactions or abandoned replication slots block vacuum cleanup (`xmin` horizon), and gives concrete autovacuum tuning recommendations (`autovacuum_vacuum_scale_factor`, `autovacuum_vacuum_threshold`, `autovacuum_vacuum_cost_limit`, `autovacuum_vacuum_cost_delay`, `autovacuum_work_mem`).",
+      "files": [],
+      "expectations": [
+        "Activates the amazon-aurora-postgresql skill (and/or db-observability-and-wait-triage) and provides read-only SQL queries against `pg_stat_user_tables` (dead tuples / last autovacuum) and `pg_database` / `pg_class` (`age(datfrozenxid)` / `age(relfrozenxid)`)",
+        "Explains what blocks autovacuum from reclaiming dead tuples (long-running open transactions, idle-in-transaction sessions, orphaned prepared transactions, or inactive replication slots holding back the xmin horizon)",
+        "Provides concrete per-table or cluster-level autovacuum tuning parameters (`autovacuum_vacuum_scale_factor`, `autovacuum_vacuum_cost_limit`, `autovacuum_vacuum_cost_delay`, `autovacuum_work_mem`)"
+      ]
+    },
+    {
+      "id": "eval-11-zero-downtime-schema-migration-ddl",
+      "prompt": "I need to add a new index, a `NOT NULL` constraint on an existing column, and a foreign key constraint to a 500-million-row table in our production Aurora PostgreSQL cluster without locking reads or writes. What is the safe, lock-free way to run these schema changes in PostgreSQL?",
+      "expected_output": "Activates the relevant database skill(s) and outlines the lock-safe PostgreSQL DDL patterns: setting `lock_timeout` and `statement_timeout` on the session, running `CREATE INDEX CONCURRENTLY` (outside a transaction block), enforcing `NOT NULL` safely via `ALTER TABLE ... ADD CONSTRAINT ... CHECK (col IS NOT NULL) NOT VALID` followed by `VALIDATE CONSTRAINT` (or utilizing a safe validated check constraint in PG 12+), and adding the foreign key with `ALTER TABLE ... ADD CONSTRAINT ... FOREIGN KEY ... NOT VALID` followed by `VALIDATE CONSTRAINT`.",
+      "files": [],
+      "expectations": [
+        "Activates the amazon-aurora-postgresql skill (and/or db-ha-dr-and-schema-evolution) and recommends setting session `lock_timeout` and `statement_timeout` before running production DDL",
+        "Shows `CREATE INDEX CONCURRENTLY` for adding the index without blocking writes and notes that it cannot run inside a transaction block",
+        "Shows the two-step `NOT VALID` + `VALIDATE CONSTRAINT` pattern for adding the foreign key constraint and the `CHECK (... IS NOT NULL) NOT VALID` + `VALIDATE CONSTRAINT` pattern for enforcing `NOT NULL` without a long `ACCESS EXCLUSIVE` table scan"
+      ]
+    },
+    {
+      "id": "eval-12-pgvector-rag-similarity-search-setup",
+      "prompt": "Our team is building a RAG application and needs to store and query 5 million 1536-dimensional OpenAI embeddings. Can we use Aurora PostgreSQL in ap-south-1 for vector similarity search instead of buying a separate vector database? Show how to set up `pgvector`, how to choose between HNSW and IVFFlat indexes, and which PostgreSQL / Aurora settings help speed up index builds and queries.",
+      "expected_output": "Activates the amazon-aurora-postgresql skill, confirms native `pgvector` support on Aurora PostgreSQL, provides the SQL to enable and use `pgvector` (`CREATE EXTENSION IF NOT EXISTS vector;`, `vector(1536)` column, and distance operators `<=>` cosine, `<->` L2, `<#>` inner product), compares HNSW (`m`, `ef_construction`, `hnsw.ef_search` — higher recall and query speed, no training step required, higher memory usage) vs IVFFlat (`lists`, `ivfflat.probes` — faster build/lower memory, requires data present before indexing), and recommends tuning `maintenance_work_mem`, `max_parallel_maintenance_workers`, and considering Aurora Optimized Reads (`r6gd`/`r8gd` NVMe cache) when working sets exceed buffer cache.",
+      "files": [],
+      "expectations": [
+        "Activates the amazon-aurora-postgresql skill and provides concrete SQL for enabling `pgvector` (`CREATE EXTENSION vector`), defining a `vector(1536)` column, and querying with `pgvector` distance operators (`<=>`, `<->`, `<#>`) ",
+        "Compares HNSW (`m`, `ef_construction`, `hnsw.ef_search`) vs IVFFlat (`lists`, `ivfflat.probes`) across recall/latency, memory footprint, and build behavior",
+        "Recommends concrete PostgreSQL and Aurora tuning parameters for vector workloads (`maintenance_work_mem`, `max_parallel_maintenance_workers`, `shared_buffers`, and/or Aurora Optimized Reads)"
+      ]
+    },
+    {
+      "id": "eval-13-multi-region-dr-and-fast-cloning",
+      "prompt": "Our compliance team requires a disaster recovery plan for our Aurora PostgreSQL database in ap-south-1 with RPO under 5 seconds and RTO under 1 minute in a secondary region, plus a way for our QA team to spin up an isolated copy of our 4 TB production database in minutes without paying for another 4 TB of storage. How do we architect both in Aurora PostgreSQL?",
+      "expected_output": "Activates the amazon-aurora-postgresql skill (and/or db-ha-dr-and-schema-evolution), recommends **Aurora Global Database** for cross-region DR (storage-layer physical replication with typical RPO < 1 second and managed switchover / unplanned failover RTO typically < 1 minute), and recommends **Aurora Fast Database Cloning** for the 4 TB QA environment (copy-on-write shared storage architecture that provisions in minutes and charges only for delta blocks written after cloning).",
+      "files": [],
+      "expectations": [
+        "Activates the amazon-aurora-postgresql skill (and/or db-ha-dr-and-schema-evolution) and recommends Aurora Global Database to meet the <5s RPO and <1 min cross-region RTO requirement",
+        "Distinguishes between planned managed switchover (`switchover-global-cluster`, zero data loss) and unplanned cross-region failover (`failover-global-cluster`) in Aurora Global Database",
+        "Recommends Aurora Fast Cloning (copy-on-write storage sharing) for spinning up the 4 TB QA copy in minutes without duplicating full storage costs"
+      ]
+    },
+    {
+      "id": "eval-14-pitr-recovery-vs-backtrack-gotcha",
+      "prompt": "A developer accidentally ran a `DELETE` without a `WHERE` clause on our `customers` table in our Aurora PostgreSQL cluster in ap-south-1 at 14:32 UTC today. Can we use Aurora Backtrack to rewind the database by 15 minutes, or what is the exact recovery procedure to restore the lost rows without overwriting other tables that have received new writes since 14:32 UTC?",
+      "expected_output": "Activates the amazon-aurora-postgresql skill, immediately clarifies that **Aurora Backtrack is ONLY available for Aurora MySQL and is NOT supported on Aurora PostgreSQL**, and provides the step-by-step **Point-in-Time Recovery (PITR)** workflow (`restore-db-cluster-to-point-in-time` to just before `14:32 UTC` into a new temporary Aurora cluster, provisioning a reader/writer instance on the restored cluster, and selectively exporting/restoring the `customers` rows via `pg_dump`/`pg_restore` or `postgres_fdw` into the live cluster without overwriting other tables).",
+      "files": [],
+      "expectations": [
+        "Activates the amazon-aurora-postgresql skill and explicitly states that Aurora Backtrack is NOT supported on Aurora PostgreSQL (Backtrack is Aurora MySQL only)",
+        "Outlines the Point-in-Time Recovery (PITR) procedure (`restore-db-cluster-to-point-in-time`) to restore a separate clone/cluster to a timestamp just before 14:32 UTC",
+        "Explains how to extract and restore only the affected `customers` table data (using `pg_dump` / `pg_restore`, `\\\\copy`, or `postgres_fdw`) back into the live production cluster so post-14:32 writes on other tables are preserved"
+      ]
+    },
+    {
+      "id": "eval-15-logical-replication-cdc-and-wal-slot-safety",
+      "prompt": "We want to stream real-time change data capture (CDC) from our Aurora PostgreSQL cluster in ap-south-1 to Kafka using Debezium. What cluster parameters and PostgreSQL permissions do we need, how do we prevent a broken Debezium connector or inactive replication slot from filling up storage and crashing the database, and when should we use Aurora Zero-ETL instead?",
+      "expected_output": "Activates the amazon-aurora-postgresql skill, explains enabling `rds.logical_replication = 1` in a custom DB cluster parameter group (requires reboot), granting the `rds_replication` role and creating a publication + logical replication slot (`pgoutput` or `wal2json`), warns about the critical operational hazard where an **inactive replication slot (`active = false` in `pg_replication_slots`) retains WAL indefinitely** and outlines safeguards (`max_slot_wal_keep_size`, CloudWatch alarms on `TransactionLogsDiskUsage`, `ReplicationSlotDiskUsage`, `OldestReplicationSlotLag`), and explains when Aurora Zero-ETL to Amazon Redshift fits (analytics warehouse replication without managing Kafka/Debezium).",
+      "files": [],
+      "expectations": [
+        "Activates the amazon-aurora-postgresql skill and specifies setting `rds.logical_replication = 1` in the DB cluster parameter group (noting that it requires a reboot) along with `rds_replication` role / publication setup",
+        "Explains the danger of inactive/abandoned logical replication slots retaining WAL logs and specifies how to monitor and cap it (`pg_replication_slots`, `max_slot_wal_keep_size`, and CloudWatch `TransactionLogsDiskUsage` / `ReplicationSlotDiskUsage`)",
+        "Explains what Aurora Zero-ETL is (managed replication to Amazon Redshift) and when to use it vs Debezium/Kafka event streaming"
+      ]
+    },
+    {
+      "id": "eval-16-read-replica-architecture-and-lag-troubleshooting",
+      "prompt": "Our Aurora PostgreSQL workload in ap-south-1 is 75% reads and 25% writes. How does Aurora PostgreSQL read replication differ from standard RDS PostgreSQL streaming replication, why is Aurora replica lag typically single-digit milliseconds, what can still cause an Aurora reader to lag or cancel queries during heavy writes on the writer, and how should our application route read vs write queries?",
+      "expected_output": "Activates the amazon-aurora-postgresql skill, explains that Aurora writer and reader instances share the same distributed storage volume across 3 AZs (so readers receive asynchronous page cache invalidations/updates rather than replaying full WAL streams to independent disks, keeping `AuroraReplicaLag` in single-digit/low milliseconds), explains that long-running queries on a reader can still conflict with vacuum/garbage collection or buffer invalidations from heavy writer activity (governed by `max_standby_streaming_delay`), and explains routing writes to the Cluster Endpoint and reads to the Reader Endpoint (or Custom Endpoints).",
+      "files": [],
+      "expectations": [
+        "Activates the amazon-aurora-postgresql skill and explains how Aurora's shared distributed storage architecture differs from standard RDS PostgreSQL disk-to-disk WAL streaming replication",
+        "Explains what can still cause Aurora PostgreSQL reader lag or query cancellation (`ERROR: canceling statement due to conflict with recovery`) and how `max_standby_streaming_delay` / hot standby feedback affects it",
+        "Explains how to use the Cluster (Writer) Endpoint, Reader Endpoint (DNS load-balanced across readers), and Custom Endpoints for application read/write splitting"
+      ]
+    },
+    {
+      "id": "eval-17-private-vpc-laptop-connectivity-options",
+      "prompt": "I provisioned a private Aurora PostgreSQL cluster inside our VPC in ap-south-1, and now I can't connect to it from DBeaver or `psql` on my MacBook. Should I modify the DB instance to enable `PubliclyAccessible` and open port 5432 to my home IP, or what is the recommended secure way to connect from my laptop?",
+      "expected_output": "Activates the amazon-aurora-postgresql skill, strongly warns against (and refuses) enabling `--publicly-accessible` because exposing a database instance directly to the internet is a severe security anti-pattern blocked by the skill's safety guardrails, and provides the approved secure connection methods: (1) SSH tunnel or AWS Systems Manager (SSM) Session Manager port forwarding through a bastion/jump host in the VPC (`localhost:5432`), (2) RDS Data API over HTTPS with IAM authentication, or (3) Aurora PostgreSQL Express Configuration with IAM auth if a custom VPC is not needed.",
+      "files": [],
+      "expectations": [
+        "Activates the amazon-aurora-postgresql skill and explicitly advises against enabling `PubliclyAccessible` (`--publicly-accessible`), explaining why exposing the database directly to the internet is unsafe",
+        "Provides concrete port-forwarding instructions using an EC2 bastion / jump host with SSH tunneling (`ssh -L 5432:<cluster-endpoint>:5432 ...`) and/or AWS SSM Session Manager (`AWS-StartPortForwardingSessionToRemoteHost`)",
+        "Also mentions the VPC-free / HTTPS alternatives from the skill (Aurora Express Configuration with IAM auth and RDS Data API)"
+      ]
+    },
+    {
+      "id": "eval-18-migrating-rds-postgresql-to-aurora-postgresql",
+      "prompt": "We currently run a 1.5 TB standard Amazon RDS for PostgreSQL 15 instance in ap-south-1 and want to migrate it to Aurora PostgreSQL with minimal production downtime. What are the supported migration paths from RDS PostgreSQL to Aurora PostgreSQL, and how do they compare in terms of downtime, complexity, and rollback safety?",
+      "expected_output": "Activates the amazon-aurora-postgresql skill, compares the supported RDS PostgreSQL -> Aurora PostgreSQL migration methods: (1) **Aurora Read Replica** created directly from the source RDS PostgreSQL instance and promoted to standalone Aurora cluster once `ReplicaLag` is zero (low downtime of a few minutes), (2) **RDS Blue/Green Deployment** or **PostgreSQL Logical Replication / AWS DMS** (near-zero downtime with safe pre-cutover testing and instant rollback by keeping the source RDS instance untouched), and (3) **RDS Snapshot Migration** (`migrate-snapshot` / restore snapshot to Aurora — simplest, but highest downtime).",
+      "files": [],
+      "expectations": [
+        "Activates the amazon-aurora-postgresql skill and compares multiple migration paths from RDS for PostgreSQL to Aurora PostgreSQL (Aurora Read Replica promotion, Blue/Green or Logical Replication / DMS, and Snapshot restore)",
+        "Compares the expected downtime, prerequisites, and rollback characteristics of each migration path for a 1.5 TB database",
+        "Outlines pre-migration and cutover validation steps (checking extensions, parameter compatibility, replication lag, and stopping writes before cutover)"
+      ]
+    },
+    {
+      "id": "eval-19-iam-auth-and-least-privilege-roles",
+      "prompt": "Right now all 10 of our microservices in ap-south-1 connect to our Aurora PostgreSQL cluster using the same master `postgres` username and a static password stored in `.env` files. How do we transition to AWS Secrets Manager rotation for the master account and set up IAM database authentication with separate least-privilege PostgreSQL roles for read-write services vs read-only reporting?",
+      "expected_output": "Activates the amazon-aurora-postgresql skill (and/or db-ha-dr-and-schema-evolution), explains managing the master user password via AWS Secrets Manager (`--manage-master-user-password`) so no static master password is stored in `.env` files, shows how to enable IAM database authentication (`--enable-iam-database-authentication`), provides the SQL to create separate least-privilege roles (`CREATE ROLE app_rw WITH LOGIN; GRANT rds_iam TO app_rw;` with scoped table/schema privileges, and `CREATE ROLE app_ro WITH LOGIN; GRANT rds_iam TO app_ro; ALTER ROLE app_ro SET default_transaction_read_only = on;` without `rds_superuser`), and notes IAM DB authentication's connection rate limits and 15-minute token lifetime.",
+      "files": [],
+      "expectations": [
+        "Activates the amazon-aurora-postgresql skill (and/or db-ha-dr-and-schema-evolution) and explains replacing static `.env` master passwords with AWS Secrets Manager (`--manage-master-user-password`) and IAM database authentication (`--enable-iam-database-authentication`)",
+        "Provides concrete PostgreSQL SQL statements to create separate read-write and read-only roles, grant `rds_iam`, enforce `default_transaction_read_only = on` for the read-only role, and avoid granting `rds_superuser`",
+        "Explains how applications generate and use 15-minute IAM auth tokens (`generate-db-auth-token` with SSL/TLS required) and notes IAM authentication connection rate limits"
+      ]
+    },
+    {
+      "id": "eval-20-unexpected-aurora-bill-spike-investigation",
+      "prompt": "Our Aurora PostgreSQL bill in ap-south-1 unexpectedly doubled last month even though we didn't add any new DB instances. Check our ap-south-1 environment in read-only mode, explain the most common hidden cost drivers in Aurora PostgreSQL (such as storage I/O charges, backup storage beyond retention, Serverless v2 ACU runaway, or Performance Insights retention), and show how we can identify which one caused the spike.",
+      "expected_output": "Activates the amazon-aurora-postgresql skill, uses connected AWS MCP tools in read-only mode to check ap-south-1 clusters/pricing, explains the primary non-instance Aurora cost drivers (`StorageIOUsage` billed per million read/write I/O operations on Aurora Standard and the 25% breakeven threshold for switching to I/O-Optimized, `Aurora:BackupUsage` when backup retention or manual snapshots exceed 100% of provisioned cluster storage, Serverless v2 `ServerlessDatabaseCapacity` ACU spikes/failure to scale down due to long transactions or high `MaxCapacity`, and paid Performance Insights retention beyond the free 7-day tier), and shows how to inspect Cost Explorer usage types and CloudWatch metrics (`VolumeReadIOPs`, `VolumeWriteIOPs`, `VolumeBytesUsed`, `ServerlessDatabaseCapacity`, `FreeLocalStorage`) to pinpoint the root cause.",
+      "files": [],
+      "expectations": [
+        "Activates the amazon-aurora-postgresql skill and uses connected AWS MCP tools in read-only mode to check ap-south-1 state or pricing",
+        "Explains the major hidden Aurora PostgreSQL cost drivers: Storage I/O (`StorageIOUsage` and the 25% I/O-Optimized threshold), backup/snapshot storage exceeding 100% of cluster volume size (`Aurora:BackupUsage`), Serverless v2 ACU scaling runaway (`ServerlessDatabaseCapacity`), and extended Performance Insights / CloudWatch log retention",
+        "Provides a concrete diagnostic checklist mapping Cost Explorer usage types and CloudWatch metrics (`VolumeReadIOPs`, `VolumeWriteIOPs`, `VolumeBytesUsed`, `ServerlessDatabaseCapacity`) to each cost driver"
+      ]
+    }
+  ]
+}

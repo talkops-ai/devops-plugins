@@ -25,6 +25,7 @@ This is an **agent plugin**: every skill, command, hook, and MCP server below is
 | `auditing-cloudtrail-forensics` | Executes AWS CloudTrail forensic investigations, management and data event timeline reconstruction, CloudTrail Lake SQL queries, `AccessDenied` spike analysis, root account activity checks, and `aws:CalledViaAWSMCP` AI… |
 | `diff-scanning-with-aws-security-agent` | Run a fast AWS Security Agent diff scan on only the changed code since a git ref. |
 | `engineering-iam-least-privilege` | Authors, audits, and validates least-privilege AWS IAM policies, trust policies, permission boundaries, SCPs, and keyless CI/CD OIDC federation (`sts:AssumeRoleWithWebIdentity`) using IAM Access Analyzer (`validate-poli… |
+| `enrich-with-aws-security-agent` | Automatically load this skill when investigating application outages, service degradation, or errors that could have security-related root causes — including unexplained downtime, authentication or authorization failure… |
 | `executing-synthetic-release-tests` | Runs post-deployment User Acceptance Testing (UAT), smoke tests, CloudWatch Synthetics canaries, API Gateway test invocations, and live Golden Signal metric/alarm verification, triggering automated rollback if SLOs brea… |
 | `hardening-iac-and-perimeter` | Audits and hardens Infrastructure-as-Code templates (Terraform, AWS CDK, CloudFormation, SAM, Dockerfiles) and live AWS network, storage, and encryption perimeters (VPC Security Groups, NACLs, WAFv2 WebACLs, S3 Block Pu… |
 | `investigating-cloudwatch-incidents` | Performs native AWS SRE root-cause analysis (RCA) for production outages, latency spikes, 5xx errors, and alarm breaches using CloudWatch Alarms, Metrics, Logs Insights, Application Signals, X-Ray traces, and CloudTrail… |
@@ -36,10 +37,11 @@ This is an **agent plugin**: every skill, command, hook, and MCP server below is
 | `scanning-with-aws-security-agent` | Run an AWS Security Agent scan on the workspace — uploads the source to AWS, scans it with the managed Security Agent service, and returns ranked, verified findings with code locations and remediations. |
 | `setup` | Configures and verifies the AWS DevSecOps Engineer plugin environment: checks `uvx` and AWS CLI prerequisites, verifies SigV4 credentials and named AWS profiles, validates bundled MCP servers (`aws-mcp`, `aws-security-a… |
 | `setup-security-agent` | Configure AWS Security Agent for the current workspace — provision or reuse an agent space, IAM service role, and S3 bucket. |
-| `signing-in-to-aws` | Gets AWS credentials for CLI, SDK, and MCP server access via `aws login` or `aws sso login`, validates caller identity across single or multi-account named profiles, and verifies SigV4 readiness for `mcp-proxy-for-aws`. |
+| `signing-in-to-aws` | Gets AWS credentials for CLI/SDK access via `aws login`. |
 | `threat-modeling-with-aws-security-agent` | Run an AWS Security Agent threat model review on spec/design documents. |
 | `triaging-cloud-security-posture` | Aggregates, correlates, and remediates cloud security posture (CSPM) findings and runtime threats across AWS Security Hub (CIS, FSBP), Amazon GuardDuty, Amazon Inspector (ECR, Lambda, EC2 CVEs), and AWS Config, mapping… |
 | `validating-release-readiness` | Executes a comprehensive pre-deployment and pre-merge release-readiness gate on local git diffs, pull requests, and IaC change sets: inspects CloudFormation change sets / `cdk diff` / `terraform plan` for stateful resou… |
+| `wiz-security-context` | Automatically load this skill when investigating an operational anomaly on a cloud resource - CPU or memory spikes, latency, elevated error rates, unexpected network traffic, crashes, or cost spikes - to determine wheth… |
 
 ## Commands
 

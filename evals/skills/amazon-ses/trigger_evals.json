@@ -1,0 +1,34 @@
+[
+  {
+    "query": "Audit our Amazon SESv2 account status, sending quota, verified email identities, configuration sets, and suppression list in ap-south-1.",
+    "should_trigger": true
+  },
+  {
+    "query": "How do I set up an Amazon SES domain identity with 2048-bit Easy DKIM CNAME records, a Custom MAIL FROM subdomain, SPF, and DMARC in Route 53?",
+    "should_trigger": true
+  },
+  {
+    "query": "Help me request Amazon SES production access using aws sesv2 put-account-details and configure bounce and complaint event destinations.",
+    "should_trigger": true
+  },
+  {
+    "query": "Our Amazon SES bounce rate is approaching 4% and emails are landing in spam—how do I check our suppressed destinations and enforce TLS_POLICY REQUIRE on our configuration set?",
+    "should_trigger": true
+  },
+  {
+    "query": "Compare our Amazon SESv2 identities and quotas across ap-south-1 and us-east-1 for a multi-region transactional email failover architecture.",
+    "should_trigger": true
+  },
+  {
+    "query": "How do I register a US 10DLC campaign or India DLT Sender ID for SMS messaging using aws pinpoint-sms-voice-v2?",
+    "should_trigger": false
+  },
+  {
+    "query": "Help me link a WhatsApp Business Account and create a WhatsApp message template using aws socialmessaging.",
+    "should_trigger": false
+  },
+  {
+    "query": "How do I repartition an Amazon Kinesis Data Stream or migrate our Apache Kafka cluster to Amazon MSK Serverless?",
+    "should_trigger": false
+  }
+]

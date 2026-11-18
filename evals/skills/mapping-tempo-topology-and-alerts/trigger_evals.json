@@ -1,0 +1,111 @@
+{
+  "skill_name": "mapping-tempo-topology-and-alerts",
+  "companion_skills": [
+    "tuning-sampling-and-trace-derived-metrics",
+    "authoring-and-testing-prometheus-rules",
+    "investigating-tempo-latency-regressions",
+    "operating-tempo-deployments-and-tenants"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Map upstream callers and downstream service dependencies (`cart-service`, `payment`, `shipping-service`, `product-catalog-service`, `currency-service`, `email`, `kafka`) for `checkout-service` in Grafana Tempo.",
+      "notes": "Direct service topology mapping"
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Generate a `PrometheusRule` manifest in `observability` for `payment` (`oteldemo.PaymentService/Charge`) using Tempo `traces_spanmetrics_*` metrics.",
+      "notes": "Spanmetrics PrometheusRule generation"
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Identify high-coupling blast-radius bottleneck services (like `flagd` and `product-catalog-service`) across our `otel-demo` Tempo service graph.",
+      "notes": "Blast radius bottleneck analysis"
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Which `otel-demo` microservices will break if we take `product-catalog-service` or `valkey-cart` offline for 10 minutes? Check distributed traces.",
+      "notes": "Pre-maintenance blast radius via Tempo"
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Why is `traces_service_graph_unpaired_spans_total` climbing and missing `cart-service -> valkey-cart` and `product-catalog-service -> postgresql` edges in Tempo?",
+      "notes": "Service graph unpaired spans"
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Build RED error-ratio and p99 latency alerts in `observability` from Tempo `metrics-generator` span metrics for `shipping-service`.",
+      "notes": "Tempo span-metrics alerting"
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Map upstream and downstream callers for `checkout-service` in `otel-demo` when Prometheus service-graph metrics aren't scraped yet, and explain what low-QPS `email` calls sampled traces might miss.",
+      "notes": "Topology discovery fallback tiers"
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Find every failing `client -> server` RPC edge across `otel-demo` over the last hour in Grafana Tempo.",
+      "notes": "Failing dependency edge discovery"
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "expected_alternative_skill": "tuning-sampling-and-trace-derived-metrics",
+      "prompt": "Wire `spanmetrics` and `servicegraph` connectors before `tail_sampling` inside `opentelemetry-otel-collector` in `otel-demo`.",
+      "notes": "OTel Collector connector wiring"
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "expected_alternative_skill": "authoring-and-testing-prometheus-rules",
+      "prompt": "Unit-test and deploy an `OtelEmailPodOOMKilled` container memory `PrometheusRule` directly into Prometheus in `observability`.",
+      "notes": "Native Prometheus rule testing & upsert"
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "expected_alternative_skill": "investigating-tempo-latency-regressions",
+      "prompt": "Diff `PlaceOrder` trace `1234abcd` against `adManualGc` trace `5678ef01` in Tempo to see which span caused the latency spike.",
+      "notes": "Individual trace latency diff"
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "expected_alternative_skill": "operating-tempo-deployments-and-tenants",
+      "prompt": "Deploy a `small-prod` `TempoStack` CR `tempo-otel` in namespace `observability` with S3 object storage.",
+      "notes": "Tempo Operator CR provisioning"
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "skill_name": "configuring-vpc-endpoints-for-private-aws-service-access",
+  "companion_skills": [
+    "amazon-ec2-image-builder",
+    "aws-backup-coverage-review",
+    "aws-compute",
+    "aws-containers",
+    "aws-finops-and-cost-optimization"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use `configuring-vpc-endpoints-for-private-aws-service-access` to help me design, validate, and troubleshoot configuring vpc endpoints for private aws service access."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Walk me through best practices and production guardrails for configuring vpc endpoints for private aws service access (`configuring-vpc-endpoints-for-private-aws-service-access`)."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Configures VPC endpoints (interface and gateway) for private AWS service access using AWS PrivateLink. Use when setting up secure private connectivity to S3, DynamoDB, and other AW"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating configuring vpc endpoints for private aws service access?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "During our `ap-south-1` sprint readiness review, audit our configuring vpc endpoints for private aws service access setup in read-only mode and highlight top risks."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Help me configure and troubleshoot amazon ec2 image builder exclusively without touching configuring vpc endpoints for private aws service access."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+    }
+  ]
+}

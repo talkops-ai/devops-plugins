@@ -32,6 +32,7 @@ This is an **agent plugin**: every skill, command, hook, and MCP server below is
 | `aws-networking-and-compute` | Provides production AWS infrastructure-as-code blueprints for multi-AZ VPCs, VPC Endpoints/PrivateLink, Transit Gateways, EKS/ECS Fargate container platforms, Lambda/EventBridge serverless architectures, and S3/RDS/Dyna… |
 | `aws-pulumi` | Authors, previews, validates, and troubleshoots AWS infrastructure in TypeScript, Python, or Go using Pulumi ComponentResource abstractions, dual pulumi-aws + pulumi-aws-native providers, Pulumi ESC OIDC credential brok… |
 | `aws-terraform` | Authors, refactors, tests, imports, and validates production AWS Terraform and OpenTofu configurations using the dual hashicorp/aws + hashicorp/awscc provider strategy, S3/HCP state locking, .tftest.hcl test suites, .tf… |
+| `eks-karpenter-autoscaling` | Architect, bootstrap, audit, right-size, migrate, and troubleshoot Amazon EKS node and workload autoscaling with Karpenter v1 (`karpenter.sh/v1`), EKS Auto Mode (`eks.amazonaws.com/v1`), and HPA/KEDA/VPA. |
 | `iac-architecture-advisor` | Day-0 multi-engine AWS IaC architecture advisor and rapid-prototyping router. |
 | `signing-in-to-aws` | Gets AWS credentials for CLI/SDK access via `aws login`. |
 

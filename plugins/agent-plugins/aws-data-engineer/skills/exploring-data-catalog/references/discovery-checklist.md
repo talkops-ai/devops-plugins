@@ -63,3 +63,21 @@ Map SerDe libraries to human-readable format names:
 - `org.openx.data.jsonserde.JsonSerDe` = JSON
 - `org.apache.hadoop.hive.serde2.OpenCSVSerde` = CSV
 - `org.apache.hadoop.hive.ql.io.orc` = ORC
+
+## Large Catalog Progressive Drill-Down, Table Classification & Health Checks
+
+1. **Large Catalog Rule (`>20 databases`)**:
+   - When a Glue Data Catalog has **more than 20 databases**, do **not** enumerate every table across all databases upfront. Summarize at the database level first (grouping by domain/prefix) and ask the user which specific database(s) they want to drill into.
+2. **Distinguish User Data from System Tables**:
+   - Separate business/user databases from AWS-managed system databases and tables (`aws:CloudTrail`, `aws:Vpce`, `aws:S3AccessLogs`). Recommend routing system table log analysis to the **`auditing-aws-system-tables`** skill.
+3. **Table Format Posture Classification**:
+   - Classify tables into three tiers:
+     1. **S3 Tables** (managed Iceberg with automatic compaction/snapshot management)
+     2. **Iceberg on general-purpose S3** (`Parameters.table_type = 'ICEBERG'`)
+     3. **Hive tables (`Parquet` / `CSV` / `JSON` / `ORC`)** (flag missing `LastAnalyzedTime` column statistics or uncompacted CSV/JSON tables)
+4. **`s3tablescatalog` Federation Check**:
+   - Whenever S3 Table buckets exist, check whether Lake Formation / Glue catalog federation is configured by running:
+     ```bash
+     aws glue get-catalog --catalog-id s3tablescatalog
+     ```
+   - Also flag failed Glue crawlers (`LastCrawl.Status == 'FAILED'`) and untested Glue JDBC connections.

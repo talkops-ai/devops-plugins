@@ -10,6 +10,7 @@ description: >-
   feature support without this skill loaded.
 version: 1
 ---
+
 # Amazon Keyspaces
 
 ## Safety guidance
@@ -376,7 +377,7 @@ Do not `file_read` large diagnostic files into context. Pass the directory to `p
 Cassandra credentials or SigV4 plugin missing. See [security-considerations.md](references/security-considerations.md).
 
 ### `npm install` fails in `scripts/`
-Node < 18 or stale lockfile. Delete `scripts/node_modules/` and `scripts/package-lock.json`, rerun.
+Node < 18 or stale lockfile. Delete `scripts/node_modules/` and `package-lock.json`, rerun.
 
 ### LWT inside UNLOGGED BATCH is NOT supported
 LWT (`IF NOT EXISTS`, `IF EXISTS`, conditional updates) inside `UNLOGGED BATCH` is NOT supported on Amazon Keyspaces. LWT statements must be run individually (standalone). **LOGGED BATCH** is also NOT supported on Keyspaces. Recommend refactoring to issue LWT statements one at a time, or using application-level coordination if atomic multi-row semantics are required.
@@ -392,10 +393,10 @@ LWT (`IF NOT EXISTS`, `IF EXISTS`, conditional updates) inside `UNLOGGED BATCH` 
 
 ## Handoff from aws-database-selection
 
-This skill can be invoked directly, or it can be entered from the `aws-database-selection` parent skill after that skill has run a requirements interview and produced a `requirements.json` artifact. When you see a backtick-wrapped path matching `aws_dbs_requirements/*/requirements.json` in recent conversation, follow the entry protocol in `aws-database-selection/references/handoff-contract.md`:
+This skill can be invoked directly, or it can be entered from the `aws-database-selection` parent skill after that skill has run a requirements interview and produced a `requirements.json` artifact. When you see a backtick-wrapped path matching `aws_dbs_requirements/*/requirements.json` in recent conversation, follow the entry protocol in `aws-database-selection/handoff-contract.md`:
 
 1. Read the artifact using `file_read`.
-2. Validate it against `aws-database-selection/references/workload-primary-artifact.schema.json`. If malformed or unreadable, tell the user and proceed without it.
+2. Validate it against `aws-database-selection/workload-primary-artifact.schema.json`. If malformed or unreadable, tell the user and proceed without it.
 3. Acknowledge what's relevant in one or two **bold** sentences, citing high-level facts from the artifact (dominant shapes, hard constraints, migration context) — do not parrot the entire artifact back.
 4. Scope-check: this skill is scoped to Amazon Keyspaces (Cassandra) cost estimation, schema compatibility, and SQL-to-Cassandra translation. If the artifact's `workload_primaries.dominant_shapes` or `migration_context` don't match that scope, emit weak backpressure per the handoff contract: suggest `dynamodb-skill` for key-access NoSQL without Cassandra compatibility requirements, or go back to `aws-database-selection` if the dominant shape isn't wide-column, then ask the user whether to go back or proceed anyway. Do not silently misuse the artifact.
 5. Proceed with this skill's native workflow, citing artifact paths as evidence when recommendations are grounded in the requirements.

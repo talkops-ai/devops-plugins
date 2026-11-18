@@ -1,0 +1,99 @@
+{
+  "skill_name": "storage-s3-resiliency-expertise",
+  "companion_skills": [
+    "aws-storage",
+    "aws-backup-coverage-review",
+    "troubleshooting-s3-files",
+    "aws-well-architected-security-compliance",
+    "aws-fsxn-operations-review"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Run an S3 resiliency review on `s3://krayak-dev-8021-as1-terraform-tfstate` across all nine protection and security dimensions."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Audit S3 bucket security, versioning, replication, Object Lock, Block Public Access, ownership controls, and website hosting for `my-prod-assets`."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Review these S3 buckets for disaster recovery readiness and data protection posture: `logs-prod, artifacts-prod, backups-prod`."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Is `arn:aws:s3:::krayak-dev-8021-as1-terraform-tfstate` safe against accidental deletion, ransomware, and public exposure?"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Check whether our bucket `https://customer-uploads.s3.ap-south-1.amazonaws.com` has versioning, cross-region replication, KMS encryption, and `BucketOwnerEnforced` enabled."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We have a list of 15 S3 buckets and need a rated summary matrix plus detailed findings on any Low-rated buckets."
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "`GetBucketVersioning` and `GetBucketLogging` both returned empty HTTP 200 `{}` bodies on `orders-lake-prod` while `DeleteMarkerReplication` is `Enabled` on same-region replication—evaluate our bucket recovery posture."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Before switching `legacy-partner-drop` from `BucketOwnerPreferred` to `BucketOwnerEnforced` and disabling S3 static website hosting, review its S3 resiliency posture."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Assess `s3a://analytics-raw-ap-south-1/2026/` for WORM Object Lock `COMPLIANCE` vs `GOVERNANCE` readiness and CloudTrail S3 data-event audit fallback."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "expected_alternative_skill": "aws-backup-coverage-review",
+      "prompt": "Run an account-wide AWS Backup coverage review across all enabled Regions checking `DescribeRegionSettings` opt-in, backup plans, and Vault Lock."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "expected_alternative_skill": "troubleshooting-s3-files",
+      "prompt": "Mount of our Amazon S3 Files mount target on EC2 is failing with NFS timeout and POSIX UID/GID permission denied errors."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "expected_alternative_skill": "aws-storage",
+      "prompt": "Compare S3 Intelligent-Tiering vs Glacier Instant Retrieval storage class lifecycle transition costs for 500 TB of archive objects."
+    }
+  ]
+}

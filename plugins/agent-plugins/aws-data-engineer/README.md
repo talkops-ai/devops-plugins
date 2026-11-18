@@ -23,6 +23,7 @@ This is an **agent plugin**: every skill, command, hook, and MCP server below is
 | Skill | What it does |
 |---|---|
 | `amazon-opensearch-service` | Guides OpenSearch Ingestion (OSIS), Index State Management (ISM) hot-warm-cold tiering, PPL log analytics, OpenTelemetry trace analytics, k-NN vector/hybrid search, Solr/Elasticsearch migration, and cluster/Serverless p… |
+| `analytics-opensearch-expertise` | Amazon OpenSearch Service domain health assessment. |
 | `auditing-aws-system-tables` | Consolidates administrative system-table analytics exported as Apache Iceberg tables in Amazon S3 Tables across three AWS-managed table buckets: (1) Redshift SYS_* system-table logs (s3tablescatalog/aws-redshift: sys_qu… |
 | `authoring-glue-and-emr-spark-jobs` | Authors, optimizes, and tunes distributed PySpark and Ray ETL jobs on AWS Glue 5.1+ and Amazon EMR (Serverless and EC2). |
 | `authoring-mwaa-workflow` | Authors and deploys MWAA workflow artifacts: Python Airflow DAGs for provisioned environments or YAML workflow files for Serverless. |
@@ -33,6 +34,7 @@ This is an **agent plugin**: every skill, command, hook, and MCP server below is
 | `enforcing-data-quality` | Authors, executes, and automates data quality rulesets using AWS Glue Data Quality (Data Quality Definition Language - DQDL) for both Glue Data Catalog tables at rest and in-flight Glue ETL PySpark jobs, alongside AWS G… |
 | `exploring-data-catalog` | Full inventory and audit of AWS Glue Data Catalog assets across S3 Tables, Redshift-federated, and remote Iceberg catalogs. |
 | `finding-data-lake-assets` | Resolve data lake and lakehouse asset references across Glue Data Catalog, S3, S3 Tables, and Redshift. |
+| `firehose-operation-review` | Comprehensive Amazon Data Firehose (formerly Kinesis Data Firehose) review aligned with the AWS Well-Architected Framework and Firehose best practices. |
 | `governing-and-securing-data-lake` | Configures and troubleshoots AWS Lake Formation fine-grained access control (database, table, column, and row-level Data Cell Filters, LF-Tag-Based Access Control LF-TBAC, and IAMAllowedPrincipals hybrid-mode resolution… |
 | `ingesting-into-data-lake` | Import data into the AWS data lake from S3 files, local uploads, JDBC databases (Oracle, SQL Server, PostgreSQL, MySQL, RDS, Aurora), Amazon Redshift, Snowflake, BigQuery, DynamoDB, or existing Glue catalog tables (migr… |
 | `ingesting-streaming-and-cdc-data` | Configures continuous streaming delivery and analytical Change Data Capture (CDC) pipelines using Amazon Data Firehose (direct delivery to S3 Parquet, Amazon S3 Tables / Apache Iceberg with multi-table routing, Amazon R… |
@@ -40,10 +42,12 @@ This is an **agent plugin**: every skill, command, hook, and MCP server below is
 | `managing-amazon-msk` | Operates Amazon MSK Provisioned clusters (Standard and Express brokers). |
 | `migrate-to-msk` | Helps migrate self-managed Apache Kafka workloads to Amazon MSK Express. |
 | `migrating-to-amazon-redshift` | Guides an end-to-end data-warehouse migration to Amazon Redshift — discovery, schema/SQL/stored-procedure/macro/script conversion, data migration, validation, performance comparison, and reporting. |
+| `msk-operations` | Amazon MSK Provisioned operations, troubleshooting, and health assessment for Standard and Express brokers. |
 | `orchestrating-serverless-data-pipelines` | Designs and deploys event-driven and scheduled serverless data pipelines using AWS Step Functions (Glue, EMR Serverless, Athena, and Redshift Data API .sync integrations plus Distributed Map), Amazon EventBridge Rules a… |
 | `provisioning-data-infrastructure-iac` | Packages AWS data engineering pipelines, Amazon S3 Tables (Iceberg), AWS Glue Data Catalogs, Connections, Jobs, and Data Quality rulesets, Amazon Redshift Serverless workgroups, Kinesis/MSK/ Firehose streams, AWS Step F… |
 | `querying-data-lake` | Execute and manage Athena SQL queries across default and federated catalogs (Glue, S3 Tables, Redshift). |
 | `redshift-guide` | Amazon Redshift is NOT PostgreSQL — corrects PostgreSQL-derived LLM mistakes; covers Redshift-specific SQL, DDL, COPY/UNLOAD, system views, metadata discovery, and operational patterns. |
+| `redshift-support-specialist` | Amazon Redshift domain expertise for query optimization, operational reviews, and cost optimization on provisioned clusters and Serverless workgroups. |
 | `signing-in-to-aws` | Gets AWS credentials for CLI/SDK access via `aws login`. |
 | `testing-mwaa-workflow` | Tests Amazon MWAA workflow execution end-to-end: trigger a run and monitor it to completion for Provisioned (Python DAG, via Airflow REST API) and Serverless (YAML workflow, via StartWorkflowRun). |
 | `upgrading-mwaa-environments` | Upgrades an MWAA environment to a newer Airflow version — within 2.x, within 3.x, or across the 2.x-to-3.x boundary. |

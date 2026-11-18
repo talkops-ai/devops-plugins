@@ -72,8 +72,8 @@ a reference or running a script:
 
 - **Loaded through the AWS MCP server's `retrieve_skill` tool:** The skill is not
   installed on the local filesystem. You MUST fetch each reference or script
-  via `retrieve_skill` with the `file` parameter (e.g.
-  `file="references/architecture.md"` or `file="scripts/deploy.py"`), and
+  via `retrieve_skill` with the `file` parameter set to the relative reference
+  path inside the skill, and
   run the script from the returned content. Do NOT `file_read` these paths
   locally — they do not exist on disk.
 - **Installed locally** (e.g. `.kiro/skills/your-skill/` or

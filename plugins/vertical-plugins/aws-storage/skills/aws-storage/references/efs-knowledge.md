@@ -1,6 +1,6 @@
 # Amazon EFS
 
-This reference captures information addressing common gotchas and frequently asked questions for Amazon EFS to support accurate model responses. It is not a complete specification. The authoritative source for current specifications, limits, quotas, and API behavior is the [Amazon EFS User Guide](https://docs.aws.amazon.com/efs/latest/ug/whatisefs.html), [Amazon EFS API Reference](https://docs.aws.amazon.com/efs/latest/ug/api-reference.html), [Amazon EFS product page](https://aws.amazon.com/efs/), and [Amazon EFS FAQs](https://aws.amazon.com/efs/faq/). Retrieve current specifications, limits, and quotas from those pages before citing specifics; cite figures only from those pages.
+This reference captures information addressing common gotchas and frequently asked questions for Amazon EFS to support accurate model responses. It is not a complete specification. The authoritative source for current specifications, limits, quotas, and API behavior is the [Amazon EFS User Guide](https://docs.aws.amazon.com/efs/latest/ug/whatisefs.html), [Amazon EFS API Reference](https://docs.aws.amazon.com/efs/latest/ug/api-reference.html), [Amazon EFS product page](https://aws.amazon.com/efs/), and [Amazon EFS FAQs](https://aws.amazon.com/efs/faq/). 
 
 ## 1. Overview
 
@@ -8,9 +8,18 @@ This reference captures information addressing common gotchas and frequently ask
 
 **Well-suited for:** shared Linux file workloads, such as containers, cloud-native Linux applications, serverless persistent storage, analytics and ML training data (including SageMaker), big data, media processing, web and content management, shared home directories, dev/test, and infrequently accessed file data.
 
-## 2. Service Information
+## 2. Service Information & Operational Gotchas
 
-You MUST retrieve information from the linked documentation in the below table before answering any user question on the related topic.
+Use the specifications below directly; query connected documentation tools (`awsknowledge`) only if a niche detail is not covered here.
+
+- **Deployment Types & Storage Classes**:
+  - **Regional (Multi-AZ)** vs **One Zone** (47% lower storage cost in a single AZ; lost if the AZ is destroyed, though AWS Backup protects it across AZs).
+  - **EFS Standard**, **EFS Infrequent Access (EFS IA)**, and **EFS Archive** (up to 92% lower storage cost for cold files; lifecycle policies transition files after `1–365` days of non-access, with a per-GB data access charge when read/transitioned). Small files `< 128 KB` in EFS IA/Archive are billed at `128 KB` minimum size.
+- **Throughput Modes & The Burst Credit Exhaustion Trap**:
+  - **Elastic Throughput** *(Recommended default for spiky/unpredictable workloads)*: Scales automatically up to **30 GiB/s reads and 10 GiB/s writes** (Regional) with zero capacity planning; billed per GiB of read and write throughput transferred (3x higher per-GiB rate for writes than reads) with no burst credits to deplete.
+  - **Provisioned Throughput**: Fixed dedicated MiB/s ceiling independent of stored data size. Note: **you can decrease Provisioned Throughput or switch away from Provisioned/Elastic mode only once every 24 hours**.
+  - **Bursting Throughput**: Baseline throughput scales linearly at **`50 KiB/s per GiB`** of Standard storage (only `1 MiB/s` baseline per `20 GiB` stored!). A small file system bursts to `100 MiB/s` while `BurstCreditBalance > 0`, but once `BurstCreditBalance` hits **`0`**, throughput **cliff-drops to the `50 KiB/s/GiB` baseline** (`1 MiB/s` on a 20 GiB FS), causing severe I/O stalls and pod timeouts. Fix immediately by switching to **Elastic Throughput** (`aws efs update-file-system --throughput-mode elastic`).
+- **Performance Modes**: **General Purpose** (lowest per-operation latency, default for 99% of workloads, up to 55,000 read IOPS) vs **Max I/O** (higher per-operation metadata latency; only consider if CloudWatch `PercentIOLimit` is consistently `> 80%` on Bursting/Provisioned). **`PerformanceMode` is immutable after creation** (changing it requires creating a new EFS file system and migrating via AWS DataSync).
 
 | Topic | Example service characteristics, features, and actions | Documentation |
 | --- | --- | --- |
@@ -24,8 +33,6 @@ You MUST retrieve information from the linked documentation in the below table b
 | Pricing | per-GB-month by storage class; IA and Archive access charges; Elastic vs Provisioned throughput; replication transfer (not exhaustive, review pricing page for the full list of pricing dimensions) | [Amazon EFS pricing](https://aws.amazon.com/efs/pricing/) |
 
 ## 3. Troubleshooting
-
-You MUST retrieve information from the linked documentation in the below table before providing the user with any guidance on the related area.
 
 | Example area | Example errors | Example fixes | Documentation |
 | --- | --- | --- | --- |

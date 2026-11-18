@@ -1,0 +1,42 @@
+[
+  {
+    "query": "Create and test an AWS Glue JDBC connection to our private Amazon RDS PostgreSQL database with Secrets Manager and VPC subnet configuration.",
+    "should_trigger": true
+  },
+  {
+    "query": "Set up an AWS Glue SNOWFLAKE connection with key-pair authentication in Secrets Manager and verify it with test-connection.",
+    "should_trigger": true
+  },
+  {
+    "query": "Troubleshoot why aws glue test-connection is failing with UnableToFindVpcEndpoint and Connect timed out on our Oracle JDBC connection.",
+    "should_trigger": true
+  },
+  {
+    "query": "Register a Google BigQuery data source as an AWS Glue BIGQUERY connection using a GCP service account secret.",
+    "should_trigger": true
+  },
+  {
+    "query": "Discover existing Glue connections and candidate Aurora/Redshift clusters in our AWS account to connect Glue ETL to our data warehouse.",
+    "should_trigger": true
+  },
+  {
+    "query": "Configure PhysicalConnectionRequirements, a self-referencing security group rule, and an S3 VPC gateway endpoint for an AWS Glue database connection.",
+    "should_trigger": true
+  },
+  {
+    "query": "Import 200 GB of historical orders from an already-tested Glue connection into an Amazon S3 Tables Iceberg table.",
+    "should_trigger": false
+  },
+  {
+    "query": "Create a new empty Apache Iceberg table in Amazon S3 Tables with monthly partitioning on order_date.",
+    "should_trigger": false
+  },
+  {
+    "query": "Write a SQL query in Amazon Athena to join two Iceberg tables and calculate monthly revenue.",
+    "should_trigger": false
+  },
+  {
+    "query": "Configure an Amazon OpenSearch Service domain with Fine-Grained Access Control and UltraWarm storage.",
+    "should_trigger": false
+  }
+]

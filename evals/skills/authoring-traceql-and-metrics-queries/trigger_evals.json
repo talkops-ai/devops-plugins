@@ -1,0 +1,112 @@
+{
+  "skill_name": "authoring-traceql-and-metrics-queries",
+  "companion_skills": [
+    "investigating-tempo-latency-regressions",
+    "triaging-tempo-service-errors",
+    "diagnosing-tempo-ingestion-and-health",
+    "authoring-promql-and-analyzing-metrics",
+    "authoring-logql-and-analyzing-logs"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Write a TraceQL query in Grafana Tempo using `>>` to find `frontend-proxy` requests in `otel-demo` that trigger downstream `valkey-cart` errors in `cart-service`.",
+      "notes": "Structural TraceQL authoring"
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Run a TraceQL Metrics `quantile_over_time(duration, 0.99)` range query for `shipping-service` grouped by `span.http.route` in Tempo.",
+      "notes": "TraceQL Metrics range query"
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Discover available `resource` and `span` attributes for `otel-demo` in Tempo and lint my `PlaceOrder` TraceQL filter expression.",
+      "notes": "Schema-first discovery + TraceQL linting"
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why is my `{ .http.status_code = 500 }` search in Tempo missing `frontend` and `shipping-service` spans while matching `quote` and `email` in `otel-demo`?",
+      "notes": "OTel v1.20 vs v1.24+ dual semconv in TraceQL"
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Show me an interactive waterfall visualization for `checkout-service` `PlaceOrder` Tempo trace `4bf92f3577b34da6a3ce929d0e0e4736`.",
+      "notes": "Interactive A2UI trace rendering"
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Find traces in `otel-demo` where `recommendation` spawned more than 15 `GetProduct` child spans to `product-catalog-service` during `recommendationCacheFailure`.",
+      "notes": "TraceQL pipeline `| count() > 15`"
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Write a TraceQL `compare()` query in Tempo contrasting `{ resource.service.name = \"ad\" && duration > 1s }` (`adManualGc`) against baseline `GetAds` spans.",
+      "notes": "TraceQL cohort comparison"
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Query Tempo for `PlaceOrder` traces where `checkout-service` called `payment` (`Charge`) without calling `email` (`/send_order_confirmation`) as a child span.",
+      "notes": "Negated structural operator `!>`"
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "expected_alternative_skill": "investigating-tempo-latency-regressions",
+      "prompt": "Diff baseline `PlaceOrder` trace `aaa111` against slow `adManualGc` trace `bbb222` in `otel-demo` to isolate `self_time_ms` hotspots.",
+      "notes": "Two-trace latency regression diff"
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "expected_alternative_skill": "authoring-promql-and-analyzing-metrics",
+      "prompt": "Write a PromQL 3.0 `histogram_quantile(0.99, ...)` query against Prometheus TSDB in `observability` for `checkout-service`.",
+      "notes": "PromQL belongs to Prometheus"
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "expected_alternative_skill": "authoring-logql-and-analyzing-logs",
+      "prompt": "Write a 4-stage LogQL query in Grafana Loki to count JSON `status >= 500` Envoy access log lines from `frontend-proxy`.",
+      "notes": "LogQL belongs to Loki"
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "expected_alternative_skill": "diagnosing-tempo-ingestion-and-health",
+      "prompt": "Tempo distributors in `observability` are dropping `otel-demo` spans due to rate limits during `loadGeneratorFloodHomepage` and ingester ring members are unhealthy—diagnose ingestion.",
+      "notes": "Tempo ingestion & ring diagnostics"
+    }
+  ]
+}

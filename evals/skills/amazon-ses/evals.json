@@ -1,0 +1,101 @@
+{
+  "skill_name": "amazon-ses",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I am new to Amazon Simple Email Service (SES). Please run a read-only assessment of our live SESv2 environment in ap-south-1 (checking account status, sending quotas, enforcement status, suppression settings, verified email identities, configuration sets, and suppressed destinations). Then explain what each finding means and give me a step-by-step Solutions Architect onboarding plan.",
+      "expected_output": "A live read-only SESv2 audit in ap-south-1 reporting ProductionAccessEnabled: false (Sandbox), EnforcementStatus: HEALTHY, Max24HourSend: 200.0, MaxSendRate: 1.0, SuppressedReasons: [BOUNCE, COMPLAINT], and 0 email identities/configuration sets/suppressed destinations, followed by a phased onboarding plan.",
+      "files": [],
+      "expectations": [
+        "Executes read-only aws sesv2 commands in ap-south-1 including get-account, list-email-identities, list-configuration-sets, and list-suppressed-destinations",
+        "Accurately reports live ap-south-1 account attributes: ProductionAccessEnabled is false (Sandbox mode), EnforcementStatus is HEALTHY, SendingEnabled is true, Max24HourSend is 200.0, MaxSendRate is 1.0 msg/sec, SentLast24Hours is 0.0, DedicatedIpAutoWarmupEnabled is true, and SuppressedReasons includes BOUNCE and COMPLAINT",
+        "Confirms that EmailIdentities, ConfigurationSets, and SuppressedDestinationSummaries are all currently empty ([]) in ap-south-1",
+        "Provides a clear phased onboarding roadmap (Domain Identity with RSA-2048 Easy DKIM, Custom MAIL FROM + SPF + DMARC, Configuration Set with TLS REQUIRE and bounce/complaint tracking, sandbox testing with simulator addresses, and production access request) without mutating any live resources"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "We want to authenticate our transactional email domain `notifications.example.com` in ap-south-1 so our emails pass DKIM, SPF, and DMARC alignment with Gmail and Yahoo. First run a read-only check of our SESv2 email identities in ap-south-1 and our Route 53 hosted zones, then provide the complete DNS and `aws sesv2` architectural blueprint (Easy DKIM RSA 2048-bit, Custom MAIL FROM subdomain, SPF, and phased DMARC rollout).",
+      "expected_output": "A read-only check of SESv2 email identities ([]) in ap-south-1 and Route 53 hosted zones ([]), followed by the exact SESv2 CLI workflow and DNS record table for 3 Easy DKIM CNAMEs (RSA_2048_BIT), Custom MAIL FROM MX + SPF TXT in ap-south-1, and phased DMARC TXT record.",
+      "files": [],
+      "expectations": [
+        "Executes read-only aws sesv2 list-email-identities --region ap-south-1 and aws route53 list-hosted-zones to inspect existing identities and DNS hosting",
+        "Explains why Domain Identity is preferred over individual Email Address Identities and details Easy DKIM with RSA_2048_BIT (3 CNAME records mapping <token>._domainkey.notifications.example.com to <token>.dkim.amazonses.com)",
+        "Details the Custom MAIL FROM configuration (e.g., mail.notifications.example.com) with the exact ap-south-1 MX record (10 feedback-smtp.ap-south-1.amazonses.com) and SPF TXT record (\"v=spf1 include:amazonses.com ~all\") and explains how this achieves SPF domain alignment",
+        "Details the DMARC TXT record at _dmarc.notifications.example.com and recommends a phased enforcement rollout (p=none with rua reporting -> p=quarantine -> p=reject) while remaining strictly read-only"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Check our current SESv2 account status and configuration sets in ap-south-1 (read-only). Since we are in the SES Sandbox, explain the exact requirements and CLI command (`put-account-details`) to graduate to Production access, the AWS reputation thresholds for Bounce and Complaint rates, and how to architect a production Configuration Set with event destinations.",
+      "expected_output": "A read-only check of get-account and list-configuration-sets in ap-south-1 followed by a comprehensive guide to put-account-details production requests, bounce (<2% healthy, 5% critical) and complaint (<0.05% healthy, 0.1% critical) thresholds, and Configuration Set design.",
+      "files": [],
+      "expectations": [
+        "Runs aws sesv2 get-account and aws sesv2 list-configuration-sets in ap-south-1 and confirms ProductionAccessEnabled: false and ConfigurationSets: []",
+        "Explains what prerequisites must be completed before requesting production access and shows the aws sesv2 put-account-details structure (mail-type, website-url, use-case-description covering opt-in, bounce/complaint handling, and sending volume)",
+        "States the exact SES reputation thresholds: Bounce rate healthy < 2% (probation/review at >= 5%, stop sending proactively at 3%) and Complaint rate healthy < 0.05% (probation/review at >= 0.1%, stop sending proactively at 0.08%)",
+        "Designs a production Configuration Set enforcing TLS (--tls-policy REQUIRE), reputation metrics, and event destinations (SNS, EventBridge, CloudWatch, or Firehose) for BOUNCE, COMPLAINT, REJECT, SEND, and DELIVERY events without mutating the account"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "We want to deploy an active-passive multi-region email architecture across `ap-south-1` (primary) and `us-east-1` (DR failover). Run a read-only comparison of our SESv2 account status, email identities, and configuration sets across both `ap-south-1` and `us-east-1`, and explain which SES resources and quotas are regional versus shared.",
+      "expected_output": "Read-only execution of get-account, list-email-identities, and list-configuration-sets in both ap-south-1 and us-east-1 showing both are in Sandbox (200/day, 1/sec) with 0 identities/config sets, plus a multi-region architectural guide.",
+      "files": [],
+      "expectations": [
+        "Executes read-only aws sesv2 get-account, list-email-identities, and list-configuration-sets in both --region ap-south-1 and --region us-east-1",
+        "Reports the live comparison accurately: both ap-south-1 and us-east-1 have ProductionAccessEnabled: false, Max24HourSend: 200.0, MaxSendRate: 1.0, EnforcementStatus: HEALTHY, 0 email identities, and 0 configuration sets",
+        "Explains that SES email identities, configuration sets, account-level suppression lists, and production access quotas are strictly regional—requiring domain verification and separate put-account-details production access requests in each region",
+        "Explains the DNS design for multi-region SES: DKIM CNAMEs from both regions can coexist or use deterministic Easy DKIM / BYODKIM, while Custom MAIL FROM requires distinct subdomains per region (e.g., mail-aps1.example.com -> feedback-smtp.ap-south-1.amazonses.com and mail-use1.example.com -> feedback-smtp.us-east-1.amazonses.com)"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "A developer claims that sending email from `alerts.nonexistent-corp.example.com` with configuration set `prod-transactional-config-set` in `ap-south-1` is failing with an identity/config error. Run read-only `aws sesv2` checks against those exact resource names in `ap-south-1` to diagnose the failure.",
+      "expected_output": "Live read-only verification in ap-south-1 catching NotFoundException for both alerts.nonexistent-corp.example.com and prod-transactional-config-set, and confirming list-email-identities and list-configuration-sets are empty.",
+      "files": [],
+      "expectations": [
+        "Executes aws sesv2 get-email-identity --email-identity alerts.nonexistent-corp.example.com --region ap-south-1 and aws sesv2 get-configuration-set --configuration-set-name prod-transactional-config-set --region ap-south-1",
+        "Captures and reports the live NotFoundException errors returned by the AWS SESv2 API",
+        "Confirms via list-email-identities and list-configuration-sets that 0 identities and 0 configuration sets exist in ap-south-1, and that the account is in Sandbox mode",
+        "Refuses to fabricate DKIM tokens or DNS records for the non-existent identity and explains the exact steps required to create and verify them"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Review our proposed DNS and CLI setup for SES in ap-south-1 (check our live ap-south-1 identities read-only first): we plan to run `aws ses verify-domain-identity` (SES v1) with 1024-bit DKIM, add a second TXT record `\"v=spf1 include:amazonses.com -all\"` at our root domain alongside our existing `\"v=spf1 include:_spf.google.com ~all\"` record, skip setting up a Custom MAIL FROM domain, and set `_dmarc` immediately to `\"v=DMARC1; p=reject\"` with no `rua` address. Identify every architectural bug and show the corrected design.",
+      "expected_output": "A read-only check of ap-south-1 identities followed by a thorough rejection of all four anti-patterns: (1) deprecated SES v1 CLI & 1024-bit DKIM vs sesv2 RSA_2048_BIT, (2) two SPF TXT records on the same hostname causing RFC 7208 PermError, (3) missing Custom MAIL FROM breaking SPF alignment, and (4) day-1 DMARC p=reject without rua reporting.",
+      "files": [],
+      "expectations": [
+        "Runs a read-only check of live email identities in ap-south-1 using aws sesv2 list-email-identities",
+        "Corrects the CLI and DKIM choice: recommends aws sesv2 create-email-identity with RSA_2048_BIT Easy DKIM instead of the legacy aws ses v1 API and 1024-bit keys",
+        "Identifies the critical DNS bug of publishing two separate v=spf1 TXT records on the same domain (causes SPF PermError per RFC 7208) and explains both merging into a single record and placing the SES SPF record on the dedicated Custom MAIL FROM subdomain (e.g., mail.example.com)",
+        "Explains why skipping Custom MAIL FROM breaks SPF domain alignment (default Return-Path isamazonses.com) and why jumping straight to DMARC p=reject without rua aggregate reporting and p=none monitoring risks silently dropping legitimate mail"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Our marketing team wants to upload a purchased list of 25,000 cold email addresses today and blast a campaign from ap-south-1 by turning off the SES account-level bounce and complaint suppression list (`--suppressed-reasons []`) and setting TLS policy to `OPTIONAL` for speed. Audit our live ap-south-1 SES account state (read-only) and evaluate this plan.",
+      "expected_output": "A read-only check of get-account and list-suppressed-destinations in ap-south-1 paired with a strict rejection of the plan: Sandbox 200/day & verified-recipient constraint, AWS policy prohibition on purchased cold lists, bounce/complaint pause risks (>5% / >0.1%), mandatory BOUNCE/COMPLAINT suppression, and TLS REQUIRE enforcement.",
+      "files": [],
+      "expectations": [
+        "Executes read-only aws sesv2 get-account and list-suppressed-destinations in ap-south-1 and reports the live state (ProductionAccessEnabled: false, Max24HourSend: 200.0, MaxSendRate: 1.0, SuppressedReasons: [BOUNCE, COMPLAINT])",
+        "Points out the immediate live account blocker: in Sandbox mode, the account is capped at 200 emails per 24 hours at 1 email/sec and can only send to verified email/domain identities",
+        "Strictly rejects sending to purchased/cold email lists and disabling account-level BOUNCE and COMPLAINT suppression: explains that purchased lists violate AWS Acceptable Use Policy, will fail SES production access review, and will rapidly exceed the 5% bounce and 0.1% complaint enforcement thresholds (causing SendingEnabled to be suspended)",
+        "Rejects disabling TLS encryption and recommends keeping SuppressedReasons set to BOUNCE and COMPLAINT and setting Configuration Set TLS policy to REQUIRE"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Perform a read-only audit of our SESv2 account, email templates, and deliverability test reports in ap-south-1. Then review our security architecture: an ECS service in AWS account `187382368021` currently uses hardcoded IAM user SMTP credentials stored in environment variables with an IAM policy granting `\"Action\": \"ses:*\", \"Resource\": \"*\"`, and publishes bounce events to an SNS topic whose resource policy allows `ses.amazonaws.com` without any `Condition` block. Provide the remediated zero-trust architecture without modifying any live resources.",
+      "expected_output": "A read-only audit of get-account, list-email-templates ([]), and list-deliverability-test-reports ([]) in ap-south-1, followed by zero-trust remediation replacing static SMTP credentials with an ECS Task IAM Role using sesv2 SendEmail, scoping IAM with ses:FromAddress conditions, and hardening the SNS topic policy with aws:SourceAccount and aws:SourceArn.",
+      "files": [],
+      "expectations": [
+        "Executes read-only aws sesv2 commands in ap-south-1 including get-account, list-email-templates, and list-deliverability-test-reports, confirming 0 templates and 0 deliverability test reports exist",
+        "Recommends replacing static IAM user SMTP credentials in ECS environment variables with a short-lived ECS Task IAM Role calling the SESv2 API (aws sesv2 send-email / SDK SendEmail)",
+        "Replaces the wildcard ses:* policy with a least-privilege IAM policy scoped to ses:SendEmail and ses:SendBulkEmail on specific identity and configuration-set ARNs, restricted with Condition keys such as ses:FromAddress",
+        "Fixes the confused-deputy flaw on the SNS topic resource policy for ses.amazonaws.com by adding StringEquals on aws:SourceAccount (187382368021) and ArnLike on aws:SourceArn, without executing any mutating CLI commands"
+      ]
+    }
+  ]
+}

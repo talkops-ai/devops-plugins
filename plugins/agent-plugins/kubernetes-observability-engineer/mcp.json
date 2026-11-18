@@ -1,0 +1,82 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "prometheus": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "talkops-prometheus-mcp-server==0.2.1",
+        "prometheus-mcp-server",
+        "--transport",
+        "stdio"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "MCP_ALLOW_WRITE": "false",
+        "PROMETHEUS_AUDIT_LOG_PATH": "${PLUGIN_DATA}/prometheus-audit.jsonl"
+      }
+    },
+    "alertmanager": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "talkops-alertmanager-mcp-server==0.2.1",
+        "alertmanager-mcp-server",
+        "--transport",
+        "stdio"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "MCP_ALLOW_WRITE": "false",
+        "AM_AUDIT_LOG_PATH": "${PLUGIN_DATA}/alertmanager-audit.jsonl"
+      }
+    },
+    "tempo": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "talkops-tempo-mcp-server==0.2.1",
+        "tempo-mcp-server",
+        "--transport",
+        "stdio"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "MCP_ALLOW_WRITE": "false"
+      }
+    },
+    "loki": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "talkops-loki-mcp-server==0.2.1",
+        "loki-mcp-server",
+        "--transport",
+        "stdio"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "MCP_ALLOW_WRITE": "false"
+      }
+    },
+    "opentelemetry": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "talkops-opentelemetry-mcp-server==0.2.1",
+        "opentelemetry-mcp-server",
+        "--transport",
+        "stdio"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "MCP_ALLOW_WRITE": "false"
+      }
+    }
+  }
+}

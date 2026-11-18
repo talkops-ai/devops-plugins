@@ -22,10 +22,11 @@ This is a **vertical plugin**: its skills, slash commands, hooks, and MCP server
 | Skill | What it does |
 |---|---|
 | `aws-containers` | Builds and deploys containerized workloads on Elastic Kubernetes Service (EKS), Elastic Container Service (ECS), Fargate, and ECR (Elastic Container Registry). |
-| `container-ecs-deploy` | > |
-| `ecs-container-operations` | Diagnose and remediate Amazon ECS and AWS Fargate production incidents across stopped tasks (OutOfMemoryError, CannotPullContainerError, ResourceInitializationError), ALB target group health check fa… |
-| `eks-operations-and-troubleshooting` | Diagnose and remediate Amazon EKS production incidents across Pod lifecycle failures (CrashLoopBackOff, OOMKilled, ImagePullBackOff, Pending/Unschedulable), Karpenter and EKS Auto Mode node provision… |
-| `security-workload-containers` | >- |
+| `container-ecs-deploy` | Containerize applications and deploy to Amazon ECS Fargate, ECS Express Mode, or Amazon ECR. |
+| `ecs-container-operations` | Diagnose and remediate Amazon ECS and AWS Fargate production incidents across stopped tasks (OutOfMemoryError, CannotPullContainerError, ResourceInitializationError), ALB target group health check failures, ECS Deployme… |
+| `eks-karpenter-autoscaling` | Architect, bootstrap, audit, right-size, migrate, and troubleshoot Amazon EKS node and workload autoscaling with Karpenter v1 (karpenter.sh/v1 & karpenter.k8s.aws/v1) and EKS Auto Mode (eks.amazonaws.com/v1), paired wit… |
+| `eks-operations-and-troubleshooting` | Diagnose and remediate Amazon EKS production incidents across Pod lifecycle failures (CrashLoopBackOff, OOMKilled, ImagePullBackOff, Pending/Unschedulable), Karpenter and EKS Auto Mode node provisioning, VPC CNI IP exha… |
+| `security-workload-containers` | Audits and hardens AWS compute, container, serverless, and Generative AI workloads across Amazon EKS, Amazon ECS/Fargate, Amazon ECR, AWS Lambda, Amazon EC2, and Amazon Bedrock. |
 
 ## Commands
 

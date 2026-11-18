@@ -1,0 +1,86 @@
+[
+  {
+    "id": "trig-exp-01",
+    "category": "explicit",
+    "query": "Run a full operational review and best-practices audit of our Amazon FSx for NetApp ONTAP file systems in ap-south-1 across backup, observability, operations, performance, and security.",
+    "should_trigger": true,
+    "notes": "Direct request for a multi-pillar FSx for NetApp ONTAP operational review"
+  },
+  {
+    "id": "trig-exp-02",
+    "category": "explicit",
+    "query": "Can you assess our FSx ONTAP cluster health posture — specifically checking SVM security styles, volume tiering policies, SSD capacity utilization, and snapshot policy coverage?",
+    "should_trigger": true,
+    "notes": "Explicit FSx ONTAP posture audit naming ONTAP-specific constructs (SVMs, tiering policies, snapshot policies)"
+  },
+  {
+    "id": "trig-imp-01",
+    "category": "implicit",
+    "query": "We inherited fs-0abc12345def67890 running ONTAP MULTI_AZ_2 with three SVMs and twenty thin-provisioned volumes; please check if any active volumes are reading from the capacity pool or missing automatic backups.",
+    "should_trigger": true,
+    "notes": "Implicit inherited FSxN posture check referencing MULTI_AZ_2, SVMs, and capacity-pool reads"
+  },
+  {
+    "id": "trig-imp-02",
+    "category": "implicit",
+    "query": "Before our quarterly storage readiness sign-off, check our NetApp file systems in AWS for open security groups, unused RW volumes vs SnapMirror DP destinations, and sustained FileServerDiskIopsUtilization bottlenecks.",
+    "should_trigger": true,
+    "notes": "Implicit pre-sign-off FSxN operational sweep"
+  },
+  {
+    "id": "trig-ctx-01",
+    "category": "contextual",
+    "query": "In prod account 187382368021 (ap-south-1), our storage lead says read latency jumped to 22 ms on our ONTAP volumes after someone set tiering to ALL — can you review the FSxN configuration and CloudWatch metrics?",
+    "should_trigger": true,
+    "notes": "Realistic noisy prompt with account/region and FSxN tiering latency symptom"
+  },
+  {
+    "id": "trig-ctx-02",
+    "category": "contextual",
+    "query": "CloudWatch shows no datapoints for StorageCapacityUtilization on our new SINGLE_AZ_2 ONTAP file system even though applications are writing to `/erp_data` — can you check our FSxN storage and operational posture?",
+    "should_trigger": true,
+    "notes": "Contextual Gen2 FSxN metric quirk + posture audit"
+  },
+  {
+    "id": "trig-neg-01",
+    "category": "negative",
+    "query": "Run an SLA readiness, Multi-AZ failover, and Active Directory `MISCONFIGURED` state review for our Amazon FSx for Windows File Server `fs-0123456789abcdef0` in us-east-1.",
+    "should_trigger": false,
+    "notes": "Belongs to storage-fsx-windows-sla-optimizer, not aws-fsxn-operations-review"
+  },
+  {
+    "id": "trig-neg-02",
+    "category": "negative",
+    "query": "Audit all S3 buckets in ap-south-1 for versioning, MFA Delete, Cross-Region Replication RTC, and S3 Object Lock resiliency posture.",
+    "should_trigger": false,
+    "notes": "Belongs to storage-s3-resiliency-expertise"
+  },
+  {
+    "id": "trig-neg-03",
+    "category": "negative",
+    "query": "Check our AWS Backup plans, backup vaults, vault lock settings, and unprotected RDS/EBS/DynamoDB resources across ap-south-1.",
+    "should_trigger": false,
+    "notes": "Belongs to aws-backup-coverage-review"
+  },
+  {
+    "id": "trig-neg-04",
+    "category": "negative",
+    "query": "Analyze our NAT Gateway hourly bytes processed and cross-AZ data transfer charges in ap-south-1 to see if an S3 Gateway Endpoint would save money.",
+    "should_trigger": false,
+    "notes": "Belongs to aws-natgw-traffic-analysis"
+  },
+  {
+    "id": "trig-neg-05",
+    "category": "negative",
+    "query": "Review our EKS Karpenter NodePools and EC2NodeClasses for consolidation settings, disruption budgets, and Spot interruption handling.",
+    "should_trigger": false,
+    "notes": "Belongs to eks-karpenter-autoscaling"
+  },
+  {
+    "id": "trig-neg-06",
+    "category": "negative",
+    "query": "Check our VPC route tables and Transit Gateway attachments in ap-south-1 for asymmetric routing or blackhole routes.",
+    "should_trigger": false,
+    "notes": "Belongs to aws-routing"
+  }
+]

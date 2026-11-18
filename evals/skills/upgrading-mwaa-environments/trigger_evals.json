@@ -1,0 +1,42 @@
+[
+  {
+    "query": "Upgrade our Amazon MWAA environment from Apache Airflow 2.8.1 to Airflow 3.0 using a rehearsed in-place upgrade that preserves DAG run history.",
+    "should_trigger": true
+  },
+  {
+    "query": "Plan a blue-green new-environment MWAA upgrade from Airflow 2.7.2 to Airflow 2.11.x and Airflow 3.2.1 with batched DAG switchover.",
+    "should_trigger": true
+  },
+  {
+    "query": "Run Ruff AIR rules (`ruff check --preview --select AIR`) and the Airflow 2-to-3 compatibility checklist on our MWAA DAG repository before upgrading.",
+    "should_trigger": true
+  },
+  {
+    "query": "Resume our multi-session MWAA upgrade from `.mwaa-upgrade-plan-prod-airflow.md` and reconcile the test_run_checkpoint status.",
+    "should_trigger": true
+  },
+  {
+    "query": "Compute the version-jump path and Python version transitions for upgrading an MWAA environment from Airflow 2.6.3 to the latest supported Airflow version.",
+    "should_trigger": true
+  },
+  {
+    "query": "Validate our upgraded MWAA DAGs and requirements.txt locally using aws/amazon-mwaa-docker-images before cutover.",
+    "should_trigger": true
+  },
+  {
+    "query": "Author a brand-new MWAA Serverless YAML workflow to run an Athena query every morning at 6 AM.",
+    "should_trigger": false
+  },
+  {
+    "query": "Debug why a single task instance in our daily_etl DAG failed with a Snowflake timeout yesterday when no upgrade is happening.",
+    "should_trigger": false
+  },
+  {
+    "query": "Migrate our self-managed Apache Kafka 3.5 cluster on EC2 to Amazon MSK Express brokers.",
+    "should_trigger": false
+  },
+  {
+    "query": "Upgrade our Amazon OpenSearch Service domain from Elasticsearch 7.10 to OpenSearch 2.17.",
+    "should_trigger": false
+  }
+]

@@ -1,0 +1,15 @@
+{
+  "skill_name": "querying-aws-cloudwatch",
+  "evals": [
+    {
+      "id": "eval-01-how-do-we-write-a-single-amazon-athena-sql-query",
+      "prompt": "How do we write a single Amazon Athena SQL query that performs a cross-catalog `JOIN` between CloudWatch S3 access/trail logs in `\"s3tablescatalog/aws-cloudwatch\"` and an S3 Inventory / metadata Iceberg table stored in a separate S3 table bucket catalog (`\"s3tablescatalog/my-security-tables\"`)?",
+      "expected_output": "Demonstrates querying across two distinct Glue/S3 Tables catalogs in a single Athena SQL statement (`\"s3tablescatalog/aws-cloudwatch\".\"<namespace>\".\"<log_table>\"` joined with `\"s3tablescatalog/my-security-tables\".\"<namespace>\".\"<metadata_table>\"`) and notes the required Lake Formation / Glue catalog permissions on both table buckets.",
+      "files": [],
+      "expectations": [
+        "Writes a single Athena SQL query joining a table in `\"s3tablescatalog/aws-cloudwatch\"` with a table in `\"s3tablescatalog/my-security-tables\"` using full 3-part `\"catalog\".\"database\".\"table\"` references",
+        "Notes that the querying principal must have Lake Formation / Glue `SELECT` and `Describe` permissions on both S3 table bucket catalogs"
+      ]
+    }
+  ]
+}

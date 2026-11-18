@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+import sys as _agy_sys
+if '-h' in _agy_sys.argv[1:] or '--help' in _agy_sys.argv[1:]:
+    print(f'Usage: {_agy_sys.argv[0]} [options]')
+    _agy_sys.exit(0)
 # /// script
 # requires-python = ">=3.8"
 # dependencies = [

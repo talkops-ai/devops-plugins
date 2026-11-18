@@ -10,7 +10,8 @@
         "--allow-sensitive-data-access"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     },
     "aws-documentation-mcp": {
@@ -31,7 +32,8 @@
         "awslabs.dynamodb-mcp-server>=2.1.6"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     },
     "aws-sns-sqs-mcp": {
@@ -42,7 +44,8 @@
         "--allow-resource-creation"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     },
     "aws-cloudwatch-mcp": {
@@ -52,7 +55,8 @@
         "awslabs.cloudwatch-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     },
     "aws-billing-cost-mcp": {
@@ -62,7 +66,8 @@
         "awslabs.billing-cost-management-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     }
   }

@@ -21,6 +21,9 @@ Use this skill when designing, writing, optimizing, or refactoring distributed *
 
 ## Deterministic Spark ETL Workflow
 
+0. **Live Read-Only Discovery & `spark-troubleshooting` Precondition:**
+   - Query live Glue jobs (`manage_aws_glue_jobs` `get-jobs` / `aws glue get-jobs`) and EMR Serverless applications (`aws emr-serverless list-applications`) first.
+   - Only call `spark-troubleshooting` (`analyze_spark_workload`) when a live Glue job run ID (`jr_...`) or EMR cluster/application with S3 Spark event logs actually exists in the account. When `0` jobs exist or the user provides error logs/symptoms inline, read `references/glue-emr-medallion-and-tuning.md` and provide the root-cause analysis and production PySpark code directly in the response (without calling `analyze_spark_workload`, querying `awspricing` unless cost math was asked, or writing scratch `.py` files to disk).
 1. **Choose the Compute Engine & Runtime Version:**
    - **AWS Glue 5.1+ (Spark 3.5+, Python 3.11):** Default for serverless batch/micro-batch lakehouse ETL, native Glue Data Catalog / Lake Formation integration, and incremental **Glue Job Bookmarks**.
    - **AWS Glue for Ray (`glueray`):** Choose when workloads are Python-native distributed tasks, Pandas/Polars transformations, or API-bound tasks that do not fit JVM Spark execution.
@@ -37,6 +40,8 @@ Use this skill when designing, writing, optimizing, or refactoring distributed *
      - `spark.sql.adaptive.enabled=true`
      - `spark.sql.adaptive.coalescePartitions.enabled=true`
      - `spark.sql.adaptive.skewJoin.enabled=true`
+   - Never call `df.collect()` or `df.toPandas()` on large DataFrames (which funnels all partitions onto the single driver and causes Driver OOM); use distributed Spark SQL / Window functions or `mapInPandas` / Pandas UDFs instead.
+   - For Executor OOMs (`Exit Code 137` / `Container killed by YARN/Spark for exceeding memory limits`), right-size worker types (`G.2X` / `G.4X` instead of `G.1X`), enable **Glue Flex (`--execution-class FLEX` / `ExecutionClass: "FLEX"`)** on non-urgent batch/backfill jobs (~34% lower DPU cost), and always configure **Spark UI event logs** (`--enable-spark-ui true`, `--spark-event-logs-path s3://<LOG_BUCKET>/sparkHistoryLogs/`).
    - Before writing partitioned tables, sort or distribute by partition columns (`WRITE ORDERED BY` / `.repartition("event_date")` or Iceberg ` fanout-enabled` / `write.distribution-mode=hash`) to prevent opening thousands of concurrent S3 multipart upload streams (`OutOfMemoryError: Direct buffer memory`).
 5. **Validate Output Quality:**
    - Pair every Silver/Gold transformation job with in-flight **AWS Glue Data Quality (DQDL)** evaluation (`EvaluateDataQuality().process_rows(...)` via `enforcing-data-quality`) and post-load row-count verification (`querying-data-lake`).

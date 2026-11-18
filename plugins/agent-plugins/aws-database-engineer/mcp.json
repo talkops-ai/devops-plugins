@@ -11,10 +11,15 @@
       "args": [
         "mcp-proxy-for-aws-cli==1.7.0",
         "https://aws-mcp.us-east-1.api.aws/mcp",
-        "--skip-auth",
+        "--region",
+        "us-east-1",
         "--metadata",
         "INSTALL_SOURCE=agent-toolkit-core"
-      ]
+      ],
+      "env": {
+        "AWS_REGION": "us-east-1",
+        "AWS_DEFAULT_REGION": "us-east-1"
+      }
     },
     "dynamodb": {
       "type": "stdio",
@@ -23,7 +28,8 @@
         "awslabs.dynamodb-mcp-server>=2.1.6"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     },
     "cloudwatch": {
@@ -33,7 +39,8 @@
         "awslabs.cloudwatch-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     },
     "postgres": {
@@ -43,7 +50,8 @@
         "awslabs.postgres-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     },
     "mysql": {
@@ -53,7 +61,8 @@
         "awslabs.mysql-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     },
     "elasticache": {
@@ -64,7 +73,8 @@
         "--readonly"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     },
     "awspricing": {
@@ -74,7 +84,8 @@
         "awslabs.aws-pricing-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     }
   }

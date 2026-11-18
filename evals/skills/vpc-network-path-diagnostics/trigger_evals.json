@@ -1,0 +1,61 @@
+{
+  "skill_name": "vpc-network-path-diagnostics",
+  "companion_skills": [
+    "arc-region-switch",
+    "aws-billing-and-cost-management",
+    "aws-cloudformation",
+    "aws-compute",
+    "aws-deployment"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use `vpc-network-path-diagnostics` to help me design, validate, and troubleshoot vpc network path diagnostics."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Walk me through best practices and production guardrails for vpc network path diagnostics (`vpc-network-path-diagnostics`)."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Trace and diagnose AWS network connectivity incidents across VPC route tables, Security Groups, NACLs, NAT Gateways, Transit Gateway (TGW), AWS Cloud WAN, AWS Network Firewall, Pri"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating vpc network path diagnostics?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "During our `ap-south-1` sprint readiness review, audit our vpc network path diagnostics setup in read-only mode and highlight top risks."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Help me configure and troubleshoot arc region switch exclusively without touching vpc network path diagnostics."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "skill_name": "aws-cloudformation",
+  "companion_skills": [
+    "aws-cdk",
+    "aws-terraform",
+    "aws-iam-and-security",
+    "verify-and-rollback"
+  ],
+  "queries": [
+    {
+      "id": "trigger-01",
+      "prompt": "Author a CloudFormation YAML template for an encrypted S3 bucket and DynamoDB table with DeletionPolicy: Retain, persist design rationale in com.aws.cloudformation.Context, and validate it with cfn-lint and cfn-guard.",
+      "should_trigger": true,
+      "quadrant": "should_trigger",
+      "split": "train"
+    },
+    {
+      "id": "trigger-02",
+      "prompt": "Our CloudFormation stack `prod-orders-stack` is stuck in `UPDATE_ROLLBACK_FAILED` in `ap-south-1`. Diagnose the root-cause failed event using `describe-events` and CloudTrail correlation.",
+      "should_trigger": true,
+      "quadrant": "should_trigger",
+      "split": "train"
+    },
+    {
+      "id": "trigger-03",
+      "prompt": "How do I run CloudFormation Express mode (`--deployment-config '{\"mode\": \"EXPRESS\"}'`) during development iteration, and how does it differ from `cdk deploy --hotswap`?",
+      "should_trigger": true,
+      "quadrant": "should_trigger",
+      "split": "train"
+    },
+    {
+      "id": "trigger-04",
+      "prompt": "Before I delete the `VpcId` Export from our networking CloudFormation template, check `list-imports` and walk me through the Cross-Stack Reference Safety decoupling steps.",
+      "should_trigger": true,
+      "quadrant": "should_trigger",
+      "split": "train"
+    },
+    {
+      "id": "trigger-05",
+      "prompt": "Explain what this existing `.cfn.yaml` template does by reading its `Description` and `Metadata.com.aws.cloudformation.Context` blocks.",
+      "should_trigger": true,
+      "quadrant": "should_trigger",
+      "split": "val"
+    },
+    {
+      "id": "trigger-06",
+      "prompt": "Run account-aware CloudFormation pre-deployment validation (`--validation-mode`) on our Change Set before we execute it.",
+      "should_trigger": true,
+      "quadrant": "should_trigger",
+      "split": "val"
+    },
+    {
+      "id": "trigger-07",
+      "prompt": "Our CloudFormation YAML template is 50,900 bytes and hitting the 51,200-byte inline size limit. How should we condense metadata or split the stack safely?",
+      "should_trigger": true,
+      "quadrant": "should_trigger",
+      "split": "val"
+    },
+    {
+      "id": "trigger-08",
+      "prompt": "Write a Terraform `.tftest.hcl` unit test suite using `mock_provider \"aws\" {}` and `moved` blocks to refactor our HCL module.",
+      "should_trigger": false,
+      "quadrant": "near_miss_neighbor",
+      "split": "train"
+    },
+    {
+      "id": "trigger-09",
+      "prompt": "Author a Crossplane `CompositeResourceDefinition` (XRD) and `spec.mode: Pipeline` Composition using `function-patch-and-transform` for Upbound `provider-aws-rds`.",
+      "should_trigger": false,
+      "quadrant": "near_miss_neighbor",
+      "split": "train"
+    },
+    {
+      "id": "trigger-10",
+      "prompt": "Build a Pulumi TypeScript `ComponentResource` with `@pulumi/aws` and `@pulumi/aws-native` and configure Pulumi ESC OIDC credentials.",
+      "should_trigger": false,
+      "quadrant": "near_miss_neighbor",
+      "split": "train"
+    },
+    {
+      "id": "trigger-11",
+      "prompt": "Migrate our v1 `@aws-cdk/aws-s3` TypeScript app to AWS CDK v2 `aws-cdk-lib`, wire `cdk-nag` `AwsSolutionsChecks`, and run `cdk refactor`.",
+      "should_trigger": false,
+      "quadrant": "near_miss_neighbor",
+      "split": "val"
+    },
+    {
+      "id": "trigger-12",
+      "prompt": "Scaffold a new full-stack Todo web application using `npx @aws-blocks/create-blocks-app my-app --template demo` with `KVStore` and `AuthCognito`.",
+      "should_trigger": false,
+      "quadrant": "near_miss_neighbor",
+      "split": "val"
+    },
+    {
+      "id": "trigger-13",
+      "prompt": "Write a Python script using Pandas to calculate the 30-day rolling volatility of S&P 500 stock prices from a local CSV file.",
+      "should_trigger": false,
+      "quadrant": "unrelated",
+      "split": "train"
+    },
+    {
+      "id": "trigger-14",
+      "prompt": "Configure an Apple iOS SwiftUI navigation stack with deep-linking and CoreData persistence.",
+      "should_trigger": false,
+      "quadrant": "unrelated",
+      "split": "val"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+[
+  {
+    "query": "Find which table in our AWS data lake contains the customer_lifetime_value or churn_probability column.",
+    "should_trigger": true
+  },
+  {
+    "query": "Where is the revenue or subscription billing data stored across our Glue Data Catalog and S3 Tables buckets?",
+    "should_trigger": true
+  },
+  {
+    "query": "Search our Glue catalog and S3 Tables namespaces for any table matching 'clickstream' or 'user_sessions'.",
+    "should_trigger": true
+  },
+  {
+    "query": "Look up the exact database, namespace, and schema of our 'orders' table before I write an Athena query against it.",
+    "should_trigger": true
+  },
+  {
+    "query": "Do we have a table with PII columns like email, phone_number, or ssn in our data lake?",
+    "should_trigger": true
+  },
+  {
+    "query": "Give me a broad inventory and health overview of all databases, crawlers, and connections in our entire Glue catalog.",
+    "should_trigger": false
+  },
+  {
+    "query": "Create a new Apache Iceberg table in Amazon S3 Tables with monthly partitioning.",
+    "should_trigger": false
+  },
+  {
+    "query": "Import 100 GB of CSV files from S3 into an Iceberg table.",
+    "should_trigger": false
+  }
+]

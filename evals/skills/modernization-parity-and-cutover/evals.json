@@ -1,0 +1,25 @@
+{
+  "skill_name": "modernization-parity-and-cutover",
+  "evals": [
+    {
+      "id": "eval-01-provide-a-concise-structured-production-cutover",
+      "prompt": "Provide a concise, structured **Production Cutover & Rollback Runbook** (`references/production-cutover-runbook.md`) directly in your response for cutting over traffic from our legacy Oracle monolith to our modernized ECS Fargate + Aurora PostgreSQL service behind Amazon API Gateway Canary / VPC Lattice in `ap-south-1`. Include: (1) the exact AWS DMS CDC lag verification checks (`CDCLatencyTarget < 5` seconds draining to `0` seconds after write quiesce, `TableStatistics`), (2) the PostgreSQL sequence synchronization SQL (`setval` + `pg_get_serial_sequence`) required after write quiesce, and (3) the 4 progressive canary traffic stages (`1%` 15m -> `10%` 30m -> `50%` 60m -> `100%`) plus the `aws apigateway update-stage` (`path=/canarySettings/percentTraffic,value=0.0`) rollback command.",
+      "expected_output": "Provides the complete 4-phase cutover runbook: (1) Pre-cutover DMS CDC lag check (`CDCLatencyTarget < 5s`, `ValidationState == \"Validated\"`), (2) Legacy write freeze + CDC drain to `0s` + PostgreSQL sequence alignment (`SELECT setval(pg_get_serial_sequence(...), COALESCE((SELECT MAX(id) ...), 1), true)`), (3) Staged canary ramp (`1%` for 15m -> `10%` for 30m -> `50%` for 60m -> `100%`), and (4) Instant automated rollback command (`aws apigateway update-stage ... --patch-operations op=replace,path=/canarySettings/percentTraffic,value=0.0`) triggered when `5XXError > 0.5%` or `p95 Latency > 500ms`.",
+      "files": [],
+      "expectations": [
+        "Includes the DMS CDC pre-cutover checks (`CDCLatencyTarget < 5` seconds -> drain to `0` seconds after write quiesce) and the exact PostgreSQL `setval(pg_get_serial_sequence(...), MAX(id))` SQL to prevent `23505` primary-key collisions on cutover.",
+        "Details the 4 progressive canary stages (`1%` 15m -> `10%` 30m -> `50%` 60m -> `100%`) and the `aws apigateway update-stage` (`path=/canarySettings/percentTraffic,value=0.0`) rollback command."
+      ]
+    },
+    {
+      "id": "eval-02-provide-a-production-ready-k6-load-benchmarking",
+      "prompt": "Provide a production-ready **k6** load benchmarking script that ramps virtual users through warm-up, sustained peak (500 VUs), and cooldown stages while enforcing hard CI/CD exit gates (`p95 < 250ms`, `p99 < 500ms`, `http_req_failed < 0.1%`). Also check our live AWS environment in `ap-south-1` (`sts:GetCallerIdentity` or `cloudwatch:DescribeAlarms`) and explain which ADOT, HikariCP, and Aurora PostgreSQL Performance Insights metrics must be baselined during the load test.",
+      "expected_output": "Runs read-only `aws-mcp` / `cloudwatch` preflight in `ap-south-1`, provides a complete `k6` script with `stages` and `thresholds: { http_req_duration: ['p(95)<250', 'p(99)<500'], http_req_failed: ['rate<0.001'] }`, and details monitoring ADOT distributed traces, HikariCP connection pool saturation (`hikaricp_connections_active`, `pending`), container CPU/GC pauses, and Aurora PostgreSQL Performance Insights (`DBLoad`, `BufferCacheHitRatio`, `CommitLatency`).",
+      "files": [],
+      "expectations": [
+        "Includes a complete k6 script defining ramp `stages` and `thresholds` enforcing `p(95)<250`, `p(99)<500`, and `rate<0.001`.",
+        "Details the observability metrics to baseline across AWS Distro for OpenTelemetry (ADOT), HikariCP connection pools, and Aurora RDS Performance Insights (`DBLoad`, cache hit ratio, commit latency)."
+      ]
+    }
+  ]
+}

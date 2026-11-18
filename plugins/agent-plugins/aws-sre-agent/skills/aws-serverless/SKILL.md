@@ -13,7 +13,7 @@ Domain expertise for building serverless applications on AWS: Lambda, API Gatewa
 
 ## Serverless MCP Server Orchestration (`serverless` MCP)
 
-When operating within the `aws-platform-engineer` plugin, prefer the bound `serverless` (`mcp__plugin_aws-platform-engineer_serverless__*`) and `sns-sqs` (`mcp__plugin_aws-platform-engineer_sns-sqs__*`) MCP tools over ad-hoc shell commands:
+When operating with bound serverless MCP servers (`aws-serverless-mcp` / `serverless`, `aws-mcp`, `sns-sqs`, `dynamodb`, `cloudwatch`, `awspricing`, `awsknowledge`), prefer connected MCP tools over raw `aws` CLI shell commands:
 
 | Capability | `serverless` MCP Tools to Invoke | Platform Engineering Rule |
 |---|---|---|

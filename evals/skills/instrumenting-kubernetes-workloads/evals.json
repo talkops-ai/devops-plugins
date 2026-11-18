@@ -1,0 +1,146 @@
+{
+  "skill_name": "instrumenting-kubernetes-workloads",
+  "evals": [
+    {
+      "id": "eval-01-cluster-survey-workload-discovery-and-a2ui-overview",
+      "prompt": "I'm new to OpenTelemetry on this cluster—survey the `otel-demo` namespace across our `OTEL-APP` microservices to show which workloads are already instrumented vs uninstrumented (such as PHP `quote` and `flagd`), verify OpenTelemetry Operator health, and render an interactive A2UI cluster telemetry overview.",
+      "expected_output": "Reads `otel://server/capabilities`, `otel://operator/status`, `otel://instrumentations/otel-demo`, and `otel://collectors/otel-demo`, calls `otel_survey_cluster(namespaces=[\"otel-demo\"])`, lists workloads via `otel_list_workloads(namespace=\"otel-demo\", kinds=[\"Deployment\", \"StatefulSet\", \"DaemonSet\"], state=\"uninstrumented\")`, and calls `otel_query_a2ui()` to render the interactive `otel-demo` topology/instrumentation overview.",
+      "expectations": [
+        "Checks `otel://operator/status` and `otel://instrumentations/otel-demo` via MCP resources first",
+        "Calls `otel_survey_cluster` and `otel_list_workloads` for `otel-demo`",
+        "Calls `otel_query_a2ui()` to provide the interactive `otel-demo` cluster instrumentation overview"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-02-create-instrumentation-cr-per-language-otlp-protocol-ports",
+      "prompt": "In `otel-demo`, preview and apply an OpenTelemetry `Instrumentation` CR named `otel-demo-instrumentation` pointing to `opentelemetry-otel-collector.otel-demo.svc.cluster.local` with the right OTLP ports and protocols for Java (`ad`), Python (`recommendation`, `load-generator`), Node.js (`payment`, `frontend`), and .NET (`cart`), using `0.25` `parentbased_traceidratio` sampling and `service.namespace=otel-demo`, then inspect the resulting CR.",
+      "expected_output": "Configures per-language OTLP protocol/port rules accurately (`java` -> gRPC `:4317`, whereas `python`, `nodejs`, and `dotnet` -> `http/protobuf` `:4318` on `http://opentelemetry-otel-collector.otel-demo.svc.cluster.local:4318`), sets `propagators: [tracecontext, baggage]`, `resource.attributes: {\"service.namespace\": \"otel-demo\"}`, and `parentbased_traceidratio` (`0.25`), calls `otel_patch_instrumentation(namespace=\"otel-demo\", name=\"otel-demo-instrumentation\", ..., dry_run=True)` followed by `dry_run=False, confirm=True`, and reads `otel://instrumentation/otel-demo/otel-demo-instrumentation` via MCP.",
+      "expectations": [
+        "Maps `java` to gRPC `:4317` and `python`, `nodejs`, and `dotnet` to `http/protobuf` `:4318` on `opentelemetry-otel-collector.otel-demo.svc.cluster.local`",
+        "Configures W3C `tracecontext,baggage` propagators, `service.namespace=otel-demo`, and `parentbased_traceidratio` (`0.25`)",
+        "Calls `otel_patch_instrumentation` in `otel-demo` with `dry_run=True` before `dry_run=False, confirm=True` and inspects `otel://instrumentation/otel-demo/otel-demo-instrumentation`"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-03-enable-java-autoinstrumentation-on-multi-container-deployment",
+      "prompt": "Enable Java OpenTelemetry auto-instrumentation on Deployment `ad` in `otel-demo`—which runs two containers (`ad` and `envoy-sidecar`)—making sure we don't accidentally inject the JVM agent into the Envoy sidecar! Preview the change first, apply it, and verify that webhook initContainer injection succeeded.",
+      "expected_output": "Scopes injection to `container_names: [\"ad\"]` to avoid injecting the Java agent into `envoy-sidecar`; calls `otel_manage_workload_instrumentation(namespace=\"otel-demo\", workload_name=\"ad\", workload_kind=\"Deployment\", action=\"enable\", language=\"java\", injection_options={\"container_names\": [\"ad\"]}, dry_run=True)`, applies with `dry_run=False, confirm=True`, and runs `otel_verify_instrumentation(namespace=\"otel-demo\", workload_name=\"ad\", workload_kind=\"Deployment\")`.",
+      "expectations": [
+        "Scopes injection to `container_names: [\"ad\"]` so sidecar `envoy-sidecar` is excluded",
+        "Calls `otel_manage_workload_instrumentation` (`action=\"enable\"`, `language=\"java\"`) on `Deployment/ad` in `otel-demo` with `dry_run=True` then `dry_run=False, confirm=True`",
+        "Verifies webhook initContainer injection and pod readiness via `otel_verify_instrumentation`"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-04-go-workload-missing-target-exe-and-operator-feature-gate",
+      "prompt": "In `otel-demo`, our Go `flagd` Deployment (`ghcr.io/open-feature/flagd:v0.12.9`, binary `/flagd-build`) has `instrumentation.opentelemetry.io/inject-go: \"true\"` on its pod template, yet no OpenTelemetry Go auto-instrumentation sidecar was injected! Check why Go behaves differently from Java or Python and preview the fix.",
+      "expected_output": "Calls `otel_verify_instrumentation(namespace=\"otel-demo\", workload_name=\"flagd\", workload_kind=\"Deployment\")`, explains that Go compiles to native machine code without a VM/interpreter so OpenTelemetry Go auto-instrumentation uses an eBPF sidecar requiring (1) `instrumentation.opentelemetry.io/otel-go-auto-target-exe: \"/flagd-build\"` pointing to the exact Go binary path and (2) Operator feature gate `enableGoInstrumentation=true` (or cluster eBPF `OBI`), and previews via `otel_manage_workload_instrumentation(namespace=\"otel-demo\", workload_name=\"flagd\", workload_kind=\"Deployment\", action=\"enable\", language=\"go\", injection_options={\"go_target_exe\": \"/flagd-build\"}, dry_run=True)`.",
+      "expectations": [
+        "Verifies `Deployment/flagd` via `otel_verify_instrumentation` and explains why Go requires `instrumentation.opentelemetry.io/otel-go-auto-target-exe` (`OTEL_GO_AUTO_TARGET_EXE`) + Operator Go feature gate",
+        "Previews adding `go_target_exe: \"/flagd-build\"` on `Deployment/flagd` in `otel-demo` via `otel_manage_workload_instrumentation(..., dry_run=True)`"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-05-rust-and-cpp-ebpf-obi-daemonset-plus-manual-sdk-guidance",
+      "prompt": "In `otel-demo`, we run Rust `shipping` (`:8080`, calling PHP `quote`) and C++ `currency` (`:8080`). Can we use OpenTelemetry Operator initContainer auto-instrumentation on `shipping` and `currency`? Generate a working zero-code eBPF DaemonSet manifest plus manual SDK Kubernetes attribute guidance exporting to `http://opentelemetry-otel-collector.otel-demo.svc.cluster.local:4317`.",
+      "expected_output": "Explains that Rust (`shipping`) and C++ (`currency`) do NOT support Operator webhook initContainer auto-instrumentation; runs `scripts/render_obi_manifest.py` to generate a least-privilege **OpenTelemetry eBPF Instrumentation (`OBI`)** DaemonSet (`ghcr.io/open-telemetry/opentelemetry-ebpf-instrumentation/obi`, Linux kernel `>= 5.8` BTF `/sys/kernel/btf/vmlinux`, `BPF`/`PERFMON` capabilities without `privileged: true`, `OTEL_EXPORTER_OTLP_ENDPOINT=http://opentelemetry-otel-collector.otel-demo.svc.cluster.local:4317`), and provides manual SDK Downward API `OTEL_RESOURCE_ATTRIBUTES` (`service.namespace=otel-demo`, `k8s.pod.name`, `k8s.namespace.name`, `k8s.pod.uid`, `k8s.node.name`) + W3C `tracecontext` guidance.",
+      "expectations": [
+        "States clearly that Rust (`shipping`) and C++ (`currency`) cannot use Operator initContainer auto-instrumentation",
+        "Renders a least-privilege `OBI` eBPF `DaemonSet` + read-only `ClusterRole` targeting `http://opentelemetry-otel-collector.otel-demo.svc.cluster.local:4317` and notes Linux `>= 5.8` BTF prerequisites",
+        "Includes manual SDK Downward API `OTEL_RESOURCE_ATTRIBUTES` (`service.namespace=otel-demo`) and W3C `tracecontext` propagation guidance"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-06-alpine-musl-dotnet-runtime-identifier-fix",
+      "prompt": "After migrating our C#/.NET `cart` service in `otel-demo` to an Alpine base image (`mcr.microsoft.com/dotnet/aspnet:8.0-alpine`) and adding `instrumentation.opentelemetry.io/inject-dotnet: \"true\"`, the `cart` pod crashes immediately at startup with `Error loading shared library ld-linux-x86-64.so.2`. Diagnose why and preview the fix on `Deployment/cart`.",
+      "expected_output": "Identifies glibc vs musl libc mismatch on Alpine Linux containers: the Operator defaults `.NET` injection to `linux-x64` (glibc), whereas Alpine `cart` requires `instrumentation.opentelemetry.io/dotnet-runtime: \"linux-musl-x64\"` (or `linux-musl-arm64`), previewing the fix on `Deployment/cart` in `otel-demo` via `otel_manage_workload_instrumentation(..., dotnet_runtime=\"linux-musl-x64\", dry_run=True)`.",
+      "expectations": [
+        "Pinpoints glibc (`linux-x64`) vs Alpine musl (`linux-musl-x64`) CLR profiler library mismatch on `cart`",
+        "Previews setting `dotnet_runtime: \"linux-musl-x64\"` on `Deployment/cart` in `otel-demo` via `otel_manage_workload_instrumentation(..., dry_run=True)`"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-07-restart-pods-predating-instrumentation-cr",
+      "prompt": "Our Python `load-generator` Deployment in `otel-demo` has `instrumentation.opentelemetry.io/inject-python: \"true\"` on its pod template and `otel-demo-instrumentation` exists in `otel-demo`, yet `load-generator` pods still aren't emitting any traces and have no auto-instrumentation initContainer! Check why, preview the fix, apply it, and confirm injection.",
+      "expected_output": "Calls `otel_verify_instrumentation(namespace=\"otel-demo\", workload_name=\"load-generator\", workload_kind=\"Deployment\")`, explains that mutating admission webhooks only fire at Pod `CREATE` time (the running `load-generator` pods predate `Instrumentation/otel-demo-instrumentation`), previews a rolling restart via `otel_manage_workload_instrumentation(namespace=\"otel-demo\", workload_name=\"load-generator\", workload_kind=\"Deployment\", action=\"restart\", dry_run=True)`, executes `dry_run=False, confirm=True`, and re-runs `otel_verify_instrumentation`.",
+      "expectations": [
+        "Calls `otel_verify_instrumentation` and explains that admission webhooks only mutate Pods at `CREATE` time (pods predate the `Instrumentation` CR)",
+        "Calls `otel_manage_workload_instrumentation(namespace=\"otel-demo\", workload_name=\"load-generator\", workload_kind=\"Deployment\", action=\"restart\", dry_run=True)` then `dry_run=False, confirm=True`",
+        "Re-verifies `load-generator` via `otel_verify_instrumentation`"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-08-disable-autoinstrumentation-clean-rollback",
+      "prompt": "Deployment `email` (Ruby `:8080`, `100Mi` memory limit) in `otel-demo` accidentally had `instrumentation.opentelemetry.io/inject-python: \"true\"` added to its pod annotations, wasting initContainer memory while we investigate a Ruby memory leak. Preview removing auto-instrumentation from `email`, apply it, and verify the pods return to an uninstrumented state.",
+      "expected_output": "Calls `otel_manage_workload_instrumentation(namespace=\"otel-demo\", workload_name=\"email\", workload_kind=\"Deployment\", action=\"disable\", dry_run=True)` to preview annotation removal, executes `action=\"disable\", dry_run=False, confirm=True`, and calls `otel_verify_instrumentation` / `otel_list_workloads` to verify clean `email` pod rollout without `opentelemetry-auto-instrumentation` initContainers.",
+      "expectations": [
+        "Calls `otel_manage_workload_instrumentation` on `Deployment/email` in `otel-demo` with `action=\"disable\"` and `dry_run=True` first",
+        "Executes `action=\"disable\", dry_run=False, confirm=True`",
+        "Verifies initContainer removal on `email` via `otel_verify_instrumentation` or `otel_list_workloads`"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-09-resolve-duplicate-instrumentation-crs-with-otel-delete-resource",
+      "prompt": "Pods in `otel-demo` using `\"true\"` auto-instrumentation annotations are failing to inject cleanly because someone left a second obsolete `Instrumentation` CR (`legacy-jaeger-inst`) alongside `otel-demo-instrumentation`. Inspect the `Instrumentation` CRs in `otel-demo` to make sure no workload references `legacy-jaeger-inst`, preview deleting `legacy-jaeger-inst`, and then remove it.",
+      "expected_output": "Reads `otel://instrumentations/otel-demo` and `otel://instrumentation/otel-demo/legacy-jaeger-inst` (plus `otel_list_workloads(namespace=\"otel-demo\")`) to ensure no workload explicitly references `legacy-jaeger-inst`, calls `otel_delete_resource(kind=\"Instrumentation\", namespace=\"otel-demo\", name=\"legacy-jaeger-inst\", dry_run=True)` to preview deletion, and executes `otel_delete_resource(..., dry_run=False, confirm=True)`.",
+      "expectations": [
+        "Inspects `otel://instrumentations/otel-demo` (and/or `otel://instrumentation/otel-demo/legacy-jaeger-inst`) and `otel_list_workloads` via MCP before deletion",
+        "Calls `otel_delete_resource(kind=\"Instrumentation\", namespace=\"otel-demo\", name=\"legacy-jaeger-inst\", dry_run=True)` first",
+        "Executes `otel_delete_resource(..., dry_run=False, confirm=True)`"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-10-strip-conflicting-hardcoded-otel-env-vars-on-workload",
+      "prompt": "Onboard our Node.js `payment-legacy` Deployment in `otel-demo` to OpenTelemetry auto-instrumentation, and resolve its stale hardcoded `OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-legacy:14268` environment variable that keeps overriding our collector endpoint! Preview the patch first, apply it, and verify.",
+      "expected_output": "Explains that container-level `OTEL_*` env vars take precedence over Operator-injected values, calls `otel_manage_workload_instrumentation(namespace=\"otel-demo\", workload_name=\"payment-legacy\", workload_kind=\"Deployment\", action=\"enable\", language=\"nodejs\", injection_options={\"strip_conflicting_env\": True}, dry_run=True)`, applies with `dry_run=False, confirm=True`, and verifies with `otel_verify_instrumentation`.",
+      "expectations": [
+        "Explains that hardcoded container `OTEL_EXPORTER_OTLP_ENDPOINT` overrides Operator-injected auto-instrumentation settings",
+        "Calls `otel_manage_workload_instrumentation` on `payment-legacy` with `strip_conflicting_env: True` and `dry_run=True` before `dry_run=False, confirm=True`",
+        "Verifies active OTLP endpoint and injection via `otel_verify_instrumentation`"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-11-readonly-root-filesystem-missing-tmp-empty-dir-warning",
+      "prompt": "Lint this `ad` service Deployment YAML in `otel-demo` before we enable Java auto-instrumentation:\n```yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: ad\n  namespace: otel-demo\nspec:\n  template:\n    metadata:\n      annotations:\n        resource.opentelemetry.io/service.namespace: otel-demo\n        instrumentation.opentelemetry.io/inject-java: \"true\"\n    spec:\n      containers:\n        - name: ad\n          image: ghcr.io/open-telemetry/demo:2.2.0-ad\n          securityContext:\n            runAsNonRoot: true\n            runAsUser: 1000\n            readOnlyRootFilesystem: true\n```",
+      "expected_output": "Runs `scripts/lint_workload_manifest.py` on the YAML and flags `readOnlyRootFilesystem: true` without a writable `/tmp` `emptyDir` `volumeMount`: JVM dynamic attach / tempfile extraction for `javaagent.jar` fails at startup unless an `emptyDir: {}` volume is mounted at `/tmp` on container `ad`.",
+      "expectations": [
+        "Detects `readOnlyRootFilesystem: true` without a `/tmp` `volumeMount` on `Deployment/ad`",
+        "Explains why JVM `javaagent.jar` extraction/attach needs a writable `/tmp` `emptyDir`",
+        "Provides the exact `volumes` + `volumeMounts` `/tmp` `emptyDir` patch for `ad`"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-12-reject-unsupported-cronjob-or-bare-pod-kind-for-workload-management",
+      "prompt": "Lint a standalone Kubernetes `Job` manifest running our `otel-demo` `postgresql` catalog seed script for workload auto-instrumentation:\n```yaml\napiVersion: batch/v1\nkind: Job\nmetadata:\n  name: pg-catalog-seed\n  namespace: otel-demo\nspec:\n  template:\n    spec:\n      restartPolicy: Never\n      containers:\n        - name: seed\n          image: python:3.12-slim\n```\nand explain how short-lived `Job`/`CronJob` tasks avoid losing spans before exit.",
+      "expected_output": "Runs `scripts/lint_workload_manifest.py` (flagging standalone `Job` outside standard `Deployment`/`StatefulSet`/`DaemonSet` workload controllers), shows how `jobTemplate.spec.template.metadata.annotations` works on `CronJob`s, AND warns that short-lived batch jobs exit before the SDK `BatchSpanProcessor` timer flushes spans unless `TracerProvider.force_flush()` / `shutdown()` is called before process exit.",
+      "expectations": [
+        "Flags standalone `Job` as outside standard `Deployment`/`StatefulSet`/`DaemonSet` rolling workload controllers",
+        "Explains batch-exit span loss when `force_flush()` / `shutdown()` is omitted before process exit",
+        "Provides `CronJob` pod-template annotation + explicit SDK shutdown flush guidance"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-13-reject-invalid-sampling-ratio-and-invalid-obi-endpoint-scheme",
+      "prompt": "Validate two teammate config inputs before we generate manifests for `otel-demo`: (1) an `Instrumentation` CR with `sampling-ratio` set to `1.5` (our teammate thought `1.5` meant `1.5%`), and (2) an eBPF `OBI` DaemonSet with `otlp-endpoint` set to `opentelemetry-otel-collector.otel-demo.svc.cluster.local:4317` (no `http://` prefix).",
+      "expected_output": "Validates via `scripts/render_instrumentation_cr.py` and `scripts/render_obi_manifest.py`, catching both errors: (1) `parentbased_traceidratio` ratio must be in `[0.0, 1.0]` (`1.5%` is `0.015`, NOT `1.5`), and (2) `OBI` `OTEL_EXPORTER_OTLP_ENDPOINT` requires an explicit `http://` or `https://` URL scheme (`http://opentelemetry-otel-collector.otel-demo.svc.cluster.local:4317`), outputting the corrected manifests.",
+      "expectations": [
+        "Rejects `1.5` sampling ratio outside `[0.0, 1.0]` and converts `1.5%` to `0.015`",
+        "Rejects `otlp-endpoint` missing `http://` or `https://` scheme for `OBI` (`http://opentelemetry-otel-collector.otel-demo.svc.cluster.local:4317`)",
+        "Outputs corrected `Instrumentation` and `OBI` YAML configurations"
+      ],
+      "files": []
+    }
+  ]
+}

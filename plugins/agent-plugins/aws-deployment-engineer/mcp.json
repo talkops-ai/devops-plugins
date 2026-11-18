@@ -12,7 +12,8 @@
         "awslabs.aws-iac-mcp-server==1.0.26"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     },
     "awspricing": {
@@ -23,6 +24,7 @@
       ],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1",
         "AWS_PRICING_MCP_OUTPUT_DIR": "./reports"
       }
     },
@@ -34,6 +36,7 @@
       ],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1",
         "AWS_API_MCP_ALLOW_UNRESTRICTED_LOCAL_FILE_ACCESS": "workdir"
       }
     },
@@ -44,7 +47,8 @@
         "awslabs.cloudwatch-mcp-server==0.3.1"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     }
   }

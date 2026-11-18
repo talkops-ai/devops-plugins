@@ -1,0 +1,16 @@
+{
+  "skill_name": "legacy-vm-and-mainframe-replatform",
+  "evals": [
+    {
+      "id": "eval-01-our-core-insurance-policy-administration-system",
+      "prompt": "Our core insurance policy-administration system runs on an IBM z/OS mainframe (COBOL 6, CICS BMS screens, Db2 z/OS, VSAM KSDS files, and nightly JCL batch jobs), and we are targeting AWS `ap-south-1`. We have 100% of the source code and copybooks, and our CTO wants to completely exit COBOL skills and evolve the product rapidly in Java. First run a read-only check in `ap-south-1` via `aws-mcp` (`m2:ListApplications`, `ecs:ListClusters`, `stepfunctions:ListStateMachines`). Second, state the mandatory 2026 guardrail regarding AWS Mainframe Modernization (M2) Managed Runtime, and design the target **AWS Blu Age** automated refactoring architecture via AWS Transform.",
+      "expected_output": "Enforces the 2026 guardrail that the standalone AWS Mainframe Modernization (M2) Managed Runtime Environment is closed to new customers and routes through AWS Transform for mainframe (`aws-transform-mcp`) using **AWS Blu Age**, detailing how COBOL/CICS/BMS transform to Java 17/21 + Spring Boot + Angular on Amazon ECS/EKS, how Db2/VSAM migrate to Amazon Aurora PostgreSQL (EBCDIC to UTF-8/ASCII, `COMP-3` to `NUMERIC`/`BigDecimal`), and how JCL batch orchestrates via Groovy/Spring Batch + AWS Step Functions + EventBridge Scheduler.",
+      "files": [],
+      "expectations": [
+        "Performs read-only discovery in `ap-south-1` via `aws-mcp` (`m2:ListApplications`, `ecs:ListClusters`, `stepfunctions:ListStateMachines`) without mutating resources.",
+        "Explicitly states the mandatory 2026 guardrail: the standalone AWS Mainframe Modernization (M2) Managed Runtime Environment is closed to new customers, and directs mainframe modernization to AWS Transform (`aws-transform-mcp`).",
+        "Details the AWS Blu Age refactoring architecture: COBOL/CICS/BMS -> Java 17/21 Spring Boot + Angular on ECS/EKS, VSAM/Db2 -> Aurora PostgreSQL (ASCII/UTF-8), and JCL -> Groovy/Spring Batch orchestrated by AWS Step Functions."
+      ]
+    }
+  ]
+}

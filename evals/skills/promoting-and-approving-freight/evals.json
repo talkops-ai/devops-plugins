@@ -1,0 +1,115 @@
+{
+  "skill_name": "promoting-and-approving-freight",
+  "evals": [
+    {
+      "id": "eval-01-in-kargo-project-otel-demo-check-which-checkout",
+      "prompt": "In Kargo project `otel-demo`, check which `checkout` Freight bundles have already passed verification in `staging` and are eligible for `prod-us`, trace release alias `otel-checkout-230` across the pipeline, preview promoting `otel-checkout-230` to `prod-us`, and then execute the promotion and check its resulting status.",
+      "expected_output": "Reads `kargo://projects/otel-demo/pipeline`, queries eligible Freight for `prod-us` via `kargo_query_freight(project=\"otel-demo\", stage=\"prod-us\", available_only=True)`, traces `otel-checkout-230` via `kargo_trace_freight`, previews `kargo_promote(..., stage=\"prod-us\", freight_alias=\"otel-checkout-230\", dry_run=True)`, executes `dry_run=False, confirm=True`, and inspects `kargo://projects/otel-demo/promotions/{promotion}`.",
+      "files": [],
+      "expectations": [
+        "Queries available Freight for `prod-us` via `kargo_query_freight` and traces `otel-checkout-230` via `kargo_trace_freight`",
+        "Previews promotion to `prod-us` (`dry_run=True`) before executing live (`dry_run=False`) via `kargo_promote`",
+        "Monitors the resulting `Promotion` and `prod-us` stage status"
+      ]
+    },
+    {
+      "id": "eval-02-emergency-hotfix-freight-otel-payment-hotfix-221",
+      "prompt": "Emergency hotfix Freight `otel-payment-hotfix-221` (fixing a critical gRPC panic in `OTEL-APP`'s `payment` service) in Kargo project `otel-demo` is currently deployed in `dev-payment`, while `prod-payment` normally requires verification in `staging-payment` plus a 1-hour soak window. Engineering leadership just authorized an emergency direct push to `prod-payment`—approve `otel-payment-hotfix-221` for `prod-payment` and promote it now.",
+      "expected_output": "Traces `otel-payment-hotfix-221` via `kargo_trace_freight`, notes that manual approval overrides `staging-payment` verification and the `1h` soak requirement, approves via `kargo_approve_freight(project=\"otel-demo\", freight_or_alias=\"otel-payment-hotfix-221\", stage=\"prod-payment\", confirm=True)`, and promotes via `kargo_promote` (`dry_run=True -> False`).",
+      "files": [],
+      "expectations": [
+        "Traces `otel-payment-hotfix-221` via `kargo_trace_freight` and highlights which upstream stage/soak gates (`staging-payment` + `1h`) are bypassed",
+        "Approves `otel-payment-hotfix-221` for `prod-payment` via `kargo_approve_freight`",
+        "Previews and executes the promotion to `prod-payment` via `kargo_promote`"
+      ]
+    },
+    {
+      "id": "eval-03-storefront-bundle-storefront-230-in-kargo-projec",
+      "prompt": "Storefront bundle `storefront-230` in Kargo project `otel-demo` has completed verification on `staging-storefront`. Fan out `storefront-230` from `staging-storefront` simultaneously to both downstream regional stages (`prod-storefront-us` and `prod-storefront-eu`) that subscribe to `staging-storefront`, and check the resulting promotions.",
+      "expected_output": "Verifies `storefront-230` is verified in `staging-storefront` via `kargo_trace_freight`, previews downstream fan-out via `kargo_promote(project=\"otel-demo\", stage=\"staging-storefront\", freight_alias=\"storefront-230\", downstream=True, dry_run=True)`, executes `dry_run=False, confirm=True`, and inspects `kargo://projects/otel-demo/promotions`.",
+      "files": [],
+      "expectations": [
+        "Confirms `storefront-230` is verified in `staging-storefront` via `kargo_trace_freight`",
+        "Previews and executes downstream fan-out promotion from `staging-storefront` (`downstream=True`) via `kargo_promote`",
+        "Inspects the resulting regional `Promotion` objects for `prod-storefront-us` and `prod-storefront-eu`"
+      ]
+    },
+    {
+      "id": "eval-04-in-kargo-project-otel-demo-1-create-an-analysist",
+      "prompt": "In Kargo project `otel-demo`: (1) create an AnalysisTemplate named `otel-storefront-slo` querying Prometheus at `http://prometheus.observability.svc.cluster.local:9090` for checkout 5xx error ratio (`sum(rate(http_requests_total{job='checkout',status=~'5..'}[1m])) / sum(rate(http_requests_total{job='checkout'}[1m]))` < `0.05`) and attach it to Stage `staging-slo` verification, (2) trigger a fresh verification run on `staging-slo`, (3) abort that in-flight verification run to test our emergency stop procedure, and (4) delete the retired `obsolete-canary-check` AnalysisTemplate from `otel-demo`.",
+      "expected_output": "Applies `AnalysisTemplate` `otel-storefront-slo` (`kargo_apply_analysis_template`), attaches it to `staging-slo` (`kargo_apply_stage`), triggers `reverify` (`kargo_manage_verification(..., action=\"reverify\")`), aborts verification (`kargo_manage_verification(..., action=\"abort\")`), and deletes `obsolete-canary-check` (`kargo_manage_verification(..., action=\"delete_template\", template_name=\"obsolete-canary-check\")`).",
+      "files": [],
+      "expectations": [
+        "Creates `otel-storefront-slo` via `kargo_apply_analysis_template` (`dry_run=True` -> `False`) and attaches it to `staging-slo` via `kargo_apply_stage`",
+        "Triggers re-verification (`reverify`) and aborts verification (`abort`) on `staging-slo` via `kargo_manage_verification`",
+        "Deletes retired template `obsolete-canary-check` via `kargo_manage_verification(..., action=\"delete_template\", ...)` and checks `kargo://projects/otel-demo/analysis-templates`"
+      ]
+    },
+    {
+      "id": "eval-05-in-kargo-project-otel-demo-give-freight-amber-ko",
+      "prompt": "In Kargo project `otel-demo`, give Freight `amber-koala` the human-friendly release alias `otel-app-0.1.1-rc1`, and permanently delete the unused experimental Freight `broken-loadgen-draft` after verifying that it is not deployed to any Stage.",
+      "expected_output": "Traces `broken-loadgen-draft` via `kargo_trace_freight` to confirm `currentlyIn` is empty, renames `amber-koala` to `otel-app-0.1.1-rc1` via `kargo_manage_freight`, and deletes `broken-loadgen-draft` via `kargo_manage_freight(..., action=\"delete\", confirm=True)`.",
+      "files": [],
+      "expectations": [
+        "Updates alias `amber-koala` -> `otel-app-0.1.1-rc1` via `kargo_manage_freight` and verifies the updated alias (`kargo_query_freight` or `kargo://projects/otel-demo/freight/otel-app-0.1.1-rc1`)",
+        "Checks `kargo_trace_freight` to verify `broken-loadgen-draft` is not deployed in any Stage before deleting it",
+        "Deletes `broken-loadgen-draft` via `kargo_manage_freight(..., action=\"delete\", ...)`"
+      ]
+    },
+    {
+      "id": "eval-06-there-is-an-active-promotion-stuck-on-stage-prod",
+      "prompt": "There is an active Promotion stuck on Stage `prod-pr-gate` in Kargo project `otel-demo` waiting on an abandoned pull request—inspect the stuck Promotion, refresh it once to confirm it's still stalled, and then abort the running Promotion cleanly.",
+      "expected_output": "Lists/inspects `kargo://projects/otel-demo/promotions` and `kargo://projects/otel-demo/promotions/{promotion}`, refreshes it via `kargo_manage_promotion(..., action=\"refresh\")` (or `kargo_refresh`), aborts it via `kargo_manage_promotion(..., action=\"abort\", confirm=True)`, and checks `kargo://projects/otel-demo/stages/prod-pr-gate`.",
+      "files": [],
+      "expectations": [
+        "Inspects the stuck `Promotion` on `prod-pr-gate` (`kargo://projects/otel-demo/promotions/{promotion}`)",
+        "Refreshes and then aborts the active `Promotion` via `kargo_manage_promotion`",
+        "Verifies `prod-pr-gate` stage state after aborting"
+      ]
+    },
+    {
+      "id": "eval-07-inspect-stage-prod-global-and-its-manifest-in-ka",
+      "prompt": "Inspect Stage `prod-global` (and its manifest) in Kargo project `otel-demo`, which fans in from `staging-us` and `staging-eu`. Freight `otel-valkey-901` just finished verifying in `staging-us` and `staging-eu` a few minutes ago—why isn't `otel-valkey-901` automatically eligible for `prod-global` yet, and how does `All` differ from `OneOf` here?",
+      "expected_output": "Reads `kargo://projects/otel-demo/stages/prod-global` and `kargo://projects/otel-demo/stages/prod-global/manifest` plus `kargo_trace_freight` on `otel-valkey-901`, explaining that `availabilityStrategy: All` requires verification in **both** `staging-us` and `staging-eu` (unlike `OneOf`, which only requires one) AND continuous satisfaction of `requiredSoakTime: 30m0s` before `otel-valkey-901` becomes eligible without manual approval.",
+      "files": [],
+      "expectations": [
+        "Inspects `prod-global` (`kargo://projects/otel-demo/stages/prod-global` / `/manifest`) and traces `otel-valkey-901`",
+        "Contrasts `availabilityStrategy: All` (every upstream stage must verify) against `OneOf` (any single upstream stage)",
+        "Explains that the `30m0s` `requiredSoakTime` has not elapsed yet unless overridden by manual approval"
+      ]
+    },
+    {
+      "id": "eval-08-yesterday-someone-manually-promoted-an-older-fre",
+      "prompt": "Yesterday someone manually promoted an older Freight onto Stage `staging-hold` in Kargo project `otel-demo`, which put an automatic-promotion hold on `staging-hold` for Warehouse `hold-wh`. Now a newer Freight has arrived in `hold-wh`—inspect the hold on `staging-hold`, clear the hold by promoting the latest Freight from `hold-wh`, and verify the hold is gone.",
+      "expected_output": "Reads `kargo://projects/otel-demo/stages/staging-hold` to confirm `autoPromotionHolds` referencing `hold-wh`, previews and runs `kargo_promote(project=\"otel-demo\", stage=\"staging-hold\", origin_warehouse=\"hold-wh\", dry_run=True -> False, confirm=True)`, and verifies `autoPromotionHolds` cleared on `staging-hold`.",
+      "files": [],
+      "expectations": [
+        "Inspects `staging-hold` (`kargo://projects/otel-demo/stages/staging-hold` / `kargo_diagnose_stage`) and identifies the active `autoPromotionHolds` entry for Warehouse `hold-wh`",
+        "Promotes from origin Warehouse `hold-wh` on `staging-hold` (`origin_warehouse=\"hold-wh\"`) via `kargo_promote` (`dry_run=True` -> `False`)",
+        "Confirms `autoPromotionHolds` is cleared on `staging-hold`"
+      ]
+    },
+    {
+      "id": "eval-09-in-kargo-project-otel-demo-freight-flagd-bad-cha",
+      "prompt": "In Kargo project `otel-demo`, Freight `flagd-bad-chaos` (which accidentally turned on `paymentFailure: 50%` in `demo.flagd.json`) failed its post-promotion verification run in `staging-chaos`, and a developer wants us to push `flagd-bad-chaos` straight into `prod-chaos` anyway without fixing it. Check `flagd-bad-chaos` and the failed verification logs on `staging-chaos`, explain what Kargo's gate will do, and tell me how we should handle this.",
+      "expected_output": "Traces `flagd-bad-chaos` (`verifiedIn` empty), reads the failed `AnalysisRun` and `/logs` on `staging-chaos`, explains that Kargo blocks promotion to `prod-chaos` because `flagd-bad-chaos` is neither verified in `staging-chaos` nor approved for `prod-chaos`, and refuses to approve/promote a build that actively failed SLO verification.",
+      "files": [],
+      "expectations": [
+        "Traces `flagd-bad-chaos` and inspects the failed `AnalysisRun` (`/analysis-runs/{run}` and `/logs`) from `staging-chaos`",
+        "Explains Kargo's admission gate requiring upstream verification or explicit approval",
+        "Refuses to approve or promote `flagd-bad-chaos` into `prod-chaos` after a real SLO failure and recommends fixing `demo.flagd.json` first"
+      ]
+    },
+    {
+      "id": "eval-10-check-our-otel-demo-project-configuration-and-ex",
+      "prompt": "Check our `otel-demo` project configuration and explain the operational difference between `NewestFreight` and `MatchUpstream` selection policies in Kargo v1.12 when `staging` rolls `frontend-proxy` and `checkout` back to an older `2.2.0` Freight.",
+      "expected_output": "Reads `kargo://projects/otel-demo` / `references/promotion-gates.md` and explains that `NewestFreight` (default) only auto-promotes chronologically newer Freight and ignores upstream rollbacks to older Freight, whereas `MatchUpstream` causes a downstream Stage to automatically mirror whatever Freight is currently active and verified upstream (propagating rollbacks downstream), configured under `Stage.spec.requestedFreight[*].sources.autoPromotionOptions.selectionPolicy` alongside `ProjectConfig.spec.promotionPolicies`.",
+      "files": [],
+      "expectations": [
+        "Accurately contrasts `NewestFreight` (chronologically newer Freight only) vs `MatchUpstream` (tracks current upstream Stage Freight)",
+        "Explains the downstream impact on production stages when `staging` rolls back `OTEL-APP` services",
+        "Shows where `autoPromotionOptions.selectionPolicy` lives inside `Stage.spec.requestedFreight[*].sources` (with auto-promotion enabled via `ProjectConfig.spec.promotionPolicies`)"
+      ]
+    }
+  ]
+}

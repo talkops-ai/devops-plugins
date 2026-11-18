@@ -1,0 +1,58 @@
+[
+  {
+    "query": "Build an Amazon Managed Service for Apache Flink 1.20 application in Java that consumes from Kinesis Data Streams with EFO and writes to Apache Iceberg on S3 Tables.",
+    "should_trigger": true
+  },
+  {
+    "query": "Troubleshoot why our Managed Service for Apache Flink job has rising millisBehindLatest, 3-minute RocksDB checkpoint durations, and high backpressure.",
+    "should_trigger": true
+  },
+  {
+    "query": "Configure maven-shade-plugin and KinesisAnalyticsRuntime.getApplicationProperties() for deploying a Flink DataStream uber-JAR to AWS Managed Flink.",
+    "should_trigger": true
+  },
+  {
+    "query": "Size KPUs, Parallelism, and ParallelismPerKPU for an Amazon Managed Service for Apache Flink application consuming from a 24-partition MSK topic.",
+    "should_trigger": true
+  },
+  {
+    "query": "Migrate our Managed Service for Apache Flink application from deprecated SourceFunction/FlinkKafkaConsumer APIs to Flink 1.20 / 2.x KafkaSource and unified Sink APIs.",
+    "should_trigger": true
+  },
+  {
+    "query": "Set up a Flink CDC pipeline on Amazon Managed Service for Apache Flink to stream PostgreSQL changes into an Iceberg data lake table.",
+    "should_trigger": true
+  },
+  {
+    "query": "Tune RocksDB state TTL and incremental checkpointing on Managed Service for Apache Flink to stop lastCheckpointSize from growing unboundedly.",
+    "should_trigger": true
+  },
+  {
+    "query": "Fix ClassNotFoundException and Kryo serialization errors when restoring our AWS Managed Service for Apache Flink application from a snapshot.",
+    "should_trigger": true
+  },
+  {
+    "query": "Author an AWS Glue 5.0 PySpark batch ETL job to join two Parquet datasets in S3 and write to a Glue Data Catalog table.",
+    "should_trigger": false
+  },
+  {
+    "query": "Create an Amazon Data Firehose delivery stream to buffer JSON records directly into an S3 bucket without custom stream processing code.",
+    "should_trigger": false
+  },
+  {
+    "query": "Upgrade an Amazon MWAA Apache Airflow 2.7.2 environment to Airflow 2.10.3.",
+    "should_trigger": false
+  },
+  {
+    "query": "Optimize an Amazon Redshift Serverless workgroup query that is spilling to disk due to a cross-join and missing sort keys.",
+    "should_trigger": false
+  },
+  {
+    "query": "Configure an Amazon OpenSearch Service domain with UltraWarm storage tiers and Index State Management rollover policies.",
+    "should_trigger": false
+  },
+  {
+    "query": "Create an AWS Clean Rooms collaboration with aggregation analysis rules and differential privacy.",
+    "should_trigger": false
+  }
+]

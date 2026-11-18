@@ -1,0 +1,37 @@
+{
+  "skill_name": "setting-up-cloudtrail-multi-region",
+  "evals": [
+    {
+      "id": "eval-01-when-running-aws-cloudtrail-create-trail-in-ap-s",
+      "prompt": "When running `aws cloudtrail create-trail` in `ap-south-1` with `--cloud-watch-logs-log-group-arn` and `--cloud-watch-logs-role-arn`, we got `InvalidCloudWatchLogsRoleArnException` on the first run and then `InvalidCloudWatchLogsLogGroupArnException` when we passed `arn:aws:logs:ap-south-1:123456789012:log-group:CloudTrail/APILogs`. Explain why both errors happen and provide the exact IAM role trust policy, permissions policy, and ARN format required.",
+      "expected_output": "Explains that `InvalidCloudWatchLogsRoleArnException` happens due to IAM propagation delay right after `iam create-role`/`put-role-policy` (requiring a 10–15s wait) or a wrong trust policy, and `InvalidCloudWatchLogsLogGroupArnException` happens when the log group ARN does not match the `describe-log-groups` ARN format (`:*` suffix), and provides the `cloudtrail.amazonaws.com` trust policy and `logs:CreateLogStream` + `logs:PutLogEvents` permissions policy scoped to `log-stream:${account_id}_CloudTrail_${region}*`.",
+      "files": [],
+      "expectations": [
+        "Explains that `InvalidCloudWatchLogsRoleArnException` occurs when IAM role/policy creation has not finished propagating (requiring a ~10–15 second wait after `put-role-policy`) or when `cloudtrail.amazonaws.com` is missing from the trust policy",
+        "Explains that `InvalidCloudWatchLogsLogGroupArnException` occurs when the Log Group ARN omits the required trailing `:*` suffix (e.g., `arn` ending with `:*` vs `logGroupArn` without `:*` in `describe-log-groups`, or `arn:aws:logs:ap-south-1:${account_id}:log-group:CloudTrail/APILogs:*`)",
+        "Provides the least-privilege IAM role permissions policy granting `logs:CreateLogStream` and `logs:PutLogEvents` on `arn:aws:logs:ap-south-1:${account_id}:log-group:CloudTrail/APILogs:log-stream:${account_id}_CloudTrail_ap-south-1*`"
+      ]
+    },
+    {
+      "id": "eval-02-how-do-we-enable-cloudtrail-data-events-for-all",
+      "prompt": "How do we enable CloudTrail Data Events (for all S3 objects and Lambda function invocations) and CloudTrail Insights (`ApiCallRateInsight`) on an existing trail in `ap-south-1`, and what are the exact pricing and cost-explosion risks of turning both on in a high-throughput production account?",
+      "expected_output": "Provides `aws cloudtrail put-event-selectors` (with `DataResources` for `AWS::S3::Object` `arn:aws:s3` and `AWS::Lambda::Function` `arn:aws:lambda`) and `aws cloudtrail put-insight-selectors --insight-selectors '[{\"InsightType\": \"ApiCallRateInsight\"}]'`, and warns about the per-100,000 event pricing ($0.10 per 100k data events, $0.35 per 100k write events for Insights) and scoping S3 data events to specific sensitive bucket prefixes.",
+      "files": [],
+      "expectations": [
+        "Provides the `aws cloudtrail put-event-selectors` command with `DataResources` for `AWS::S3::Object` and `AWS::Lambda::Function`",
+        "Provides the `aws cloudtrail put-insight-selectors` command with `InsightType: ApiCallRateInsight`",
+        "Explicitly warns about cost impact (Data Events billed at ~$0.10 per 100,000 events and CloudTrail Insights at ~$0.35 per 100,000 write events) and recommends scoping S3 Data Events to specific high-value buckets/prefixes instead of `arn:aws:s3` account-wide"
+      ]
+    },
+    {
+      "id": "eval-03-during-a-soc2-audit-in-ap-south-1-our-auditor-as",
+      "prompt": "During a SOC2 audit in `ap-south-1`, our auditor asks how we prove that no CloudTrail log files in S3 were modified or deleted after delivery over the past 24 hours. Explain how `--enable-log-file-validation` works (SHA-256 digest files and RSA digital signatures) and give the exact AWS CLI command to cryptographically verify log integrity.",
+      "expected_output": "Explains that `--enable-log-file-validation` causes CloudTrail to write hourly SHA-256 digest files signed with CloudTrail's private key to `AWSLogs/<account_id>/CloudTrail-Digest/`, and provides `aws cloudtrail validate-logs --trail-arn <trail_arn> --start-time <ISO_UTC> --region ap-south-1`.",
+      "files": [],
+      "expectations": [
+        "Explains that `--enable-log-file-validation` generates hourly digest files containing SHA-256 hashes of delivered log files and a digital signature chained to the previous digest",
+        "Provides the exact CLI verification command: `aws cloudtrail validate-logs --trail-arn <trail_arn> --start-time <timestamp> --region ap-south-1`"
+      ]
+    }
+  ]
+}

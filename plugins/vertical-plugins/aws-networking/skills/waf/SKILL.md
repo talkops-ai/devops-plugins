@@ -108,6 +108,12 @@ Apply these across every reference:
 - **Header-spoofing risk.** Any `x-amzn-waf-*` signal forwarded to the origin can be forged inbound.
   You MUST add the inbound-header-stripping rule whenever a signal or client IP is forwarded (see
   stripping-inbound-waf-headers-before-trusting-them).
+- **Secret safety & live mutation guardrails.** Never call `secretsmanager:GetSecretValue` or
+  `ssm:GetParameter --with-decryption` to paste plaintext secrets into WAF rules; use metadata-only
+  inspection (`DescribeSecret`, `DescribeParameters`) and dynamic references
+  (`{{resolve:secretsmanager:<secret-id>:SecretString:<key>}}`). Never execute destructive live
+  mutations (`wafv2:DisassociateWebACL`, `wafv2:DeleteWebACL`) during an incident or read-only
+  audit; prescribe surgical `RuleActionOverrides` (`Count`) with group `OverrideAction: {"None": {}}`.
 
 ## Additional Resources
 

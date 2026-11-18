@@ -1,0 +1,31 @@
+{
+  "name": "coralogix",
+  "version": "0.2.0",
+  "description": "Official Coralogix DataPrime log/span analytics, PromQL metrics, alerts, cases, service catalog, RUM, AI Center, dashboards, Olly, and TCO data-usage skills with bundled remote MCP configuration (`CORALOGIX_API_KEY`, `CORALOGIX_REGION`).",
+  "author": {
+    "name": "Coralogix",
+    "url": "https://coralogix.com"
+  },
+  "homepage": "https://github.com/talkops-ai/devops-plugins",
+  "repository": "https://github.com/talkops-ai/devops-plugins",
+  "license": "Apache-2.0",
+  "keywords": [
+    "coralogix",
+    "mcp",
+    "devops"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "Coralogix",
+    "shortDescription": "Official Coralogix DataPrime logs/spans, PromQL metrics, alerts, cases, RUM, AI Center, and TCO skills.",
+    "developerName": "Coralogix",
+    "category": "Observability & SRE",
+    "capabilities": [
+      "Interactive",
+      "Read"
+    ],
+    "websiteURL": "https://coralogix.com"
+  }
+}

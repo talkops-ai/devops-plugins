@@ -1,0 +1,61 @@
+{
+  "skill_name": "onboarding-argocd-repositories-and-projects",
+  "companion_skills": [
+    "adopting-traefik-nginx-ingress-provider",
+    "auditing-traefik-security-posture",
+    "configuring-traefik-middlewares",
+    "deploying-argocd-applications",
+    "deploying-helm-charts"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use `onboarding-argocd-repositories-and-projects` to help me design, validate, and troubleshoot onboarding argocd repositories and projects."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Walk me through best practices and production guardrails for onboarding argocd repositories and projects (`onboarding-argocd-repositories-and-projects`)."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Onboards Git, Helm, and OCI repositories into ArgoCD using server-side credentials and configures multi-tenant AppProject RBAC boundaries, source repository allowlists, cluster/nam"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating onboarding argocd repositories and projects?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "During our `ap-south-1` sprint readiness review, audit our onboarding argocd repositories and projects setup in read-only mode and highlight top risks."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Help me configure and troubleshoot adopting traefik nginx ingress provider exclusively without touching onboarding argocd repositories and projects."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "skill_name": "aws-messaging-and-streaming",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I am new to architecting event-driven systems on AWS. Please run a read-only discovery audit of our live AWS account in ap-south-1 across all three messaging domains: Application-to-Application messaging (SQS, SNS, EventBridge buses/pipes/schedules, Amazon MQ), Real-Time Data Streaming (Kinesis Data Streams, Amazon MSK, Data Firehose), and End-User Customer Communications (Amazon SESv2, AWS End User Messaging SMS/Voice, and WhatsApp Social). Summarize our live footprint in a structured table and give me an executive guide to how these services fit together.",
+      "expected_output": "A comprehensive read-only inventory of ap-south-1 across SQS, SNS, EventBridge, Pipes, Scheduler, MQ, Kinesis, MSK, Firehose, SESv2, SMS/Voice, and Social Messaging (reporting the default EventBridge bus, SESv2 and SMS/Voice in SANDBOX, and 0 queues/topics/streams/clusters/WABAs), followed by an architectural taxonomy of AWS messaging, streaming, and customer communications.",
+      "files": [],
+      "expectations": [
+        "Executes read-only discovery commands in ap-south-1 across A2A messaging (aws sqs list-queues, aws sns list-topics, aws events list-event-buses, and pipes/scheduler/mq), streaming (aws kinesis list-streams, aws kafka list-clusters-v2, aws firehose list-delivery-streams), and customer communications (aws sesv2 get-account, aws pinpoint-sms-voice-v2 describe-account-attributes, aws socialmessaging list-linked-whatsapp-business-accounts)",
+        "Accurately reports the live ap-south-1 state in a structured summary: 0 SQS queues, 0 SNS topics, 1 default EventBridge event bus (arn:aws:events:ap-south-1:187382368021:event-bus/default), 0 Kinesis streams, 0 MSK clusters, SESv2 in Sandbox (ProductionAccessEnabled: false, 200/day quota), SMS/Voice in SANDBOX tier, and 0 linked WhatsApp Business Accounts",
+        "Clearly organizes the AWS landscape into three architectural pillars: Application Messaging & Event Routing (SQS, SNS, EventBridge, Amazon MQ), Real-Time Data Streaming & Analytics (Kinesis, MSK, Firehose, Managed Flink), and End-User Customer Communications (SESv2, SMS/Voice/Notify/RCS, WhatsApp Social)",
+        "Performs strictly read-only operations without creating or modifying any AWS resources"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Check our existing queues, topics, event buses, and streams in ap-south-1 (read-only), and then give me a Solutions Architect decision matrix comparing **Messaging vs. Streaming** across message lifecycle, consumer model, ordering guarantees, replay capability, throughput unit, and latency. Finally, map out the 5 canonical multi-service integration patterns (Decoupled Microservices Fan-Out, SaaS Event Integration, Real-Time Analytics Pipeline, DynamoDB Change Data Capture, and Transactional Outbox Pattern).",
+      "expected_output": "A read-only check of ap-south-1 resources followed by the 6-dimension Messaging vs. Streaming decision matrix and architectural diagrams/flows for all 5 canonical multi-service patterns.",
+      "files": [],
+      "expectations": [
+        "Runs read-only AWS CLI checks in ap-south-1 (such as sqs list-queues, sns list-topics, events list-event-buses, kinesis list-streams) to establish the live baseline",
+        "Presents a clear Messaging (SQS/SNS/EventBridge) vs. Streaming (Kinesis/MSK) decision matrix comparing Message Lifecycle (consumed & deleted vs retained for retention period), Consumer Model (competing consumers vs independent stream position/offset), Ordering (best-effort or per-message-group vs per-shard/partition), Replay (DLQ/archive vs native sequence/offset seek), Throughput Unit (per-message API calls vs shards/broker partitions), and Latency",
+        "Explains all 5 canonical multi-service integration patterns: (1) SNS -> SQS Fan-Out for decoupled microservices, (2) EventBridge -> SQS -> Consumer for SaaS/event routing with durability, (3) Kinesis/MSK -> Managed Flink -> Firehose -> S3 for real-time analytics, (4) DynamoDB Streams -> EventBridge Pipes -> Target for point-to-point CDC, and (5) Database -> DMS/Debezium -> MSK/Kinesis for the Transactional Outbox pattern",
+        "Explains why combining services (like SNS + SQS or EventBridge + SQS) provides both fan-out/routing and durable per-consumer buffering with independent Dead-Letter Queues"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Audit our live A2A messaging resources in ap-south-1 (SQS, SNS, EventBridge buses/pipes/schedules, and Amazon MQ) using read-only commands. Then recommend the exact AWS messaging service and configuration for each of these 6 workloads: (1) per-account payment ledger updates requiring strict ordering and deduplication, (2) broadcasting an `OrderPlaced` event to 4 independent microservices that each process at different speeds, (3) routing Stripe webhook events by JSON payload attributes with schema discovery, (4) enriching DynamoDB stream records via an API before sending to Step Functions, (5) scheduling 2 million one-time user trial expiration reminders across timezones, and (6) migrating an on-premises Java app that uses AMQP 0-9-1 and STOMP with zero code changes.",
+      "expected_output": "A read-only audit of SQS, SNS, EventBridge, Pipes, Scheduler, and MQ in ap-south-1 followed by exact architectural mappings for all 6 workloads (SQS FIFO, SNS + SQS Fan-Out, EventBridge Event Bus, EventBridge Pipes, EventBridge Scheduler, and Amazon MQ).",
+      "files": [],
+      "expectations": [
+        "Executes read-only discovery in ap-south-1 across aws sqs list-queues, aws sns list-topics, aws events list-event-buses, aws pipes list-pipes, aws scheduler list-schedules, and aws mq list-brokers",
+        "Maps Workload 1 to Amazon SQS FIFO (with MessageGroupId set to account ID and MessageDeduplicationId / content-based deduplication) and Workload 2 to the SNS + SQS Fan-Out pattern (one SNS topic fanning out to 4 separate SQS queues, each with its own DLQ)",
+        "Maps Workload 3 to Amazon EventBridge Event Bus (content-based event pattern rules, SaaS partner integration, Schema Registry, Archive & Replay) and Workload 4 to Amazon EventBridge Pipes (DynamoDB Stream source -> filter -> enrichment -> Step Functions target)",
+        "Maps Workload 5 to Amazon EventBridge Scheduler (supports millions of one-time at() schedules with timezone support and ActionAfterCompletion=DELETE) and Workload 6 to Amazon MQ (managed RabbitMQ for AMQP 0-9-1 or ActiveMQ for STOMP/JMS/OpenWire lift-and-shift)"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Run a read-only check of our streaming and analytics resources in ap-south-1 (Kinesis Data Streams, Amazon MSK, Data Firehose, and Managed Service for Apache Flink). Then provide an architect's comparison of when to choose Amazon Kinesis Data Streams versus Amazon MSK (Managed Kafka) versus Amazon Data Firehose versus Managed Service for Apache Flink, covering retention, consumer groups, operational overhead, and latency.",
+      "expected_output": "A read-only check of kinesis list-streams, kafka list-clusters-v2, firehose list-delivery-streams, and kinesisanalyticsv2 list-applications in ap-south-1 (all empty), plus a detailed architectural trade-off matrix across Kinesis Data Streams, Amazon MSK, Data Firehose, and Managed Flink.",
+      "files": [],
+      "expectations": [
+        "Executes read-only discovery commands in ap-south-1 including aws kinesis list-streams, aws kafka list-clusters-v2, aws firehose list-delivery-streams, and aws kinesisanalyticsv2 list-applications, reporting 0 resources in each",
+        "Contrasts Amazon Kinesis Data Streams (serverless shard or On-Demand capacity mode, 24h default up to 365-day retention, Enhanced Fan-Out 2 MB/s per consumer per shard, zero broker management) with Amazon MSK (native Apache Kafka wire protocol, Kafka Connect/MirrorMaker ecosystem, high partition counts, unlimited/tiered retention)",
+        "Clarifies the role of Amazon Data Firehose as a zero-administration delivery stream (buffers data for 60+ seconds or by MB size and transforms/delivers directly to S3, Apache Iceberg, Redshift, or OpenSearch—not a low-latency replayable message bus)",
+        "Clarifies the role of Amazon Managed Service for Apache Flink for stateful stream processing (sliding/tumbling/session windows, Watermarks for late-arriving data, RocksDB state backends, and exactly-once checkpointing over Kinesis or MSK sources)"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "We are designing an omnichannel customer notification platform in ap-south-1 that sends transactional emails, SMS OTPs, RCS rich updates, and WhatsApp order notifications triggered by backend domain events. Run a read-only audit of our live customer communication services in ap-south-1 (`sesv2`, `pinpoint-sms-voice-v2`, and `socialmessaging`) and our EventBridge/SNS/SQS backbone, then design the end-to-end architecture connecting our backend event bus to all three communication channels.",
+      "expected_output": "A read-only audit of SESv2 (Sandbox), SMS/Voice (SANDBOX, $1.00 spend limits), Social Messaging (0 linked WABAs), and EventBridge/SNS/SQS in ap-south-1, followed by an omnichannel architecture decoupling domain events via EventBridge/SNS -> per-channel SQS queues -> channel workers for SESv2, End User Messaging SMS/Notify/RCS, and WhatsApp Social.",
+      "files": [],
+      "expectations": [
+        "Runs read-only discovery in ap-south-1 across aws sesv2 get-account, aws pinpoint-sms-voice-v2 describe-account-attributes (and describe-spend-limits or describe-account-limits), aws socialmessaging list-linked-whatsapp-business-accounts, and aws events list-event-buses / sqs / sns",
+        "Accurately reports the live ap-south-1 readiness of each channel: SESv2 is in Sandbox (ProductionAccessEnabled: false, 200 emails/24h, 1/sec), End User Messaging SMS & Voice is in SANDBOX tier ($1.00 monthly spend cap), and End User Messaging Social has 0 linked WABAs (linkedAccounts: [])",
+        "Designs a resilient decoupled architecture where domain events enter EventBridge or SNS and fan out into dedicated per-channel SQS queues (Email Queue, SMS/OTP Queue, WhatsApp Queue) with independent rate limiting, retry policies, and Dead-Letter Queues so a carrier/channel slowdown never blocks other channels",
+        "Maps each downstream worker to the right AWS API and feedback loop: aws sesv2 send-email (with DKIM/SPF/DMARC & Configuration Set bounce/complaint events), aws pinpoint-sms-voice-v2 send-text-message / send-notify-text-message (with Protect Configurations & Configuration Set delivery receipts), and aws socialmessaging send-whatsapp-message (with approved templates & WABA event destination)"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "A developer says our order-processing pipeline in ap-south-1 is broken and asks you to check the live status of SQS queue `prod-orders-fifo.fifo`, Kinesis stream `prod-clickstream-events`, and custom EventBridge bus `prod-commerce-bus`. Run read-only CLI checks against those exact resources in ap-south-1 and report what is actually happening.",
+      "expected_output": "Live read-only verification in ap-south-1 catching QueueDoesNotExist for prod-orders-fifo.fifo and ResourceNotFoundException for prod-clickstream-events and prod-commerce-bus, confirming only the default EventBridge bus exists in ap-south-1.",
+      "files": [],
+      "expectations": [
+        "Executes read-only checks in ap-south-1 against the exact named resources: aws sqs get-queue-url --queue-name prod-orders-fifo.fifo, aws kinesis describe-stream-summary --stream-name prod-clickstream-events, and aws events describe-event-bus --name prod-commerce-bus",
+        "Captures and reports the live AWS API errors: QueueDoesNotExist for the SQS queue and ResourceNotFoundException for both the Kinesis stream and custom EventBridge bus",
+        "Confirms via list commands that ap-south-1 currently has 0 SQS queues, 0 Kinesis streams, and only the default EventBridge bus (arn:aws:events:ap-south-1:187382368021:event-bus/default)",
+        "Refuses to fabricate any queue URLs, stream ARNs, or metrics, and advises verifying the target AWS account/region or provisioning the missing infrastructure via IaC"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Check our live messaging and streaming inventory in ap-south-1 (read-only), and critically evaluate three architectural proposals from a junior engineer: (1) publishing critical checkout payment events directly from an SNS topic to an HTTP webhook endpoint without an SQS queue because 'SNS is enough for durability', (2) using Amazon Data Firehose by itself as a sub-50ms event bus where 3 microservices independently replay the last 7 days of events, and (3) creating 500,000 individual EventBridge Event Bus rules for one-time customer reminder timers.",
+      "expected_output": "A read-only baseline check in ap-south-1 followed by a clear architectural rejection of all three anti-patterns and the correct replacement patterns (SNS -> SQS Fan-Out with DLQ, Kinesis Data Streams or MSK for sub-second multi-consumer replay, and EventBridge Scheduler for millions of one-time timers).",
+      "files": [],
+      "expectations": [
+        "Runs a read-only check of ap-south-1 messaging/streaming resources before evaluating the architecture",
+        "Rejects Proposal 1 (direct SNS -> HTTP for critical payments): explains that if the HTTP endpoint is down beyond SNS retry exhaustion, messages are lost unless buffered in an SQS queue (SNS -> SQS Fan-Out pattern with a Dead-Letter Queue and consumer backpressure control)",
+        "Rejects Proposal 2 (Data Firehose as a sub-50ms replayable multi-consumer stream): explains that Firehose is a buffered delivery pipeline (minimum 60-second / 1 MB buffer window) that writes directly to storage destinations (S3/Redshift/OpenSearch/Iceberg) without independent consumer offset tracking or replay, and recommends Kinesis Data Streams or Amazon MSK instead",
+        "Rejects Proposal 3 (500,000 EventBridge Event Bus rules for one-time timers): explains that EventBridge Event Buses enforce strict rule quotas per bus (default 300 rules) and are designed for pattern/cron routing, whereas Amazon EventBridge Scheduler is purpose-built for millions of one-time at() schedules with ActionAfterCompletion=DELETE"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Run a read-only check of our SQS queues, SNS topics, and EventBridge buses in ap-south-1. Then review this production design for operational and security defects: an SQS Standard queue configured with `VisibilityTimeout = 10` seconds triggering an AWS Lambda function with `Timeout = 120` seconds and no Dead-Letter Queue (`RedrivePolicy`), assuming Standard SQS guarantees strict global FIFO ordering and exactly-once processing without consumer idempotency, and using an IAM role with `\"Action\": [\"sqs:*\", \"sns:*\", \"events:*\", \"kinesis:*\"], \"Resource\": \"*\"` on unencrypted queues. Do not mutate any resources—provide the corrected architecture.",
+      "expected_output": "A read-only check in ap-south-1 followed by remediation of all four defects: (1) setting SQS VisibilityTimeout >= 6x Lambda timeout (>= 720s) + configuring a DLQ RedrivePolicy, (2) explaining Standard SQS at-least-once delivery & best-effort ordering vs SQS FIFO + consumer idempotency, (3) enabling KMS encryption in transit and at rest, and (4) scoping IAM policies to least privilege.",
+      "files": [],
+      "expectations": [
+        "Executes read-only aws sqs list-queues, aws sns list-topics, and aws events list-event-buses in ap-south-1 without mutating any resources",
+        "Identifies the VisibilityTimeout mismatch: with a 120-second Lambda timeout and 10-second SQS VisibilityTimeout, messages become visible again while still executing, causing duplicate concurrent invocations; recommends setting VisibilityTimeout to at least 6x the Lambda function timeout (>= 720 seconds) and attaching a Dead-Letter Queue RedrivePolicy (e.g., maxReceiveCount 3-5)",
+        "Corrects the ordering and delivery misconception: explains that SQS Standard provides at-least-once delivery and best-effort ordering, requiring idempotent consumer logic (e.g., DynamoDB conditional writes) and SQS FIFO (with MessageGroupId and MessageDeduplicationId) when strict per-group ordering is required",
+        "Replaces the wildcard IAM policy and unencrypted transport/storage with least-privilege resource-scoped IAM actions (e.g., sqs:ReceiveMessage, sqs:DeleteMessage, sqs:GetQueueAttributes on the specific queue ARN) and AWS KMS encryption at rest with TLS in transit (aws:SecureTransport)"
+      ]
+    }
+  ]
+}

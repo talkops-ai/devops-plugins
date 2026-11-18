@@ -1,0 +1,115 @@
+{
+  "skill_name": "tuning-sampling-and-trace-derived-metrics",
+  "evals": [
+    {
+      "id": "eval-01-wire-spanmetrics-and-servicegraph-connectors-before-tail-sampling",
+      "prompt": "On our `otel-tail-sampler` StatefulSet collector in the `observability` namespace (which receives `otel-demo` traces routed by `traceID`), preview and configure `spanmetrics` and `servicegraph` connectors alongside `10%` tail sampling—retaining `100%` of error traces, `100%` of traces slower than `500ms`, and dropping `/healthz` and `/readyz` probes—without distorting our RED metrics or service dependency graphs! Verify the collector after applying.",
+      "expected_output": "Reads `otel://sampling/observability/otel-tail-sampler` and `otel://spanmetrics/observability/otel-tail-sampler`, calls `otel_configure_connectors(namespace=\"observability\", collector_name=\"otel-tail-sampler\", connectors=[\"spanmetrics\", \"servicegraph\"], connector_options={\"dimensions\": [\"http.request.method\", \"http.response.status_code\", \"rpc.grpc.status_code\"]}, dry_run=True)` and `otel_configure_sampling(namespace=\"observability\", collector_name=\"otel-tail-sampler\", strategy=\"tail\", sampling_options={\"decision_wait\": \"10s\", \"num_traces\": 50000, \"policies\": [...], \"has_load_balancing_exporter\": True}, dry_run=True)` ensuring `spanmetrics` & `servicegraph` observe unsampled spans **before** `tail_sampling` (`type: \"drop\"` lowercase for `/healthz` and `/readyz`), applies both with `dry_run=False`, and checks `otel_diagnose_collector`.",
+      "expectations": [
+        "Calls `otel_configure_connectors` (`connectors=[\"spanmetrics\", \"servicegraph\"]`) with `<= 3` bounded `dimensions` upstream of `tail_sampling`",
+        "Calls `otel_configure_sampling` (`strategy=\"tail\"`) using lowercase `\"type\": \"drop\"` on `/healthz` and `/readyz` drop policies",
+        "Runs `dry_run=True` on both tools before applying `dry_run=False` and verifies via `otel_diagnose_collector`"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-02-tail-sampling-memory-and-replica-capacity-math",
+      "prompt": "Calculate the exact `num_traces` buffer, total memory footprint, StatefulSet replica count, per-pod memory, `memory_limiter`, and `GOMEMLIMIT` needed for an `otel-tail-sampler` tier ingesting `40,000 spans/sec` across our `otel-demo` microservices (with an average of `20` spans per trace, a `10`-second decision wait window, and a maximum of `4096 MiB` memory per pod).",
+      "expected_output": "Runs `scripts/estimate_tail_sampling_capacity.py --spans-per-sec 40000 --avg-spans-per-trace 20 --decision-wait-sec 10 --max-memory-mib-per-pod 4096`: `traces_per_sec = 40000 / 20 = 2000`, `active_traces_window = 2000 * 10 = 20000`, `recommended_num_traces = ceil(20000 * 2.5) = 50000`, `buffer_mib = 1953.1 MiB`, `total_memory_mib = 3205 MiB`, `replicas = 2` (`mode: statefulset`, `requires_trace_id_loadbalancer: true`, per-pod `memory_limiter` & `GOMEMLIMIT` at `80%` of container memory limit).",
+      "expectations": [
+        "Computes `traces_per_sec = 2,000`, `active_traces_window = 20,000`, and `recommended_num_traces = 50,000` (`2.5x` safety factor)",
+        "Sizes `StatefulSet` (`>= 2` replicas) with `memory_limiter` and `GOMEMLIMIT` at `80%` of container memory",
+        "Mandates `loadbalancing` exporter (`routing_key: traceID`) upstream of the `StatefulSet` so multi-service `otel-demo` traces land on the same replica"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-03-reject-tail-sampling-on-daemonset-or-round-robin-service",
+      "prompt": "Can we enable tail-based sampling directly on our multi-node `otel-agent` DaemonSet in `observability` for `otel-demo` (`frontend -> checkout -> payment -> shipping -> email`) so we don't have to run a second collector tier?",
+      "expected_output": "Refuses configuring `tail_sampling` on a `DaemonSet` (or behind a standard round-robin ClusterIP `Service`) because spans of a single `checkout` order `trace_id` execute across multiple nodes; without `traceID`-hashed `loadbalancing` routing into a `StatefulSet` headless Service, each node only sees fragments of a trace and makes inconsistent drop/keep decisions (producing broken partial waterfalls). Offers stateless `probabilistic` traceID-hash sampling on the DaemonSet OR a 2-tier `StatefulSet` tail-sampler design.",
+      "expectations": [
+        "Refuses configuring `tail_sampling` on a `DaemonSet` without trace-ID affinity",
+        "Explains broken partial waterfalls when spans of an `otel-demo` checkout `trace_id` land on different nodes",
+        "Offers stateless `probabilistic` traceID-ratio sampling OR a 2-tier `loadbalancing` (`routing_key: traceID`) -> `StatefulSet` design"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-04-stateless-probabilistic-traceid-hash-sampling-across-daemonset",
+      "prompt": "We don't want to add a StatefulSet tier on our dev `otel-demo` environment yet—preview configuring stateless `15%` trace-consistent sampling on `opentelemetry-otel-collector` in `otel-demo` while keeping RED metrics accurate.",
+      "expected_output": "Explains that `probabilistic_sampler` hashes `trace_id` deterministically across stateless collector instances (as long as all collectors share the same `hash_seed` and `sampling_percentage: 15.0`), previews via `otel_configure_sampling(namespace=\"otel-demo\", collector_name=\"opentelemetry-otel-collector\", strategy=\"probabilistic\", sampling_options={\"sample_rate\": 0.15}, dry_run=True)`, and ensures `spanmetrics` runs upstream of `probabilistic_sampler`.",
+      "expectations": [
+        "Selects stateless deterministic `trace_id` hashing (`probabilistic_sampler`) on `opentelemetry-otel-collector`",
+        "Calls `otel_configure_sampling` in `otel-demo` with `dry_run=True` preview",
+        "Ensures `spanmetrics` / `servicegraph` connectors run upstream of `probabilistic_sampler` so RED metrics remain accurate"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-05-prevent-connector-infinite-pipeline-loop",
+      "prompt": "Validate this `opentelemetry-otel-collector` pipeline config for `otel-demo` before we apply it:\n```yaml\nconnectors:\n  spanmetrics: {}\nservice:\n  pipelines:\n    traces:\n      receivers: [otlp, spanmetrics]\n      exporters: [spanmetrics, otlp/tempo]\n```",
+      "expected_output": "Calls `otel_validate_collector_config` and rejects the broken config (`CFG_CONNECTOR_LOOP`): `spanmetrics` is a `traces -> metrics` connector (not `traces -> traces`), AND wiring any connector as both receiver and exporter in the same pipeline creates a feedback loop / startup error; rewires `traces: {receivers: [otlp], processors: [memory_limiter, batch], exporters: [spanmetrics, otlp/tempo]}` and `metrics/spanmetrics: {receivers: [spanmetrics], processors: [memory_limiter, batch], exporters: [prometheusremotewrite]}` and validates the corrected YAML.",
+      "expectations": [
+        "Flags wiring `spanmetrics` as both receiver and exporter on `traces` as invalid (`traces -> metrics` connector + loop prevention)",
+        "Separates `traces` (exporting to `spanmetrics`) from `metrics/spanmetrics` (receiving from `spanmetrics`)",
+        "Validates via `otel_validate_collector_config`"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-06-reject-high-cardinality-spanmetrics-dimensions",
+      "prompt": "A developer wants to add `url.full`, `app.user.id`, and `k8s.pod.uid` alongside `http.request.method` and `http.response.status_code` to the `spanmetrics` connector dimensions on `opentelemetry-otel-collector` in `otel-demo` so they can slice `frontend` and `cart` RED metrics by shopper ID. Evaluate this request and preview a safe configuration.",
+      "expected_output": "Blocks adding `url.full`, `app.user.id`, and `k8s.pod.uid` to `spanmetrics` `dimensions` (enforcing bounded low-cardinality dimensions), explaining that every dimension multiplies histogram bucket series and will OOM both `opentelemetry-otel-collector` and Prometheus; previews bounded `otel_configure_connectors(..., dimensions=[\"http.request.method\", \"http.response.status_code\", \"rpc.grpc.status_code\"], dry_run=True)` and recommends histogram `exemplars` (`trace_id` links) for shopper drill-down.",
+      "expectations": [
+        "Refuses adding unbounded `url.full`, `app.user.id`, and `k8s.pod.uid` to `spanmetrics` `dimensions`",
+        "Enforces `<= 3` bounded dimensions and recommends histogram `exemplars` (`trace_id` links) instead of high-cardinality metric labels",
+        "Previews bounded `otel_configure_connectors(..., dry_run=True)` on `opentelemetry-otel-collector`"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-07-exponential-vs-explicit-histograms-in-spanmetrics",
+      "prompt": "Preview configuring `spanmetrics` on `opentelemetry-otel-collector` in `otel-demo` to emit Prometheus 3.0 Native Exponential Histograms (`max_size: 160`) instead of 15 explicit `le` bucket series for `frontend`, `checkout`, and `product-catalog` to cut TSDB series volume.",
+      "expected_output": "Calls `otel_configure_connectors(namespace=\"otel-demo\", collector_name=\"opentelemetry-otel-collector\", connectors=[\"spanmetrics\"], connector_options={\"histogram_type\": \"exponential\", \"dimensions\": [\"http.request.method\", \"http.response.status_code\", \"rpc.grpc.status_code\"]}, dry_run=True)` and notes that Prometheus must have native-histogram ingestion enabled (`--enable-feature=native-histograms` / `scrape_native_histograms: true` or OTLP receiver).",
+      "expectations": [
+        "Calls `otel_configure_connectors` on `opentelemetry-otel-collector` in `otel-demo` with `histogram_type: \"exponential\"` and `dry_run=True`",
+        "Explains how exponential histograms replace `N` explicit `_bucket{le=...}` series per route/RPC with a single native histogram series",
+        "Notes Prometheus native-histogram ingestion requirement"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-08-render-valid-lowercase-drop-tail-sampling-policy-yaml",
+      "prompt": "Generate a standalone `processors.tail_sampling` YAML block (`decision_wait: 10s`, `num_traces: 50000`) for `otel-demo` that drops `/health`, `/healthz`, `/readyz`, `/livez`, and `/metrics` probe spans, retains `100%` of `ERROR` traces, retains traces slower than `750ms`, and samples `5%` of normal baseline traffic.",
+      "expected_output": "Runs `scripts/render_tail_sampling_policies.py --sampling-percentage 5.0 --latency-threshold-ms 750 --decision-wait-sec 10 --num-traces 50000` to render valid Collector `processors.tail_sampling` YAML with `decision_wait: 10s`, `num_traces: 50000`, `expected_new_traces_per_sec`, and 4 ordered policies using lowercase `type: drop`, `type: status_code` (`[ERROR]`), `type: latency` (`threshold_ms: 750`), and `type: probabilistic` (`sampling_percentage: 5.0`).",
+      "expectations": [
+        "Uses lowercase `type: drop` (never invalid uppercase `Drop` that crashes Collector config unmarshaling)",
+        "Orders `drop` healthchecks, `status_code: [ERROR]`, `latency` (`750ms`), and `probabilistic` (`5.0%`) policies cleanly",
+        "Includes `decision_wait: 10s`, `num_traces: 50000`, and `expected_new_traces_per_sec`"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-09-disable-sampling-to-100-percent-during-incident-debugging",
+      "prompt": "During an active `otel-demo` checkout incident caused by intermittent `payment` failures, our on-call engineer wants to temporarily turn off trace sampling on `otel-tail-sampler` in `observability` so 100% of traces are captured. Warn about the downstream impact and preview the change without applying it yet.",
+      "expected_output": "Warns that disabling sampling (`100%` trace retention across all `load-generator` traffic in `otel-demo`) can multiply Tempo ingestion `10x–20x` and trip `rate_limited` drops if tenant overrides aren't sized for full volume, previews `otel_configure_sampling(namespace=\"observability\", collector_name=\"otel-tail-sampler\", strategy=\"none\", dry_run=True)`, and recommends restoring tail sampling immediately after incident capture.",
+      "expectations": [
+        "Warns about downstream Tempo `rate_limited` / storage spike before disabling sampling across `otel-demo` traffic",
+        "Calls `otel_configure_sampling(..., strategy=\"none\", dry_run=True)` without calling `dry_run=False`",
+        "Recommends restoring `tail` sampling once incident capture finishes"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-10-servicegraph-store-ttl-and-max-items-tuning-for-slow-rpcs",
+      "prompt": "Whenever our `imageSlowLoad` feature flag (`5s` and `10s` latency) is active in `otel-demo`, the `servicegraph` connector on `otel-tail-sampler` in `observability` misses dependency edges between `frontend`, `frontend-proxy`, and `image-provider` (`traces_service_graph_unpaired_spans_total` spikes). Diagnose why and preview tuning the `servicegraph` store settings while checking pod memory headroom.",
+      "expected_output": "Explains that `servicegraph` holds client/server half-edges in memory until `store.ttl` expires (default `2s`), so `5s–10s` `imageSlowLoad` spans cause half-edges to evict before the matching span finishes; previews `otel_configure_connectors(namespace=\"observability\", collector_name=\"otel-tail-sampler\", connectors=[\"servicegraph\"], connector_options={\"store_ttl\": \"15s\", \"store_max_items\": 50000}, dry_run=True)` and checks pod memory headroom via `otel_diagnose_collector`.",
+      "expectations": [
+        "Identifies `store.ttl` (`2s` default `< 5s–10s` `imageSlowLoad` duration) as the cause of premature half-edge eviction",
+        "Raises `store_ttl` (`>= \"12s\"` / `\"15s\"`) and `store_max_items` via `otel_configure_connectors(..., dry_run=True)`",
+        "Checks collector pod memory headroom via `otel_diagnose_collector`"
+      ],
+      "files": []
+    }
+  ]
+}

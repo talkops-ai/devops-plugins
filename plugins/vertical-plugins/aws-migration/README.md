@@ -21,16 +21,17 @@ This is a **vertical plugin**: its skills, slash commands, hooks, and MCP server
 
 | Skill | What it does |
 |---|---|
-| `app-data-layer-remediation` | Synchronizes application-layer SQL queries, stored procedure calls, and ORM persistence frameworks (JPA/Hibernate, MyBatis, EF Core) across Java, .NET, Node.js, and Python with DMS Schema Conversion… |
+| `app-data-layer-remediation` | Synchronizes application-layer SQL queries, stored procedure calls, and ORM persistence frameworks (JPA/Hibernate, MyBatis, EF Core) across Java, .NET, Node.js, and Python with DMS Schema Conversion when migrating Oracl… |
 | `aws-transform` | Migrate, modernize, and upgrade codebases to AWS. |
 | `azure-to-aws` | Migrate workloads from Microsoft Azure to AWS. |
-| `dms-data-migration-execution` | >- |
-| `dms-schema-conversion` | Handles the full DMS Schema Conversion lifecycle including creating migration projects, converting database schemas to a target engine, running compatibility assessments, navigating metadata trees, e… |
+| `creating-amazon-aurora-db-cluster-with-instances` | Creates a complete Amazon Aurora database cluster with instances, handling cluster creation, instance provisioning, and Secrets Manager password management in the proper sequence. |
+| `dms-data-migration-execution` | Architects, configures, optimizes, and troubleshoots AWS Database Migration Service (DMS) data migration tasks (Full Load, Change Data Capture / CDC, and Full Load + CDC). |
+| `dms-schema-conversion` | Handles the full DMS Schema Conversion lifecycle including creating migration projects, converting database schemas to a target engine, running compatibility assessments, navigating metadata trees, exporting converted D… |
 | `gcp-to-aws` | Migrate workloads from Google Cloud Platform to AWS — plus AI and agentic workloads from any provider. |
 | `heroku-to-aws` | Migrate workloads from Heroku to AWS. |
 | `legacy-vm-and-mainframe-replatform` | Guides legacy VM containerization via AWS App2Container (A2C 5-stage workflow for Java and .NET to ECS, EKS Standard/Auto Mode, App Runner) standalone and via AWS MGN SSM automation. |
-| `modernization-parity-and-cutover` | Engineers functional, data, and performance parity for modernized workloads using automated unit tests, Testcontainers (PostgreSQL, Kafka), REST/event contract tests, mainframe batch/online record-re… |
-| `modernization-strategy-and-strangler-fig` | Executes 7 Rs portfolio triage, bounded-context domain decomposition, distributed data patterns (Saga, Outbox, Idempotent Consumer), and multi-account Strangler Fig incremental routing using API Gate… |
+| `modernization-parity-and-cutover` | Engineers functional, data, and performance parity for modernized workloads using automated unit tests, Testcontainers (PostgreSQL, Kafka), REST/event contract tests, mainframe batch/online record-replay equivalence tes… |
+| `modernization-strategy-and-strangler-fig` | Executes 7 Rs portfolio triage, bounded-context domain decomposition, distributed data patterns (Saga, Outbox, Idempotent Consumer), and multi-account Strangler Fig incremental routing using API Gateway Canary + SigV4 f… |
 
 ## Commands
 

@@ -1,0 +1,125 @@
+{
+  "skill_name": "troubleshooting-kargo-pipelines",
+  "evals": [
+    {
+      "id": "eval-01-warehouse-checkout-wh-in-kargo-project-otel-demo",
+      "prompt": "Warehouse `checkout-wh` in Kargo project `otel-demo` (supposed to watch `gitops.otel-gitops.svc.cluster.local/open-telemetry/demo` for `-checkout` image tags like `2.2.0-checkout` and `2.3.0-checkout`) hasn't produced a single Freight bundle! Diagnose `checkout-wh`, fix whatever outdated subscription settings or tag filter mistakes are blocking discovery, refresh `checkout-wh`, and verify that Freight is discovered.",
+      "expected_output": "Calls `kargo_diagnose_warehouse(project=\"otel-demo\", warehouse=\"checkout-wh\")` and reads `kargo://projects/otel-demo/warehouses/checkout-wh`, identifies deprecated `semverConstraint` and the overly strict regex `^[0-9]+\\.[0-9]+\\.[0-9]+$` missing the `-checkout` suffix (plus SemVer prerelease / Lexical selection), updates `checkout-wh` via `kargo_apply_warehouse` (`dry_run=True -> False`), refreshes via `kargo_refresh(..., wait=True)`, and confirms `HEALTHY` with discovered Freight.",
+      "files": [],
+      "expectations": [
+        "Runs `kargo_diagnose_warehouse` on `checkout-wh` and inspects `kargo://projects/otel-demo/warehouses/checkout-wh`",
+        "Updates `checkout-wh` via `kargo_apply_warehouse` (`dry_run=True` -> `False`) replacing deprecated fields and fixing `-checkout` tag selection",
+        "Refreshes `checkout-wh` via `kargo_refresh` and confirms Freight is now discovered (`HEALTHY`)"
+      ]
+    },
+    {
+      "id": "eval-02-warehouse-flagd-wh-in-kargo-project-otel-demo-is",
+      "prompt": "Warehouse `flagd-wh` in Kargo project `otel-demo` is failing discovery with `401 Unauthorized` against `gitops.otel-gitops.svc.cluster.local/private-reg/open-feature/flagd` and `gitops.otel-gitops.svc.cluster.local/private-reg/open-telemetry/demo`, even though someone already created a credential named `ghcr-otel-creds` in `otel-demo`! Figure out why `ghcr-otel-creds` isn't matching, fix the credential using our `ghcr_otel_demo` server credential entry, refresh `flagd-wh`, and confirm it turns healthy.",
+      "expected_output": "Calls `kargo_diagnose_warehouse(project=\"otel-demo\", warehouse=\"flagd-wh\")` and reads `kargo://projects/otel-demo/credentials`, identifies `REPOSITORY_AUTH_FAILED` because `ghcr-otel-creds` used non-regex URL `https://gitops.otel-gitops.svc.cluster.local/open-telemetry` instead of a regex matching `^gitops\\.otel-gitops\\.svc\\.cluster\\.local/private-reg/.*`, updates `ghcr-otel-creds` via `kargo_manage_credentials(..., repo_url_is_regex=True, secret_ref=\"ghcr_otel_demo\", confirm=True)`, refreshes `flagd-wh`, and confirms `HEALTHY`.",
+      "files": [],
+      "expectations": [
+        "Runs `kargo_diagnose_warehouse` on `flagd-wh` and audits `kargo://projects/otel-demo/credentials`",
+        "Identifies why `ghcr-otel-creds` failed URL matching and updates it with `repo_url_is_regex=True` and `secret_ref=\"ghcr_otel_demo\"` via `kargo_manage_credentials`",
+        "Refreshes `flagd-wh` via `kargo_refresh` and verifies `flagd-wh` becomes `HEALTHY`"
+      ]
+    },
+    {
+      "id": "eval-03-stage-staging-in-kargo-project-otel-demo-errored",
+      "prompt": "Stage `staging` in Kargo project `otel-demo` errored out on its latest promotion while trying to update ArgoCD Application `otel-checkout-staging-unauth` in the `argocd` namespace. Diagnose Stage `staging` and its failed promotion, tell me why Kargo was rejected by ArgoCD, and show the exact Kubernetes annotation needed on `otel-checkout-staging-unauth`.",
+      "expected_output": "Calls `kargo_diagnose_stage(project=\"otel-demo\", stage=\"staging\", include_events=True)` and reads `kargo://projects/otel-demo/promotions/{promotion}`, identifies `ARGOCD_SYNC_OR_AUTH_FAILED` because `Application/otel-checkout-staging-unauth` is missing `kargo.akuity.io/authorized-stage: \"otel-demo:staging\"`, and provides the exact annotation patch.",
+      "files": [],
+      "expectations": [
+        "Diagnoses Stage `staging` via `kargo_diagnose_stage(..., include_events=True)` and inspects the failed `Promotion`",
+        "Identifies `ARGOCD_SYNC_OR_AUTH_FAILED` caused by missing `kargo.akuity.io/authorized-stage: \"otel-demo:staging\"` on `otel-checkout-staging-unauth`",
+        "Provides the exact `kargo.akuity.io/authorized-stage: \"otel-demo:staging\"` metadata annotation fix"
+      ]
+    },
+    {
+      "id": "eval-04-stage-dev-in-kargo-project-otel-demo-failed-its",
+      "prompt": "Stage `dev` in Kargo project `otel-demo` failed its promotion in `PromotionTask` `promote-otel-service` while trying to update the `checkout` Helm values file on `http://gitops.otel-gitops.svc.cluster.local/talkops-ai/OTEL-APP.git` (remember `OTEL-APP` charts live under `charts/<service>/values.yaml`). Diagnose `dev`, inspect `promote-otel-service`, fix the broken PromotionTask, re-promote `dev`, and verify it succeeds.",
+      "expected_output": "Calls `kargo_diagnose_stage(project=\"otel-demo\", stage=\"dev\")` and reads `kargo://projects/otel-demo/promotion-tasks/promote-otel-service`, identifies `PROMOTION_STEP_FAILED` (`./out/helm/checkout/values.yaml` does not exist; correct path is `./out/charts/checkout/values.yaml` with `quote(...)`), updates `promote-otel-service` via `kargo_apply_promotion_task` (`dry_run=True -> False`), re-promotes `dev` via `kargo_promote`, and confirms `dev` reaches `Succeeded`/`HEALTHY`.",
+      "files": [],
+      "expectations": [
+        "Diagnoses `dev` via `kargo_diagnose_stage` and reads `kargo://projects/otel-demo/promotion-tasks/promote-otel-service`",
+        "Fixes `promote-otel-service` path (`./out/charts/checkout/values.yaml`) via `kargo_apply_promotion_task` (`dry_run=True` -> `False`)",
+        "Re-triggers promotion on `dev` via `kargo_promote` and confirms recovery"
+      ]
+    },
+    {
+      "id": "eval-05-stage-prod-us-in-kargo-project-otel-demo-finishe",
+      "prompt": "Stage `prod-us` in Kargo project `otel-demo` finished its Git promotion, but post-promotion verification failed! Diagnose `prod-us`, inspect both the failed `AnalysisRun` status and its logs, explain when we should re-run verification versus rolling back, and since the metric breach reflects a real SLO failure rather than a DNS timeout, preview rolling `prod-us` back.",
+      "expected_output": "Calls `kargo_diagnose_stage(project=\"otel-demo\", stage=\"prod-us\", include_events=True)`, reads `kargo://projects/otel-demo/analysis-runs/{run}` and `kargo://projects/otel-demo/analysis-runs/{run}/logs`, contrasts transient infra flake (`reverify`) vs real SLO breach (`kargo_rollback_stage`), and previews `kargo_rollback_stage(project=\"otel-demo\", stage=\"prod-us\", dry_run=True)`.",
+      "files": [],
+      "expectations": [
+        "Calls `kargo_diagnose_stage` on `prod-us` and reads both `kargo://projects/otel-demo/analysis-runs/{run}` and `/logs`",
+        "Clearly distinguishes when to re-run verification (`reverify` for transient Prometheus/network flakes) vs when to roll back (real SLO threshold breach)",
+        "Runs a rollback preview via `kargo_rollback_stage(..., dry_run=True)`"
+      ]
+    },
+    {
+      "id": "eval-06-we-exported-two-failure-payloads-from-an-inciden",
+      "prompt": "We exported two failure payloads from an incident bundle into `./failed-otel-promotion.json` and `./failed-otel-analysisrun.json` in this workspace. Run offline failure classification on both JSON files, report the structured diagnosis code and failed step/metric for each, and state the recommended remediation for both.",
+      "expected_output": "Executes `scripts/summarize_promotion_failure.py` on `./failed-otel-promotion.json` (`diagnosis_code: \"GIT_OR_REGISTRY_AUTH_ERROR\"`, failed step `push` `403 Forbidden`) and `./failed-otel-analysisrun.json` (`diagnosis_code: \"VERIFICATION_FAILED\"`, failed metric `checkout-service-error-rate` `0.09 >= 0.02`), mapping each to credential rotation vs Stage rollback.",
+      "files": [],
+      "expectations": [
+        "Runs `scripts/summarize_promotion_failure.py` against `failed-otel-promotion.json` and `failed-otel-analysisrun.json`",
+        "Classifies `failed-otel-promotion.json` as `GIT_OR_REGISTRY_AUTH_ERROR` (step `push`) and `failed-otel-analysisrun.json` as `VERIFICATION_FAILED` (metric `checkout-service-error-rate`)",
+        "Maps each failure to its concrete remediation (rotating Kargo Git credentials vs rolling back the Stage)"
+      ]
+    },
+    {
+      "id": "eval-07-on-stage-prod-degraded-in-kargo-project-otel-dem",
+      "prompt": "On Stage `prod-degraded` in Kargo project `otel-demo`, the last Kargo promotion succeeded cleanly, yet `prod-degraded` is now flagged unhealthy! Diagnose `prod-degraded` and check project events—why is `prod-degraded` unhealthy when its last Promotion succeeded, and what should we inspect next?",
+      "expected_output": "Calls `kargo_diagnose_stage(project=\"otel-demo\", stage=\"prod-degraded\", include_events=True)` and reads `kargo://projects/otel-demo/stages/prod-degraded` + `kargo://projects/otel-demo/events`, identifying `STAGE_HEALTH_DEGRADED` because the linked ArgoCD Application (`otel-checkout-degraded`) drifted `OutOfSync`/`Degraded` at runtime after promotion completed, and recommends inspecting the ArgoCD app or rolling back.",
+      "files": [],
+      "expectations": [
+        "Diagnoses `prod-degraded` via `kargo_diagnose_stage` and inspects project events (`kargo://projects/otel-demo/events` or `include_events=True`)",
+        "Explains that runtime Stage health degradation (`STAGE_HEALTH_DEGRADED`) reflects linked ArgoCD Application `OutOfSync`/`Degraded`/`Missing` state after promotion rather than a promotion step error",
+        "Recommends checking the linked ArgoCD Application (`otel-checkout-degraded`) or rolling back if the deployed artifact caused crashes"
+      ]
+    },
+    {
+      "id": "eval-08-warehouse-product-catalog-wh-in-kargo-project-ot",
+      "prompt": "Warehouse `product-catalog-wh` in Kargo project `otel-demo` is failing artifact discovery on both its image subscription (`gitops.otel-gitops.svc.cluster.local/open-telemetry/demo` for `-product-catalog` tags) and its Git subscription (`http://gitops.otel-gitops.svc.cluster.local/talkops-ai/OTEL-APP.git`). Diagnose `product-catalog-wh`, fix both broken subscription fields, refresh it, and confirm Freight is created.",
+      "expected_output": "Calls `kargo_diagnose_warehouse(project=\"otel-demo\", warehouse=\"product-catalog-wh\")`, pinpoints the malformed SemVer constraint (`>=v2.2.x-broken`) and typoed Git branch (`releas-main` instead of `main`), updates `product-catalog-wh` via `kargo_apply_warehouse` (`dry_run=True -> False`), refreshes via `kargo_refresh(..., wait=True)`, and verifies `HEALTHY` with discovered Freight.",
+      "files": [],
+      "expectations": [
+        "Diagnoses `product-catalog-wh` via `kargo_diagnose_warehouse` and identifies both the invalid constraint (`>=v2.2.x-broken`) and nonexistent branch (`releas-main`)",
+        "Updates `product-catalog-wh` via `kargo_apply_warehouse` (`dry_run=True` -> `False`) with valid `-product-catalog` tag selection and `branch: \"main\"`",
+        "Refreshes `product-catalog-wh` via `kargo_refresh` and confirms Freight creation"
+      ]
+    },
+    {
+      "id": "eval-09-our-team-just-added-regional-stage-prod-eu-to-ka",
+      "prompt": "Our team just added regional Stage `prod-eu` to Kargo project `otel-demo` a couple minutes ago and got worried because `prod-eu` shows no Freight deployed yet! Diagnose `prod-eu` and inspect the pipeline, and explain why empty newly created stages (as well as stages actively promoting or verifying) report informational lifecycle states rather than errors.",
+      "expected_output": "Calls `kargo_diagnose_stage(project=\"otel-demo\", stage=\"prod-eu\")` and reads `kargo://projects/otel-demo/pipeline`, explaining that `NO_FREIGHT_DEPLOYED` (alongside `PROMOTION_IN_PROGRESS` and `VERIFICATION_IN_PROGRESS`) has `severity: info` rather than an error: `prod-eu` simply hasn't received its first promotion yet.",
+      "files": [],
+      "expectations": [
+        "Diagnoses `prod-eu` via `kargo_diagnose_stage` and inspects `kargo://projects/otel-demo/pipeline`",
+        "Explains that `NO_FREIGHT_DEPLOYED`, `PROMOTION_IN_PROGRESS`, and `VERIFICATION_IN_PROGRESS` are benign `info`-level lifecycle states rather than failures",
+        "Shows how `prod-eu` will clear `NO_FREIGHT_DEPLOYED` once upstream Freight is verified and promoted"
+      ]
+    },
+    {
+      "id": "eval-10-freight-bundle-otel-recommendation-230-in-kargo",
+      "prompt": "Freight bundle `otel-recommendation-230` in Kargo project `otel-demo` deployed to `dev-bottleneck` hours ago, yet it never moved forward into `staging-bottleneck` even though auto-promotion is enabled on `staging-bottleneck`! Trace `otel-recommendation-230` and diagnose both `dev-bottleneck` and `staging-bottleneck` to pinpoint every gate blocking progression.",
+      "expected_output": "Calls `kargo_trace_freight(project=\"otel-demo\", freight_or_alias=\"otel-recommendation-230\")` plus `kargo_diagnose_stage` on both `dev-bottleneck` and `staging-bottleneck`, identifying why `otel-recommendation-230` stalled (failed verification on `dev-bottleneck` leaving `verifiedIn` empty and/or `autoPromotionHolds` on `staging-bottleneck`) and prescribing the exact unblock steps.",
+      "files": [],
+      "expectations": [
+        "Traces `otel-recommendation-230` via `kargo_trace_freight` (`currentlyIn`, `verifiedIn`, `approvedFor`)",
+        "Diagnoses both `dev-bottleneck` and `staging-bottleneck` via `kargo_diagnose_stage`",
+        "Pinpoints the exact gate blocking progression into `staging-bottleneck` and provides concrete remediation steps"
+      ]
+    },
+    {
+      "id": "eval-11-in-kargo-project-otel-demo-promotiontask-shared",
+      "prompt": "In Kargo project `otel-demo`, PromotionTask `shared-main-push` pushes chart updates for multiple microservices directly onto the same `main` branch of `http://gitops.otel-gitops.svc.cluster.local/talkops-ai/OTEL-APP.git`, causing intermittent `non-fast-forward` `git-push` failures whenever two stages promote at the same time. Inspect `shared-main-push` and update it with Kargo v1.12 best practices so concurrent promotions stop colliding.",
+      "expected_output": "Reads `kargo://projects/otel-demo/promotion-tasks/shared-main-push`, explains why concurrent pushes to `main` collide with `non-fast-forward`, and previews + applies `kargo_apply_promotion_task` (`dry_run=True -> False`) adding `maxAttempts` on `git-push` and/or isolating writes onto per-stage branches (`stage/${{ ctx.stage }}`).",
+      "files": [],
+      "expectations": [
+        "Inspects `kargo://projects/otel-demo/promotion-tasks/shared-main-push` and explains `non-fast-forward` push contention on shared `main`",
+        "Updates `shared-main-push` via `kargo_apply_promotion_task` (`dry_run=True` -> `False`) using `git-push` retries (`maxAttempts`) and/or dedicated stage branches (`stage/${{ ctx.stage }}`)"
+      ]
+    }
+  ]
+}

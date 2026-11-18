@@ -1,0 +1,112 @@
+{
+  "skill_name": "upgrading-opentelemetry-components",
+  "companion_skills": [
+    "provisioning-opentelemetry-collectors",
+    "troubleshooting-telemetry-pipelines",
+    "instrumenting-kubernetes-workloads",
+    "upgrading-and-rolling-back-helm-releases",
+    "onboarding-and-migrating-to-argo-rollouts"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Upgrade `otel-legacy-collector` in `otel-demo` from OpenTelemetry Collector `0.98.0` to `0.152.1` and migrate its deprecated config blocks safely.",
+      "notes": "Collector version upgrade"
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Migrate our legacy `opentelemetry.io/v1alpha1` `OpenTelemetryCollector` manifest (with multiline string `spec.config`) to `opentelemetry.io/v1beta1`.",
+      "notes": "v1alpha1 -> v1beta1 CRD migration"
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Scan `otel-legacy-collector`'s YAML in `otel-demo` for removed `logging` exporters, `memory_ballast` extensions, and `service.telemetry.metrics.address` syntax before upgrading.",
+      "notes": "Deprecation check"
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "What will break in our Prometheus `spanmetrics` alerts and Grafana dashboards when we upgrade `otel-demo-instrumentation` Java (`1.32 -> 2.11`) and Node.js (`0.48 -> 0.56`) SDKs?",
+      "notes": "OTel HTTP semconv upgrade impact"
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "We run both a DaemonSet `otel-agent` (`observability`) and a Gateway `opentelemetry-otel-collector` (`otel-demo`) on `v0.108.0`—in what order must we upgrade them to `v0.152.1`?",
+      "notes": "2-tier upgrade order & rollback"
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Replace `service.telemetry.metrics.address: 0.0.0.0:8888` on our collector in `otel-demo` with the modern `v0.120+` `service.telemetry.metrics.readers` Prometheus pull syntax.",
+      "notes": "Internal telemetry v0.120+ migration"
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Modernize deprecated `opencensus` and `loki` exporters in our `otel-demo` collector configuration before bumping the collector image to `0.152.1`.",
+      "notes": "Deprecated exporter migration"
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Inventory all `OpenTelemetryCollector` and `TargetAllocator` CRs across `otel-demo` and `observability` and validate them against target Collector version `0.152.1` ahead of our Operator upgrade.",
+      "notes": "Fleet upgrade readiness validation"
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "expected_alternative_skill": "upgrading-and-rolling-back-helm-releases",
+      "prompt": "Upgrade the `ad` and `checkout` microservice Helm releases in `otel-demo` from chart version `0.1.0` to `0.1.1` while preserving existing custom values.",
+      "notes": "Helm release upgrade"
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "expected_alternative_skill": "provisioning-opentelemetry-collectors",
+      "prompt": "Provision a brand-new `OpenTelemetryCollector` StatefulSet and `TargetAllocator` from scratch in `otel-demo`.",
+      "notes": "Greenfield collector provisioning"
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "expected_alternative_skill": "troubleshooting-telemetry-pipelines",
+      "prompt": "Triage `:8888/metrics` exporter queue saturation on `opentelemetry-otel-collector` because `otelcol_exporter_send_failed_spans` spiked during a traffic flood.",
+      "notes": "Runtime queue saturation troubleshooting"
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "expected_alternative_skill": "onboarding-and-migrating-to-argo-rollouts",
+      "prompt": "Migrate `Deployment/checkout` in `otel-demo` to an `argoproj.io/v1alpha1` `Rollout` CR with canary traffic steps.",
+      "notes": "Argo Rollouts CRD migration"
+    }
+  ]
+}

@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""PreToolUse hook: block direct secret fetching, plaintext .tfstate reads, hardcoded keys/PEMs, and .env writes."""
+"""PreToolUse hook: block direct secret fetching, plaintext .tfstate reads, hardcoded keys/PEMs, and .env writes.
+
+Reads JSON from stdin, checks tool_name and tool_input, and returns a deny decision if the call would:
+1. Fetch secret values directly from AWS Secrets Manager (CLI, SDK, or local agent).
+2. Read plaintext Terraform/OpenTofu state files (*.tfstate, *.tfstate.backup).
+3. Write or edit .env / .env.* files, or write hardcoded AWS access keys (AKIA/ASIA) or PEM private keys.
+"""
 
 from __future__ import annotations
 
@@ -10,8 +16,8 @@ import sys
 
 DENY_MSG = (
     "Direct secret fetching is blocked. "
-    "Use {{resolve:secretsmanager:secret-id:SecretString:key}} dynamic references in CloudFormation/CDK "
-    "or asm-exec instead. See the aws-iam skill (or aws-secrets-manager in aws-security-identity)."
+    "Use {{resolve:secretsmanager:secret-id:SecretString:key}} dynamic references in CloudFormation/ECS/Lambda "
+    "or asm-exec instead. See the aws-iam-least-privilege-governance or aws-well-architected-security-compliance skill."
 )
 
 TFSTATE_DENY_MSG = (
@@ -40,11 +46,26 @@ SMA_PATTERN = re.compile(
 
 _CLI_FLAGS = r'(?:-\S+(?:\s+[^-\s]\S*)?\s+){0,12}'
 CLI_GSV_PATTERN = re.compile(
-    rf'aws\s+{_CLI_FLAGS}secretsmanager\s+{_CLI_FLAGS}(?:batch-)?get-secret-value\b',
-    re.I,
+    rf'aws\s+{_CLI_FLAGS}secretsmanager\s+{_CLI_FLAGS}(?:batch-)?get-secret-value\b'
+    rf'|aws\s+{_CLI_FLAGS}ssm\s+{_CLI_FLAGS}get-parameters?(?:-by-path)?\b.*?--with-decryption\b',
+    re.I | re.S,
 )
 
 GSV_OPERATIONS = ("getsecretvalue", "batchgetsecretvalue")
+SSM_SECRET_OPERATIONS = ("getparameter", "getparameters", "getparametersbypath")
+
+CALL_BOTO3_GSV_PATTERN = re.compile(
+    r'call_boto3\s*\([^)]*?service_name\s*=\s*[\'"]secretsmanager[\'"][^)]*?operation_name\s*=\s*[\'"](?:Batch)?Get[-_]?Secret[-_]?Value[\'"]',
+    re.I | re.S,
+)
+CALL_BOTO3_SSM_DECRYPT_PATTERN = re.compile(
+    r'call_boto3\s*\([^)]*?service_name\s*=\s*[\'"]ssm[\'"][^)]*?operation_name\s*=\s*[\'"]Get[-_]?Parameters?(?:[-_]?By[-_]?Path)?[\'"][^)]*?WithDecryption[\'"]?\s*[:=]\s*True',
+    re.I | re.S,
+)
+CALL_BOTO3_S3_TFSTATE_PATTERN = re.compile(
+    r'call_boto3\s*\([^)]*?service_name\s*=\s*[\'"]s3[\'"][^)]*?operation_name\s*=\s*[\'"]Get[-_]?Object[\'"][^)]*?\.tfstate\b',
+    re.I | re.S,
+)
 
 SDK_CALL_PATTERN = re.compile(
     r'\.\s*(batch[-_]?)?get[-_]?secret[-_]?value\s*\('
@@ -53,6 +74,7 @@ SDK_CALL_PATTERN = re.compile(
     re.I,
 )
 
+# Real AWS Access Key IDs (excluding official AWS documentation example keys like AKIAIOSFODNN7EXAMPLE)
 AWS_KEY_ID_PATTERN = re.compile(r'\b(?:AKIA|ASIA)(?!IOSFODNN7EXAMPLE|I44QH8DHBEXAMPLE)[0-9A-Z]{16}\b')
 
 PEM_PRIVATE_KEY_PATTERN = re.compile(
@@ -138,6 +160,7 @@ def main() -> None:
     if not isinstance(tool_input, dict):
         tool_input = {}
 
+    # Check Write / Edit / MultiEdit tools for .env files and hardcoded secrets
     if tool_name in ("Write", "Edit", "MultiEdit"):
         file_path = str(tool_input.get("file_path") or tool_input.get("path") or "")
         if file_path and _is_env_file(file_path):
@@ -147,10 +170,24 @@ def main() -> None:
             str(tool_input.get("new_string") or ""),
             json.dumps(tool_input.get("edits") or []),
         ]
-        if _has_hardcoded_secret("\n".join(content_blobs)):
+        combined = "\n".join(content_blobs)
+        if _has_hardcoded_secret(combined):
             deny(HARDCODED_SECRET_DENY_MSG)
         allow()
 
+    # Check run_script tools first (before generic mcp__* handling) for secret fetching in code
+    if "run_script" in tool_name:
+        for val in tool_input.values():
+            if isinstance(val, str):
+                if SDK_CALL_PATTERN.search(val) or CALL_BOTO3_GSV_PATTERN.search(val) or CALL_BOTO3_SSM_DECRYPT_PATTERN.search(val):
+                    deny()
+                if CALL_BOTO3_S3_TFSTATE_PATTERN.search(val):
+                    deny(TFSTATE_DENY_MSG)
+                if _has_hardcoded_secret(val):
+                    deny(HARDCODED_SECRET_DENY_MSG)
+        allow()
+
+    # Check structured AWS tool calls (use_aws or MCP AWS tools)
     if tool_name == "use_aws" or tool_name.startswith("mcp__"):
         service = (
             tool_input.get("service_name")
@@ -164,26 +201,25 @@ def main() -> None:
             or tool_input.get("operationName")
             or ""
         )
-        if service == "secretsmanager" and _normalize_op(str(operation)) in GSV_OPERATIONS:
+        norm_op = _normalize_op(str(operation))
+        if service == "secretsmanager" and norm_op in GSV_OPERATIONS:
             deny()
+        if service == "ssm" and norm_op in SSM_SECRET_OPERATIONS:
+            params = tool_input.get("parameters") or tool_input
+            if isinstance(params, dict) and params.get("WithDecryption") is True:
+                deny()
         input_str = json.dumps(tool_input)
         if _has_hardcoded_secret(input_str):
             deny(HARDCODED_SECRET_DENY_MSG)
-        if SDK_CALL_PATTERN.search(input_str) and "secretsmanager" in input_str.lower():
+        if (SDK_CALL_PATTERN.search(input_str) and "secretsmanager" in input_str.lower()) or CALL_BOTO3_GSV_PATTERN.search(input_str) or CALL_BOTO3_SSM_DECRYPT_PATTERN.search(input_str):
             deny()
+        if CALL_BOTO3_S3_TFSTATE_PATTERN.search(input_str):
+            deny(TFSTATE_DENY_MSG)
         if CLI_GSV_PATTERN.search(input_str):
             deny()
         allow()
 
-    if "run_script" in tool_name:
-        for val in tool_input.values():
-            if isinstance(val, str):
-                if SDK_CALL_PATTERN.search(val):
-                    deny()
-                if _has_hardcoded_secret(val):
-                    deny(HARDCODED_SECRET_DENY_MSG)
-        allow()
-
+    # Check Bash commands
     if tool_name == "Bash":
         command = str(tool_input.get("command", ""))
         if _has_hardcoded_secret(command):

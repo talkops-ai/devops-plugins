@@ -1,0 +1,161 @@
+{
+  "skill_name": "provisioning-opentelemetry-collectors",
+  "evals": [
+    {
+      "id": "eval-01-plan-and-provision-two-tier-agent-gateway-topology",
+      "prompt": "We are scaling our `OTEL-APP` e-commerce platform (`80` workloads across `otel-demo` and supporting services) onto a 45-node Kubernetes cluster, and our team wants a production-grade 2-tier OpenTelemetry Collector setup (`otel-agent` DaemonSet in `observability` forwarding to `opentelemetry-otel-collector` Gateway Deployment in `otel-demo`) exporting traces to `tempo-distributor.observability.svc:4317`, metrics to `mimir-distributor.observability.svc:9009/otlp`, and logs (including `frontend-proxy` Envoy OTLP HTTP logs) to `loki-gateway.observability.svc:80/otlp`. Survey the cluster, preview the collector manifests first, and then provision them.",
+      "expected_output": "Checks `otel://server/capabilities` and `otel://operator/status`, calls `otel_survey_cluster`, sizes the 45-node (`medium` scale via `scripts/plan_collector_topology.py`: `250m/1000m`, `512Mi/1Gi`, `GOMEMLIMIT=800MiB`, `memory_limiter` first) `two-tier-agent-gateway` pattern, calls `otel_provision_collector(namespace=\"otel-demo\", name=\"opentelemetry-otel-collector\", role=\"gateway\", ..., dry_run=True)` and `otel_provision_collector(namespace=\"observability\", name=\"otel-agent\", role=\"agent\", ..., dry_run=True)` using `otlphttp` `/otlp` for Loki (never deprecated `loki` exporter) + `sending_queue` + `retry_on_failure`, applies with `dry_run=False, confirm=True`, and verifies via `otel_diagnose_collector`.",
+      "expectations": [
+        "Surveys cluster readiness via `otel://operator/status` and `otel_survey_cluster` first",
+        "Sizes `medium` scale (`45` nodes -> `GOMEMLIMIT=800MiB` / `80%` of `1Gi` limit, `memory_limiter` first) across `otel-agent` (DaemonSet) and `opentelemetry-otel-collector` (Gateway Deployment)",
+        "Uses `otlphttp` `/otlp` for Loki (never legacy `loki` exporter) with `sending_queue` and `retry_on_failure`",
+        "Calls `otel_provision_collector` with `dry_run=True` before `dry_run=False, confirm=True` and verifies with `otel_diagnose_collector`"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-02-configure-agent-node-local-receivers-filelog-kubeletstats-hostmetrics",
+      "prompt": "On our `otel-agent` DaemonSet collector in the `observability` namespace, enable `filelog`, `kubeletstats`, and `hostmetrics` receivers so every node running `otel-demo` pods (`postgresql`, `valkey-cart`, `kafka`, `checkout`, `ad`, `email`, `frontend-proxy`) collects container logs and kubelet/node metrics safely without self-log feedback loops or cluster-wide pod watch storms. Preview the changes first, then apply them and check the node enrichment profile.",
+      "expected_output": "Calls `otel_configure_receivers(namespace=\"observability\", collector_name=\"otel-agent\", receivers=[\"filelog\", \"kubeletstats\", \"hostmetrics\"], receiver_options={...}, dry_run=True)`, ensuring `filelog` excludes the collector's own pod logs, mounts `/var/log/pods` `readOnly: true` + `/var/lib/otelcol/file_storage` (`file_storage` checkpoint extension), scopes `k8sattributes` with `filter.node_from_env_var: K8S_NODE_NAME`, and mounts `/hostfs` `readOnly: true` for `hostmetrics`, applies with `dry_run=False, confirm=True`, and inspects `otel://k8s-enrichment/observability/otel-agent`.",
+      "expectations": [
+        "Calls `otel_configure_receivers` with `receivers=[\"filelog\", \"kubeletstats\", \"hostmetrics\"]` and `dry_run=True` first",
+        "Enforces `filelog` self-log exclusion and `file_storage` offset persistence (`/var/lib/otelcol/file_storage`)",
+        "Enforces `filter.node_from_env_var: K8S_NODE_NAME` on `k8sattributes` (verifying via `otel://k8s-enrichment/observability/otel-agent` or config diff) to prevent cluster-wide apiserver watch storms",
+        "Applies with `dry_run=False, confirm=True` after diff review"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-03-statefulset-collector-with-prometheus-target-allocator",
+      "prompt": "Configure our 3-replica `otel-ta-collector` StatefulSet in the `otel-demo` namespace to dynamically discover and shard Prometheus `ServiceMonitor` and `PodMonitor` CRs (for `frontend-proxy` `:10000/stats/prometheus`, `postgresql` `:9187`, and `valkey-cart` `:9121`) across the 3 collector replicas without scraping every target 3 times! Preview the configuration first, then apply it.",
+      "expected_output": "Explains that multi-replica Prometheus scraping requires `mode: statefulset` paired with the OpenTelemetry **TargetAllocator** (`allocationStrategy: consistent-hashing`, `prometheusCR.enabled: true` + RBAC for `servicemonitors`, `podmonitors`, `probes`, `scrapeconfigs`), calls `otel_configure_receivers(namespace=\"otel-demo\", collector_name=\"otel-ta-collector\", receivers=[\"prometheus_ta\"], receiver_options={\"service_monitor_selector\": {}, \"pod_monitor_selector\": {}}, dry_run=True)`, and applies with `dry_run=False, confirm=True`.",
+      "expectations": [
+        "Requires `mode: statefulset` + `TargetAllocator` (`consistent-hashing`) on `otel-ta-collector` to prevent `3x` duplicate target scraping in `otel-demo`",
+        "Calls `otel_configure_receivers` with `receivers=[\"prometheus_ta\"]` and `dry_run=True` first, then applies",
+        "Includes least-privilege RBAC for `monitoring.coreos.com` CRDs (`servicemonitors`, `podmonitors`, `probes`, `scrapeconfigs`)"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-04-single-replica-cluster-receivers-k8s-cluster-and-k8sobjects",
+      "prompt": "Someone enabled `k8s_cluster` and `k8sobjects` (`events.k8s.io`) on our 40-node `otel-agent` DaemonSet, and now every `otel-demo` `email` `OOMKilling` Event and deployment replica metric is duplicated 40 times in Loki and Prometheus! Explain why this happens and preview the right collector architecture to fix it.",
+      "expected_output": "Explains that cluster-scoped receivers (`k8s_cluster`, `k8sobjects` / `k8s_events`) query the Kubernetes API server globally and MUST run on a dedicated `Deployment` with `replicas: 1` (never on a `DaemonSet` or multi-replica pool); previews a single-replica `otel-cluster-stats` collector via `otel_provision_collector(..., dry_run=True)` and removing cluster receivers from the node `DaemonSet`.",
+      "expectations": [
+        "Identifies running cluster-scoped `k8s_cluster` and `k8sobjects` on a 40-node `DaemonSet` as the cause of `40x` `otel-demo` event/metric duplication",
+        "Places `k8s_cluster` and `k8sobjects` on a dedicated `replicas: 1` `Deployment` collector",
+        "Previews the fix via `otel_provision_collector` / `otel_configure_receivers` with `dry_run=True` without unrequested destructive changes"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-05-three-tier-tail-sampling-topology-planning",
+      "prompt": "Plan the OpenTelemetry Collector topology and pod memory/CPU sizing for a `120`-node Kubernetes cluster running multi-region `otel-demo` storefronts (`250` workloads across traces, metrics, and logs) with cluster-wide tail sampling enabled.",
+      "expected_output": "Runs `scripts/plan_collector_topology.py --nodes 120 --workloads 250 --signals traces,metrics,logs --tail-sampling` and selects the `three-tier-tail-sampling` architecture at `large` scale (`> 100` nodes: `500m/2000m` CPU, `1Gi/2Gi` memory, `GOMEMLIMIT=1600MiB`, `memory_limiter=1600/400`): Tier 1 `DaemonSet` Agents using `loadbalancing` exporter (`routing_key: traceID` via headless Service) -> Tier 2 `StatefulSet` `otel-tail-sampler` pool -> Tier 3 `Deployment` `otel-gateway`.",
+      "expectations": [
+        "Selects `three-tier-tail-sampling` (`DaemonSet` agent -> `StatefulSet` tail-sampler -> `Deployment` gateway)",
+        "Wires `loadbalancing` exporter (`routing_key: traceID`, headless DNS resolver) from Tier 1 to Tier 2 `StatefulSet`",
+        "Applies `large` cluster sizing (`1Gi/2Gi` RAM, `GOMEMLIMIT=1600MiB` = `80%` of `2Gi`, `memory_limiter` first)"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-06-decommission-obsolete-collector-and-targetallocator-via-delete-resource",
+      "prompt": "After migrating all `OTEL-APP` services (`cart`, `checkout`, `currency`, `product-catalog`, `shipping`, `kafka`, `frontend-proxy`) in `otel-demo` to `opentelemetry-otel-collector.otel-demo.svc.cluster.local`, verify nothing still points to our retired `OpenTelemetryCollector` `otel-demo-canary-old` and its standalone `TargetAllocator` `otel-demo-canary-old-ta` in `otel-demo`, preview deleting both, and then remove them.",
+      "expected_output": "Checks `otel_survey_cluster(namespaces=[\"otel-demo\"])` and `otel://instrumentations/otel-demo` to confirm zero `Instrumentation` CRs or `otel-demo` workloads still target `otel-demo-canary-old`, calls `otel_delete_resource(kind=\"OpenTelemetryCollector\", namespace=\"otel-demo\", name=\"otel-demo-canary-old\", dry_run=True)` and `otel_delete_resource(kind=\"TargetAllocator\", namespace=\"otel-demo\", name=\"otel-demo-canary-old-ta\", dry_run=True)`, then executes both with `dry_run=False, confirm=True`.",
+      "expectations": [
+        "Verifies no `Instrumentation` CR or `otel-demo` workload routes to `otel-demo-canary-old` before deletion",
+        "Calls `otel_delete_resource` with `dry_run=True` first for both `OpenTelemetryCollector` (`otel-demo-canary-old`) and `TargetAllocator` (`otel-demo-canary-old-ta`) in `otel-demo`",
+        "Executes `otel_delete_resource(..., dry_run=False, confirm=True)` for both retired resources"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-07-lint-collector-config-tail-sampling-on-daemonset-and-undeclared-ref",
+      "prompt": "Lint this draft `OpenTelemetryCollector` config intended to run as a `daemonset` in `otel-demo` before we merge it:\n```yaml\nreceivers:\n  otlp:\n    protocols:\n      grpc:\n        endpoint: 0.0.0.0:4317\n      http:\n        endpoint: 0.0.0.0:4318\nprocessors:\n  tail_sampling:\n    policies: []\nexporters:\n  otlp/tempo:\n    endpoint: tempo-distributor.observability.svc:4317\n    headers:\n      Authorization: \"Bearer secret-live-12345\"\nservice:\n  telemetry:\n    metrics:\n      address: 0.0.0.0:8888\n  pipelines:\n    traces:\n      receivers: [otlp]\n      processors: [tail_sampling, batch]\n      exporters: [otlp/tempo]\n```",
+      "expected_output": "Lints the YAML (via `scripts/lint_collector_config.py` and/or `otel_validate_collector_config`) and catches all 5 issues: (1) `CFG_UNDEFINED_COMPONENT_REF` (`batch` referenced in pipeline but never declared under `processors:`), (2) `CFG_MEMORY_LIMITER_NOT_FIRST` (`tail_sampling` is first instead of `memory_limiter`), (3) `CFG_TAIL_SAMPLING_NO_TRACE_AFFINITY` (`tail_sampling` cannot run on `mode: daemonset` because spans of a trace land on different nodes), (4) `SEC_INLINE_SECRET` (literal bearer token instead of `${env:...}`), and (5) `CFG_DEPRECATED_TELEMETRY_ADDRESS` (`service.telemetry.metrics.address` replaced by `readers`).",
+      "expectations": [
+        "Flags undeclared `batch` processor (`CFG_UNDEFINED_COMPONENT_REF`) and missing `memory_limiter` at index 0 (`CFG_MEMORY_LIMITER_NOT_FIRST`)",
+        "Flags running `tail_sampling` on a `daemonset` without trace affinity (`CFG_TAIL_SAMPLING_NO_TRACE_AFFINITY`)",
+        "Flags hardcoded `Authorization` token (`SEC_INLINE_SECRET`) and deprecated `service.telemetry.metrics.address` (`CFG_DEPRECATED_TELEMETRY_ADDRESS`)"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-08-prevent-double-batching-between-agent-and-gateway",
+      "prompt": "In our 2-tier Collector setup for `otel-demo`, node DaemonSet `otel-agent` sets `batch: {timeout: 10s, send_batch_size: 8192}` and `opentelemetry-otel-collector` Gateway ALSO sets `batch: {timeout: 10s, send_batch_size: 8192}`, causing a 20-second delay before `checkout` traces show up in Tempo! How should we tune batching across both tiers?",
+      "expected_output": "Diagnoses additive double batching (`10s + 10s = 20s`): DaemonSet agents forwarding over fast cluster-local gRPC to `opentelemetry-otel-collector` Gateway should either omit heavy batching or use ultra-low latency micro-batching (`timeout: 200ms`, `send_batch_size: 512`), reserving large compression/network batching (`send_batch_size: 4096–8192`, `timeout: 1s–5s`) + `sending_queue` + `retry_on_failure` for the Tier 2 Gateway egress exporter.",
+      "expectations": [
+        "Identifies additive `10s + 10s = 20s` delay from double batching across Tier 1 `otel-agent` and Tier 2 `opentelemetry-otel-collector`",
+        "Configures lightweight micro-batching (`<= 200ms`) or pass-through on Tier 1 `otel-agent`",
+        "Keeps full batching + `sending_queue` + `retry_on_failure` on Tier 2 Gateway egress"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-09-multi-destination-fanout-and-routing-connector",
+      "prompt": "Design and validate a configuration for `opentelemetry-otel-collector` in `otel-demo` that routes payment-card and order spans (`service.name` equal to `payment` or `checkout-service`) to `otlp/tempo-pci` (`tempo-distributor.observability.svc:4317`) while routing general storefront browsing traces (`frontend`, `ad`, `product-catalog-service`, `recommendation`) to `otlp/tempo-shared` (`tempo-distributor.observability.svc:4317`).",
+      "expected_output": "Designs an OpenTelemetry `routing` connector (`default_pipelines: [traces/shared]`, `table` matching `resource[\"service.name\"] == \"payment\" or resource[\"service.name\"] == \"checkout-service\"` -> `[traces/pci]`) wiring `traces/ingress` -> `routing` -> `traces/pci` (`otlp/tempo-pci`) and `traces/shared` (`otlp/tempo-shared`), validating via `otel_validate_collector_config`.",
+      "expectations": [
+        "Uses the `routing` connector across `traces/ingress` -> `traces/pci` and `traces/shared` pipelines",
+        "Matches `service.name` for `payment` and `checkout-service` via OTTL routing condition",
+        "Validates pipeline wiring via `otel_validate_collector_config`"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-10-single-tier-all-in-one-collector-for-small-dev-cluster",
+      "prompt": "/setup-monitoring otel-demo --signals traces\nWe're new to OpenTelemetry on our local `docker-desktop` cluster—verify our active cluster context and preview a lightweight single-tier all-in-one `OpenTelemetryCollector` named `otel-dev-collector` in `otel-demo` (`:4317` gRPC and `:4318` HTTP) collecting `traces` and `metrics` for our `OTEL-APP` services.",
+      "expected_output": "Checks `otel://cluster/contexts` (`docker-desktop`) and `otel://server/capabilities`, plans `single-tier` (`all-in-one`) at `small` scale (`256Mi/512Mi`, `GOMEMLIMIT=400MiB`, `memory_limiter` first), and previews via `otel_provision_collector(namespace=\"otel-demo\", name=\"otel-dev-collector\", role=\"all-in-one\", signals=[\"traces\", \"metrics\"], dry_run=True)` without applying unconfirmed changes.",
+      "expectations": [
+        "Verifies `docker-desktop` context via `otel://cluster/contexts` and chooses `all-in-one` single-tier topology for `otel-dev-collector` in `otel-demo`",
+        "Applies `small` cluster sizing (`256Mi/512Mi`, `GOMEMLIMIT=400MiB`, `memory_limiter` first)",
+        "Calls `otel_provision_collector` with `role=\"all-in-one\"` and `dry_run=True` preview"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-11-operator-and-opamp-precondition-readiness-survey",
+      "prompt": "Before our platform team rolls out new `OpenTelemetryCollector` CRs and remote fleet management in `otel-demo` on `docker-desktop`, check whether the OpenTelemetry Operator, its admission webhook, and any `OpAMPBridge` CRs are healthy on the cluster, and also generate a standalone fallback `v1beta1` `OpenTelemetryCollector` + RBAC manifest in case an air-gapped environment doesn't have cluster API write access yet.",
+      "expected_output": "Reads `otel://cluster/contexts` and `otel://operator/status`, calls `otel_survey_cluster(namespaces=[\"otel-demo\"], include=[\"operator\", \"collectors\", \"opamp_bridges\", \"backends\"])` to verify Operator pod & webhook readiness and any `OpAMPBridge` CRs, notes `cert-manager` + `opentelemetry-operator` prerequisites if absent, and renders a standalone `opentelemetry.io/v1beta1` `OpenTelemetryCollector` + RBAC YAML manifest (via `scripts/render_collector_cr.py`).",
+      "expectations": [
+        "Checks `otel://operator/status` and `otel_survey_cluster` on `docker-desktop` to inspect Operator/webhook health and `OpAMPBridge` status",
+        "Documents `opentelemetry-operator` + `cert-manager` webhook prerequisites clearly",
+        "Generates a complete standalone `opentelemetry.io/v1beta1` `OpenTelemetryCollector` + RBAC YAML manifest"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-12-persistent-sending-queue-with-file-storage-for-unreliable-wan",
+      "prompt": "An edge retail Kubernetes cluster running `OTEL-APP` (`otel-demo`) exports `checkout` and `shipping` OTLP metrics and traces from `opentelemetry-otel-collector` over an intermittent store WAN link that drops for 10 minutes at a time. Design and validate an exporter queue configuration so pod restarts or 10-minute WAN blackouts do not lose order telemetry.",
+      "expected_output": "Configures `file_storage` extension backed by a Kubernetes `StatefulSet` `volumeClaimTemplates` PVC (never ephemeral `emptyDir` for WAN buffering) on `opentelemetry-otel-collector` in `otel-demo` and wires `sending_queue: {enabled: true, storage: file_storage, queue_size: 5000, num_consumers: 10}` + `retry_on_failure: {enabled: true, initial_interval: 5s, max_interval: 30s, max_elapsed_time: 900s}` while keeping `memory_limiter` + `GOMEMLIMIT` (`80%`).",
+      "expectations": [
+        "Binds `sending_queue.storage: file_storage` backed by a persistent PVC on a `StatefulSet`",
+        "Extends `retry_on_failure.max_elapsed_time` (`>= 900s` / 15m) to survive 10-minute WAN outages",
+        "Keeps `memory_limiter` first and `GOMEMLIMIT` (`80%`) configured to prevent OOM during burst drain"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-13-render-standalone-v1beta1-collector-cr-and-rbac-bundle",
+      "prompt": "Generate a complete multi-document `opentelemetry.io/v1beta1` `OpenTelemetryCollector` manifest for a node agent named `otel-node-agent` in `observability` (Collector `0.152.1`) plus its `ServiceAccount`, `ClusterRole`, and `ClusterRoleBinding` YAML bundle so we can check it into GitOps to collect traces, metrics, and logs for `otel-demo`.",
+      "expected_output": "Runs `scripts/render_collector_cr.py --name otel-node-agent --namespace observability --role agent --signals traces,metrics,logs --version 0.152.1` to render `opentelemetry.io/v1beta1` `OpenTelemetryCollector` (`mode: daemonset`, `image: otel/opentelemetry-collector-contrib:0.152.1`, `GOMEMLIMIT`, `K8S_NODE_NAME` Downward API env, `k8sattributes` with `node_from_env_var`, `service.telemetry.metrics.readers` pull Prometheus `:8888`, `memory_limiter` first) along with least-privilege `ClusterRole` (`get`, `list`, `watch`) and `ClusterRoleBinding`.",
+      "expectations": [
+        "Uses `apiVersion: opentelemetry.io/v1beta1` with structured dict `spec.config` and `mode: daemonset`",
+        "Uses modern `service.telemetry.metrics.readers` Prometheus `:8888` syntax (not deprecated `metrics.address`)",
+        "Includes `K8S_NODE_NAME` node filter on `k8sattributes` and least-privilege `ClusterRole` (`get`, `list`, `watch`)"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-14-read-only-mode-collector-blueprint-and-capabilities",
+      "mcp_allow_write": false,
+      "prompt": "Check our current OpenTelemetry server access permissions on this cluster and prepare a ready-to-commit gateway `OpenTelemetryCollector` manifest (`otel-ro-gateway` in `observability`) forwarding `otel-demo` traces to `tempo-distributor.observability.svc:4317`, metrics to `prometheus-d6.observability.svc:9090`, and logs to `loki.observability.svc:3100`.",
+      "expected_output": "Reads `otel://server/capabilities` (detecting `allow_write: false` / `write_enabled: false`), performs read-only discovery (`otel://operator/status` / `otel_survey_cluster`) without attempting `dry_run=False` mutations, and generates a complete `opentelemetry.io/v1beta1` `OpenTelemetryCollector` + RBAC YAML manifest (via `scripts/render_collector_cr.py` or `dry_run=True`).",
+      "expectations": [
+        "Reads `otel://server/capabilities` and detects that write operations are disabled (`write_enabled: false`)",
+        "Does not attempt any live cluster write (`dry_run=False`) and outputs a complete copy-pasteable `v1beta1` `OpenTelemetryCollector` + RBAC manifest"
+      ],
+      "files": []
+    }
+  ]
+}

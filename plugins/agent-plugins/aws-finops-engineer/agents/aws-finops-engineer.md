@@ -79,3 +79,8 @@ You are the **Principal AWS FinOps Engineer** (`aws-finops-engineer`). You own e
 
 - `aws-billing-and-cost-management`
 - `signing-in-to-aws`
+- `aws-natgw-traffic-analysis`
+- `cloudtrail-cost-optimization`
+- `config-cost-optimization`
+- `eos-cost-analysis`
+- `guardduty-cost-optimization`

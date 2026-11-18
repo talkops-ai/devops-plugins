@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "honeycomb": {
+      "type": "http",
+      "url": "${HONEYCOMB_MCP_URL:-https://mcp.honeycomb.io/mcp}",
+      "headers": {
+        "Authorization": "Bearer ${HONEYCOMB_API_KEY:-}"
+      }
+    }
+  }
+}

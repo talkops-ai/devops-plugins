@@ -80,3 +80,34 @@ AccessDeniedException. Do not retry with `primary` in this context.
 - Never default to `primary` workgroup without checking others first
 - Never hardcode a workgroup name across sessions
 - Never retry with `primary` when running as a SageMaker project role -- it will fail with AccessDeniedException
+
+## Workgroup Cost Controls, Partition Pruning, Partition Projection & Federated Queries
+
+### 1. Athena Scan & Join Optimization Rules
+- **Direct Partition Predicates (Preserve Partition Pruning)**: Always filter directly on partition columns (e.g., `WHERE event_date >= '2026-03-01'` or `WHERE year = '2026' AND month = '03'`). Never wrap partition columns in functions (`WHERE DATE_PARSE(dt, '%Y-%m-%d') = ...` or `WHERE SUBSTR(dt, 1, 7) = '2026-03'`), which disables partition pruning and triggers a full table scan (`$5.00/TB`).
+- **Columnar Projection**: Never run `SELECT *` on wide Parquet/ORC/Iceberg tables; project only required columns so Athena reads only those column chunks from S3.
+- **Join Ordering**: Place the **largest table on the left** (`FROM large_fact_table f JOIN small_dimension_table d ON ...`) so Athena's distributed engine broadcasts the smaller right-hand build side across workers.
+
+### 2. Glue Partition Projection (`projection.enabled = true`)
+For high-partition tables (thousands of daily/hourly/region partitions), enable **Glue Partition Projection** in `TBLPROPERTIES` so Athena calculates partition S3 paths mathematically in memory instead of calling `glue:GetPartitions` or running `MSCK REPAIR TABLE`:
+
+```sql
+ALTER TABLE prod_lake.clickstream_events SET TBLPROPERTIES (
+  'projection.enabled' = 'true',
+  'projection.dt.type' = 'date',
+  'projection.dt.range' = '2024-01-01,NOW',
+  'projection.dt.format' = 'yyyy-MM-dd',
+  'projection.dt.interval' = '1',
+  'projection.dt.interval.unit' = 'DAYS',
+  'storage.location.template' = 's3://my-lake-bucket/clickstream/dt=${dt}/'
+);
+```
+
+### 3. Workgroup Cost Governance & Query Result Reuse
+- **Per-Query Scan Cap (`BytesScannedCutoffPerQuery`)**: Configure a hard byte-scan ceiling on the Athena Workgroup (e.g., `107374182400` = `100 GiB`) so runaway unpartitioned queries are aborted automatically before incurring large scan charges.
+- **Enforce Workgroup Configuration (`EnforceWorkGroupConfiguration=true`)**: Prevent client callers from overriding workgroup S3 output locations, KMS encryption settings, or scan limits.
+- **Athena Query Result Reuse (`ResultReuseByAgeConfiguration`)**: Enable result caching (`Enabled=true`, `MaxAgeInMinutes=60`) on repeated dashboard queries in Athena Engine v3 so identical scans against unchanged data return at `$0` scan cost.
+
+### 4. Athena Federated Query (`aws-athena-federated-query-*`)
+- To join S3 Data Lake tables with operational databases (Aurora PostgreSQL, RDS, DynamoDB, Redshift, OpenSearch), deploy the pre-built **Athena Data Source Connector** (`aws-athena-federated-query-*` Lambda via SAR/CDK), register the Lambda ARN as an Athena Data Catalog (`Type=LAMBDA`), and configure an encrypted **S3 `SpillBucket`** (`SPILL_BUCKET` + `KMS_KEY_ID`) for payloads exceeding the 6 MB Lambda synchronous response limit.
+

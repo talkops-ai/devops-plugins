@@ -7,10 +7,19 @@
       "args": [
         "mcp-proxy-for-aws-cli==1.7.0",
         "https://aws-mcp.us-east-1.api.aws/mcp",
-        "--skip-auth",
+        "--region",
+        "us-east-1",
         "--metadata",
         "INSTALL_SOURCE=agent-toolkit-core"
-      ]
+      ],
+      "env": {
+        "AWS_REGION": "us-east-1",
+        "AWS_DEFAULT_REGION": "us-east-1"
+      }
+    },
+    "awsknowledge": {
+      "type": "streamable-http",
+      "url": "https://knowledge-mcp.global.api.aws"
     },
     "aws-iac": {
       "type": "stdio",
@@ -18,10 +27,11 @@
       "args": [
         "--with",
         "fastmcp<4.0.0",
-        "awslabs.aws-iac-mcp-server==0.2.14"
+        "awslabs.aws-iac-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     },
     "iam": {
@@ -31,7 +41,8 @@
         "awslabs.iam-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     },
     "cloudwatch": {
@@ -41,7 +52,8 @@
         "awslabs.cloudwatch-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     },
     "cloudtrail": {
@@ -51,7 +63,8 @@
         "awslabs.cloudtrail-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     },
     "pricing": {
@@ -61,7 +74,8 @@
         "awslabs.aws-pricing-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     },
     "billing-cost": {
@@ -71,7 +85,8 @@
         "awslabs.billing-cost-management-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     },
     "well-architected-security": {
@@ -81,7 +96,8 @@
         "awslabs.well-architected-security-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     },
     "eks": {
@@ -91,7 +107,8 @@
         "awslabs.eks-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     },
     "ecs": {
@@ -106,6 +123,7 @@
       ],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1",
         "ALLOW_WRITE": "false",
         "ALLOW_SENSITIVE_DATA": "false"
       }
@@ -117,7 +135,8 @@
         "awslabs.aws-serverless-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     },
     "awsnetwork": {
@@ -127,7 +146,8 @@
         "awslabs.aws-network-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     },
     "finch": {
@@ -137,7 +157,8 @@
         "awslabs.finch-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     },
     "sns-sqs": {
@@ -147,7 +168,8 @@
         "awslabs.amazon-sns-sqs-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     },
     "mq": {
@@ -157,7 +179,8 @@
         "awslabs.amazon-mq-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     }
   }

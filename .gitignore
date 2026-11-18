@@ -12,4 +12,10 @@ build/
 .claude/settings.local.json
 .agents/teamwork/
 __pycache__/
+*.pyc
+.venv/
 .opscloud
+.plugin-data/
+.pricing_cache/
+reference/
+evals/workspaces/

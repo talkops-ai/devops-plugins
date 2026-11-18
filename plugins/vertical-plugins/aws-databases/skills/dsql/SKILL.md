@@ -165,7 +165,7 @@ defaults that may change — when a user's decision depends on an exact limit, v
 ## CLI Scripts Available
 
 Bash scripts in [scripts/](../../scripts/) for cluster management (create, delete, list, cluster info), psql connection, and bulk data loading from local/s3 csv/tsv/parquet files.
-See [scripts/README.md](../../scripts/README.md) for usage and hook configuration.
+See [README.md](../../README.md) for usage and hook configuration.
 
 ---
 

@@ -47,10 +47,17 @@ consult the Failure modes table on any error.
 
 Three read-only calls give the current truth for the account and region.
 
-First, list every registration type available in the region:
+First, list every registration type available in the region (or filter by association country code):
 
 ```bash
 aws pinpoint-sms-voice-v2 describe-registration-type-definitions --region <REGION>
+
+# Optional server-side filter (ONLY two filter names are valid in the API:
+#   supported-association-iso-country-code and supported-association-resource-type;
+#   passing Name=country or a non-existent type like IN_DLT_REGISTRATION fails with ValidationException):
+aws pinpoint-sms-voice-v2 describe-registration-type-definitions \
+  --filters Name=supported-association-iso-country-code,Values=<ISO2> \
+  --region <REGION>
 ```
 
 Match the returned names against the user's goal:
@@ -70,23 +77,34 @@ Save the matched type name as `REG_TYPE`, plus its `SupportedAssociations` and
 not registrable via the API — check the docs pages below for whether it needs a Support case or
 is unsupported.
 
-Then derive the authoritative field set for that type, and optionally its section grouping:
+Then derive the authoritative field set for that type, and optionally its section grouping (pass `--max-results 100` or batch calls in a single script so you retrieve the complete schema in one turn):
 
 ```bash
 aws pinpoint-sms-voice-v2 describe-registration-field-definitions \
-  --registration-type <REG_TYPE> --region <REGION>
+  --registration-type <REG_TYPE> --max-results 100 --region <REGION>
 aws pinpoint-sms-voice-v2 describe-registration-section-definitions \
-  --registration-type <REG_TYPE> --region <REGION>
+  --registration-type <REG_TYPE> --max-results 100 --region <REGION>
 ```
 
-The field definitions output is the only authoritative statement of what a registration
+The field definitions output is the authoritative statement of what a registration
 requires: field paths, types (TEXT/SELECT/ATTACHMENT), REQUIRED vs OPTIONAL, and validation
-constraints. It is paginated — walk all pages. Do not filter this output; conditional field
-requirements depend on context from the complete definition shape.
+constraints.
+
+## Key Country Prerequisites Summary (Fast Reference)
+
+- **India (`IN` — `IN_SENDER_ID_REGISTRATION`, `IN_SHORT_CODE_REGISTRATION`):**
+  - Discoverable via `--filters Name=supported-association-iso-country-code,Values=IN`.
+  - Requires external **TRAI DLT (Distributed Ledger Technology)** registration on an Indian telecom operator DLT portal before submitting in AWS.
+  - Key live fields in `IN_SENDER_ID_REGISTRATION`: `inSidSpecificInfo.principalEntityId` (DLT Principal Entity / PE ID), `inSidSpecificInfo.chainId1` (required primary telemarketer chain ID) through `chainId5`, `companyInfo.*`, `contactInfo.*`, and `senderIdInfo.*`.
+- **United States (`US` — `US_TEN_DLC_BRAND_REGISTRATION`, `US_TEN_DLC_CAMPAIGN_REGISTRATION`, `US_TOLL_FREE_REGISTRATION`, `US_SHORT_CODE_REGISTRATION`):**
+  - **US 10DLC** uses a strict two-stage hierarchy:
+    1. Submit and complete `US_TEN_DLC_BRAND_REGISTRATION` first (requires legal company name, EIN / Tax ID, address, industry vertical, and optional `US_TEN_DLC_BRAND_VETTING`).
+    2. Once the Brand is `COMPLETE`, submit `US_TEN_DLC_CAMPAIGN_REGISTRATION` associated with the Brand (requires `messagingUseCase`, `messageSamples`, `optInDescription` / opt-in workflow proof, and HELP/STOP compliance), and then associate your 10DLC phone number.
+  - **US Toll-Free (`US_TOLL_FREE_REGISTRATION`)** uses `ASSOCIATE_BEFORE_SUBMIT` (lease the toll-free number first, associate it with the draft registration, populate `companyInfo`, `contactInfo`, `messagingUseCase`, and `messageSamples`, and submit).
 
 ## Official docs pages — the human-readable per-country rules
 
-Fetch the relevant page(s) each run over HTTPS (append `.md` to any slug for a markdown variant):
+Only fetch external docs pages over HTTPS if the target country is not covered above or has no matching API registration type:
 
 | Page | URL | What it holds |
 |---|---|---|
@@ -98,9 +116,8 @@ Fetch the relevant page(s) each run over HTTPS (append `.md` to any slug for a m
 
 ## The reconciliation rule
 
-1. Run the discovery commands for the target country and identity type.
-2. Fetch the matching docs page(s) for the human context: prerequisites, evidence to prepare
-   (opt-in proof, compliance video, letters of authorization), ETAs, and country specifics.
+1. Run the discovery commands (`describe-registration-type-definitions` with `--filters Name=supported-association-iso-country-code,Values=<ISO2>` or `--registration-types`, and `describe-registration-field-definitions`) in a single batched turn for the target country and identity type.
+2. Use the Key Country Prerequisites Summary above (or fetch a matching docs page only if the country is not covered above) for human context: external regulatory prerequisites (such as India TRAI DLT or US 10DLC Brand->Campaign hierarchy), evidence to prepare, and ETAs.
 3. Reconcile. Where the docs and the live field definitions disagree — a field the docs do not
    mention, a type the docs still call by an old name — the live field definitions win. They are
    the tiebreaker; docs lag the service.
@@ -109,20 +126,15 @@ Fetch the relevant page(s) each run over HTTPS (append `.md` to any slug for a m
 
 ## Worked example: "the user wants to send SMS to a country `<ISO2>`"
 
-This example uses the placeholder `<ISO2>` for the user's target country. It never names a real
-country or a real registration type — substitute what your own discovery returns this run.
-
 Discover what the region offers for `<ISO2>`:
 
 ```bash
-aws pinpoint-sms-voice-v2 describe-registration-type-definitions --region <REGION>
+aws pinpoint-sms-voice-v2 describe-registration-type-definitions \
+  --filters Name=supported-association-iso-country-code,Values=<ISO2> \
+  --region <REGION>
 ```
 
-Inspect the returned `RegistrationType` names for entries starting with `<ISO2>_`. Then read, each
-run: the country capabilities hub (follow its supported-countries link to the `<ISO2>` row for
-which origination identity types that country supports, whether registration is required, two-way
-support); the registration overview page (is there an `<ISO2>` form, or a Support-case country);
-and the ETA page (review time for the identity type you land on).
+Inspect the returned `RegistrationType` names for entries starting with `<ISO2>_` and run `describe-registration-field-definitions --registration-type <REG_TYPE> --region <REGION>`. Only fetch external docs pages if `<ISO2>` is not covered in the Key Country Prerequisites Summary above.
 
 Conclude from what the pages and `describe-registration-type-definitions` returned this run —
 for example, whether `<ISO2>` supports sender IDs without registration or a registered long code

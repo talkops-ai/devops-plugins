@@ -1,0 +1,34 @@
+[
+  {
+    "query": "Debug an AccessDeniedException in our AWS Clean Rooms collaboration by checking the Clean Rooms service role, KMS key policy, S3 bucket policy, and Lake Formation grants.",
+    "should_trigger": true
+  },
+  {
+    "query": "Troubleshoot why CloudWatch logs are missing for our AWS Clean Rooms custom ML model training and inference job.",
+    "should_trigger": true
+  },
+  {
+    "query": "Verify the Configured Model Algorithm Association privacyConfiguration and cleanrooms-ml IAM role permissions for Clean Rooms ML logging.",
+    "should_trigger": true
+  },
+  {
+    "query": "Fix cross-service confused deputy trust policy conditions (`aws:SourceArn` and `aws:SourceAccount`) on an AWS Clean Rooms configured table IAM role.",
+    "should_trigger": true
+  },
+  {
+    "query": "Resolve 'Insufficient Lake Formation permission(s)' when a collaboration member queries a configured table in AWS Clean Rooms.",
+    "should_trigger": true
+  },
+  {
+    "query": "Design an Amazon Redshift Serverless star schema with DISTKEY and SORTKEY.",
+    "should_trigger": false
+  },
+  {
+    "query": "Upgrade an Amazon MWAA environment from Apache Airflow 2.8 to Airflow 3.0.",
+    "should_trigger": false
+  },
+  {
+    "query": "Size an Amazon OpenSearch Service cluster for 1 TB/day of application log analytics.",
+    "should_trigger": false
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "elastic": {
+      "type": "http",
+      "url": "https://${ELASTIC_PROJECT:-my-project}.kb.${ELASTIC_REGION:-us-east-1}.aws.elastic.cloud/api/agent_builder/mcp",
+      "headers": {
+        "Authorization": "ApiKey ${ELASTIC_API_KEY:-}"
+      }
+    }
+  }
+}

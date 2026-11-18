@@ -1,0 +1,99 @@
+{
+  "skill_name": "eks-karpenter-autoscaling",
+  "companion_skills": [
+    "aws-containers",
+    "eks-operations-and-troubleshooting",
+    "ecs-container-operations",
+    "security-workload-containers",
+    "aws-compute"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Bootstrap Karpenter v1 (`karpenter.sh/v1`) on our Amazon EKS cluster with EKS Pod Identity, an SQS Spot interruption queue, and weighted Graviton + x86 `NodePool`s."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Compare EKS Auto Mode (`eks.amazonaws.com/v1` `NodeClass`) against self-managed Karpenter `EC2NodeClass` and audit our 16 Karpenter operational gates."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Give me a zero-downtime migration runbook from Kubernetes Cluster Autoscaler (CAS) to Karpenter v1 on EKS."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Our `EC2NodeClass` in EKS shows `NodeClassNotReady` (`SubnetsNotFound`) and newly launched AL2023 worker nodes never register because our old `/etc/eks/bootstrap.sh` script fails."
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Ever since we enabled `WhenEmptyOrUnderutilized` node consolidation on EKS, bursting Java pods get `OOMKilled` (`Exit Code 137`) and PyTorch GPU jobs get evicted mid-training. How do we stop this?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Pair KEDA SQS queue-based pod scaling (`0 -> 60` replicas) with EKS node provisioning so idle worker nodes scale back down cleanly without thrashing."
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Prometheus `:8080/metrics` on our EKS cluster shows `karpenter_cloudprovider_errors_total{error=\"InsufficientCapacityError\"}` spiking and `karpenter_scheduler_unschedulable_pods_count > 30` on `NodePool/spot-workers`."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Write a `karpenter.sh/v1` `NodePool` disruption budget schedule that freezes `Underutilized` node consolidation Monday–Friday 13:00–21:00 UTC while keeping `expireAfter: 720h`."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "We tagged our private subnets with `karpenter.sh/discovery=prod-eks`, created `KarpenterNodeRole`, and need the 4 EventBridge Spot interruption rules plus `EC2_LINUX` Access Entry."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "expected_alternative_skill": "ecs-container-operations",
+      "prompt": "Configure Amazon ECS Fargate and Fargate Spot capacity providers (`base: 2, weight: 4`) with ECS Deployment Circuit Breaker rollback."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "expected_alternative_skill": "aws-compute",
+      "prompt": "Configure an EC2 Auto Scaling Group Warm Pool and Target Tracking policy for a non-containerized Linux monolith on `m8g.xlarge` instances."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "expected_alternative_skill": "security-workload-containers",
+      "prompt": "Audit a multi-stage Dockerfile that bakes `ARG AWS_SECRET_ACCESS_KEY` into image layers and mounts `/var/run/docker.sock` as root."
+    }
+  ]
+}

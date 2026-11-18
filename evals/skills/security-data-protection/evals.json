@@ -1,0 +1,60 @@
+{
+  "skill_name": "security-data-protection",
+  "evals": [
+    {
+      "id": "eval-01-our-red-team-demonstrated-two-in-place-s3-ransom",
+      "prompt": "Our red team demonstrated two in-place S3 ransomware techniques against buckets where an application role has `s3:PutObject` and `s3:CopyObject`: (1) re-encrypting objects in place using `SSE-C` (customer-provided keys) and throwing away the key, and (2) re-encrypting objects using an external attacker-owned KMS CMK and revoking the grant. How do we completely block both ransomware vectors on our S3 buckets and safely apply the bucket policy without wiping existing statements?",
+      "expected_output": "Provides the S3 ServerSideEncryptionConfiguration blocking SSE-C (`BlockedEncryptionTypes: {\"EncryptionType\": [\"SSE-C\"]}`, `BucketKeyEnabled: true`, CMK ARN), the defensive Bucket Policy (`DenyInsecureTransport` + `DenyUploadsWithExternalOrWrongKMSKey` on `s3:x-amz-server-side-encryption-aws-kms-key-id`), and the safe get-bucket-policy backup-and-merge workflow.",
+      "files": [],
+      "expectations": [
+        "Activates the security-data-protection skill and provides the `put-bucket-encryption` configuration enforcing `SSEAlgorithm: \"aws:kms\"` with the specific Customer Managed Key ARN, `BucketKeyEnabled: true`, and `BlockedEncryptionTypes: {\"EncryptionType\": [\"SSE-C\"]}` to neutralize SSE-C ransomware",
+        "Provides the defensive Bucket Policy statements including `DenyInsecureTransport` (`aws:SecureTransport: \"false\"`) and `DenyUploadsWithExternalOrWrongKMSKey` (`Effect: \"Deny\"`, `Action: \"s3:PutObject\"`, `StringNotEqualsIfExists` on `s3:x-amz-server-side-encryption-aws-kms-key-id` pinned to the bucket's CMK ARN) to neutralize cross-account KMS ransomware",
+        "Prescribes the mandatory safe bucket-policy update workflow: backing up the existing policy via `s3api:GetBucketPolicy` first, merging the new statements into the existing `Statement` array (since `PutBucketPolicy` replaces the entire policy), and validating with `accessanalyzer:ValidatePolicy`"
+      ]
+    },
+    {
+      "id": "eval-02-we-need-to-configure-worm-immutability-across-th",
+      "prompt": "We need to configure WORM immutability across three S3 use cases: (1) our Organization CloudTrail and Security Lake log archive bucket requiring strict SEC 17a-4 / FINRA immutability for 7 years where even the AWS Account Root User must be blocked from deleting logs, (2) a production database backup bucket with 30-day retention where compromised app roles are blocked from deleting backups but a break-glass security admin role can override if needed, and (3) freezing 50 specific log objects indefinitely right now during an active security incident. How should we configure S3 Object Lock and AWS Organizations SCPs for all three?",
+      "expected_output": "Maps (1) to S3 Object Lock COMPLIANCE mode, (2) to GOVERNANCE mode (with s3:BypassGovernanceRetention + x-amz-bypass-governance-retention: true), and (3) to Object Lock Legal Hold (Status=ON via s3:PutObjectLegalHold), and provides the Organization SCP guardrail.",
+      "files": [],
+      "expectations": [
+        "Activates the security-data-protection skill and distinguishes the three S3 Object Lock mechanisms: (1) **`COMPLIANCE` mode** for the SEC 17a-4 CloudTrail/Security Lake archive (where no principal, **not even the AWS Account Root User**, can delete an object version or shorten retention before `RetainUntilDate`), (2) **`GOVERNANCE` mode** for the 30-day backup bucket (where only principals granted `s3:BypassGovernanceRetention` passing the `x-amz-bypass-governance-retention: true` header can bypass retention), and (3) **`Legal Hold` (`Status=ON`)** (`s3:PutObjectLegalHold`) for freezing the 50 forensic objects indefinitely independent of retention period",
+        "Notes that S3 Bucket Versioning is required for S3 Object Lock and shows the read-only audit command (`aws s3api get-object-lock-configuration` / `get-object-legal-hold`)",
+        "Provides an AWS Organizations Service Control Policy (SCP) for the `log-archive` / `backup` accounts denying `s3:BypassGovernanceRetention`, weakening `s3:PutBucketObjectLockConfiguration`, and removing `s3:PutObjectLegalHold`"
+      ]
+    },
+    {
+      "id": "eval-03-aws-security-identity-audit-kms-and-data-protect",
+      "prompt": "/aws-security-identity:audit-kms-and-data-protection — Perform a strictly read-only data-protection posture audit of our live ap-south-1 account covering KMS Customer Managed Keys (rotation status, key policies, grants), S3 Account Block Public Access, EBS Default Encryption & Snapshot Block Public Access, and AWS Backup Vaults, and emit structured remediation recommendations.",
+      "expected_output": "Uses aws-mcp in read-only mode to inspect KMS CMKs, S3 Account Public Access Block, EBS encryption/snapshot block public access, and Backup Vaults in ap-south-1 without fetching any plaintext secrets or mutating resources, and outputs structured findings with approval_required: true.",
+      "files": [],
+      "expectations": [
+        "Activates the security-data-protection skill and uses `aws-mcp` in read-only mode to query live `ap-south-1` metadata (`kms:ListKeys`/`DescribeKey`/`GetKeyRotationStatus`, `s3control:GetPublicAccessBlock`, `ec2:GetEbsEncryptionByDefault`, `ec2:GetSnapshotBlockPublicAccessState`, `backup:ListBackupVaults`) without running raw shell `aws` CLI commands or calling `GetSecretValue`/`kms:Decrypt`",
+        "Accurately reports the live `ap-south-1` posture (including whether EBS default encryption and snapshot block public access are enabled, S3 account-level Block Public Access flags, KMS CMKs, and Backup Vault Lock state)",
+        "Provides structured remediation recommendations with `approval_required: true` for any gaps identified"
+      ]
+    },
+    {
+      "id": "eval-04-review-this-kms-customer-managed-key-setup-for-o",
+      "prompt": "Review this KMS Customer Managed Key setup for our `prod/payments/` secrets: (1) the Key Policy gives our IAM Key Admins `kms:*`, (2) a statement allows `Principal: \"*\"` for `kms:Decrypt` and `kms:GenerateDataKey*` with no conditions, (3) a developer IAM User ARN is listed directly in the Key Policy, and (4) `kms:ListGrants` shows an active grant with `Operations: [\"Decrypt\", \"CreateGrant\"]` and no `Constraints` or `RetiringPrincipal`. Explain every security risk here and write the remediated KMS Key Policy.",
+      "expected_output": "Identifies all 4 KMS risks (lack of Separation of Duties, unconditioned Principal: * exposure, direct IAM User in key policy bypassing Permission Boundaries, and unconstrained Decrypt+CreateGrant KMS grant) and provides a hardened Key Policy with kms:ViaService, kms:CallerAccount, aws:PrincipalOrgID, and kms:EncryptionContext:aws:secretsmanager:arn.",
+      "files": [],
+      "expectations": [
+        "Activates the security-data-protection skill and explains all four vulnerabilities: (1) Key Administrators must be separated from Key Users (Key Admins should not have `kms:Decrypt` / `kms:GenerateDataKey*`), (2) `Principal: \"*\"` without conditions exposes the key across principals, (3) listing an IAM User ARN directly in a same-account KMS Key Policy **bypasses that user's IAM Permissions Boundary**, and (4) a KMS Grant with `CreateGrant` and unconstrained `Decrypt` allows grant delegation escalation and cross-resource decryption",
+        "Provides a hardened KMS Key Policy enforcing `kms:CallerAccount`, `kms:ViaService` (`secretsmanager.<region>.amazonaws.com`), and `aws:PrincipalOrgID` conditions",
+        "Includes a `kms:EncryptionContext:aws:secretsmanager:arn` condition (`arn:aws:secretsmanager:<region>:<account>:secret:prod/payments/*`) to prevent confused-deputy cross-secret ciphertext decryption"
+      ]
+    },
+    {
+      "id": "eval-05-we-are-designing-a-zero-trust-pki-and-network-tr",
+      "prompt": "We are designing a zero-trust PKI and network transit encryption architecture for our regulated B2B banking APIs: our team currently issues end-entity client certificates directly from our Root AWS Private CA (`acm-pca`), configured our ALB HTTPS listener with `MutualAuthentication.Mode = \"passthrough\"` and `IgnoreClientCertificateExpiry = true`, enabled CloudFront Viewer mTLS without restricting origin security groups, and runs an unencrypted Direct Connect link and a legacy Site-to-Site VPN using SHA-1 and DH Group 2. Audit and remediate every layer of this architecture.",
+      "expected_output": "Remediates all 5 layers: Root vs Subordinate Private CA hierarchy (FIPS 140-2 Level 3 + CRL/OCSP), ALB mTLS Mode=verify + IgnoreClientCertificateExpiry=false + Trust Store CRL, CloudFront Viewer mTLS + origin SG locked to com.amazonaws.global.cloudfront.origin-facing prefix list, Direct Connect MACsec (IEEE 802.1AE), and Site-to-Site VPN IKEv2 + AES-256-GCM + SHA-2 + DH Group 14+.",
+      "files": [],
+      "expectations": [
+        "Activates the security-data-protection skill and remediates the **AWS Private CA (`acm-pca`)** hierarchy: never issue end-entity certificates directly from the Root Private CA; keep the Root CA restricted to signing Subordinate (Intermediate) CAs (`KeyStorageSecurityStandard: FIPS_140_2_LEVEL_3_OR_HIGHER`) with CRL/OCSP revocation configured",
+        "Remediates **ALB mTLS** (`MutualAuthentication.Mode: \"verify\"`, `IgnoreClientCertificateExpiry: false`, associated `TrustStoreArn` with active CRL revocations) and **CloudFront Viewer mTLS** (`ViewerMtlsConfig.Mode: \"required\"` plus locking origin security groups to the AWS-managed `com.amazonaws.global.cloudfront.origin-facing` prefix list so attackers cannot bypass CloudFront and spoof `CloudFront-Viewer-TLS-*` headers)",
+        "Remediates Layer 2/3 transit encryption: enabling **MACsec (IEEE 802.1AE)** (`portEncryptionStatus == \"Encryption Up\"`) or IPsec VPN over Direct Connect, and upgrading Site-to-Site VPN tunnels from SHA-1/DH Group 2 to **IKEv2**, **AES-256-GCM**, **SHA-2 (SHA256/384/512)**, and **Diffie-Hellman Groups 14–24**"
+      ]
+    }
+  ]
+}

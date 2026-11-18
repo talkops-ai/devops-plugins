@@ -113,6 +113,9 @@ and the controls that contain them.
   procedure needs rather than broad Shield or administrator access.
 - **Audit trail.** Keep AWS CloudTrail enabled and logging `shield:*` calls so every configuration
   change leaves a record.
+- **Secret Safety & Live Mutation Guardrails**:
+  - You MUST NEVER echo, log, or hardcode raw AWS access keys (`AKIA...`), secret access keys, session tokens, or emergency contact secrets/tokens in CLI commands, code blocks, or responses. Always redact exposed secrets and mandate short-lived IAM role credentials.
+  - You MUST NEVER execute live mutating Shield Advanced commands (`create-subscription`, `update-subscription`, `create-protection`, `delete-protection`, `create-protection-group`, `delete-protection-group`, `enable-application-layer-automatic-response`, `associate-drt-role`, `disassociate-drt-role`, `enable-proactive-engagement`) directly against a live AWS account without explicit confirmation; perform read-only discovery via MCP tools (`get-subscription-state`, `describe-subscription`, `list-protections`, `list-protection-groups`, `describe-drt-access`, `list-attacks`) in `us-east-1` and provide a reviewable dry-run/remediation plan instead.
 
 ## Additional Resources
 

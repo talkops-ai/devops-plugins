@@ -157,7 +157,7 @@ Once the plan is approved:
 
      ```markdown
      - [x] Fine-tune model
-       - Output: `scripts/01_sft_finetuning.py`
+       - Output: `01_sft_finetuning.py`
        - Output: `manifests/sft-llama-20260515.json`
      ```
 

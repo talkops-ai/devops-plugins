@@ -1,0 +1,61 @@
+{
+  "skill_name": "auditing-cloudtrail-forensics",
+  "companion_skills": [
+    "diff-scanning-with-aws-security-agent",
+    "engineering-iam-least-privilege",
+    "enrich-with-aws-security-agent",
+    "executing-synthetic-release-tests",
+    "hardening-iac-and-perimeter"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use `auditing-cloudtrail-forensics` to help me design, validate, and troubleshoot auditing cloudtrail forensics."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Walk me through best practices and production guardrails for auditing cloudtrail forensics (`auditing-cloudtrail-forensics`)."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Executes AWS CloudTrail forensic investigations, management and data event timeline reconstruction, CloudTrail Lake SQL queries, `AccessDenied` spike analysis, root account activit"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating auditing cloudtrail forensics?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "During our `ap-south-1` sprint readiness review, audit our auditing cloudtrail forensics setup in read-only mode and highlight top risks."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Help me configure and troubleshoot diff scanning with aws security agent exclusively without touching auditing cloudtrail forensics."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+    }
+  ]
+}

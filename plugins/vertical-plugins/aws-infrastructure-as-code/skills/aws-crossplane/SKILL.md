@@ -19,10 +19,10 @@ Use this skill whenever authoring, validating, importing, or debugging **Crosspl
 ## 2. Standard Authoring & Validation Workflow
 
 ### Step 1: Provider & IRSA / Pod Identity Wiring
-Configure the family provider with a `DeploymentRuntimeConfig` (annotating the provider `ServiceAccount` with `eks.amazonaws.com/role-arn` for IRSA) and a `ProviderConfig` using `credentials.source: InjectedIdentity`. See [`references/providers-and-auth.md`](references/providers-and-auth.md).
+Configure the family provider with a `DeploymentRuntimeConfig` (annotating the provider `ServiceAccount` with `eks.amazonaws.com/role-arn` for IRSA) and a `ProviderConfig` using `credentials.source: InjectedIdentity`. See [`providers-and-auth.md`](providers-and-auth.md).
 
 ### Step 2: Define the Platform API (`CompositeResourceDefinition` — XRD)
-Author the XRD with a strict OpenAPIv3 schema (`x-kubernetes-validations` CEL rules for valid CIDR blocks, engine versions, and storage bounds), `connectionSecretKeys`, and `defaultCompositionRef`. See [`references/xrd-and-compositions.md`](references/xrd-and-compositions.md).
+Author the XRD with a strict OpenAPIv3 schema (`x-kubernetes-validations` CEL rules for valid CIDR blocks, engine versions, and storage bounds), `connectionSecretKeys`, and `defaultCompositionRef`. See [`xrd-and-compositions.md`](xrd-and-compositions.md).
 
 ### Step 3: Author Pipeline-Mode `Composition`
 Structure every `Composition` with `spec.mode: Pipeline`:
@@ -31,7 +31,7 @@ Structure every `Composition` with `spec.mode: Pipeline`:
 - Propagate standard AWS tags (`Environment`, `ManagedBy: Crossplane`, `ClaimNamespace`) across every Managed Resource via a `PatchSet`.
 
 ### Step 4: Offline Render & Schema Validation (Mandatory Before Apply)
-Always validate offline using the Crossplane CLI before applying to a live Kubernetes cluster (see [`references/validation-and-troubleshooting.md`](references/validation-and-troubleshooting.md) and `scripts/render-and-validate.sh`):
+Always validate offline using the Crossplane CLI before applying to a live Kubernetes cluster (see [`validation-and-troubleshooting.md`](validation-and-troubleshooting.md) and `render-and-validate.sh`):
 ```bash
 # 1. Render the XR + Composition + Functions locally into composed Managed Resources
 crossplane render xr.yaml composition.yaml functions.yaml --include-full-xr > rendered.yaml
@@ -49,9 +49,9 @@ To inspect or adopt existing AWS resources without risking modification or delet
 
 ## 4. Bundled References, Templates & Validation Scripts
 
-- **[`references/providers-and-auth.md`](references/providers-and-auth.md)**: Upbound `provider-family-aws`, IRSA, EKS Pod Identity, and multi-account `AssumeRole` chains.
-- **[`references/xrd-and-compositions.md`](references/xrd-and-compositions.md)**: XRD OpenAPIv3 schemas, Pipeline-mode `Composition` patterns, `PatchSet` reuse, and cross-resource references (`Selector` / `Ref`).
-- **[`references/aws-service-blueprints.md`](references/aws-service-blueprints.md)**: Production blueprints for S3, RDS PostgreSQL, Multi-AZ VPC, and EKS with Crossplane.
-- **[`references/validation-and-troubleshooting.md`](references/validation-and-troubleshooting.md)**: Offline `crossplane render` + `crossplane beta validate`, ArgoCD sync-wave ordering, and diagnosing `SYNCED=False` / `READY=False` events.
+- **[`providers-and-auth.md`](providers-and-auth.md)**: Upbound `provider-family-aws`, IRSA, EKS Pod Identity, and multi-account `AssumeRole` chains.
+- **[`xrd-and-compositions.md`](xrd-and-compositions.md)**: XRD OpenAPIv3 schemas, Pipeline-mode `Composition` patterns, `PatchSet` reuse, and cross-resource references (`Selector` / `Ref`).
+- **[`aws-service-blueprints.md`](aws-service-blueprints.md)**: Production blueprints for S3, RDS PostgreSQL, Multi-AZ VPC, and EKS with Crossplane.
+- **[`validation-and-troubleshooting.md`](validation-and-troubleshooting.md)**: Offline `crossplane render` + `crossplane beta validate`, ArgoCD sync-wave ordering, and diagnosing `SYNCED=False` / `READY=False` events.
 - **`assets/`**: Ready-to-customize templates for `provider-setup.yaml`, `xrd-template.yaml`, `composition-pipeline.yaml`, `functions.yaml`, and `claim-example.yaml`.
-- **`scripts/render-and-validate.sh`** & **`scripts/diagnose-claim.sh`**: Automated local rendering/validation and live cluster Claim/XR/MR hierarchy diagnostics.
+- **`render-and-validate.sh`** & **`diagnose-claim.sh`**: Automated local rendering/validation and live cluster Claim/XR/MR hierarchy diagnostics.

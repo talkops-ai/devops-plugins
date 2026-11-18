@@ -83,3 +83,10 @@ Deployment rollouts and auto-scaling events frequently fail in production due to
 3. **Resilience Verification (AWS Resilience Hub & AWS FIS)**:
    - Validate target RTO/RPO against **AWS Resilience Hub** resiliency policies.
    - Before running any **AWS Fault Injection Service (FIS)** chaos experiment (AZ power interruption, EKS node termination, RDS failover, network latency injection), configure mandatory **CloudWatch Stop Conditions** (alarm-triggered automatic halt) and require explicit human approval.
+
+---
+
+## 6. Security & Operational Guardrails
+
+- **Read-Only Discovery & Governance Audit (`aws-mutation-gate.py`)**: During landing zone, IPAM, quota, or resilience audits, execute only read-only MCP calls (`ec2:DescribeIpams`, `ec2:DescribeIpamPools`, `ec2:DescribeVpcs`, `ram:GetResourceShares`, `vpclattice:ListServiceNetworks`, `service-quotas:ListServiceQuotas`, `backup:ListBackupVaults`). Never execute destructive or mutating calls (`organizations:DetachPolicy`, `arc-zonal-shift:StartZonalShift`, `fis:StartExperiment`, `backup:DeleteBackupVault`, `ec2:DeleteIpamPool`) against a live AWS account without explicit human approval.
+- **Secret Safety (`secret-safety.py`)**: Never echo, log, or hardcode plaintext AWS access keys (`AKIA...`), secret keys, session tokens, or root credentials in SCPs, RCPs, VPC Lattice auth policies, or IaC templates.

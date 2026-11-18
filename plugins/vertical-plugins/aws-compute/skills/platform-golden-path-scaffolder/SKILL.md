@@ -15,7 +15,15 @@ This skill operates as a **Cognitive Translation Layer**: it intercepts high-lev
 
 ---
 
-## Mandatory 6-Step Execution Workflow
+## Targeted 6-Capability Golden-Path Workflow (Call Only Requested MCP Tools)
+
+> **Turn & Latency Budget Guardrail (Do NOT Over-Call Unrequested MCP Tools)**:
+> - **Targeted MCP Invocation Only**: Execute ONLY the MCP tool(s) directly required by the user's prompt so you respond quickly and never time out:
+>   - Call `aws-mcp` (`aws___run_script` — 1 combined script) **only** when the prompt asks to inspect live AWS resources (e.g., Service Catalog portfolios or EC2 Image Builder pipelines in the target region).
+>   - Call `awspricing` (`get_pricing` — max 2–3 calls) **only** when the prompt asks for cost estimation, pricing tables, or dev vs. prod FinOps comparisons.
+>   - Call `awsiac` (`validate_cloudformation_template` and `check_cloudformation_template_compliance`) **only** when the prompt explicitly asks to validate a CloudFormation template with `awsiac` / `cfn-guard`. Do **not** call `awsiac` when the user asks for a Backstage `template.yaml`, a Terraform module, a CDK construct, or an adversarial security/CI-CD review.
+>   - Call `cloudwatch` (`get_recommended_metric_alarms` — max 1–2 calls) **only** when the prompt specifically asks for Day-2 CloudWatch alarm recommendations.
+> - **Output Directly in Markdown**: Do **not** create temporary files on disk via `write_file`; include all Backstage YAML, Terraform, CDK, or CloudFormation code blocks directly in your final response.
 
 ### Step 1: Intent Classification, Service Quota Preflight & Environment Tiering
 
@@ -23,11 +31,11 @@ Classify the workload into one of five canonical AWS Golden Paths and determine 
 
 | Golden Path | Reference Architecture | Primary Skills Orchestrated |
 |---|---|---|
-| **1. Containerized Web / API Service** | Route 53 + CloudFront/WAFv2 + ALB + **ECS Fargate / ECS Express Mode** (or **EKS Auto Mode / Karpenter**) in Multi-AZ Private Subnets + ECR + Secrets Manager | `aws-containers`, `creating-production-vpc-multi-az`, `configuring-vpc-endpoints-for-private-aws-service-access`, `waf`, `route53` |
-| **2. Event-Driven Serverless API / Worker** | API Gateway (HTTP API v2 or REST API v1) + **AWS Lambda (`arm64`)** + SQS (with DLQ) / SNS / EventBridge / Step Functions (or Lambda Durable Functions) + DynamoDB | `aws-serverless`, `aws-messaging-and-streaming`, `aws-stateful-data-and-caching-platform` |
-| **3. Stateful Full-Stack Platform** | Multi-AZ VPC + ECS/EKS Compute + **Aurora PostgreSQL/MySQL (with RDS Proxy)** or DynamoDB + **ElastiCache (Valkey)** + Secrets Manager rotation + AWS Backup | `aws-stateful-data-and-caching-platform`, `aws-containers`, `creating-production-vpc-multi-az` |
-| **4. Static / Edge SPA & Media Frontend** | S3 (Private Bucket + KMS/SSE-S3) + **CloudFront Origin Access Control (OAC)** + `SecurityHeadersPolicy` + Route 53 + AWS WAFv2 | `cloudfront`, `routing-traffic-with-route53-and-cloudfront`, `waf`, `aws-storage` |
-| **5. Internal Zero-Trust Microservice Mesh** | Multi-VPC / Multi-Account **Amazon VPC Lattice** Service Network (or **ECS Service Connect**) with `AWS_IAM` SigV4 auth policies + Private Route 53 Profiles | `aws-landing-zone-and-platform-governance`, `aws-containers`, `aws-networking` |
+| **1. Three-Tier Web/API Service (Containerized or EC2/ALB)** | Route 53 + CloudFront/WAFv2 + Multi-AZ ALB + **ECS Fargate / EKS / EC2 ASG** in Multi-AZ Private Subnets + **Multi-AZ Aurora/RDS** + **Multi-AZ ElastiCache** + Secrets Manager | `aws-containers`, `aws-compute`, `creating-production-vpc-multi-az`, `configuring-vpc-endpoints-for-private-aws-service-access` |
+| **2. Serverless API & Event Microservice** | API Gateway (HTTP API v2 or REST API v1) + **AWS Lambda (`arm64` Graviton)** with X-Ray tracing + **DynamoDB (PITR + KMS)** + Step Functions | `aws-serverless`, `aws-messaging-and-streaming`, `aws-stateful-data-and-caching-platform` |
+| **3. Asynchronous Queue Worker** | **Amazon SQS** (KMS-encrypted main queue + **Dead-Letter Queue** wired via `RedrivePolicy` `maxReceiveCount: 5`) + ECS/EC2/Lambda Worker + least-privilege IAM Role + DLQ CloudWatch Alarms | `aws-messaging-and-streaming`, `aws-containers`, `aws-compute` |
+| **4. Scheduled Batch/Data Job** | EventBridge Scheduler + Step Functions / AWS Batch / ECS Fargate Task / EC2 Spot Fleet + S3 + KMS + CloudWatch failure notifications | `aws-serverless`, `aws-containers`, `aws-compute` |
+| **5. Static SPA + Edge API (and Internal Zero-Trust Mesh)** | S3 (Private Bucket + `PublicAccessBlockConfiguration` + KMS) + **CloudFront Origin Access Control (OAC)** + `SecurityHeadersPolicy` + Route 53 + AWS WAFv2 (plus **VPC Lattice** / **ECS Service Connect** for internal service-to-service mesh) | `cloudfront`, `routing-traffic-with-route53-and-cloudfront`, `waf`, `aws-storage` |
 
 #### Environment Tier Sizing Rules
 - **`dev` and `qa`/`staging` Tiers (Cost-Optimized Defaults)**:
@@ -42,9 +50,9 @@ Classify the workload into one of five canonical AWS Golden Paths and determine 
 
 ---
 
-### Step 2: Pre-Deployment FinOps Cost Estimation
+### Step 2: Pre-Deployment FinOps Cost Estimation (When Cost / Pricing Is Requested)
 
-Before writing or deploying infrastructure, delegate to `aws-finops-and-cost-optimization` and query the `pricing` MCP server (`awslabs.aws-pricing-mcp-server`) to estimate the monthly run rate of the proposed Golden Path. Present a clear Markdown table showing:
+When the user asks for cost estimation, pricing comparison, or dev vs. prod FinOps tables, query the `awspricing` MCP server (`get_pricing` — 1–3 focused calls) to estimate the monthly run rate of the proposed Golden Path. Present a clear Markdown table showing:
 1. **Fixed hourly/monthly baseline costs** (e.g., NAT Gateways `$32.40/mo/AZ`, ALB `$16.20/mo`, EKS Control Plane `$73.00/mo`, VPC Interface Endpoints `$7.20/mo/AZ`, Route 53 Hosted Zone `$0.50/mo`).
 2. **Variable / usage-based costs** (e.g., Fargate `arm64` vCPU/GB-hours, Lambda invocations/GB-s, Aurora ACU-hours, DynamoDB RCU/WCU, NAT data processing `$0.045/GB`, CloudWatch Logs ingestion `$0.50/GB`).
 3. **Side-by-side Dev/QA vs. Prod monthly cost comparison** with concrete cost-saving alternatives.
@@ -53,40 +61,49 @@ Before writing or deploying infrastructure, delegate to `aws-finops-and-cost-opt
 
 ### Step 3: Declarative IaC Generation (Never ClickOps)
 
-Delegate to `aws-iac-cloudformation-cdk` to author the infrastructure as **AWS CDK (TypeScript/Python)**, **AWS CloudFormation YAML/JSON**, **AWS SAM (`template.yaml`)**, or **Terraform (`*.tf`)** matching the repository's existing convention:
-- **Mandatory Cost & Governance Tagging**: Apply `Environment`, `Owner`, `CostCenter`, `Workload`, and `ManagedBy: aws-platform-engineer-agent` tags at the stack/provider level so all child resources inherit them.
+Author the requested infrastructure directly in your Markdown response (do NOT write files to disk unless requested) as **Backstage Software Templates (`scaffolder.backstage.io/v1beta3` `template.yaml`)**, **AWS CDK (TypeScript/Python)**, **AWS CloudFormation YAML/JSON**, **AWS SAM (`template.yaml`)**, or **Terraform (`*.tf`)** matching the user's request:
+- **Mandatory Cost & Governance Tagging**: Apply `Environment`, `Owner`, `CostCenter`, `Workload`, and `ManagedBy` tags at the stack/provider/template level so all child resources inherit them.
 - **Zero Public Compute / Database Placement**: Never place application compute (EC2, ECS tasks, EKS nodes, Lambda functions) or stateful data stores (RDS, Aurora, ElastiCache, MSK, OpenSearch) in public subnets. Only Internet-facing ALBs, NLBs, and NAT Gateways belong in public subnets.
-- **PrivateLink First**: Use `configuring-vpc-endpoints-for-private-aws-service-access` to attach free S3 and DynamoDB Gateway Endpoints (`$0.00`) to every private route table and Interface Endpoints for ECR, CloudWatch Logs, SSM, and Secrets Manager where appropriate.
+- **PrivateLink First**: Attach free S3 and DynamoDB Gateway Endpoints (`$0.00`) to every private route table and Interface Endpoints for ECR, CloudWatch Logs, SSM, and Secrets Manager where appropriate.
 - **2026 Service Guardrail**: Never provision AWS App Runner (sunset April 30, 2026); use **Amazon ECS Express Mode** or standard ECS Fargate + ALB instead.
 
 ---
 
-### Step 4: Static Validation & Security Compliance Gating
+### Step 4: Static Validation & Security Compliance Gating (When CloudFormation Validation Is Requested)
 
-Execute the `aws-iac` MCP server tools sequentially before proposing any deployment command:
-1. **Syntax & Schema Validation**: Call `validate_cloudformation_template` (`cfn-lint`) on the authored or `cdk synth`-generated template to verify resource properties, intrinsic functions, and regional schema compatibility.
+When authoring a CloudFormation template and asked to validate it via `awsiac`, execute the `awsiac` MCP server tools:
+1. **Syntax & Schema Validation**: Call `validate_cloudformation_template` (`cfn-lint`) on the CloudFormation template to verify resource properties, intrinsic functions, and regional schema compatibility.
 2. **Proactive Compliance Checking**: Call `check_cloudformation_template_compliance` (`cfn-guard`) to verify compliance against AWS Control Tower proactive controls and Guard rules:
    - Storage and database encryption at rest enabled (`EBS`, `S3`, `RDS/Aurora`, `DynamoDB`, `EFS`, `SNS/SQS`).
    - S3 `PublicAccessBlockConfiguration` all four booleans set to `true` and TLS enforced (`aws:SecureTransport`).
    - Zero unrestricted `0.0.0.0/0` or `::/0` ingress on administrative (`22`, `3389`) or database (`3306`, `5432`, `6379`, `27017`) ports.
    - Explicit `RetentionInDays` configured on every `AWS::Logs::LogGroup`.
-3. **Gate Rule**: Do not proceed to deployment until **zero blocking errors or compliance violations** remain.
+3. **Gate Rule**: Do not proceed to deployment until **zero blocking errors or compliance violations** remain. (Skip calling `awsiac` when the user asks for Terraform modules, CDK code, Backstage YAML, or security architecture reviews.)
 
 ---
 
 ### Step 5: Least-Privilege Identity Verification
 
-Delegate to `aws-iam-least-privilege-governance` and the `iam` MCP server:
-- Construct dedicated workload identities: EC2 Instance Profiles (`setting-up-ec2-instance-profiles` with IMDSv2 `HttpTokens: required` and `HttpPutResponseHopLimit: 2`), separate ECS `TaskRoleArn` and `ExecutionRoleArn`, **EKS Pod Identity** (`pods.eks.amazonaws.com`), or scoped Lambda Execution Roles.
+Construct dedicated workload identities: EC2 Instance Profiles (`setting-up-ec2-instance-profiles` with IMDSv2 `HttpTokens: required` and `HttpPutResponseHopLimit: 2`), separate ECS `TaskRoleArn` and `ExecutionRoleArn`, **EKS Pod Identity** (`pods.eks.amazonaws.com`), or scoped Lambda Execution Roles:
 - Include `aws:SourceArn` and `aws:SourceAccount` conditions on all cross-service resource policies (S3, SQS, SNS, KMS, EventBridge) to prevent confused-deputy attacks.
-- Validate policies using `simulate_principal_policy` on the `iam` MCP server to confirm the workload role can access only its specific S3 buckets, DynamoDB tables, SQS queues, or Secrets Manager ARNs—and is denied wildcard `*` actions.
 
 ---
 
 ### Step 6: Day-2 Observability, Resilience & Alarm Wiring
 
-Delegate to `aws-observability-and-incident-triage` and call `get_recommended_metric_alarms` on the `cloudwatch` MCP server to bundle baseline operational alarms directly into the IaC stack:
+When Day-2 observability or CloudWatch alarm guidance is requested, call `get_recommended_metric_alarms` on the `cloudwatch` MCP server (or include the canonical alarm specifications below) to bundle baseline operational alarms directly into the IaC stack:
 - **Edge & Ingress**: ALB/API Gateway `5XXError` rate (`> 1%`), `TargetResponseTime` (`p95`/`p99`), HealthyHostCount (`< MinTasks`), WAF `BlockedRequests` spike.
 - **Compute & Containers**: ECS/EKS CPU & Memory utilization (`> 80%`), ECS Deployment Circuit Breaker failure events, Lambda `Errors`, `Throttles`, and `Duration` (`> 80%` of timeout).
 - **Messaging & Async**: SQS `ApproximateNumberOfMessagesVisible` on Dead-Letter Queues (`> 0` — immediate P1/P2 alert) and `ApproximateAgeOfOldestMessage`.
 - **Stateful Data**: RDS/Aurora `DatabaseConnections`, `FreeableMemory`, `CPUUtilization`, `ReadLatency`/`WriteLatency`, and ElastiCache `SwapUsage` / `Evictions`.
+
+## MCP-First Execution, Guardrails & `awsknowledge` Fallback
+
+- **MCP-Only Execution (Zero Raw AWS CLI in Shell)**: When querying live AWS state, Service Quotas, CloudWatch recommended alarms, pricing (`awspricing`), or IaC template compliance (`awsiac` `validate_cloudformation_template` & `check_cloudformation_template_compliance`), always use connected MCP tools (`aws-mcp` `aws___run_script` / `aws___call_aws`, `cloudwatch`, `awspricing`, `awsiac`, `awsknowledge`) in strictly read-only mode. NEVER execute raw `aws`, `cdk`, or `terraform` CLI commands via `run_command` / `Bash`.
+- **Platform Golden-Path Standards (Backstage, Service Catalog, OIDC CI/CD & Tagging)**:
+  - **Backstage (`scaffolder.backstage.io/v1beta3` `template.yaml`) & AWS Service Catalog**: Enforce required input parameters (`environment`, `owner`, `cost_center`, `workload_name`) and automatically propagate mandatory cost-allocation tags (`Environment`/`env`, `Owner`/`owner`, `CostCenter`/`cost-center`, `Workload`, `ManagedBy`) at the CDK Stack / CloudFormation / Terraform provider level.
+  - **Zero Static CI/CD IAM User Keys (Enforce OIDC Federation)**: Strictly reject creating IAM Users (`AWS::IAM::User` / `aws_iam_user`) or long-lived `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` secrets for GitHub Actions or GitLab CI. Always provision an **IAM OIDC Identity Provider** (`https://token.actions.githubusercontent.com` or GitLab URL) and a deployment IAM Role using `sts:AssumeRoleWithWebIdentity` with strict `StringEquals` on `:aud` (`sts.amazonaws.com`) and `StringEquals`/`StringLike` on `:sub` (`repo:<org>/<repo>:environment:production` or `repo:<org>/<repo>:ref:refs/heads/main`).
+  - **Refuse Guardrail Bypasses**: Explicitly reject golden-path templates that allow public S3 buckets (`PublicAccessBlockConfiguration` disabled), unencrypted storage/databases, compute/databases in public subnets, or `0.0.0.0/0` SSH/DB ingress; enforce `cfn-guard` (`check_cloudformation_template_compliance`) / OPA policy-as-code gates in CI/CD.
+- **Vague Workload Sizing & Cost Guard**: If the user asks to scaffold a golden path template or asks for a monthly AWS bill in dollars without specifying service requirements, refuse to generate a one-size-fits-all template or guess a single monthly dollar figure, ask clarifying questions covering the missing requirements (golden path archetype, IaC/IDP framework Terraform/CDK/CloudFormation/Backstage, dev vs prod tier, and database/storage needs), **and query the `awspricing` MCP server (`get_pricing` for the target region) to show illustrative dev vs prod baseline unit rates and monthly tier ranges** once assumptions are stated.
+- **Read-Only & Secret Safety (`aws-mutation-gate.py`, `secret-safety.py`)**: Never run mutating commands (`cdk deploy`, `terraform apply`, `aws cloudformation create-stack`) or fetch plaintext secrets (`aws secretsmanager get-secret-value`); recommend `DescribeSecret` metadata checks and `{{resolve:secretsmanager:...}}`.
+- **`awsknowledge` Edge-Case Fallback**: If **no** local section covers the user's specific edge-case question (e.g., AWS Proton migration to Backstage/Service Catalog + CodePipeline, or AWS Service Catalog Launch Constraints and TagOptions), immediately query the connected `awsknowledge` MCP server (`aws___search_documentation` and `aws___read_documentation` — 1–2 focused searches) and answer directly.

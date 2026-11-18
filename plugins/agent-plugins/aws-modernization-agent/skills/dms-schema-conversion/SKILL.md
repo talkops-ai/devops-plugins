@@ -143,7 +143,7 @@ After each action completes, return to this menu by presenting the same selectio
    - **Apply to target:** Run `aws dms start-metadata-model-export-to-target --migration-project-identifier <migration_project_identifier> --selection-rules '<json>'`. Optionally pass `--overwrite-extension-pack` if the customer confirms. Extract `RequestIdentifier`. Wait via `aws dms wait metadata-model-exported-to-target --migration-project-identifier <id> --filter 'Name=schema-conversion-operation-id,Values=<RequestIdentifier>'`. Inform the customer on completion.
    - **Back:** Return to [Actions Menu](#actions-menu).
 
-After completing, ask the customer what they'd like to do next.
+After completing schema export or target application, ask the customer what they'd like to do next — and if they are ready to migrate table data (Full Load, CDC, or Full Load + CDC), load the **`dms-data-migration-execution`** skill to size the DMS Replication Instance, profile source LOB distributions, and configure the migration task.
 
 ---
 

@@ -45,9 +45,9 @@ Before presenting any infrastructure change set for approval, run the engine-app
 
 ## 4. Bundled Reference Guides
 
-- **[`references/policies.md`](references/policies.md)**: Least-privilege IAM policy structure, condition keys, and resource scoping patterns.
-- **[`references/roles-and-trust-policies.md`](references/roles-and-trust-policies.md)**: Service roles, cross-account trust policies, OIDC federation, and confused-deputy guards.
-- **[`references/permission-boundaries.md`](references/permission-boundaries.md)**: Designing and enforcing IAM Permission Boundaries for developer self-service.
-- **[`references/access-analyzer.md`](references/access-analyzer.md)**: Validating policies (`validate-policy`), checking no-new-access (`check-no-new-access`), and custom policy checks.
+- **[`policies.md`](policies.md)**: Least-privilege IAM policy structure, condition keys, and resource scoping patterns.
+- **[`roles-and-trust-policies.md`](roles-and-trust-policies.md)**: Service roles, cross-account trust policies, OIDC federation, and confused-deputy guards.
+- **[`permission-boundaries.md`](permission-boundaries.md)**: Designing and enforcing IAM Permission Boundaries for developer self-service.
+- **[`access-analyzer.md`](access-analyzer.md)**: Validating policies (`validate-policy`), checking no-new-access (`check-no-new-access`), and custom policy checks.
 - **[`references/organization-policies.md`](references/organization-policies.md)**: Service Control Policies (SCPs), Resource Control Policies (RCPs), and AWS Data Perimeter guardrails.
 - **[`references/troubleshooting.md`](references/troubleshooting.md)**: Diagnosing `AccessDenied`, implicit vs. explicit deny evaluation order, and KMS grant/key-policy failures.

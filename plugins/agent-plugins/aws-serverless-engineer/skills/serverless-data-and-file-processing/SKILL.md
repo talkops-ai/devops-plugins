@@ -22,7 +22,7 @@ Design and implement production-grade serverless file ingestion, asynchronous tr
 |---|---|---|---|
 | **Direct Client Upload / Download** | 1 KB – 5 TB per file | **API Gateway -> Lambda (Presigned URL Generator) -> Direct Client-to-S3 PUT/Multipart Upload** | Bypasses API Gateway 10 MB and Lambda 6 MB limits; eliminates double-hop Lambda compute charges |
 | **Simple Object Post-Processing** | Single file, < 15 min processing | **S3 (`EventBridgeEnabled: true`) -> EventBridge Rule (prefix/suffix filter) -> SQS -> Lambda** | Decoupled, buffered, supports DLQ and concurrency limits |
-| **Multi-Step File Pipeline** (Validate -> Transform -> Enrich -> Notify) | Single file, multi-stage orchestration | **S3 -> EventBridge -> Step Functions Standard/Express Workflow** | Visual state tracking, granular retries, and redrive from point of failure (`references/step-functions-s3-processing.md`) |
+| **Multi-Step File Pipeline** (Validate -> Transform -> Enrich -> Notify) | Single file, multi-stage orchestration | **S3 -> EventBridge -> Step Functions Standard/Express Workflow** | Visual state tracking, granular retries, and redrive from point of failure (`step-functions-s3-processing.md`) |
 | **Massive S3 Batch / CSV / JSONL Dataset Processing** | 1,000s of objects or multi-GB CSV/JSONL files | **Step Functions Distributed Map (`ProcessorConfig.Mode: DISTRIBUTED`)** with `ItemReader`, `ItemBatcher`, and `ResultWriter` | Up to **10,000 parallel child executions**, native S3 CSV/JSON/Manifest streaming without loading the file into state payload (256 KB limit) |
 
 ---
@@ -179,5 +179,5 @@ Standard Step Functions `Inline` Map states are constrained by the **256 KB stat
 ## 5. Pattern C: Event-Driven S3 Object Processing Workflow
 
 For complete step-by-step instructions on wiring S3 `EventBridgeEnabled: true` -> EventBridge Rule -> Step Functions State Machine (with IAM execution roles, CloudWatch log groups, and end-to-end verification):
-- Run `python3 scripts/check_prerequisites.py` to check local CLI and environment readiness.
-- Follow `references/step-functions-s3-processing.md` for the complete deployment and verification playbook.
+- Run `python3 check_prerequisites.py` to check local CLI and environment readiness.
+- Follow `step-functions-s3-processing.md` for the complete deployment and verification playbook.

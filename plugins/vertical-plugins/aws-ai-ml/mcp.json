@@ -2,82 +2,92 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
   "mcpServers": {
     "aws-mcp": {
+      "type": "stdio",
       "command": "uvx",
       "args": [
         "mcp-proxy-for-aws-cli==1.7.0",
         "https://aws-mcp.us-east-1.api.aws/mcp",
-        "--skip-auth",
+        "--region",
+        "us-east-1",
         "--metadata",
         "INSTALL_SOURCE=agent-toolkit-core"
       ],
-      "type": "stdio"
+      "env": {
+        "AWS_REGION": "us-east-1",
+        "AWS_DEFAULT_REGION": "us-east-1"
+      }
     },
     "awsknowledge": {
       "type": "streamable-http",
       "url": "https://knowledge-mcp.global.api.aws"
     },
     "sagemaker": {
+      "type": "stdio",
       "command": "uvx",
       "args": [
         "awslabs.sagemaker-ai-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
-      },
-      "type": "stdio"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
+      }
     },
     "agentcore": {
+      "type": "stdio",
       "command": "uvx",
       "args": [
         "awslabs.amazon-bedrock-agentcore-mcp-server@latest"
       ],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1",
         "AGENTCORE_DISABLE_TOOLS": "browser,code_interpreter"
-      },
-      "type": "stdio"
+      }
     },
     "strands-agents": {
+      "type": "stdio",
       "command": "uvx",
       "args": [
         "strands-agents-mcp-server@latest"
       ],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR"
-      },
-      "type": "stdio"
+      }
     },
     "cloudwatch": {
+      "type": "stdio",
       "command": "uvx",
       "args": [
         "awslabs.cloudwatch-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
-      },
-      "type": "stdio"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
+      }
     },
     "awspricing": {
+      "type": "stdio",
       "command": "uvx",
       "args": [
         "awslabs.aws-pricing-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
-      },
-      "type": "stdio"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
+      }
     },
     "awsiac": {
+      "type": "stdio",
       "command": "uvx",
       "args": [
         "--with",
         "fastmcp<4.0.0",
-        "awslabs.aws-iac-mcp-server==0.2.14"
+        "awslabs.aws-iac-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
-      },
-      "type": "stdio"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
+      }
     }
   }
 }

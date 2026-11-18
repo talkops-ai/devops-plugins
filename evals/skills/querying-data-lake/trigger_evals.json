@@ -1,0 +1,34 @@
+[
+  {
+    "query": "Write an Amazon Athena v3 SQL query using Apache Iceberg time travel (`FOR TIMESTAMP AS OF`) and inspect the `$snapshots` metadata table.",
+    "should_trigger": true
+  },
+  {
+    "query": "Optimize a slow Amazon Athena query that scans 5 TB by adding partition pruning, Partition Projection, join ordering, and Query Result Reuse.",
+    "should_trigger": true
+  },
+  {
+    "query": "Run an Iceberg MERGE INTO upsert followed by OPTIMIZE REWRITE DATA USING BIN_PACK and VACUUM in Amazon Athena.",
+    "should_trigger": true
+  },
+  {
+    "query": "Configure an Amazon Athena Federated Query Lambda connector to join S3 Iceberg tables with a private PostgreSQL database.",
+    "should_trigger": true
+  },
+  {
+    "query": "Export an Athena query result set to compressed Parquet files in S3 using UNLOAD with partition keys.",
+    "should_trigger": true
+  },
+  {
+    "query": "Create a brand-new empty S3 Tables bucket and namespace using aws s3tables create-table-bucket.",
+    "should_trigger": false
+  },
+  {
+    "query": "Configure an AWS Glue JDBC VPC connection with a NAT Gateway and self-referencing security group.",
+    "should_trigger": false
+  },
+  {
+    "query": "Upgrade our Amazon MWAA environment from Apache Airflow 2.8 to Airflow 3.0.",
+    "should_trigger": false
+  }
+]

@@ -2,57 +2,66 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
   "mcpServers": {
     "aws-mcp": {
+      "type": "stdio",
       "command": "uvx",
       "args": [
         "mcp-proxy-for-aws-cli==1.7.0",
         "https://aws-mcp.us-east-1.api.aws/mcp",
-        "--skip-auth",
+        "--region",
+        "us-east-1",
         "--metadata",
         "INSTALL_SOURCE=agent-toolkit-core"
       ],
-      "type": "stdio"
+      "env": {
+        "AWS_REGION": "us-east-1",
+        "AWS_DEFAULT_REGION": "us-east-1"
+      }
     },
     "s3tables": {
+      "type": "stdio",
       "command": "uvx",
       "args": [
         "awslabs.s3-tables-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
-      },
-      "type": "stdio"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
+      }
     },
     "cloudwatch": {
+      "type": "stdio",
       "command": "uvx",
       "args": [
         "awslabs.cloudwatch-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
-      },
-      "type": "stdio"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
+      }
     },
     "awspricing": {
+      "type": "stdio",
       "command": "uvx",
       "args": [
         "awslabs.aws-pricing-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
-      },
-      "type": "stdio"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
+      }
     },
     "awsiac": {
+      "type": "stdio",
       "command": "uvx",
       "args": [
         "--with",
         "fastmcp<4.0.0",
-        "awslabs.aws-iac-mcp-server==0.2.14"
+        "awslabs.aws-iac-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
-      },
-      "type": "stdio"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
+      }
     }
   }
 }

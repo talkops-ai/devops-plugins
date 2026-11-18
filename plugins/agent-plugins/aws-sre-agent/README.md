@@ -24,21 +24,31 @@ This is an **agent plugin**: every skill, command, hook, and MCP server below is
 | Skill | What it does |
 |---|---|
 | `arc-region-switch` | Answers questions about Amazon Application Recovery Controller (ARC) Region switch including architecture, plans, execution blocks, workflows, triggers, active/active vs active/passive, cross-account support, recovery t… |
-| `aws-billing-and-cost-management` | Principal AWS FinOps and Cloud Financial Management (CFM) skill across the full FinOps Foundation lifecycle (Inform, Optimize, Operate, Shift-Left): analyze AWS costs, run 7-stage forensic cost audits, isolate MoM varia… |
+| `aws-billing-and-cost-management` | Principal AWS FinOps and Cloud Financial Management (CFM) skill across the FinOps lifecycle (Inform, Optimize, Operate, Shift-Left): analyze AWS spend, run 7-stage cost audits, isolate MoM variance drivers with Cost Com… |
 | `aws-cloudformation` | Authors, validates, and troubleshoots AWS CloudFormation templates. |
 | `aws-compute` | Provisions, scales, and operates Amazon EC2 virtual-machine workloads: instance-type selection (Graviton/Arm64, burstable T credits, GPU, instance store vs EBS), launch templates, Auto Scaling groups (scaling policies,… |
-| `aws-deployment` | Configure end-to-end AWS deployment methodologies, progressive delivery (Blue/Green, Canary, Linear, Rolling, Immutable, Feature Flags), and CI/CD pipelines across AWS CodePipeline V2, CodeBuild (buildspec.yml), CodeDep… |
+| `aws-deployment` | Configures CI/CD and GitOps pipelines for AWS infrastructure and workloads using AWS CodePipeline V2, CodeBuild, CodeDeploy, CodeConnections, and CodeArtifact, as well as GitHub Actions and GitLab CI with AWS OIDC feder… |
+| `aws-eks-healthdashboard` | Use this skill when the user wants to know whether an Amazon EKS cluster is healthy right now, or asks you to assess, triage, or report on the state of an EKS cluster, its control plane, or its nodes — even when they do… |
+| `aws-eks-operations-review` | Use this skill when someone wants an Amazon EKS cluster graded against best practices. |
 | `aws-fault-injection-service` | Plans, builds, runs, and analyzes fault injection experiments with AWS Fault Injection Service (AWS FIS) to validate application resilience through chaos engineering. |
+| `aws-health-events` | ALWAYS use this skill in the beginning of any incident investigation, root cause analysis, or operational troubleshooting. |
 | `aws-networking` | Routes AWS networking requests to the correct service skill for implementation. |
 | `aws-observability` | Builds, configures, debugs, and optimizes AWS observability - operator-symptom questions and detecting Omni vs classic CloudWatch. |
 | `aws-resilience-lifecycle` | Guides the end-to-end AWS resilience lifecycle integrating Resilience Hub v2, Fault Injection Service, and Application Recovery Controller. |
 | `aws-serverless` | Builds, deploys, manages, debugs, configures, and optimizes serverless applications on AWS using Lambda, API Gateway, Step Functions, EventBridge, and SAM/CDK. |
 | `aws-well-architected-review` | Performs a full AWS Well-Architected Framework review evaluating every framework question across all pillars discovered from the live AWS documentation by analyzing code, IaC, and configurations to produce evidence-back… |
+| `bluebox-observability` | Load when an answer depends on how services reporting to Bluebox (by Dynatrace) behave in production: active problems, errors, latency, traffic, failing endpoints, dependencies, logs, traces, deploys or past Bluebox inv… |
+| `clickstack-investigation` | Investigate incidents with the customer's logs, traces and metrics in ClickHouse Observability, the managed ClickStack service in ClickHouse Cloud, through the ClickStack MCP server. |
+| `cribl-investigation` | Investigate incidents that involve a Cribl observability pipeline. |
 | `database-and-cache-reliability` | Diagnose and remediate production stateful data-plane and queue reliability incidents across Amazon RDS/Aurora (DBLoad wait events, max_connections exhaustion, RDS Proxy pinning, replica lag, failover stalls), Amazon Dy… |
 | `ecs-container-operations` | Diagnose and remediate Amazon ECS and AWS Fargate production incidents across stopped tasks (OutOfMemoryError, CannotPullContainerError, ResourceInitializationError), ALB target group health check failures, ECS Deployme… |
+| `ecs-operation-review` | Performs a comprehensive Amazon ECS operations review across the 6 review pillars (Resiliency & HA, Observability, Security, Operations, Performance, Additional Analysis) using read-only AWS APIs, with a 7-day CloudWatc… |
+| `eks-karpenter-autoscaling` | Architect, bootstrap, audit, right-size, migrate, and troubleshoot Amazon EKS node and workload autoscaling with Karpenter v1 (karpenter.sh/v1 & karpenter.k8s.aws/v1) and EKS Auto Mode (eks.amazonaws.com/v1), paired wit… |
 | `eks-operations-and-troubleshooting` | Diagnose and remediate Amazon EKS production incidents across Pod lifecycle failures (CrashLoopBackOff, OOMKilled, ImagePullBackOff, Pending/Unschedulable), Karpenter and EKS Auto Mode node provisioning, VPC CNI IP exha… |
+| `grafana-cloud-investigation` | Use the Grafana Cloud connector to investigate incidents with the customer's Grafana Cloud telemetry. |
 | `investigating-incidents-with-aws-devops-agent` | Run a deep root-cause investigation on the AWS DevOps Agent. |
 | `live-site-incident-postmortem` | Coordinate Sev-1/Sev-2 AWS live-site incident command and author blameless Correction of Errors (COE) / Postmortem documents with UTC timelines, 5-Whys root-cause analysis, blast-radius quantification, and tracked preve… |
+| `live-streaming-event-readiness-review` | Use this skill for a read-only readiness review of a streaming / OTT platform before a large-scale live event (match, final, concert, launch). |
 | `prometheus-and-grafana-sre` | Query Amazon Managed Service for Prometheus (AMP) using PromQL, design multi-window multi-burn-rate SLO alerting rules, troubleshoot EKS/ECS container and node telemetry, and build Amazon Managed Grafana (AMG) operation… |
 | `querying-aws-cloudwatch` | Runs SQL queries on CloudWatch Logs data exported as Apache Iceberg tables in S3 Tables. |
 | `recovery-controller-setup` | Configures AWS Application Recovery Controller (ARC) for operational resilience: routing controls with safety rules for cross-Region failover, and zonal shift / zonal autoshift for AZ-impairment recovery. |
@@ -46,12 +56,16 @@ This is an **agent plugin**: every skill, command, hook, and MCP server below is
 | `resilience-hub-getting-started` | Sets up AWS Resilience Hub v2 from scratch: creates resilience policies with SLO targets, registers systems and user journeys, onboards services with input sources, and runs a first failure mode assessment. |
 | `resilience-hub-multi-account` | Configures AWS Resilience Hub v2 for multi-account resilience management across an AWS Organization. |
 | `resilience-program-design` | Designs a resilience program: how to structure and standardize resilience policies across an organization, team, or portfolio (tiered policy model with availability/RTO/RPO targets and DR approach selection), and how of… |
+| `service-quota-check` | Use this skill during any incident investigation, capacity planning, or operational troubleshooting when the issue may be caused by hitting AWS service limits. |
 | `setting-up-cloudtrail-multi-region` | Enables a multi-region AWS CloudTrail trail with S3 log storage, CloudWatch Logs integration, and CloudWatch Logs Insights queries for security monitoring and compliance auditing. |
 | `setting-up-cloudwatch-alarm-notifications` | Sets up notification channels for CloudWatch alarms using SNS topics and subscriptions. |
 | `setting-up-cloudwatch-observability` | Sets up CloudWatch observability for the first time - Omni (CloudWatch Application Observability) and classic CloudWatch. |
 | `signing-in-to-aws` | Gets AWS credentials for CLI/SDK access via `aws login`. |
+| `sumo-logic-investigator` | Investigate incidents and answer operational questions using Sumo Logic logs, alerts, dashboards and SIEM insights. |
+| `support-cases` | ALWAYS use this skill in the beginning of any incident investigation, root cause analysis, or operational troubleshooting. |
 | `troubleshooting-application-failures` | Troubleshoots failing applications by discovering and analyzing CloudWatch log groups to identify error patterns, root causes, and actionable solutions. |
 | `vpc-network-path-diagnostics` | Trace and diagnose AWS network connectivity incidents across VPC route tables, Security Groups, NACLs, NAT Gateways, Transit Gateway (TGW), AWS Cloud WAN, AWS Network Firewall, PrivateLink VPC Endpoints, and Route 53 DN… |
+| `wiz-security-context` | Automatically load this skill when investigating an operational anomaly on a cloud resource - CPU or memory spikes, latency, elevated error rates, unexpected network traffic, crashes, or cost spikes - to determine wheth… |
 
 ## MCP servers
 

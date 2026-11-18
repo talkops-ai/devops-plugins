@@ -1,0 +1,115 @@
+{
+  "skill_name": "troubleshooting-telemetry-pipelines",
+  "evals": [
+    {
+      "id": "eval-01-full-collector-diagnostics-oomkilled-and-memory-limiter-fix",
+      "prompt": "Right after our load test started flooding `frontend-proxy` and `frontend` in `otel-demo`, `OpenTelemetryCollector` `otel-oom-collector` in `otel-demo` started restarting with `OOMKilled` (`ExitCode 137`) because its memory settings weren't hardened. Run a full diagnostic check on `otel-oom-collector` and preview the fix.",
+      "expected_output": "Reads `otel://collector/otel-demo/otel-oom-collector/config`, calls `otel_diagnose_collector(namespace=\"otel-demo\", name=\"otel-oom-collector\", include=[\"status\", \"pods\", \"events\", \"logs\", \"metrics\", \"config_lint\"], log_lines=100)`, identifies `OOMKilled` / missing or mis-ordered `memory_limiter` and `GOMEMLIMIT`, sizes both `memory_limiter` and container `GOMEMLIMIT` to `80%` of container memory limit with `memory_limiter` first in every pipeline, and previews via `otel_patch_collector(namespace=\"otel-demo\", name=\"otel-oom-collector\", ..., dry_run=True)`.",
+      "expectations": [
+        "Calls `otel_diagnose_collector` on `otel-oom-collector` in `otel-demo` inspecting status, pods, events, logs, metrics, and config_lint",
+        "Identifies `OOMKilled` / missing `memory_limiter` & `GOMEMLIMIT` root cause and sizes `memory_limiter` + `GOMEMLIMIT` to `80%` of pod memory limit",
+        "Places `memory_limiter` first in every pipeline and previews via `otel_patch_collector(..., dry_run=True)`"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-02-instant-revert-crashlooping-collector-to-last-known-good",
+      "prompt": "A bad receiver edit 3 minutes ago put `otel-crashloop-collector` in the `otel-demo` namespace into `CrashLoopBackOff` (`cannot unmarshal` error in logs), blacking out its telemetry pipeline! Check its snapshot history, preview rolling back to the previous working configuration, execute the rollback, and confirm the collector recovers.",
+      "expected_output": "Checks `otel://collector/otel-demo/otel-crashloop-collector/history` (`otel.mcp/last-known-good` annotation) and `otel_diagnose_collector(namespace=\"otel-demo\", name=\"otel-crashloop-collector\", include=[\"status\", \"pods\", \"logs\"])`, previews rollback via `otel_revert_collector_config(namespace=\"otel-demo\", name=\"otel-crashloop-collector\", dry_run=True)`, executes `otel_revert_collector_config(..., dry_run=False, confirm=True)`, and re-runs `otel_diagnose_collector` to confirm recovery.",
+      "expectations": [
+        "Inspects `otel://collector/otel-demo/otel-crashloop-collector/history` and `otel_diagnose_collector`",
+        "Calls `otel_revert_collector_config` on `otel-crashloop-collector` in `otel-demo` with `dry_run=True` first, then `dry_run=False, confirm=True`",
+        "Verifies recovery via `otel_diagnose_collector`"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-03-offline-internal-metrics-exposition-saturation-analysis",
+      "prompt": "Analyze this `:8888/metrics` internal telemetry scrape captured from `opentelemetry-otel-collector` in `otel-demo` (container memory limit `1024 MiB`) during a traffic surge:\n```\notelcol_receiver_accepted_spans_total{receiver=\"otlp\"} 450000\notelcol_receiver_refused_spans_total{receiver=\"otlp\"} 18400\notelcol_exporter_sent_spans_total{exporter=\"otlp/tempo\"} 410000\notelcol_exporter_send_failed_spans_total{exporter=\"otlp/tempo\"} 9200\notelcol_exporter_enqueue_failed_spans_total{exporter=\"otlp/tempo\"} 3100\notelcol_exporter_queue_size{exporter=\"otlp/tempo\"} 910\notelcol_exporter_queue_capacity{exporter=\"otlp/tempo\"} 1000\notelcol_process_memory_rss 943718400\n```",
+      "expected_output": "Runs `scripts/analyze_internal_metrics.py --memory-limit-mib 1024` on the metrics text and computes all 4 saturation findings: (1) exporter dropping data (`send_failed = 9200 > 0` and `enqueue_failed = 3100 > 0`), (2) receiver refusing data (`refused_total = 18400 > 0` because `memory_limiter` tripped), (3) queue saturated (`910 / 1000 = 91% > 80%`), and (4) memory pressure (`rss = 900 MiB / 1024 MiB = 87.9% > 85%`), tracing the causal chain from downstream `otlp/tempo` backpressure -> queue saturation -> RSS spike -> `memory_limiter` refusals.",
+      "expectations": [
+        "Runs `scripts/analyze_internal_metrics.py` and flags exporter drops (`send_failed=9200`, `enqueue_failed=3100`) and receiver refusals (`refused=18400`)",
+        "Flags exporter queue saturation (`910 / 1000 = 91% > 80%`) and memory pressure (`900 MiB / 1024 MiB = 87.9% > 85%`)",
+        "Traces the causal chain from downstream `otlp/tempo` export failures to queue saturation and `memory_limiter` refusals"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-04-diagnose-kubeletstats-rbac-403-forbidden-in-collector-logs",
+      "prompt": "Our DaemonSet collector `otel-node-agent` in `observability` isn't shipping pod or node CPU and memory metrics from kubelet (`nodes/stats` `403 Forbidden` errors are showing up). Diagnose `otel-node-agent` and preview the fix.",
+      "expected_output": "Calls `otel_diagnose_collector(namespace=\"observability\", name=\"otel-node-agent\", include=[\"status\", \"pods\", \"logs\", \"events\", \"config_lint\"])`, identifies missing `nodes/stats` and `nodes/proxy` `get` RBAC permissions on `otel-node-agent`'s `ClusterRole` required by the `kubeletstats` receiver (`:10250` `/stats/summary`), and previews reconfiguring the receiver + least-privilege RBAC via `otel_configure_receivers(namespace=\"observability\", collector_name=\"otel-node-agent\", receivers=[\"kubeletstats\"], dry_run=True)`.",
+      "expectations": [
+        "Calls `otel_diagnose_collector` on `otel-node-agent` in `observability`",
+        "Pinpoints missing `nodes/stats` and `nodes/proxy` `get` permissions in `otel-node-agent`'s `ClusterRole`",
+        "Previews fixing `kubeletstats` + least-privilege RBAC via `otel_configure_receivers(..., receivers=[\"kubeletstats\"], dry_run=True)`"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-05-end-to-end-zero-traces-workload-to-collector-verification",
+      "prompt": "/triage recommendation in otel-demo --window 30m\nPython Deployment `recommendation` (`:8080`, `instrumentation.opentelemetry.io/inject-python: \"true\"`) in `otel-demo` is serving product suggestions normally, yet zero `recommendation` traces are arriving in Tempo through `opentelemetry-otel-collector`. Diagnose both the `recommendation` workload instrumentation and the collector pipeline, and preview the fix.",
+      "expected_output": "Calls `otel_verify_instrumentation(namespace=\"otel-demo\", workload_name=\"recommendation\", workload_kind=\"Deployment\")` AND `otel_diagnose_collector(namespace=\"otel-demo\", name=\"opentelemetry-otel-collector\", include=[\"status\", \"service\", \"logs\", \"metrics\", \"config_lint\"])`, catching the OTLP protocol/port mismatch (Python `http/protobuf` exporter pointed at gRPC `:4317` instead of HTTP `:4318` on `opentelemetry-otel-collector.otel-demo.svc.cluster.local`) and previews fixing the `Instrumentation` CR via `otel_patch_instrumentation(namespace=\"otel-demo\", ..., dry_run=True)`.",
+      "expectations": [
+        "Calls `otel_verify_instrumentation` on `Deployment/recommendation` in `otel-demo`",
+        "Calls `otel_diagnose_collector` on `opentelemetry-otel-collector` in `otel-demo`",
+        "Detects OTLP port/protocol mismatch (`:4318` `http/protobuf` vs `:4317` `grpc`) for Python `recommendation` and previews fix with `dry_run=True`"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-06-gitops-managed-collector-drift-warning-argocd-flux",
+      "prompt": "Diagnose our ArgoCD-managed `otel-gitops-collector` in `otel-demo` (`selfHeal: true` is active in ArgoCD) and increase its exporter `sending_queue.queue_size` to `5000`—make sure we handle GitOps drift safely!",
+      "expected_output": "Calls `otel_diagnose_collector` (and inspects `otel://collector/otel-demo/otel-gitops-collector`), detects ArgoCD GitOps ownership (`argocd.argoproj.io/tracking-id`), warns that a direct live cluster patch will be immediately overwritten by ArgoCD `selfHeal`, and runs `otel_patch_collector(namespace=\"otel-demo\", name=\"otel-gitops-collector\", ..., dry_run=True)` + `otel_validate_collector_config` to produce a server-validated unified diff ready to commit to Git without mutating live state unconfirmed.",
+      "expectations": [
+        "Diagnoses `otel-gitops-collector` in `otel-demo` and detects ArgoCD GitOps ownership (`argocd.argoproj.io/tracking-id`)",
+        "Warns clearly that ArgoCD `selfHeal` will revert out-of-band live cluster patches",
+        "Uses `otel_patch_collector(..., dry_run=True)` and/or `otel_validate_collector_config` to deliver a validated Git-ready diff without applying `dry_run=False`"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-07-target-allocator-prometheus-scrape-diagnostics",
+      "prompt": "Prometheus `ServiceMonitor` metrics for `frontend-proxy` (`:10000/stats/prometheus`), `postgresql`, and `valkey-cart` aren't being scraped properly by our `otel-ta-collector` StatefulSet in `otel-demo` because a restrictive label selector was left on its Target Allocator. Inspect the Target Allocator and collector pods to diagnose why.",
+      "expected_output": "Reads `otel://target-allocator/otel-demo/otel-ta-collector` and calls `otel_diagnose_collector(namespace=\"otel-demo\", name=\"otel-ta-collector\", include=[\"status\", \"pods\", \"logs\", \"metrics\", \"target_allocator\"])`, checking TargetAllocator configuration, restrictive `prometheusCR.serviceMonitorSelector` label mismatch (`release: kube-prometheus-stack` excluding `otel-demo` `ServiceMonitor`s), and `monitoring.coreos.com` RBAC.",
+      "expectations": [
+        "Reads `otel://target-allocator/otel-demo/otel-ta-collector` via MCP and passes `\"target_allocator\"` in `otel_diagnose_collector`",
+        "Identifies restrictive `serviceMonitorSelector` / `podMonitorSelector` label matching (`release: kube-prometheus-stack` vs `{}`)",
+        "Checks TargetAllocator readiness and `monitoring.coreos.com` RBAC permissions"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-08-operator-admission-webhook-cert-manager-failure",
+      "prompt": "A teammate on staging reports that running `helm upgrade ad charts/ad/ -n otel-demo` (`inject-java: \"true\"`) or updating an `OpenTelemetryCollector` fails with `Internal error occurred: failed calling webhook \"mopentelemetrycollector.kb.io\": tls: bad certificate`. Check our Operator status here and explain the exact root cause and safe recovery steps.",
+      "expected_output": "Reads `otel://operator/status`, diagnoses expired, missing, or uninjected `cert-manager` webhook serving certificates / `caBundle` mismatch (`cert-manager.io/inject-ca-from`) on `MutatingWebhookConfiguration` and `ValidatingWebhookConfiguration`, warns against blindly deleting webhook configurations in production, and outlines verifying `Certificate` / `Issuer` readiness and restarting the Operator pod in `opentelemetry-operator-system`.",
+      "expectations": [
+        "Reads `otel://operator/status` via MCP",
+        "Pinpoints `cert-manager` TLS serving certificate / `caBundle` injection failure on the Operator admission webhook",
+        "Warns against blindly deleting webhook configurations and provides safe `cert-manager` `Certificate` + Operator pod recovery steps"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-09-grpc-max-recv-msg-size-exceeded-drop-triage",
+      "prompt": "Under heavy load, `otel-gateway` logs in `observability` show `rpc error: code = ResourceExhausted desc = grpc: received message larger than max (6291456 vs. 4194304)` and upstream `opentelemetry-otel-collector` in `otel-demo` reports failed span exports. Diagnose why and preview fixing the collector configuration.",
+      "expected_output": "Explains that Go gRPC defaults `max_recv_msg_size_mib` to `4 MiB` (`4194304` bytes), while upstream batching in `opentelemetry-otel-collector` produced a `6 MiB` OTLP batch; recommends BOTH bounding upstream `batch.send_batch_max_size` (`<= 2048`) on `opentelemetry-otel-collector` AND raising `receivers.otlp.protocols.grpc.max_recv_msg_size_mib: 16` on `otel-gateway`, validating and previewing via `otel_validate_collector_config` / `otel_patch_collector(..., dry_run=True)`.",
+      "expectations": [
+        "Identifies gRPC's default `4 MiB` `max_recv_msg_size_mib` limit vs `6 MiB` upstream OTLP batch size",
+        "Raises `receivers.otlp.protocols.grpc.max_recv_msg_size_mib` on `otel-gateway` AND bounds upstream `send_batch_max_size`",
+        "Validates and previews via `otel_validate_collector_config` / `otel_patch_collector(..., dry_run=True)`"
+      ],
+      "files": []
+    },
+    {
+      "id": "eval-10-zero-throughput-orphan-component-in-pipeline",
+      "prompt": "Traces are entering `otel-broken-pipeline` in `otel-demo` on `:4317`, yet zero spans reach Tempo even though `otlp/tempo` (`tempo-distributor.observability.svc:4317`) is clearly defined under `exporters:`! Diagnose `otel-broken-pipeline` and preview the fix.",
+      "expected_output": "Reads `otel://collector/otel-demo/otel-broken-pipeline/config` and calls `otel_diagnose_collector(namespace=\"otel-demo\", name=\"otel-broken-pipeline\", include=[\"status\", \"metrics\", \"config_lint\"])`, catching the orphan component (`CFG_UNUSED_COMPONENT` / `CFG_DEBUG_EXPORTER_ONLY`: `otlp/tempo` is declared under `exporters:` but omitted from `service.pipelines.traces.exporters`, which only lists `debug`), and previews wiring `otlp/tempo` into `service.pipelines.traces.exporters` via `otel_patch_collector(..., dry_run=True)`.",
+      "expectations": [
+        "Inspects `otel://collector/otel-demo/otel-broken-pipeline/config` and calls `otel_diagnose_collector` on `otel-broken-pipeline`",
+        "Identifies that `otlp/tempo` is defined under `exporters:` (`CFG_UNUSED_COMPONENT`) but omitted from `service.pipelines.traces.exporters`",
+        "Previews wiring `otlp/tempo` into `service.pipelines.traces.exporters` via `otel_patch_collector(..., dry_run=True)`"
+      ],
+      "files": []
+    }
+  ]
+}

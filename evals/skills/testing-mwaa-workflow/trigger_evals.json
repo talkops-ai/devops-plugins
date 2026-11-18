@@ -1,0 +1,34 @@
+[
+  {
+    "query": "Trigger a test run of our deployed daily_orders_etl DAG on Amazon MWAA Provisioned, monitor it to completion, and restore its paused state.",
+    "should_trigger": true
+  },
+  {
+    "query": "Start a test workflow run on MWAA Serverless (`arn:aws:airflow-serverless:...`) using StartWorkflowRun and verify all task instances succeed.",
+    "should_trigger": true
+  },
+  {
+    "query": "Smoke-test our newly deployed Airflow DAG on MWAA by unpausing it, triggering a single manual dagRun, and checking task instance results.",
+    "should_trigger": true
+  },
+  {
+    "query": "Execute a validation run for a batch of upgraded MWAA DAGs during Phase 7 of our Airflow upgrade to confirm VERIFIED status.",
+    "should_trigger": true
+  },
+  {
+    "query": "Run my MWAA workflow end-to-end and report whether each task succeeded or failed.",
+    "should_trigger": true
+  },
+  {
+    "query": "Write a brand-new Python Airflow DAG with deferrable GlueJobOperator and AthenaOperator tasks.",
+    "should_trigger": false
+  },
+  {
+    "query": "Upgrade our Amazon MWAA environment from Apache Airflow 2.7.2 to Airflow 3.0.",
+    "should_trigger": false
+  },
+  {
+    "query": "Configure an Amazon S3 Tables Iceberg table with monthly partitioning.",
+    "should_trigger": false
+  }
+]

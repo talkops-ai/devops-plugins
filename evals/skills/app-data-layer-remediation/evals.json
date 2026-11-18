@@ -1,0 +1,16 @@
+{
+  "skill_name": "app-data-layer-remediation",
+  "evals": [
+    {
+      "id": "eval-01-we-are-migrating-a-microsoft-sql-server-2019-app",
+      "prompt": "We are migrating a Microsoft SQL Server 2019 application to Amazon Aurora PostgreSQL in `ap-south-1`. First run a read-only check in `ap-south-1` via `aws-mcp` to inspect available `aurora-postgresql` engine versions and DB cluster parameter groups (`rds:DescribeDBEngineVersions`, `rds:DescribeDBClusterParameterGroups`). Then rewrite these T-SQL patterns to native Aurora PostgreSQL and explain when to use Babelfish for Aurora PostgreSQL (TDS port `1433`) vs native PostgreSQL (port `5432`): (1) `SELECT TOP (10) u.id, ISNULL(u.display_name, u.email), GETDATE() FROM dbo.Users u WITH (NOLOCK) CROSS APPLY (SELECT TOP 1 o.total FROM dbo.Orders o WHERE o.user_id = u.id ORDER BY o.created_at DESC) latest`, (2) `INSERT INTO Orders (user_id, total) VALUES (@uid, @tot); SELECT SCOPE_IDENTITY();`, and (3) `@table_variable` + `@@ROWCOUNT` inside a stored procedure.",
+      "expected_output": "Rewrites T-SQL to native PostgreSQL: (1) removes `WITH (NOLOCK)` (explaining PostgreSQL MVCC non-blocking reads), converts `ISNULL` -> `COALESCE`, `GETDATE()` -> `clock_timestamp()`, `CROSS APPLY` -> `CROSS JOIN LATERAL`, and moves `TOP (10)` -> `LIMIT 10`; (2) replaces `IDENTITY(1,1)` + `SELECT SCOPE_IDENTITY()` with `GENERATED ALWAYS AS IDENTITY` + `INSERT INTO ... RETURNING id`; (3) replaces `@table_variable` with CTEs / `UNNEST` or `CREATE TEMP TABLE ... ON COMMIT DROP` and `@@ROWCOUNT` with `GET DIAGNOSTICS v_cnt = ROW_COUNT`; and compares Babelfish TDS port `1433` vs native PG port `5432`.",
+      "files": [],
+      "expectations": [
+        "Runs read-only RDS discovery in `ap-south-1` (`rds:DescribeDBEngineVersions`, `rds:DescribeDBClusterParameterGroups`) via `aws-mcp` without mutating resources.",
+        "Rewrites `TOP (10)`, `ISNULL`, `GETDATE()`, and `CROSS APPLY` to `LIMIT 10`, `COALESCE`, `clock_timestamp()`, and `CROSS JOIN LATERAL`, and explains why `WITH (NOLOCK)` is removed in PostgreSQL MVCC.",
+        "Replaces `SCOPE_IDENTITY()` with `INSERT INTO ... RETURNING id` and `@@ROWCOUNT` with `GET DIAGNOSTICS count = ROW_COUNT`, and compares Babelfish (TDS port `1433`) vs native PostgreSQL (`5432`)."
+      ]
+    }
+  ]
+}

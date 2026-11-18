@@ -1,0 +1,34 @@
+[
+  {
+    "query": "Use /aws-analytics:lakehouse-design to architect a Bronze, Silver, and Gold Medallion Lakehouse on AWS using S3 Tables, Glue, Lake Formation, Athena, and Redshift Serverless.",
+    "should_trigger": true
+  },
+  {
+    "query": "Compare Amazon Athena, Amazon Redshift Serverless, Amazon EMR Serverless, AWS Glue, and Amazon OpenSearch Service for our enterprise analytics platform.",
+    "should_trigger": true
+  },
+  {
+    "query": "Design an Apache Iceberg table maintenance and Data FinOps strategy covering small-file compaction, snapshot expiration, and Athena cost controls.",
+    "should_trigger": true
+  },
+  {
+    "query": "Evaluate when to use AWS Zero-ETL integrations vs custom AWS Glue or EMR Serverless Spark pipelines for our analytical data platform.",
+    "should_trigger": true
+  },
+  {
+    "query": "Recommend an end-to-end AWS data analytics reference architecture combining real-time streaming (Kinesis/MSK) and batch lakehouse analytics.",
+    "should_trigger": true
+  },
+  {
+    "query": "Debug why a single task in our Amazon MWAA Airflow DAG failed with a Python ImportError.",
+    "should_trigger": false
+  },
+  {
+    "query": "Troubleshoot missing CloudWatch logs for an AWS Clean Rooms custom ML model association.",
+    "should_trigger": false
+  },
+  {
+    "query": "Configure an AWS End User Messaging 10DLC SMS origination pool and opt-out list.",
+    "should_trigger": false
+  }
+]

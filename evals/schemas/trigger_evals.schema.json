@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Skill Trigger Evaluation Suite",
+  "type": "object",
+  "required": ["skill_name", "queries"],
+  "additionalProperties": false,
+  "properties": {
+    "skill_name": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "companion_skills": {
+      "type": "array",
+      "description": "Sibling skills mounted alongside the target skill to test routing collisions.",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]*$"
+      }
+    },
+    "queries": {
+      "type": "array",
+      "minItems": 4,
+      "items": {
+        "type": "object",
+        "required": ["id", "quadrant", "split", "should_trigger", "prompt"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "quadrant": {
+            "type": "string",
+            "enum": ["explicit", "implicit", "contextual", "near_miss_negative"]
+          },
+          "split": {
+            "type": "string",
+            "enum": ["train", "val"]
+          },
+          "should_trigger": { "type": "boolean" },
+          "expected_alternative_skill": {
+            "type": "string",
+            "description": "Optional sibling skill expected to trigger instead on near-miss negatives."
+          },
+          "prompt": { "type": "string", "minLength": 5 },
+          "notes": { "type": "string" }
+        }
+      }
+    }
+  }
+}
