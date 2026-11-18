@@ -22,6 +22,7 @@ __pycache__/
 reference/
 
 # Ephemeral skill evaluation workspaces & runtime traces (never commit)
+.eval-runs
 .eval-runs/
 evals/workspaces/
 evals/runs/
