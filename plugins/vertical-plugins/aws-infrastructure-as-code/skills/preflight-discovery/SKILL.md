@@ -1,13 +1,11 @@
 ---
 name: preflight-discovery
-description: >
-  Read-only AWS brownfield environment discovery and preflight governance check.
-  Triggers when inspecting an existing AWS account before deployment, checking existing VPCs,
-  subnets, route tables, Transit Gateways, ACM certificates, Route 53 hosted zones, IAM roles
-  or permission boundaries, CloudFormation stack exports, or AWS Service Quotas.
+description: "Read-only AWS brownfield environment discovery and preflight governance check. Triggers when inspecting an existing AWS account before deployment, checking existing VPCs, subnets, route tables, Transit Gateways, ACM certificates, Route 53 hosted zones, IAM roles or permission boundaries, CloudFormation stack exports, or AWS Service Quotas. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # AWS Brownfield Preflight Discovery Skill
+
+> **MCP-Only Live AWS Execution:** Execute ALL live AWS API discovery, account/region preflight checks (`sts:GetCallerIdentity`), stack/cluster/resource inspection, pricing (`awspricing`/`billing`), IaC validation (`awsiac`), and documentation lookups (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___run_script` `call_boto3`, `awsknowledge`, `awsiac`, `awspricing`, `eks`, `ecs`, `cloudwatch`) — **never invoke raw `aws ...` CLI commands in shell (`run_command`)**. Offline local linters/synthesizers (`cdk synth`, `terraform validate`, `python3`) may run locally without mutating live AWS.
 
 ## Security and Scope Constraints (MANDATORY)
 

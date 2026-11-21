@@ -46,11 +46,26 @@ SMA_PATTERN = re.compile(
 
 _CLI_FLAGS = r'(?:-\S+(?:\s+[^-\s]\S*)?\s+){0,12}'
 CLI_GSV_PATTERN = re.compile(
-    rf'aws\s+{_CLI_FLAGS}secretsmanager\s+{_CLI_FLAGS}(?:batch-)?get-secret-value\b',
-    re.I,
+    rf'aws\s+{_CLI_FLAGS}secretsmanager\s+{_CLI_FLAGS}(?:batch-)?get-secret-value\b'
+    rf'|aws\s+{_CLI_FLAGS}ssm\s+{_CLI_FLAGS}get-parameters?(?:-by-path)?\b.*?--with-decryption\b',
+    re.I | re.S,
 )
 
 GSV_OPERATIONS = ("getsecretvalue", "batchgetsecretvalue")
+SSM_SECRET_OPERATIONS = ("getparameter", "getparameters", "getparametersbypath")
+
+CALL_BOTO3_GSV_PATTERN = re.compile(
+    r'call_boto3\s*\([^)]*?service_name\s*=\s*[\'"]secretsmanager[\'"][^)]*?operation_name\s*=\s*[\'"](?:Batch)?Get[-_]?Secret[-_]?Value[\'"]',
+    re.I | re.S,
+)
+CALL_BOTO3_SSM_DECRYPT_PATTERN = re.compile(
+    r'call_boto3\s*\([^)]*?service_name\s*=\s*[\'"]ssm[\'"][^)]*?operation_name\s*=\s*[\'"]Get[-_]?Parameters?(?:[-_]?By[-_]?Path)?[\'"][^)]*?WithDecryption[\'"]?\s*[:=]\s*True',
+    re.I | re.S,
+)
+CALL_BOTO3_S3_TFSTATE_PATTERN = re.compile(
+    r'call_boto3\s*\([^)]*?service_name\s*=\s*[\'"]s3[\'"][^)]*?operation_name\s*=\s*[\'"]Get[-_]?Object[\'"][^)]*?\.tfstate\b',
+    re.I | re.S,
+)
 
 SDK_CALL_PATTERN = re.compile(
     r'\.\s*(batch[-_]?)?get[-_]?secret[-_]?value\s*\('
@@ -160,6 +175,18 @@ def main() -> None:
             deny(HARDCODED_SECRET_DENY_MSG)
         allow()
 
+    # Check run_script tools first (before generic mcp__* handling) for secret fetching in code
+    if "run_script" in tool_name:
+        for val in tool_input.values():
+            if isinstance(val, str):
+                if SDK_CALL_PATTERN.search(val) or CALL_BOTO3_GSV_PATTERN.search(val) or CALL_BOTO3_SSM_DECRYPT_PATTERN.search(val):
+                    deny()
+                if CALL_BOTO3_S3_TFSTATE_PATTERN.search(val):
+                    deny(TFSTATE_DENY_MSG)
+                if _has_hardcoded_secret(val):
+                    deny(HARDCODED_SECRET_DENY_MSG)
+        allow()
+
     # Check structured AWS tool calls (use_aws or MCP AWS tools)
     if tool_name == "use_aws" or tool_name.startswith("mcp__"):
         service = (
@@ -174,25 +201,22 @@ def main() -> None:
             or tool_input.get("operationName")
             or ""
         )
-        if service == "secretsmanager" and _normalize_op(str(operation)) in GSV_OPERATIONS:
+        norm_op = _normalize_op(str(operation))
+        if service == "secretsmanager" and norm_op in GSV_OPERATIONS:
             deny()
+        if service == "ssm" and norm_op in SSM_SECRET_OPERATIONS:
+            params = tool_input.get("parameters") or tool_input
+            if isinstance(params, dict) and params.get("WithDecryption") is True:
+                deny()
         input_str = json.dumps(tool_input)
         if _has_hardcoded_secret(input_str):
             deny(HARDCODED_SECRET_DENY_MSG)
-        if SDK_CALL_PATTERN.search(input_str) and "secretsmanager" in input_str.lower():
+        if (SDK_CALL_PATTERN.search(input_str) and "secretsmanager" in input_str.lower()) or CALL_BOTO3_GSV_PATTERN.search(input_str) or CALL_BOTO3_SSM_DECRYPT_PATTERN.search(input_str):
             deny()
+        if CALL_BOTO3_S3_TFSTATE_PATTERN.search(input_str):
+            deny(TFSTATE_DENY_MSG)
         if CLI_GSV_PATTERN.search(input_str):
             deny()
-        allow()
-
-    # Check run_script tools for secret fetching in code
-    if "run_script" in tool_name:
-        for val in tool_input.values():
-            if isinstance(val, str):
-                if SDK_CALL_PATTERN.search(val):
-                    deny()
-                if _has_hardcoded_secret(val):
-                    deny(HARDCODED_SECRET_DENY_MSG)
         allow()
 
     # Check Bash commands

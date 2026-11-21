@@ -47,7 +47,7 @@ Check for required tools and permissions before starting the setup.
 - You MUST verify the following tools are available in your context:
   - call_aws
 - You MUST inform the user about any missing tools with a clear message
-- You MUST verify AWS credentials: `aws sts get-caller-identity --region ${region}`
+- You MUST verify AWS credentials via `call_aws` (`sts get-caller-identity`), never raw `aws` CLI in shell
 - You MUST ask if the user wants to proceed anyway despite missing tools
 - You MUST respect the user's decision to proceed or abort
 

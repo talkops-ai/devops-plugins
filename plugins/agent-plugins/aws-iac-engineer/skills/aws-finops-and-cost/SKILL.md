@@ -1,9 +1,11 @@
 ---
 name: aws-finops-and-cost
-description: Computes pre-deployment AWS infrastructure cost estimates, monthly cost breakdowns, and architecture cost optimizations across Terraform, Terragrunt, CloudFormation, CDK, Pulumi, and Crossplane using Infracost, AWS Price List API (aws-mcp), and shift-left FinOps guardrails.
+description: "Computes pre-deployment AWS infrastructure cost estimates, monthly cost breakdowns, and architecture cost optimizations across Terraform, Terragrunt, CloudFormation, CDK, Pulumi, and Crossplane using Infracost, AWS Price List API (aws-mcp), and shift-left FinOps guardrails. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # Shift-Left AWS FinOps & Pre-Deployment Cost Estimation
+
+> **MCP-Only Live AWS Execution:** Execute ALL live AWS API discovery, account/region preflight checks (`sts:GetCallerIdentity`), stack/cluster/resource inspection, pricing (`awspricing`/`billing`), IaC validation (`awsiac`), and documentation lookups (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___run_script` `call_boto3`, `awsknowledge`, `awsiac`, `awspricing`, `eks`, `ecs`, `cloudwatch`) — **never invoke raw `aws ...` CLI commands in shell (`run_command`)**. Offline local linters/synthesizers (`cdk synth`, `terraform validate`, `python3`) may run locally without mutating live AWS.
 
 Use this skill before deploying new infrastructure or major architectural changes, or whenever the user asks "how much will this stack/module cost?" or wants to optimize AWS spend in IaC.
 

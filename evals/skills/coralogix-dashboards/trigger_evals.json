@@ -1,0 +1,62 @@
+{
+  "skill_name": "coralogix-dashboards",
+  "companion_skills": [
+    "coralogix-ai-center",
+    "coralogix-alerts",
+    "coralogix-case-analytics",
+    "coralogix-case-management",
+    "coralogix-cases"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use `coralogix-dashboards` to design, validate, and troubleshoot coralogix dashboards."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Walk me through production best practices and operational guardrails for coralogix dashboards (`coralogix-dashboards`)."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We need an operational review and step-by-step runbook covering: Dashboard analysis and editing workflow and rules for using dashboard JSON, filters, variables, and time ranges. Load when the user provides dashboard context (for example a dashbo"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "What are the critical failure modes, configuration checks, and verification commands for coralogix dashboards?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our coralogix dashboards setup in read-only mode."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure and troubleshoot coralogix ai center exclusively without touching coralogix dashboards.",
+      "expected_alternative_skill": "coralogix-ai-center"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+    }
+  ]
+}

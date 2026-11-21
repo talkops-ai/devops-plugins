@@ -169,7 +169,7 @@ one does not block the other:
   quotas — and emits one verdict per pillar (`INFO`, `ADVISORY`, or
   `ACTION_REQUIRED`, worst-of for the overall). Use those three strings verbatim.
 - **Sizing** — not a script in this skill. Load the managing-amazon-msk Skill and
-  run its `scripts/msk_sizing.py` with the workload inputs derived from
+  run its `msk_sizing.py` script with the workload inputs derived from
   `cluster-config.json`, passing `--broker-classes express`.
 
 ### Assessment rules

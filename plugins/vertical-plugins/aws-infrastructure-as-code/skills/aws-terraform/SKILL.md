@@ -1,9 +1,11 @@
 ---
 name: aws-terraform
-description: Authors, refactors, tests, imports, and validates production AWS Terraform and OpenTofu configurations using the dual hashicorp/aws + hashicorp/awscc provider strategy, S3/HCP state locking, .tftest.hcl test suites, .tfquery.hcl search/import, and HashiCorp style/policy standards.
+description: "Authors, refactors, tests, imports, and validates production AWS Terraform and OpenTofu configurations using the dual hashicorp/aws + hashicorp/awscc provider strategy, S3/HCP state locking, .tftest.hcl test suites, .tfquery.hcl search/import, and HashiCorp style/policy standards. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # AWS Terraform & OpenTofu Engineering
+
+> **MCP-Only Live AWS Execution:** Execute ALL live AWS API discovery, account/region preflight checks (`sts:GetCallerIdentity`), stack/cluster/resource inspection, pricing (`awspricing`/`billing`), IaC validation (`awsiac`), and documentation lookups (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___run_script` `call_boto3`, `awsknowledge`, `awsiac`, `awspricing`, `eks`, `ecs`, `cloudwatch`) — **never invoke raw `aws ...` CLI commands in shell (`run_command`)**. Offline local linters/synthesizers (`cdk synth`, `terraform validate`, `python3`) may run locally without mutating live AWS.
 
 Use this skill whenever authoring, refactoring, testing, importing, or validating **Terraform** or **OpenTofu** HCL configurations targeting AWS.
 

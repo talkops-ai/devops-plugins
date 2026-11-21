@@ -60,9 +60,7 @@ This skill can be loaded two ways, and the `references/` files resolve different
 This applies only to the skill's own packaged files. User-created artifacts
 (brand-assets/, temp files) are always in the user's working directory.
 
-Execute commands using available tools from the AWS MCP server when connected —
-it provides sandboxed execution, audit logging, and observability. When the MCP
-server is not available, fall back to the AWS CLI or shell as needed.
+Execute `aws pinpoint-sms-voice-v2` commands directly via the AWS CLI in the shell (chaining read-only `describe-*` commands in a single batched shell command with `--region <REGION> --output json --no-cli-pager`) for fast, deterministic execution. Read the local `references/*.md` files directly and do NOT call `aws___read_documentation` or `aws___search_documentation` when the topic is already covered in the local references or live `describe-*` outputs.
 
 ## Choosing a path
 
@@ -82,10 +80,7 @@ production-grade verification text.
 
 ## Before you start (both paths)
 
-The **AWS MCP server is recommended** for the best experience here — it runs the many
-`pinpoint-sms-voice-v2` and `sts` calls with sandboxed execution, audit logging, and
-observability. It is not a hard requirement: every step also works with the plain AWS CLI or the
-AWS Agent Toolkit when the MCP server is not available.
+Prefer running plain `aws pinpoint-sms-voice-v2` CLI commands in a single batched shell execution (`--region <REGION> --output json --no-cli-pager`) rather than multi-turn `aws___run_script` or `aws___read_documentation` calls.
 
 1. **Credentials.** Run `aws sts get-caller-identity --region <REGION>` (pass `--region` to use
    the regional STS endpoint; the global `sts.amazonaws.com` endpoint is legacy). If it fails,
@@ -104,6 +99,7 @@ AWS Agent Toolkit when the MCP server is not available.
    full reactive resolution: clear a stale `~/.aws/models/pinpoint-sms-voice-v2/` override, else
    upgrade the AWS CLI, with a boto3 fallback. `AccessDeniedException` means the identity is
    missing the required `sms-voice:` permissions.
+4. **MCP-First Execution & `awsknowledge` Fallback.** Execute live AWS discovery and `pinpoint-sms-voice-v2` inspections via connected MCP tools first (`aws-mcp` `aws___call_aws` or `aws___run_script`, `cloudwatch`, `awspricing`); fall back to `aws pinpoint-sms-voice-v2` CLI only if MCP tools are unavailable. If no local reference matches an edge-case question, query `awsknowledge` (`aws___search_documentation` / `aws___read_documentation` in 1–2 focused searches) and answer directly.
 
 Each reference file is self-contained: it tracks the IDs you collect as session
 state, audits required inputs against the service before any submit, and ends
@@ -113,9 +109,7 @@ silently or depend on service-version-specific field sets that must be read live
 
 ## Security Considerations
 
-- **Least-privilege IAM.** Scope policies to specific `sms-voice:` actions; never
-  use `*FullAccess` or `sms-voice:*` in production. The reference files enumerate
-  the minimal read/write actions each onboarding path needs.
+- **Least-privilege IAM & Confused-Deputy Protection.** Scope application IAM policies to specific `sms-voice:` actions (e.g., `sms-voice:SendTextMessage`, `sms-voice:DescribeOptOutLists`, `sms-voice:DescribeConfigurationSets`) and specific originator/pool/configuration-set ARNs; never use `*FullAccess` or `"Action": "sms-voice:*", "Resource": "*"` in production. For two-way inbound SMS or event destination SNS topics, always restrict `sms-voice.amazonaws.com` in the SNS topic policy with `StringEquals` on `aws:SourceAccount` and `ArnLike` on `aws:SourceArn` to prevent confused-deputy attacks.
 - **Ephemeral credentials.** Assume an IAM role with ephemeral credentials;
   never embed long-lived access keys in code, config, or environment variables.
 - **No secrets in messages or fields.** OTP codes and message bodies can surface

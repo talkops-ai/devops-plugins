@@ -1,0 +1,95 @@
+{
+  "skill_name": "dynamodb-access-pattern-modeling",
+  "companion_skills": [
+    "amazon-dynamodb",
+    "connecting-lambda-to-dynamodb",
+    "aws-serverless",
+    "aws-finops-and-cost"
+  ],
+  "queries": [
+    {
+      "id": "trig-pos-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Model a single-table DynamoDB schema with composite `#` sort keys and sparse GSIs using `aws-dynamodb-mcp` (`dynamodb_data_modeling` and `dynamodb_data_model_validation`)."
+    },
+    {
+      "id": "trig-pos-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Analyze our PostgreSQL schema with `source_db_analyzer` and generate a validated DynamoDB `schema.json` and CDK data access layer."
+    },
+    {
+      "id": "trig-pos-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Audit our `schema.json` identifiers for CVE-2026-85654 command injection before running `generate_resources`."
+    },
+    {
+      "id": "trig-pos-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Replace a costly production `dynamodb:Scan` with `FilterExpression` using a sparse GSI and shard a `8,000 WCU/sec` hot partition key."
+    },
+    {
+      "id": "trig-pos-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Calculate exact RCU/WCU write amplification across 2 GSIs and configure `OnDemandThroughput` + Unix epoch `TimeToLiveSpecification`."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Connect an existing Lambda function to an API Gateway REST API with CORS."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure AWS Direct Connect BGP peering and Virtual Interfaces."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Audit Security Hub V2 OCSF Exposure findings across our AWS account."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Set up Amazon Managed Service for Prometheus PromQL recording rules."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure AWS Shield Advanced DDoS cost protection and SRT access."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a Cognito User Pool PKCE login flow for a React SPA."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Query CloudWatch Logs S3 Tables Iceberg datasets in Amazon Athena."
+    }
+  ]
+}

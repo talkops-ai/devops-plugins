@@ -1,0 +1,125 @@
+{
+  "skill_name": "aws-sms-voice",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I am completely new to AWS End User Messaging SMS and Voice. Please run a read-only audit of our live AWS account in ap-south-1 to check our current account tier, resource quotas, monthly spend limits, phone numbers, sender IDs, verified destination numbers, opt-out lists, and configuration sets. Then give me an architect-grade Go-To-Production roadmap explaining what our current state means and the exact steps required to move from Sandbox to Production safely.",
+      "expected_output": "A live read-only SMS & Voice account audit in ap-south-1 reporting SANDBOX tier, $1.00 monthly spend limits across Text/Voice/Media/Notify/RCS, 0 phone numbers/sender IDs/configuration sets, and the Default opt-out list ARN, followed by a complete Sandbox-to-Production architectural roadmap.",
+      "files": [],
+      "expectations": [
+        "Executes read-only aws pinpoint-sms-voice-v2 commands in ap-south-1 including describe-account-attributes, describe-account-limits, and describe-spend-limits",
+        "Checks live originator and destination inventory in ap-south-1 using describe-phone-numbers, describe-sender-ids, describe-verified-destination-numbers, describe-opt-out-lists, and describe-configuration-sets",
+        "Accurately reports live ap-south-1 telemetry: ACCOUNT_TIER is SANDBOX, monthly spend limits are $1.00 (MaxLimit/EnforcedLimit 1) across TEXT, VOICE, MEDIA, NOTIFY, and RCS, 0 phone numbers/sender IDs/verified numbers/configuration sets, and 1 Default opt-out list (arn:aws:sms-voice:ap-south-1:123456789012:opt-out-list/Default)",
+        "Provides a clear Sandbox-to-Production architectural roadmap covering verified destination numbers for sandbox testing, country-specific originator/registration workflow, Service Quotas spend limit increase, Protect Configurations, and Configuration Set event destinations without mutating any live resources"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "We want to launch SMS One-Time Passcodes (OTP) for user sign-in as fast as possible without waiting weeks to lease dedicated phone numbers or complete carrier sender ID registrations. Run a read-only check in ap-south-1 to inspect our Notify configuration limits, Notify monthly spend limit, and the live Notify registration schemas, then explain as a Solutions Architect how AWS End User Messaging Notify OTP works end-to-end (including who generates and verifies the OTP code, the default template, and the upgrade path beyond the default tier).",
+      "expected_output": "A read-only live inspection of Notify limits, spend limits, and NOTIFY registration schemas in ap-south-1 paired with an architectural walkthrough of Notify OTP (NOTIFY_OTP_SMS, SendNotifyTextMessage, application-managed OTP code generation/verification, and tier upgrade registration).",
+      "files": [],
+      "expectations": [
+        "Executes read-only aws pinpoint-sms-voice-v2 commands in ap-south-1 to inspect Notify quotas and spend limits (describe-account-limits for NOTIFY_CONFIGURATIONS and describe-spend-limits for NOTIFY_MESSAGE_MONTHLY_SPEND_LIMIT) and live Notify registration definitions (describe-registration-type-definitions / describe-registration-field-definitions for NOTIFY_TIER_UPGRADE_REGISTRATION or NOTIFY_BRAND_VERIFICATION_REGISTRATION)",
+        "Explains the architectural value of Notify OTP: uses AWS-managed shared routes and pre-vetted templates (such as NOTIFY_OTP_SMS) so customers can send transactional OTPs without upfront phone number leasing or carrier registration",
+        "Clarifies the critical architectural division of responsibility: Notify delivers the OTP via send-notify-text-message (using template variables like CODE and EXPIRY), while the customer's application is responsible for generating, storing (with TTL), and verifying the code entered by the user",
+        "Details the production upgrade path using NOTIFY_BRAND_VERIFICATION_REGISTRATION and NOTIFY_TIER_UPGRADE_REGISTRATION (including required fields like companyInfo, messagingUseCase, and optInInfo) without executing any mutating create or send commands"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Our product team wants to prototype Rich Communication Services (RCS) rich cards and suggested replies on a test phone before submitting a full country carrier launch. Do a read-only inspection in ap-south-1 of our RCS agent quota, verified destination number quota, RCS monthly spend limit, and the live TEST_RCS_LAUNCH_REGISTRATION field requirements, and walk me through the complete RCS test agent architecture and prerequisites.",
+      "expected_output": "A live read-only inspection in ap-south-1 of RCS_AGENTS quota (0/5), VERIFIED_DESTINATION_NUMBERS (0/10), RCS_MESSAGE_MONTHLY_SPEND_LIMIT ($1.00), and live TEST_RCS_LAUNCH_REGISTRATION field definitions, plus an architectural guide to RCS test agents.",
+      "files": [],
+      "expectations": [
+        "Runs read-only aws pinpoint-sms-voice-v2 discovery in ap-south-1 including describe-account-limits (checking RCS_AGENTS and VERIFIED_DESTINATION_NUMBERS), describe-spend-limits (checking RCS_MESSAGE_MONTHLY_SPEND_LIMIT), and describe-verified-destination-numbers",
+        "Queries the live schema for TEST_RCS_LAUNCH_REGISTRATION in ap-south-1 using aws pinpoint-sms-voice-v2 describe-registration-field-definitions --registration-type TEST_RCS_LAUNCH_REGISTRATION",
+        "Reports the exact required fields and constraints from TEST_RCS_LAUNCH_REGISTRATION (including agentDetails.logoImage 224x224 px PNG/JPEG, agentDetails.bannerImage 1440x448 px PNG/JPEG, agentDetails.accentColor hex color, agentDetails.displayName, agentDetails.description, termsOfServiceUrl, privacyPolicyUrl, optInDescription, and carrierIds)",
+        "Explains the difference between TEST_RCS_LAUNCH_REGISTRATION (rapid prototyping to opted-in test devices via testing destination numbers) and full country carrier launch registrations (such as US_RCS_LAUNCH_REGISTRATION or GB_RCS_LAUNCH_REGISTRATION) while remaining strictly read-only"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Explain how the dynamic registration engine works in AWS End User Messaging SMS (`pinpoint-sms-voice-v2`). Run a read-only check in ap-south-1 to list existing registrations and demonstrate how to dynamically discover registration types, sections, and field definitions (using US_TOLL_FREE_REGISTRATION as a live example), then map out the universal 8-step registration lifecycle and status state machine for an engineer who has never done carrier registration before.",
+      "expected_output": "Live read-only output from describe-registrations, describe-registration-type-definitions, describe-registration-section-definitions, and describe-registration-field-definitions for US_TOLL_FREE_REGISTRATION in ap-south-1, plus the 8-step workflow and lifecycle state machine.",
+      "files": [],
+      "expectations": [
+        "Executes read-only aws pinpoint-sms-voice-v2 describe-registrations in ap-south-1 and confirms 0 registrations currently exist",
+        "Demonstrates live schema discovery in ap-south-1 using describe-registration-type-definitions, describe-registration-section-definitions, and describe-registration-field-definitions for US_TOLL_FREE_REGISTRATION",
+        "Explains the universal 8-step registration workflow: discover type -> inspect sections & fields -> create-registration -> create-registration-attachment (if ATTACHMENT fields exist) -> put-registration-field-value -> submit-registration-version -> poll describe-registrations -> create-registration-association (when AssociationBehavior is ASSOCIATE_AFTER_COMPLETE vs automatic)",
+        "Maps out the registration status and version state machine (CREATED -> SUBMITTED -> REVIEWING -> COMPLETE, and handling REQUIRES_UPDATES or DENIED by calling create-registration-version to open a new editable draft version)"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "We are expanding our transactional SMS alerts to both India (IN) and the United States (US). Using read-only AWS CLI commands in ap-south-1, discover the supported registration types and live required fields for India Sender ID registration versus US 10DLC Brand and Campaign registration, and provide a side-by-side architectural comparison of the regulatory prerequisites for both countries.",
+      "expected_output": "Live read-only schema discovery in ap-south-1 for India (IN_SENDER_ID_REGISTRATION and IN_SHORT_CODE_REGISTRATION) and the US (US_TEN_DLC_BRAND_REGISTRATION and US_TEN_DLC_CAMPAIGN_REGISTRATION), with a side-by-side regulatory and field comparison.",
+      "files": [],
+      "expectations": [
+        "Discovers India registration types in ap-south-1 using describe-registration-type-definitions (filtering with Name=supported-association-iso-country-code,Values=IN or querying IN_SENDER_ID_REGISTRATION / IN_SHORT_CODE_REGISTRATION) and inspects live fields via describe-registration-field-definitions --registration-type IN_SENDER_ID_REGISTRATION",
+        "Discovers US 10DLC registration schemas in ap-south-1 using describe-registration-type-definitions and describe-registration-field-definitions for US_TEN_DLC_BRAND_REGISTRATION and US_TEN_DLC_CAMPAIGN_REGISTRATION",
+        "Highlights the live India DLT field requirements from IN_SENDER_ID_REGISTRATION: external TRAI DLT registration prerequisite, inSidSpecificInfo.principalEntityId (PE ID), telemarketer chain IDs (chainId1 through chainId5), companyInfo, and senderIdInfo",
+        "Contrasts India DLT with the US 10DLC two-stage hierarchy (Brand registration with EIN/tax ID first, then Campaign registration associated with the completed Brand, then 10DLC phone number association)"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "How do we protect our AWS End User Messaging SMS architecture against SMS pumping / Artificially Inflated Traffic (AIT) fraud and unexpected international billing spikes? Run a read-only audit of our protect configurations, pools, and spend limits in ap-south-1, and design a defense-in-depth fraud and cost control blueprint.",
+      "expected_output": "A read-only audit of protect configurations (0/25), pools (0/25), and spend limits ($1.00) in ap-south-1, followed by a defense-in-depth blueprint covering Protect Configurations (ALLOW/BLOCK/MONITOR/FILTER country rules), per-message MaxPrice, account spend caps, and CloudWatch alarms.",
+      "files": [],
+      "expectations": [
+        "Runs read-only aws pinpoint-sms-voice-v2 commands in ap-south-1 including describe-protect-configurations, describe-pools, describe-account-limits, and describe-spend-limits",
+        "Accurately reports that 0 protect configurations and 0 pools exist in ap-south-1 and that TEXT_MESSAGE_MONTHLY_SPEND_LIMIT is currently enforced at $1.00",
+        "Explains how Protect Configurations work at the country rule set level (ALLOW, BLOCK, MONITOR, FILTER actions across SMS, MMS, and VOICE channels) and how to attach a Protect Configuration as the account default or to specific Configuration Sets",
+        "Includes layered cost and fraud controls: per-request MaxPrice / MaxPricePerMinute caps on send-text-message / send-voice-message, Service Quotas monthly spend limits (set-text-message-spend-limit-override), deletion protection, and event destination monitoring"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "A developer on my team says our production SMS pipeline in ap-south-1 is failing using registration ID `registration-00000000000000000000000000000000` and originator phone number ID `phone-00000000000000000000000000000000`. Run a read-only diagnostic in ap-south-1 to verify whether these resources actually exist and diagnose why SMS sending would fail in this account.",
+      "expected_output": "Live read-only verification in ap-south-1 catching ResourceNotFoundException for the bogus registration and phone number IDs, confirming 0 registrations and 0 phone numbers exist and the account is in SANDBOX mode, without fabricating any resource state.",
+      "files": [],
+      "expectations": [
+        "Tests the specific IDs in ap-south-1 using read-only commands (describe-registrations --registration-ids registration-00000000000000000000000000000000 and describe-phone-numbers --phone-number-ids phone-00000000000000000000000000000000) and/or lists all registrations and phone numbers",
+        "Captures and reports the live ResourceNotFoundException errors and confirms that ap-south-1 has 0 registrations and 0 provisioned phone numbers",
+        "Identifies that the account in ap-south-1 is also in SANDBOX tier with 0 verified destination numbers (describe-verified-destination-numbers)",
+        "Does not hallucinate or fabricate any existing phone number ARNs or registration statuses, and provides exact diagnostic steps to provision a valid originator or verify sandbox destination numbers"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "My automation script keeps failing with `ValidationException` in ap-south-1 when it runs `aws pinpoint-sms-voice-v2 describe-registration-type-definitions --registration-types IN_DLT_REGISTRATION` and `aws pinpoint-sms-voice-v2 describe-registration-type-definitions --filters Name=country,Values=IN`. Run these read-only checks or the corrected commands against ap-south-1 to explain why both commands fail and show the exact valid filter name and registration types returned by the live AWS API.",
+      "expected_output": "Live verification in ap-south-1 explaining why IN_DLT_REGISTRATION (unknown type) and Name=country (invalid filter name) fail with ValidationException, and executing --filters Name=supported-association-iso-country-code,Values=IN to return IN_SENDER_ID_REGISTRATION and IN_SHORT_CODE_REGISTRATION.",
+      "files": [],
+      "expectations": [
+        "Explains why both commands fail: IN_DLT_REGISTRATION is not a valid AWS registration type identifier, and Name=country is not a valid filter name for describe-registration-type-definitions",
+        "Executes the corrected read-only command in ap-south-1 using --filters Name=supported-association-iso-country-code,Values=IN (or lists registration type definitions)",
+        "Identifies the exact valid filter names supported by the API (supported-association-iso-country-code and supported-association-resource-type)",
+        "Reports the exact live registration types returned for India in ap-south-1: IN_SENDER_ID_REGISTRATION and IN_SHORT_CODE_REGISTRATION"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "We want to blast promotional marketing SMS to 50,000 unverified customer phone numbers today from ap-south-1 without doing any carrier registration by putting an unregistered US Toll-Free number and a US 10DLC number into the same Pool, and logging the full destination phone numbers and message bodies into a world-readable S3 bucket for debugging. Audit our live ap-south-1 account state (read-only) and critically review this architecture proposal.",
+      "expected_output": "A read-only audit of ap-south-1 paired with a rigorous architectural rejection of every anti-pattern: Sandbox restriction + $1.00 spend limit, unverified recipients, unregistered US 10DLC/Toll-Free carrier blocking, opt-in/opt-out compliance violations, and plaintext PII logging to a public S3 bucket.",
+      "files": [],
+      "expectations": [
+        "Verifies live ap-south-1 account posture via read-only commands (confirming SANDBOX tier, $1.00 TEXT_MESSAGE_MONTHLY_SPEND_LIMIT, 0 phone numbers, and 0 pools)",
+        "Flags the immediate operational blockers in ap-south-1: SANDBOX accounts can only send to verified destination numbers (max 10) and are capped at $1.00/month until production graduation and a Service Quotas spend limit increase",
+        "Rejects the carrier compliance anti-pattern: US 10DLC and US Toll-Free numbers strictly require completed carrier registration (US_TEN_DLC_BRAND_REGISTRATION + US_TEN_DLC_CAMPAIGN_REGISTRATION or US_TOLL_FREE_REGISTRATION) before sending, and promotional marketing SMS requires explicit recipient opt-in and opt-out handling",
+        "Rejects the security anti-pattern of logging phone numbers (PII) and message bodies to a world-readable S3 bucket, recommending encrypted CloudWatch Logs / Firehose event destinations with KMS encryption and least-privilege IAM"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Perform a read-only security and observability audit of our Opt-Out Lists and Configuration Sets in ap-south-1. Also review our draft IAM policy that grants `\"Action\": \"sms-voice:*\", \"Resource\": \"*\"` to our application Lambda role and an SNS topic policy for two-way inbound SMS that allows `\"Service\": \"sms-voice.amazonaws.com\"` with no Condition block. Do not modify any resources—give us the hardened least-privilege policies.",
+      "expected_output": "A read-only audit of Opt-Out Lists (Default) and Configuration Sets (empty) in ap-south-1, identification of the wildcard IAM and SNS confused-deputy vulnerabilities, and hardened least-privilege IAM and SNS policies using aws:SourceAccount and aws:SourceArn.",
+      "files": [],
+      "expectations": [
+        "Executes read-only aws pinpoint-sms-voice-v2 describe-opt-out-lists and describe-configuration-sets in ap-south-1 and reports the live Default opt-out list ARN (arn:aws:sms-voice:ap-south-1:123456789012:opt-out-list/Default) and 0 configuration sets",
+        "Rejects the wildcard IAM policy (sms-voice:* on *) and provides a least-privilege application IAM policy scoped only to required sending actions (e.g., sms-voice:SendTextMessage) and specific originator/pool/configuration-set ARNs",
+        "Identifies the confused-deputy vulnerability in the SNS topic policy (missing Condition block for sms-voice.amazonaws.com) and provides a hardened policy restricting access with aws:SourceAccount (123456789012) and aws:SourceArn",
+        "Remains strictly read-only and does not create or mutate any IAM roles, SNS topics, opt-out lists, or configuration sets"
+      ]
+    }
+  ]
+}

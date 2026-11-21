@@ -1,0 +1,61 @@
+{
+  "skill_name": "securing-s3-buckets",
+  "companion_skills": [
+    "aws-resilience-dr-and-migration-architecture",
+    "aws-storage",
+    "security-data-protection",
+    "troubleshooting-efs",
+    "troubleshooting-s3-files"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use `securing-s3-buckets` to help me design, validate, and troubleshoot securing s3 buckets."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Walk me through best practices and production guardrails for securing s3 buckets (`securing-s3-buckets`)."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Create and secure S3 buckets following AWS best practices for access control, encryption, monitoring, and remediation of misconfigurations. Use when the user wants to secure a new"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating securing s3 buckets?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "During our `ap-south-1` sprint readiness review, audit our securing s3 buckets setup in read-only mode and highlight top risks."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Help me configure and troubleshoot aws resilience dr and migration architecture exclusively without touching securing s3 buckets."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+    }
+  ]
+}

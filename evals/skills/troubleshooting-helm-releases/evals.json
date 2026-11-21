@@ -1,0 +1,247 @@
+{
+  "skill_name": "troubleshooting-helm-releases",
+  "evals": [
+    {
+      "id": "eval-01-an-engineer-installed-talkops-cart-in-otel-demo",
+      "prompt": "An engineer installed `talkops/cart` in `otel-demo` on `docker-desktop`, then interrupted a `helm upgrade` on `cart`—now every Helm operation fails with `Error: UPGRADE FAILED: another operation (install/upgrade/rollback) is in progress` with `cart` stuck in `pending-upgrade` at revision 2 while revision 1 was `deployed`/`superseded` (and `valkey-cart` is now running). Recover `cart` safely and verify readiness (operator approval is pre-granted once dry-run rollback succeeds).",
+      "expected_output": "Checks `helm_get_release_status` for both `valkey-cart` (confirming `valkey-cart:6379` is `deployed` and healthy so `wait-for-valkey-cart` `nc -z valkey-cart 6379` can succeed) and `cart`, inspects `helm://releases/otel-demo/cart/history` to confirm revision 1 is the last clean `deployed`/`superseded` revision, previews clearing the `pending-upgrade` lock with `helm_rollback_release(release_name=\"cart\", namespace=\"otel-demo\", revision=1, dry_run=True)`, executes `helm_rollback_release(..., revision=1, dry_run=False)` after confirmation, and polls `helm_monitor_deployment(release_name=\"cart\", namespace=\"otel-demo\", max_wait_seconds=120, check_interval=5)`.",
+      "files": [],
+      "expectations": [
+        "Verifies `valkey-cart` health and inspects `helm://releases/otel-demo/cart/history` to confirm revision `1` is a clean `deployed`/`superseded` state rather than guessing",
+        "Previews clearing the `pending-upgrade` lock via `helm_rollback_release(release_name=\"cart\", namespace=\"otel-demo\", revision=1, dry_run=True)` before executing `dry_run=False`",
+        "Verifies post-rollback convergence (`wait-for-valkey-cart` initContainer completion and `cart` Ready) via `helm_monitor_deployment(..., max_wait_seconds=120, check_interval=5)`"
+      ]
+    },
+    {
+      "id": "eval-02-after-a-chaos-test-in-otel-demo-where-someone-to",
+      "prompt": "After a chaos test in `otel-demo` where someone toggled `emailMemoryLeak` (`100x`) in `flagd`, our `email` (`talkops/email` `0.1.1`) and `ad` (`talkops/ad` `0.1.1`) Helm releases are degraded. Run the fast read-only Helm MCP triage sequence and tell us how to remediate `OOMKilledRecurring` (exit code 137 with 5 restarts on `email`'s `100Mi` limit) vs `CrashLoopBackOff` on `ad` caused by `readOnlyRootFilesystem: true`.",
+      "expected_output": "Verifies `kubernetes://contexts`, calls `helm_get_release_status(release_name=\"email\", namespace=\"otel-demo\")` and `helm_get_release_status(release_name=\"ad\", namespace=\"otel-demo\")`, reads `helm://releases/otel-demo/email/history` + `values` and `helm://releases/otel-demo/ad/values`, runs fast snapshots via `helm_monitor_deployment(..., namespace=\"otel-demo\", max_wait_seconds=15, check_interval=5)`, diagnoses `OOMKilledRecurring` (exit 137) on `email` (prescribing resetting `emailMemoryLeak` to `off` in `flagd` and/or raising `resources.limits.memory` above `100Mi` via `helm_plan_release` -> `helm_upgrade_release(..., values_strategy=\"reuse\")`), and diagnoses `ad`'s `readOnlyRootFilesystem: true` `CrashLoopBackOff` by mounting `emptyDir` on `/tmp` rather than disabling security hardening.",
+      "files": [],
+      "expectations": [
+        "Executes the complete read-only Helm MCP triage set: `kubernetes://contexts`, `helm_get_release_status`, `helm://releases/otel-demo/.../history` & `values`, and fast `helm_monitor_deployment(..., max_wait_seconds=15, check_interval=5)`",
+        "Diagnoses `OOMKilledRecurring` (exit code `137`, `>= 3` restarts) on `email` (`100Mi` limit under `emailMemoryLeak`) and prescribes `helm_plan_release` + `helm_upgrade_release(..., values_strategy=\"reuse\")` alongside disabling the `flagd` leak variant",
+        "Diagnoses `ad`'s `readOnlyRootFilesystem: true` `CrashLoopBackOff` and prescribes mounting `emptyDir` for `/tmp` rather than weakening container security"
+      ]
+    },
+    {
+      "id": "eval-03-our-very-first-helm-install-chart-of-talkops-kaf",
+      "prompt": "Our very first `helm_install_chart` of `talkops/kafka` (`0.1.1`) in `otel-demo` on `docker-desktop` failed at revision 1 because of an invalid tag/memory override, and retrying install now fails with `cannot re-use a name that is still in use`. Walk through and execute the clean recovery flow for `kafka` (operator approval is pre-granted to clear the failed revision 1 release and reinstall `talkops/kafka` `0.1.1`).",
+      "expected_output": "Checks `helm_get_release_status(release_name=\"kafka\", namespace=\"otel-demo\")` and `helm://releases/otel-demo/kafka/history` to confirm revision 1 has status `failed` with no prior `deployed` revision (distinguishing from an already-`deployed` release where `helm_upgrade_release` is used), calls `helm_uninstall_release(release_name=\"kafka\", namespace=\"otel-demo\", keep_history=False)` after confirmation, validates corrected KRaft values (`kafka.heapOpts: \"-Xmx400M -Xms400M\"`, `400Mi`/`700Mi` memory) via `helm_plan_release`, and re-runs `helm_install_chart` + `helm_monitor_deployment`.",
+      "files": [],
+      "expectations": [
+        "Distinguishes between a `deployed` release (use `helm_upgrade_release`) and a `failed` initial revision 1 of `kafka` with no prior good revision",
+        "Uses `helm_uninstall_release(release_name=\"kafka\", namespace=\"otel-demo\", keep_history=False)` after confirmation to clear the failed revision 1 record",
+        "Validates corrected `talkops/kafka` (`0.1.1`) values with `helm_plan_release` before calling `helm_install_chart` and `helm_monitor_deployment`"
+      ]
+    },
+    {
+      "id": "eval-04-installing-open-telemetry-opentelemetry-operator",
+      "prompt": "Installing `open-telemetry/opentelemetry-operator` in `otel-demo` failed with `rendered manifests contain a resource that already exists. Unable to continue with install: CustomResourceDefinition \"opentelemetrycollectors.opentelemetry.io\" in namespace \"\" exists and cannot be imported into the current release: invalid ownership metadata; annotation validation error: key \"meta.helm.sh/release-namespace\" must equal \"otel-demo\": current value is \"observability\"`. Resolve this safely.",
+      "expected_output": "Calls `helm_list_releases()` across all namespaces to confirm an existing `opentelemetry-operator` release in `observability` already owns the cluster-wide `opentelemetrycollectors.opentelemetry.io` and `instrumentations.opentelemetry.io` CRDs, warns explicitly never to delete shared cluster CRDs (which would cascade-delete all `OpenTelemetryCollector` and `Instrumentation` CRs cluster-wide!), and recommends either reusing the cluster-wide Operator in `observability` or passing `skip_crds=True` to `helm_install_chart` if a second scoped release is strictly required.",
+      "files": [],
+      "expectations": [
+        "Calls `helm_list_releases()` to identify the existing owning `opentelemetry-operator` release in namespace `observability`",
+        "Warns explicitly never to delete shared cluster CRDs (`opentelemetrycollectors.opentelemetry.io`) because doing so deletes custom resources across all namespaces",
+        "Recommends reusing the cluster-wide Operator or passing `skip_crds=True` on `helm_install_chart` for a secondary release"
+      ]
+    },
+    {
+      "id": "eval-05-in-otel-demo-helm-monitor-deployment-flagged-two",
+      "prompt": "In `otel-demo`, `helm_monitor_deployment` flagged two issues after value overrides: `product-catalog` pod `product-catalog-7c9d` is stuck in `CreateContainerConfigError` after referencing Secret `otel-pg-secret`, and `checkout` pod `checkout-5b4f` is in `ImagePullBackOff` after overriding `image.tag` to `9.9.9-checkout`. Pinpoint the exact misconfigurations via Helm MCP and remediate both.",
+      "expected_output": "Reads `helm://releases/otel-demo/product-catalog/values` + `manifest` and `helm://releases/otel-demo/checkout/values` + `manifest`, diagnoses `CreateContainerConfigError` on `product-catalog` as a missing `Secret` (`otel-pg-secret`) or missing secret key in `otel-demo`, diagnoses `ImagePullBackOff` on `checkout` as a nonexistent `ghcr.io/open-telemetry/demo:9.9.9-checkout` tag (valid `0.1.1` chart `appVersion` tag is `2.2.0-checkout`, also checking `imagePullSecrets` and `amd64`/`arm64` node arch), and previews fixes via `helm_plan_release` before `helm_upgrade_release`.",
+      "files": [],
+      "expectations": [
+        "Reads `helm://releases/otel-demo/product-catalog/values` + `manifest` and `helm://releases/otel-demo/checkout/values` + `manifest` to inspect referenced Secrets and image tags",
+        "Diagnoses `CreateContainerConfigError` on `product-catalog` as a missing `otel-pg-secret` `Secret` or missing key in `otel-demo`",
+        "Diagnoses `ImagePullBackOff` on `checkout` (`9.9.9-checkout` vs `ghcr.io/open-telemetry/demo:2.2.0-checkout`, `imagePullSecrets`, or CPU arch mismatch) and previews fixes via `helm_plan_release`"
+      ]
+    },
+    {
+      "id": "eval-06-on-our-local-docker-desktop-cluster-load-generat",
+      "prompt": "On our local `docker-desktop` cluster, `load-generator` (`talkops/load-generator` `0.1.1` in `otel-demo`) and `tempo` (`grafana/tempo` in `observability`) are both stuck `Unschedulable` in `helm_monitor_deployment`: `load-generator` reports `0/1 nodes are available: 1 Insufficient memory` and `tempo` reports `pod has unbound immediate PersistentVolumeClaims` (`storageClassName: gp3-ebs`). Walk through how to inspect and fix both.",
+      "expected_output": "Reads `kubernetes://cluster-info`, `helm://releases/otel-demo/load-generator/values`, and `helm://releases/observability/tempo/values`, identifies that `talkops/load-generator` requests `1024Mi` memory (`3000Mi` limit, `500m` CPU) by default which exceeds remaining allocatable memory alongside 17 other `OTEL-APP` services on `docker-desktop`, and identifies that `gp3-ebs` does not exist on `docker-desktop` (`hostpath` / default StorageClass required for `tempo`'s trace PVC); previews right-sized `load-generator` memory/users and `tempo` `storageClassName` via `helm_plan_release` before `helm_upgrade_release`.",
+      "files": [],
+      "expectations": [
+        "Inspects `kubernetes://cluster-info`, `helm://releases/otel-demo/load-generator/values`, and `helm://releases/observability/tempo/values`",
+        "Addresses both `Insufficient memory` on `load-generator` (right-sizing `1024Mi`/`3000Mi` memory & `locust.users` for `docker-desktop` or increasing node memory) and unbound PVCs on `tempo` (fixing `storageClassName` from `gp3-ebs` to the cluster's valid StorageClass)",
+        "Previews value changes with `helm_plan_release` before applying `helm_upgrade_release`"
+      ]
+    },
+    {
+      "id": "eval-07-installing-traefik-traefik-with-gateway-api-enab",
+      "prompt": "Installing `traefik/traefik` with Gateway API enabled to expose `OTEL-APP`'s `frontend-proxy` failed with `no matches for kind \"HTTPRoute\" in version \"gateway.networking.k8s.io/v1\"` and `chart requires kubeVersion: >=1.29.0-0`. How do we verify cluster compatibility via MCP before retrying?",
+      "expected_output": "Reads `kubernetes://cluster-info` and calls `kubernetes_check_prerequisites(min_kubernetes_version=\"1.29.0\", required_api_resources=[\"HTTPRoute\"])`, inspects `helm://charts/traefik/traefik/readme` and `values` for Kubernetes version compatibility and Gateway API CRD installation flags, and blocks retrying `helm_install_chart` until both prerequisites pass.",
+      "files": [],
+      "expectations": [
+        "Calls `kubernetes_check_prerequisites` with `min_kubernetes_version=\"1.29.0\"` and `required_api_resources=[\"HTTPRoute\"]` alongside reading `kubernetes://cluster-info`",
+        "Checks `helm://charts/traefik/traefik/readme` to verify compatible chart `version` and Gateway API CRD requirements",
+        "Blocks retrying `helm_install_chart` until Gateway API CRDs and Kubernetes version requirements are satisfied"
+      ]
+    },
+    {
+      "id": "eval-08-our-frontend-logs-in-otel-demo-mention-product-r",
+      "prompt": "Our `frontend` logs in `otel-demo` mention `PRODUCT_REVIEWS_ADDR=product-reviews:8080`. Check why the `product-reviews` Helm release in namespace `otel-demo` is crashing.",
+      "expected_output": "Checks `kubernetes://contexts`, `helm_list_releases(namespace=\"otel-demo\")`, and `helm_get_release_status(release_name=\"product-reviews\", namespace=\"otel-demo\")`; reports honestly that no `product-reviews` Helm release exists in `otel-demo` (listing actual installed `OTEL-APP` releases via `helm_list_releases()` and noting that `OTEL-APP` packages 18 charts where `frontend.dependencies.productReviews` is an optional un-deployed service), and never fabricates `product-reviews` pods, events, or revision history.",
+      "files": [],
+      "expectations": [
+        "Queries `helm_get_release_status` and `helm_list_releases` in `otel-demo` via MCP without running raw `helm` or `kubectl` shell commands",
+        "Reports honestly that `product-reviews` is not installed (explaining `frontend` wires `product-reviews:8080` as an optional dependency outside the 18 `OTEL-APP` charts)",
+        "Never fabricates `product-reviews` revision numbers, pod crash logs, or Kubernetes events"
+      ]
+    },
+    {
+      "id": "eval-09-ten-minutes-ago-we-upgraded-shipping-talkops-shi",
+      "prompt": "Ten minutes ago we upgraded `shipping` (`talkops/shipping` `0.1.1`) in `otel-demo` on `docker-desktop` to revision 2 with a faulty `readinessProbe.tcpSocket.port: 9999` override—now `shipping`'s new pod never becomes Ready (`ProgressDeadlineExceeded`). Restore healthy `shipping` service immediately (operator approval is pre-granted once dry-run rollback succeeds).",
+      "expected_output": "Inspects `helm://releases/otel-demo/shipping/history` to confirm revision 1 (`superseded`) was the last working state before faulty revision 2, runs `helm_rollback_release(release_name=\"shipping\", namespace=\"otel-demo\", revision=1, dry_run=True)` first, executes `helm_rollback_release(..., revision=1, dry_run=False, wait_timeout=\"5m\")` after operator approval, and confirms `shipping` returns to `status == \"ready\"` with `issues == []` via `helm_monitor_deployment(..., max_wait_seconds=120)`.",
+      "files": [],
+      "expectations": [
+        "Reads `helm://releases/otel-demo/shipping/history` to confirm revision `1` was the last working revision prior to faulty revision `2`",
+        "Runs `helm_rollback_release(..., revision=1, dry_run=True)` before executing live rollback (`dry_run=False`)",
+        "Confirms `status == \"ready\"` and `issues == []` using `helm_monitor_deployment` after rollback"
+      ]
+    },
+    {
+      "id": "eval-10-in-otel-demo-on-docker-desktop-helm-monitor-depl",
+      "prompt": "In `otel-demo` on `docker-desktop`, `helm_monitor_deployment` flagged two issues on our `talkops` (`https://talkops-ai.github.io/OTEL-APP` v`0.1.1`) releases after value overrides: `product-catalog` pod is stuck in `CreateContainerConfigError` after referencing Secret `otel-pg-secret`, and `checkout` pod is in `ImagePullBackOff` after overriding `image.tag` to `9.9.9-checkout`. Pinpoint the exact misconfigurations via Helm MCP and preview remediation plans via `helm_plan_release`.",
+      "expected_output": "Reads `helm://releases/otel-demo/product-catalog/values` + `manifest` and `helm://releases/otel-demo/checkout/values` + `manifest`, diagnoses `CreateContainerConfigError` on `product-catalog` as a missing `Secret` (`otel-pg-secret`) or missing secret key in `otel-demo`, diagnoses `ImagePullBackOff` on `checkout` as a nonexistent `ghcr.io/open-telemetry/demo:9.9.9-checkout` tag (valid `0.1.1` chart `appVersion` tag is `2.2.0-checkout`, also checking `imagePullSecrets` and `amd64`/`arm64` node arch), and previews fixes via `helm_plan_release` before `helm_upgrade_release`.",
+      "files": [],
+      "expectations": [
+        "Reads `helm://releases/otel-demo/product-catalog/values` + `manifest` and `helm://releases/otel-demo/checkout/values` + `manifest` to inspect referenced Secrets and image tags",
+        "Diagnoses `CreateContainerConfigError` on `product-catalog` as a missing `otel-pg-secret` `Secret` or missing key in `otel-demo`",
+        "Diagnoses `ImagePullBackOff` on `checkout` (`9.9.9-checkout` vs `ghcr.io/open-telemetry/demo:2.2.0-checkout`, `imagePullSecrets`, or CPU arch mismatch) and previews fixes via `helm_plan_release`"
+      ]
+    },
+    {
+      "id": "eval-11-an-engineer-installed-talkops-cart-in-otel-demo",
+      "prompt": "An engineer installed `talkops/cart` in `otel-demo` on `docker-desktop`, then interrupted a `helm upgrade` on `cart`—now every Helm operation fails with `Error: UPGRADE FAILED: another operation (install/upgrade/rollback) is in progress` with `cart` stuck in `pending-upgrade` at revision 2 while revision 1 was `deployed`/`superseded`. First verify via Helm MCP that `valkey-cart` is deployed and healthy in `otel-demo`, then recover `cart` safely and verify readiness (operator approval is pre-granted once dry-run rollback succeeds).",
+      "expected_output": "Checks `helm_get_release_status` for both `valkey-cart` (confirming `valkey-cart:6379` is `deployed` and healthy so `wait-for-valkey-cart` `nc -z valkey-cart 6379` can succeed) and `cart`, inspects `helm://releases/otel-demo/cart/history` to confirm revision 1 is the last clean `deployed`/`superseded` revision, previews clearing the `pending-upgrade` lock with `helm_rollback_release(release_name=\"cart\", namespace=\"otel-demo\", revision=1, dry_run=True)`, executes `helm_rollback_release(..., revision=1, dry_run=False)` after confirmation, and polls `helm_monitor_deployment(release_name=\"cart\", namespace=\"otel-demo\", max_wait_seconds=120, check_interval=5)`.",
+      "files": [],
+      "expectations": [
+        "Verifies `valkey-cart` health and inspects `helm://releases/otel-demo/cart/history` to confirm revision `1` is a clean `deployed`/`superseded` state rather than guessing",
+        "Previews clearing the `pending-upgrade` lock via `helm_rollback_release(release_name=\"cart\", namespace=\"otel-demo\", revision=1, dry_run=True)` before executing `dry_run=False`",
+        "Verifies post-rollback convergence (`wait-for-valkey-cart` initContainer completion and `cart` Ready) via `helm_monitor_deployment(..., max_wait_seconds=120, check_interval=5)`"
+      ]
+    },
+    {
+      "id": "eval-12-installing-traefik-traefik-https-traefik-github",
+      "prompt": "Installing `traefik/traefik` (`https://traefik.github.io/charts`) on `docker-desktop` with Gateway API enabled to expose `OTEL-APP`'s `frontend-proxy` failed with `no matches for kind \"HTTPRoute\" in version \"gateway.networking.k8s.io/v1\"` and `chart requires kubeVersion: >=1.29.0-0`. Execute live cluster compatibility checks (`kubernetes_check_prerequisites`) and inspect the `traefik/traefik` chart documentation via MCP right now to tell us whether we can retry.",
+      "expected_output": "Reads `kubernetes://cluster-info` and calls `kubernetes_check_prerequisites(min_kubernetes_version=\"1.29.0\", required_api_resources=[\"HTTPRoute\"])`, inspects `helm://charts/traefik/traefik/readme` and `values` for Kubernetes version compatibility and Gateway API CRD installation flags, and blocks retrying `helm_install_chart` until both prerequisites pass.",
+      "files": [],
+      "expectations": [
+        "Calls `kubernetes_check_prerequisites` with `min_kubernetes_version=\"1.29.0\"` and `required_api_resources=[\"HTTPRoute\"]` alongside reading `kubernetes://cluster-info`",
+        "Checks `helm://charts/traefik/traefik/readme` to verify compatible chart `version` and Gateway API CRD requirements",
+        "Blocks retrying `helm_install_chart` until Gateway API CRDs and Kubernetes version requirements are satisfied"
+      ]
+    },
+    {
+      "id": "eval-13-our-frontend-logs-in-otel-demo-on-docker-desktop",
+      "prompt": "Our `frontend` logs in `otel-demo` on `docker-desktop` mention `PRODUCT_REVIEWS_ADDR=product-reviews:8080`. Using Helm MCP only, check whether a `product-reviews` Helm release exists or is crashing in `otel-demo`, and inspect `talkops/frontend`'s chart values (`https://talkops-ai.github.io/OTEL-APP`) to explain why that address is configured.",
+      "expected_output": "Checks `kubernetes://contexts`, `helm_list_releases(namespace=\"otel-demo\")`, `helm_get_release_status(release_name=\"product-reviews\", namespace=\"otel-demo\")`, and `helm://charts/talkops/frontend/values` (plus `helm_search_charts` on `talkops`); reports honestly that no `product-reviews` Helm release exists in `otel-demo` (and is not among the 18 `talkops` charts while `talkops/frontend` sets `dependencies.productReviews.host: product-reviews` / `8080` by default), and never fabricates `product-reviews` pods, events, or revision history.",
+      "files": [],
+      "expectations": [
+        "Queries `helm_get_release_status` and `helm_list_releases` in `otel-demo` via MCP without running raw `helm` or `kubectl` shell commands",
+        "Reports honestly that `product-reviews` is not installed in `otel-demo` and explains from `talkops/frontend` chart values / `talkops` repo inspection why `product-reviews:8080` is referenced",
+        "Never fabricates `product-reviews` revision numbers, pod crash logs, or Kubernetes events"
+      ]
+    },
+    {
+      "id": "eval-14-both-email-and-ad-in-otel-demo-keep-restarting-a",
+      "prompt": "Both `email` and `ad` in `otel-demo` keep restarting and failing right now. Take a fast read-only look at both Helm releases, figure out why each one is crashing, and tell us the exact values fixes needed—don't apply any changes yet.",
+      "expected_output": "Reads `kubernetes://contexts`, checks `helm_get_release_status`, `history`, `values`, `manifest`, and fast `helm_monitor_deployment` (`max_wait_seconds=15`) on `email` and `ad` in `otel-demo`, discovers `email` is getting `OOMKilled` (exit code 137) due to a tiny `6Mi` memory limit and `ad` is failing health checks / `CrashLoopBackOff` due to misconfigured probe port `9099` (while `service.port` is `8080`), and recommends previewing fixes via `helm_plan_release` before upgrading.",
+      "files": [],
+      "expectations": [
+        "Runs read-only Helm MCP diagnostics (`kubernetes://contexts`, `helm_get_release_status`, `helm://releases/otel-demo/.../values` & `history`, and `helm_monitor_deployment`) on both `email` and `ad` without shell `kubectl` or `helm` commands",
+        "Discovers `email` is crashing with `OOMKilled` (exit code `137`) from an undersized `6Mi` memory limit and prescribes raising `resources.limits.memory`",
+        "Discovers `ad` is failing probes / restarting because its probe port (`9099`) does not match `service.port` (`8080`) and prescribes aligning the probe configuration via `helm_plan_release` + `helm_upgrade_release`"
+      ]
+    },
+    {
+      "id": "eval-15-someone-s-helm-upgrade-on-cart-in-otel-demo-got",
+      "prompt": "Someone's Helm upgrade on `cart` in `otel-demo` got interrupted mid-flight, and now any update to `cart` fails saying another operation is in progress. Verify that `cart`'s backing cache release in `otel-demo` is healthy first, then clear the stuck `cart` state safely and confirm `cart` comes up ready—you have my approval once your rollback preview succeeds.",
+      "expected_output": "Reads `kubernetes://contexts`, checks `helm_get_release_status` on `valkey-cart` (confirming `deployed` and healthy) and `cart` (`pending-upgrade` at rev 2), reads `helm://releases/otel-demo/cart/history` to confirm rev 1 was `superseded`/`deployed`, previews `helm_rollback_release(..., revision=1, dry_run=True)`, executes `helm_rollback_release(..., revision=1, dry_run=False)`, and verifies readiness with `helm_monitor_deployment`.",
+      "files": [],
+      "expectations": [
+        "Checks `valkey-cart` status in `otel-demo` and inspects `helm://releases/otel-demo/cart/history` to verify revision `1` is the clean prior revision",
+        "Previews clearing the `pending-upgrade` lock with `helm_rollback_release(..., revision=1, dry_run=True)` before running `dry_run=False`",
+        "Verifies `cart` reaches `status == \"ready\"` via `helm_monitor_deployment` after rolling back"
+      ]
+    },
+    {
+      "id": "eval-16-our-initial-install-of-talkops-quote-0-1-1-from",
+      "prompt": "Our initial install of `talkops/quote` (`0.1.1` from https://talkops-ai.github.io/OTEL-APP) as release `quote` in `otel-demo` failed at revision 1, and trying to install it again fails with `cannot re-use a name that is still in use`. Cleanly recover `quote` in `otel-demo` and get `talkops/quote` `0.1.1` running and healthy—you have my approval.",
+      "expected_output": "Checks `helm_get_release_status(release_name=\"quote\", namespace=\"otel-demo\")` and `helm://releases/otel-demo/quote/history` to verify revision 1 is `failed` with no prior `deployed` revision, calls `helm_uninstall_release(release_name=\"quote\", namespace=\"otel-demo\", keep_history=False)` to clear the stuck name, previews clean `talkops/quote` (`0.1.1`) via `helm_plan_release`, installs via `helm_install_chart`, and verifies `ready` via `helm_monitor_deployment`.",
+      "files": [],
+      "expectations": [
+        "Inspects `quote` release status and history to confirm revision `1` is `failed` with zero prior deployed revisions",
+        "Removes the failed revision `1` record via `helm_uninstall_release(release_name=\"quote\", namespace=\"otel-demo\", keep_history=False)`",
+        "Previews clean `talkops/quote` (`0.1.1`) via `helm_plan_release`, installs via `helm_install_chart`, and confirms pod readiness via `helm_monitor_deployment`"
+      ]
+    },
+    {
+      "id": "eval-17-trying-to-install-open-telemetry-opentelemetry-o",
+      "prompt": "Trying to install `open-telemetry/opentelemetry-operator` into `otel-demo` failed with `CustomResourceDefinition \"opentelemetrycollectors.opentelemetry.io\" in namespace \"\" exists and cannot be imported into the current release: invalid ownership metadata; annotation validation error: key \"meta.helm.sh/release-namespace\" must equal \"otel-demo\": current value is \"observability\"`. Check what's installed on the cluster and tell us how to resolve this safely.",
+      "expected_output": "Calls `helm_list_releases()` across namespaces to confirm an existing release in `observability` owns the cluster-wide OpenTelemetry CRDs, warns never to delete shared CRDs (which would cascade-delete custom resources across all namespaces), and recommends reusing the cluster-wide Operator or skipping CRDs (`skip_crds=True`) if a second release is needed.",
+      "files": [],
+      "expectations": [
+        "Checks existing Helm releases via `helm_list_releases` to verify the owning release in `observability`",
+        "Warns explicitly never to delete shared cluster CRDs (`opentelemetrycollectors.opentelemetry.io`) because doing so deletes custom resources cluster-wide",
+        "Recommends reusing the existing Operator in `observability` or passing `skip_crds=True` if installing a secondary release"
+      ]
+    },
+    {
+      "id": "eval-18-load-generator-in-otel-demo-and-tempo-in-observa",
+      "prompt": "`load-generator` in `otel-demo` and `tempo` in `observability` are both stuck `Pending` and won't schedule on our cluster. Inspect both Helm releases to find out why Kubernetes can't schedule them and preview the values changes needed to fix both—don't apply the upgrades yet.",
+      "expected_output": "Reads `kubernetes://cluster-info`, `helm_monitor_deployment`, and live `values` for `load-generator` (`otel-demo`) and `tempo` (`observability`), discovers `load-generator` requests an impossible `128Gi` of memory (`Insufficient memory`) while `tempo` requests nonexistent `storageClassName: gp3-ebs` (`unbound immediate PersistentVolumeClaims`), and previews right-sized memory and valid storage configuration via `helm_plan_release`.",
+      "files": [],
+      "expectations": [
+        "Inspects cluster info, `helm_monitor_deployment`, and live release values for both `load-generator` (`otel-demo`) and `tempo` (`observability`)",
+        "Identifies `Insufficient memory` (`128Gi` request) on `load-generator` and unbound PVC from nonexistent `gp3-ebs` StorageClass on `tempo`",
+        "Previews corrected values via `helm_plan_release` without executing `helm_upgrade_release`"
+      ]
+    },
+    {
+      "id": "eval-19-installing-traefik-traefik-https-traefik-github",
+      "prompt": "Installing `traefik/traefik` (`https://traefik.github.io/charts`) with Gateway API routing enabled failed with `no matches for kind \"HTTPRoute\" in version \"gateway.networking.k8s.io/v1\"` and `chart requires kubeVersion: >=1.29.0-0`. Check our live cluster against those requirements and inspect the `traefik` chart docs to tell us whether we can retry right now.",
+      "expected_output": "Reads `kubernetes://cluster-info`, calls `kubernetes_check_prerequisites(min_kubernetes_version=\"1.29.0\", required_api_resources=[\"HTTPRoute\"])`, inspects `helm://charts/traefik/traefik/readme` (after ensuring repo `traefik` if needed), and blocks retrying installation until `HTTPRoute` Gateway API CRDs are installed.",
+      "files": [],
+      "expectations": [
+        "Checks cluster version and `HTTPRoute` API availability via `kubernetes_check_prerequisites` and `kubernetes://cluster-info`",
+        "Inspects `traefik/traefik` chart documentation/values via Helm MCP resources for Gateway API CRD requirements",
+        "Blocks retrying installation until the missing Gateway API CRDs are satisfied"
+      ]
+    },
+    {
+      "id": "eval-20-both-opentelemetry-otel-collector-and-checkout-i",
+      "prompt": "Both `opentelemetry-otel-collector` and `checkout` in `otel-demo` are failing to come up after recent values overrides. Investigate both Helm releases without applying changes yet—pinpoint the exact misconfiguration on each one and run a dry-run upgrade plan for both fixes.",
+      "expected_output": "Runs `helm_get_release_status`, `helm_monitor_deployment`, and inspects `values` + `manifest` for `opentelemetry-otel-collector` and `checkout`, discovering `CreateContainerConfigError` on `opentelemetry-otel-collector` caused by missing `Secret` `otel-backend-secret` in `extraEnvs` and `ImagePullBackOff` on `checkout` caused by nonexistent `image.tag: \"9.9.9-checkout\"`, and previews fixes via `helm_plan_release` without mutating.",
+      "files": [],
+      "expectations": [
+        "Inspects live status, monitoring issues, values, and manifests for both `opentelemetry-otel-collector` and `checkout` via Helm MCP tools/resources",
+        "Pinpoints the missing `otel-backend-secret` `Secret` (`CreateContainerConfigError`) on `opentelemetry-otel-collector` and nonexistent `9.9.9-checkout` image tag (`ImagePullBackOff`) on `checkout`",
+        "Previews remediation plans via `helm_plan_release` without calling `helm_upgrade_release`"
+      ]
+    },
+    {
+      "id": "eval-21-a-helm-upgrade-ten-minutes-ago-broke-shipping-in",
+      "prompt": "A Helm upgrade ten minutes ago broke `shipping` in `otel-demo` and the new pod won't become Ready. Roll `shipping` back to its previous working Helm revision right away and verify it recovers—you have my approval once your dry-run rollback passes.",
+      "expected_output": "Reads `kubernetes://contexts`, checks `helm_get_release_status` and `helm://releases/otel-demo/shipping/history` to confirm revision 1 was the healthy prior revision before broken revision 2, runs `helm_rollback_release(..., revision=1, dry_run=True)`, executes `helm_rollback_release(..., revision=1, dry_run=False)`, and confirms `status == \"ready\"` with `issues == []` via `helm_monitor_deployment`.",
+      "files": [],
+      "expectations": [
+        "Inspects `helm://releases/otel-demo/shipping/history` to confirm revision `1` was the healthy revision prior to broken revision `2`",
+        "Runs a dry-run rollback preview (`dry_run=True`) to revision `1` before executing the live rollback (`dry_run=False`)",
+        "Verifies `shipping` returns to `status == \"ready\"` and `issues == []` via `helm_monitor_deployment`"
+      ]
+    },
+    {
+      "id": "eval-22-we-saw-product-reviews-addr-product-reviews-8080",
+      "prompt": "We saw `PRODUCT_REVIEWS_ADDR=product-reviews:8080` in our `frontend` configuration in `otel-demo`. Check whether a `product-reviews` Helm release is installed or crashing in `otel-demo`, and inspect the `talkops/frontend` chart (`https://talkops-ai.github.io/OTEL-APP`) to explain why that hostname appears.",
+      "expected_output": "Checks `helm_list_releases(namespace=\"otel-demo\")` and `helm_get_release_status(release_name=\"product-reviews\", namespace=\"otel-demo\")` plus `helm://charts/talkops/frontend/values` (and `helm_search_charts` on `talkops`), reports honestly that no `product-reviews` release is installed in `otel-demo` and explains `dependencies.productReviews` in `talkops/frontend` defaults without fabricating pods or revisions.",
+      "files": [],
+      "expectations": [
+        "Checks `otel-demo` releases via Helm MCP tools without running shell `helm` or `kubectl` commands",
+        "Reports honestly that `product-reviews` is not installed in `otel-demo` and explains why `product-reviews:8080` appears in `talkops/frontend`'s chart values",
+        "Does not fabricate `product-reviews` pods, crash logs, events, or revision history"
+      ]
+    }
+  ]
+}

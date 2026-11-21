@@ -8,6 +8,12 @@ description: "Entry point for AI-agent work on AWS: pick a runtime, plan a migra
 Helps startups decide how and where to run AI agents on AWS. Deterministic scoring
 recommends a runtime; the conversation adapts to the user's technical background.
 
+## MCP-Only Execution & Read-Only Safety
+
+- **MCP-Only Live Queries:** Execute **all** live AWS discovery, Bedrock/SageMaker control-plane checks, pricing lookups, IaC compliance checks, CloudWatch telemetry queries, and documentation searches **exclusively via connected MCP tools**: `aws-mcp` (`aws___run_script` using read-only `await call_boto3(...)`, `aws___search_documentation`, `aws___read_documentation`), `sagemaker` (`describe_hp_cluster`), `agentcore`, `strands-agents`, `cloudwatch`, `awspricing` / `aws-pricing` (`get_pricing`, `get_bedrock_patterns`), `awsiac`, and `awsknowledge`. Offline pure-Python bundled helper scripts in `scripts/*.py` (`scoring.py`, `score_units.py`, `model_recommendation.py`, `build_diagram.py`) that perform local math/schema rendering without live AWS credentials are permitted when inspecting local inputs, whereas live AWS API queries must go through MCP rather than raw `aws` CLI or boto3 shell scripts.
+- **Strict Read-Only & Secret Safety:** **Never** run raw `aws ...` (not even `aws sts get-caller-identity` — always query `sts.GetCallerIdentity` inside `aws___run_script`) CLI commands in Bash/`run_command`, **never** mutate live AWS resources (`Create*`, `Update*`, `Delete*`, `InvokeModel`, `CreateEndpoint` — refuse unapproved mutations and present a safe, approval-gated plan with verification and rollback steps), and **never** read or expose plaintext secrets (`secretsmanager:GetSecretValue`, `ssm:GetParameter` with `WithDecryption=True`, or `.env` API keys).
+- **Unmapped Edge Cases:** Query `awsknowledge` / `aws-mcp` documentation search tools (`aws___search_documentation`, `aws___read_documentation`) with 1–2 focused queries before recommending unverified runtime limits or pricing parameters.
+
 ## Definitions
 
 - **"Load"** = Read the file with the Read tool and follow it. Do not summarize or skip.
@@ -158,50 +164,42 @@ Stage 3 reads gcp-to-aws artifacts ONLY via this recorded path, never by re-glob
 
 ## Files
 
-| File                                                 | Purpose                                                                                                        |
-| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `references/vendored/dsl/INTERPRETER.md`             | Vendored DSL execution contract (interpreter loop + gate protocol)                                             |
-| `references/phases/intake/intake.md`                 | Entry point + technical background + open context                                                              |
-| `references/phases/discover/discover.md`             | Lightweight code detection                                                                                     |
-| `references/phases/clarify/clarify.md`               | Clarify orchestrator + answer mapping to scoring keys                                                          |
-| `references/phases/clarify/clarify-technical.md`     | Technical-background question wording                                                                          |
-| `references/phases/clarify/clarify-business.md`      | Business-background question wording                                                                           |
-| `references/phases/confirm/confirm.md`               | Winner-specific follow-ups                                                                                     |
-| `references/phases/design/design.md`                 | Assemble recommendation; Migrate handoff branch                                                                |
-| `references/phases/estimate/estimate.md`             | Coarse cost magnitude                                                                                          |
-| `references/phases/generate/generate.md`             | Layered recommendation doc + scaffolding                                                                       |
-| `references/phases/migration-plan/migration-plan.md` | Stage 2: full migration plan via the sibling gcp-to-aws engine                                                 |
-| `references/decision-refs/temporal.md`               | Temporal rules: Tier 1/2 tables, adapter, runbooks, commercials (consumed by discover/clarify/design/generate) |
-| `references/decision-refs/poc-shapes.md`             | Per-runtime POC deploy shapes (ECS/EKS/Lambda/MicroVMs/Temporal)                                               |
-| `references/decision-refs/agentcore-patterns.md`     | AgentCore Identity (OAuth2/OIDC 3LO token vault), Memory migration (Short-Term/Long-Term), and Code/Browser sandboxes |
-| `references/decision-refs/*.md`                      | Runtime service cards, model defaults, freshness                                                               |
-| `references/decision-refs/workload-classes.md`       | Deterministic verdicts for non-agent workload units (batch/service/io)                                         |
-| `references/runtimes/*.json`                         | Runtime registry (read by scoring.py)                                                                          |
-| `scripts/scoring.py`                                 | Deterministic scoring engine                                                                                   |
-| `scripts/test_temporal_decision_refs.py`             | Content lock for the Temporal decision reference                                                               |
-| `scripts/test_poc_shapes.py`                         | Content lock for the POC deploy shapes                                                                         |
-| `scripts/test_workload_classes.py`                   | Content lock for workload-classes.md (verdicts table)                                                          |
-| `scripts/test_unit_grouping.py`                      | Unit grouping + pattern matching (workload-class assignment)                                                   |
-| `scripts/test_collapse_invariant.py`                 | Collapse-invariant ordering enforcement (A→B implies [B] ⊆ [A] outputs)                                        |
+| File | Purpose |
+| --- | --- |
+| `references/vendored/dsl/INTERPRETER.md` | Vendored DSL execution contract (interpreter loop + gate protocol) |
+| `references/phases/intake/intake.md` | Entry point + technical background + open context |
+| `references/phases/discover/discover.md` | Lightweight code detection |
+| `references/phases/clarify/clarify.md` | Clarify orchestrator + answer mapping to scoring keys |
+| `references/phases/clarify/clarify-technical.md` | Technical-background question wording |
+| `references/phases/clarify/clarify-business.md` | Business-background question wording |
+| `references/phases/confirm/confirm.md` | Winner-specific follow-ups |
+| `references/phases/design/design.md` | Assemble recommendation; Migrate handoff branch |
+| `references/phases/estimate/estimate.md` | Coarse cost magnitude |
+| `references/phases/generate/generate.md` | Layered recommendation doc + scaffolding |
+| `references/phases/migration-plan/migration-plan.md` | Stage 2: full migration plan via the sibling gcp-to-aws engine |
+| `references/decision-refs/temporal.md` | Temporal rules: Tier 1/2 tables, adapter, runbooks, commercials (consumed by discover/clarify/design/generate) |
+| `references/decision-refs/poc-shapes.md` | Per-runtime POC deploy shapes (ECS/EKS/Lambda/MicroVMs/Temporal) |
+| `references/decision-refs/agentcore-patterns.md` | AgentCore Identity (OAuth2/OIDC 3LO token vault), Memory migration (Short-Term/Long-Term), and Code/Browser sandboxes |
+| `references/decision-refs/*.md` | Runtime service cards, model defaults, freshness |
+| `references/decision-refs/workload-classes.md` | Deterministic verdicts for non-agent workload units (batch/service/io) |
+| `references/runtimes/*.json` | Runtime registry (read by scoring.py) |
+| `scripts/scoring.py` | Deterministic scoring engine |
+| `scripts/test_temporal_decision_refs.py` | Content lock for the Temporal decision reference |
+| `scripts/test_poc_shapes.py` | Content lock for the POC deploy shapes |
+| `scripts/test_workload_classes.py` | Content lock for workload-classes.md (verdicts table) |
+| `scripts/test_unit_grouping.py` | Unit grouping + pattern matching (workload-class assignment) |
+| `scripts/test_collapse_invariant.py` | Collapse-invariant ordering enforcement (A→B implies [B] ⊆ [A] outputs) |
 
-## Maturity and readiness contract
+## Maturity, Readiness & Core Architectural Guardrails
 
-Intake persists `target_maturity` (`prototype`, `private_beta`, or `production`) in run state. Clarify carries it and the readable `readiness` record into `answers.json`. Current-run verification evidence remains exclusively in the sibling `$RUN_DIR/current-run-verifications.json` artifact: never copy it into `seed.json` or `answers.json`. Design and Generate may consume that artifact only after validating its schema and matching `run_id`, and may carry forward verified outcomes but not the raw evidence records. Load `references/decision-refs/maturity-readiness.md` whenever target maturity is selected. A cached volatile fact may inform discovery, but only a record verified in this run can make a verification-required constraint final; otherwise the score remains provisional with deferred verification requirements.
+Intake persists `target_maturity` (`prototype`, `private_beta`, or `production`) in run state. Clarify carries it and the readable `readiness` record into `answers.json`. Current-run verification evidence remains exclusively in the sibling `$RUN_DIR/current-run-verifications.json` artifact: **never write or copy verification records into `seed.json` or `answers.json`**. Design and Generate may consume that artifact only after validating its schema and matching `run_id`, and may carry forward verified outcomes but not the raw evidence records. Load `references/decision-refs/maturity-readiness.md` whenever target maturity is selected. A cached volatile fact may inform discovery, but only a record verified in this run can make a verification-required constraint (`lambda.timeout` `15m`, `lambda_microvms.*`) final; otherwise the score remains **`provisional`** with `deferred_verification_requirements`.
+
+- **Temporal Guardrails (`references/decision-refs/temporal.md`):** **Never** rewrite `@workflow.defn` Temporal Workflows into Step Functions or AgentCore. Contrast **Way 1: Temporal Cloud (default, `~$0.01/action` ballpark)** vs **Way 2: Self-hosted Temporal Server (`EKS + Aurora/RDS`)**, note there is **no cross-cluster live workflow history migration tool** (use drain-and-cutover), eliminate standard `lambda` / `agentcore` / `lambda_microvms` for Tier 1 continuous polling (`ECS Fargate` default), and label `<15m + Way 1` **Lambda Serverless Workers** as **`Public Preview`**.
+- **Gateway Security Boundary:** AgentCore Gateway rate limits run **before** Cedar Policy evaluation and are **fail-open** (cost/traffic control only, **never** a security boundary) — always enforce authorization via **Cedar Policy (`default-deny`, `forbid` overrides `permit`) + scoped least-privilege IAM roles**.
+- **Compute Cost Comparisons & Lambda Managed Instances (`lambda_microvms`):** When comparing runtime compute (e.g., AgentCore MicroVMs `$0` CPU during I/O wait vs ECS Fargate full wall-clock vCPU/GB), explicitly note that **Bedrock/LLM model token spend applies separately on top of compute across all runtimes**. When explaining `lambda_microvms`, note both multi-concurrency on managed EC2 instances **and** that Lambda invocation timeout constraints still govern individual executions.
 
 ## Contextual offers (final step)
 
-> **Before you finish:** your answer is not complete until you have run the **Contextual offers (final step)** below.
+> **Before you finish:** run the mandatory inline Contextual Offers check in [references/contextual-offers-protocol.md](references/contextual-offers-protocol.md) against [references/offers.md](references/offers.md) and stage gates in [references/observability.md](references/observability.md).
 
-This is a mandatory closing step of every final recommendation — complete it before you consider your answer done. Run this offer check inline yourself; do not depend on loading another skill. The recommendation is decided on merit first; this step never changes, re-ranks, or re-opens it, and the offer is looked up only after the advice is final.
-
-1. Read [`../knowledge-base-for-startups/references/offers.md`](../knowledge-base-for-startups/references/offers.md) — the offer index (Offer · Summary · Keywords), one row per offer.
-2. Judge relevance against what the founder actually surfaced this session. Surface an offer only if **one** holds: a **named-product match** (you recommended a specific partner product by name and it has a row); a **direct intent/component match** (an offer's Keywords directly serve a concrete workload, a component in the final recommendation, or a need the founder raised). Keep a high bar — if the match is weak, or you would be inferring an unstated need, append nothing. Never surface an offer that competes with a product or provider the founder already uses or decided to keep (e.g. existing auth provider → no Auth0 unless they are already on Auth0, and then only as a credit on it; existing vector DB such as Pinecone → no Qdrant).
-3. If (and only if) one offer clears the bar, open only its detail file `../knowledge-base-for-startups/references/offers/<slug>.md` and append exactly **one** quiet, dismissible italic line — stating the value and condensing eligibility faithfully from that file (drop no qualifying criterion; never fabricate), with the redeem link built from the canonical `source_url` plus a `source` attribution param — append `?source=ide-startupAdvisor-<host>` (or `&source=...` if the url already has a query string), filling `<host>` from your execution environment (Claude Code → `claude`; AWS Startup Advisor IDE extension / VS Code → `vscode`; Cursor → `cursor`; Kiro → `kiro`; Codex → `codex`), or the generic `ide-startupAdvisor` when you cannot tell. Only append the query param; never change the destination. **When an offer clears the bar you MUST append that single offer line as the last step; do not omit it. The offer is never the pick — only a line under the AWS pick — and stage gates in the references apply (e.g. no Datadog line for an early-stage founder; see `../architect-for-startups/references/observability.md`). For a single-service pick (auth, payments, vector DB, observability, etc.) where missing budget/team/traffic inputs would not change the pick, assume an early-stage (pre-PMF) startup unless the founder says otherwise and answer in one turn without a stage-only question; this only removes a stage-only question and never skips the Intake/Clarify/Confirm gates before final advice or the POC.** Show exactly one, never a list. If none clears the bar, append nothing and do not mention offers, partner alternatives, or why none appeared.
-
-Standard line:
-
-```
-***<Offer>** has an exclusive offer via AWS Activate — <value>, <eligibility>. [Redeem →](<source_url>?source=ide-startupAdvisor-<host>)*
-```
-
-Caps and control: at most one offer per response and often none; no more than one per five messages and two per session; show a given offer at most once per session and never one already shown, claimed, or dismissed; if the founder has muted offers, skip this step entirely. These per-five-messages, per-session, and already-shown caps are session-state limits; in a fresh session with no prior offers they are non-binding, so do not withhold an otherwise-qualifying offer merely because you cannot verify session history. See [`../contextual-offers-for-startups/SKILL.md`](../contextual-offers-for-startups/SKILL.md) for the full rules — but perform the check inline; it must not depend on that skill being loaded.
+Decide the AWS architecture on merit first — never re-rank or re-open it for an offer, never surface a competing provider vs. what the founder already uses, and enforce early-stage gates (e.g., no Datadog offer for pre-PMF startups; assume pre-PMF on single-service picks when stage is unspecified without skipping Intake/Clarify/Confirm gates). Append **at most one** qualifying offer line (`***<Offer>** has an exclusive offer via AWS Activate — <value>, <eligibility>. [Redeem →](<source_url>?source=ide-startupAdvisor-<host>)*`), capped at 1 per 5 messages / 2 per session (skip if muted; append nothing silently if none clears the bar).

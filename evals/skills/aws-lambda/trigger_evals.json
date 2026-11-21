@@ -1,0 +1,95 @@
+{
+  "skill_name": "aws-lambda",
+  "companion_skills": [
+    "aws-serverless",
+    "debugging-lambda-timeouts",
+    "lambda-event-source-mappings-esm",
+    "connecting-lambda-to-api-gateway"
+  ],
+  "queries": [
+    {
+      "id": "trig-pos-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Build a TypeScript AWS Lambda function with AWS CDK and AWS Lambda Powertools idempotency."
+    },
+    {
+      "id": "trig-pos-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Deploy a FastAPI app on AWS Lambda using AWS Lambda Web Adapter with response streaming."
+    },
+    {
+      "id": "trig-pos-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why did my Python Lambda fail with `invalid ELF header` when built on macOS without `sam build --use-container`?"
+    },
+    {
+      "id": "trig-pos-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Check our `ap-south-1` Lambda `GetAccountSettings` concurrency limits and review module-level state reuse risks."
+    },
+    {
+      "id": "trig-pos-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure AWS Lambda SnapStart `afterRestore` hooks and compare Lambda 6 MB sync vs 200 MB streaming payload limits."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure AWS Direct Connect MACsec Layer-2 encryption and BGP BFD timers."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Set up an AWS Shield Advanced protection group and SRT proactive engagement."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Convert COBOL CICS programs to Java Spring Boot using AWS Blu Age."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Run PromQL multi-window multi-burn-rate SLO queries against Amazon Managed Service for Prometheus."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Perform a 6-pillar AWS Well-Architected Framework scorecard review."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure Db2 HADR standby instances on Amazon RDS for Db2."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Enable DNSSEC KSK signing on a public Route 53 hosted zone."
+    }
+  ]
+}

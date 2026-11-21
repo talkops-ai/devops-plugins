@@ -1,0 +1,99 @@
+{
+  "skill_name": "dx-vif-resilience",
+  "companion_skills": [
+    "directconnect",
+    "aws-routing",
+    "sitetositevpn",
+    "transitgateway",
+    "aws-vpc-dns-investigation"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Run a Direct Connect VIF Layer-3 BGP prefix resilience assessment across our redundant VIFs in both `accepted` and `advertised` directions."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Audit BGP route symmetry across `dxvif-aaa` and `dxvif-bbb` to check for blackhole gaps, partial supernet residuals, and device/location diversity."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Check whether our AWS Direct Connect virtual interfaces advertise and receive equivalent CIDR prefixes so failover won't blackhole traffic."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Last month when our primary Mumbai Direct Connect circuit flapped, 4 on-prem subnets went completely unreachable even though our secondary VIF stayed BGP UP. Audit our VIF route tables to see what prefixes are missing on failover."
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "`VIF-B` advertises `10.10.0.0/22` from on-prem while `VIF-A` only advertises `10.10.1.0/24`—calculate the exact uncovered CIDR space that will blackhole if `VIF-B` fails."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We have two Transit VIFs on two different Direct Connect Gateways terminating at our datacenter—verify that both VIFs advertise the same AWS VPC prefixes back to on-premises."
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "`ListVirtualInterfaceRoutes` shows `dxvif-01` (`bgpStatus: up`) has 280 accepted routes while `dxvif-02` (`bgpStatus: up`) has 0 accepted routes right after a router maintenance window, and both share `EqMu1`. Assess our failover posture."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Our Direct Connect Resiliency Group connections show `FlatRateTier1` instead of `PortPairFlatRateTier1` and our Transit VIF sits at `199` advertised prefixes—audit our DX VIF failover gaps."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Compare `accepted` and `advertised` prefix sets across our 3-VIF Direct Connect setup (`dxvif-p1`, `dxvif-p2`, `dxvif-dr`) ignoring `0.0.0.0/0` default route masking."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure an AWS Site-to-Site IPsec VPN connection with BGP over two tunnels to a Virtual Private Gateway and tune IKEv2 phase-1 parameters.",
+      "expected_alternative_skill": "sitetositevpn"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Diagnose why `internal.corp` DNS queries inside `vpc-0167f5c4bb94b89db` time out when both a Route 53 Private Hosted Zone and a Resolver FORWARD rule exist.",
+      "expected_alternative_skill": "aws-vpc-dns-investigation"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Centralize east-west VPC-to-VPC packet inspection through AWS Network Firewall attached to AWS Transit Gateway with `ApplianceModeSupport: enable`.",
+      "expected_alternative_skill": "transitgateway"
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "skill_name": "eks-karpenter-and-addon-upgrades",
+  "companion_skills": [
+    "eks-al2-to-al2023-migration",
+    "eks-eos-and-extended-support-cost",
+    "eks-post-upgrade-validation-and-rollback",
+    "eks-operations-and-troubleshooting"
+  ],
+  "queries": [
+    {
+      "id": "trig-pos-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Paginate `eks:DescribeAddonVersions` with integer `eksbuild` sorting and check `PRESERVE` vs `OVERWRITE` add-on conflicts for EKS 1.32."
+    },
+    {
+      "id": "trig-pos-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Plan a two-step Helm upgrade for Karpenter from `v0.37` to `v1.1` (`karpenter-crd` then `karpenter`) and migrate `v1beta1` `NodePool` manifests."
+    },
+    {
+      "id": "trig-pos-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why did `resolve_conflicts_on_update = OVERWRITE` wipe our custom `Corefile` and `ENABLE_PREFIX_DELEGATION` during an EKS add-on update?"
+    },
+    {
+      "id": "trig-pos-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Migrate our retiring `k8s.io/ingress-nginx` controller on EKS to AWS Load Balancer Controller or Kubernetes Gateway API."
+    },
+    {
+      "id": "trig-pos-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "In what sequence should we upgrade `vpc-cni`, `coredns`, `kube-proxy`, `eks-pod-identity-agent`, and `aws-ebs-csi-driver` on EKS?"
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Translate `/etc/eks/bootstrap.sh` flags into AL2023 `nodeadm` `NodeConfig` MIME user data."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Calculate our fleet's avoidable EKS Extended Support `$0.50/hr` surcharge across 15 clusters."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Triage an EKS Managed Node Group upgrade stuck in `PodEvictionFailure` and check 7-day control-plane rollback insights."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Sweep Security Hub, GuardDuty, and Inspector findings in `ap-south-1` and map resource ARNs to Terraform."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure DynamoDB Global Tables and On-Demand `WarmThroughput`."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Set up a multi-region CloudTrail trail encrypted with a KMS CMK."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Troubleshoot AWS Direct Connect BGP MD5 bring-up and SiteLink routing."
+    }
+  ]
+}

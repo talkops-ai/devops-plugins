@@ -10,6 +10,7 @@ description: >-
   Jobs. Coordinates with endpoint-diagnostics for read-only endpoint health snapshots. Use when
   configuring production rollouts, Model Monitor drift detection, CloudWatch alarms, or debugging
   SageMaker jobs/endpoints.
+  Always query live AWS state via connected MCP tools (never raw aws CLI).
 metadata:
   version: "1.0.0"
 ---
@@ -17,6 +18,12 @@ metadata:
 # SageMaker Observability, Deployment Guardrails, Drift Monitoring & Governance
 
 Protects production ML endpoints from silent model degradation, bad deployments, and capacity/latency outages through automated guardrails, Model Monitor schedules, and CloudWatch MCP diagnostics.
+
+## MCP-Only Execution & Read-Only Safety
+
+- **MCP-Only Live Queries:** Execute **all** live AWS discovery, Bedrock/SageMaker control-plane checks, pricing lookups, IaC compliance checks, CloudWatch telemetry queries, and documentation searches **exclusively via connected MCP tools**: `aws-mcp` (`aws___run_script` using read-only `await call_boto3(...)`, `aws___search_documentation`, `aws___read_documentation`), `sagemaker` (`describe_hp_cluster`), `agentcore`, `strands-agents`, `cloudwatch`, `awspricing` (`get_pricing`, `get_bedrock_patterns`), `awsiac`, and `awsknowledge`. Offline pure-Python bundled helper scripts in `scripts/*.py` that perform local math/schema rendering without live AWS credentials are permitted when inspecting local inputs, whereas live AWS API queries must go through MCP rather than raw `aws` CLI or boto3 shell scripts (`scripts/collect_diagnostics.py` defines the exact read-only query specification and serves as an operator standalone utility).
+- **Strict Read-Only & Secret Safety:** **Never** run raw `aws ...` (not even `aws sts get-caller-identity` — always query `sts.GetCallerIdentity` inside `aws___run_script`) CLI commands in Bash/`run_command`, **never** mutate live AWS resources (`Create*`, `Update*`, `Delete*`, `InvokeModel`, `CreateEndpoint` — refuse unapproved mutations and **always include copy-pasteable CloudFormation or `boto3` `DeploymentConfig` / `MonitoringSchedule` code blocks** alongside the safe approval-gated Blue/Green rollout and alarm-driven rollback plan), and **never** read or expose plaintext secrets (`secretsmanager:GetSecretValue`, `ssm:GetParameter` with `WithDecryption=True`, or `.env` API keys).
+- **Unmapped Edge Cases:** Query `awsknowledge` / `aws-mcp` documentation search tools (`aws___search_documentation`, `aws___read_documentation`) with 1–2 focused queries before recommending unverified parameters.
 
 ## When to Activate
 
@@ -53,6 +60,7 @@ Never overwrite a production endpoint in-place without traffic shifting and auto
 2. **Step B — Run Baseline Profiling Job**:
    - Run the SageMaker Model Monitor Analyzer container (`sagemaker-model-monitor-analyzer`) or Clarify container against the training/validation baseline dataset to produce `statistics.json` and `constraints.json` in S3.
 3. **Step C — Create Scheduled Monitoring Job (`CreateMonitoringSchedule`)**:
+   - Always configure `NetworkConfig` (`VpcConfig`, `EnableInterContainerTrafficEncryption: True`) and `JobResources.ClusterConfig.VolumeKmsKeyId` explicitly in every monitoring job definition snippet (never leave security configs as undefined placeholders).
    - **Data Quality**: Runs hourly (`cron(0 * ? * * *)`) or daily (`cron(0 20 * * ? *)`) comparing captured endpoint inputs against `constraints.json`.
    - **Model Quality**: Merges captured endpoint predictions with delayed ground-truth labels (`StartTimeOffset: "-PT24H"`, `EndTimeOffset: "-PT1H"`) to alert when live F1/Accuracy/AUC/RMSE drops below threshold.
    - **Bias & Explainability (Clarify)**: Detects live demographic bias shift (`DPL`, `DI`) and SHAP feature attribution ranking drift.
@@ -65,7 +73,7 @@ Never overwrite a production endpoint in-place without traffic shifting and auto
 
 When diagnosing latency spikes, 4XX/5XX errors, or training/endpoint crashes:
 
-1. **Run `endpoint-diagnostics`** (`scripts/collect_diagnostics.py`) for immediate `DescribeEndpoint`, 5-minute CloudWatch metrics, and recent container logs.
+1. **Execute `endpoint-diagnostics` Queries via MCP** (`aws-mcp` `aws___run_script` + `cloudwatch` MCP following the query specification in `scripts/collect_diagnostics.py`) for immediate `DescribeEndpoint`, 5-minute CloudWatch metrics, and recent container logs.
 2. **Query `cloudwatch` MCP Server for Deep Forensics**:
    - **Log Groups**:
      - `/aws/sagemaker/Endpoints/<endpoint-name>`

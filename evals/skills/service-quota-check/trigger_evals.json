@@ -1,0 +1,99 @@
+{
+  "skill_name": "service-quota-check",
+  "companion_skills": [
+    "aws-landing-zone-and-platform-governance",
+    "aws-observability-and-incident-triage",
+    "aws-compute",
+    "aws-finops-and-cost-optimization",
+    "eks-karpenter-autoscaling"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Run a Service Quota check in ap-south-1 for EC2 On-Demand vCPUs (`L-1216C47A`), VPCs per Region (`L-F678F1CE`), and NAT Gateways per AZ (`L-FE5A380F`)."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Check our AWS service quota utilization for Lambda concurrent executions and DynamoDB On-Demand throughput in ap-south-1 and tell me if we are above the 85% risk threshold."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Check if there are any pending Service Quotas increase requests in ap-south-1 and verify whether `L-DC2B2D3D` is adjustable via API."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Our Auto Scaling Group in ap-south-1 failed to launch new instances with `VcpuLimitExceeded` and `AddressLimitExceeded`—check which AWS account limits we just hit and how much headroom we have left."
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Before our Black Friday launch next week where we plan to add 300 Fargate tasks and 3 new VPCs in ap-south-1, verify that our regional AWS account limits won't block us."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "A developer got `TooManyRequestsException` and `LimitExceededException` while creating Target Groups and ALBs in ap-south-1—check our current account limits vs usage."
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "CloudWatch alarm `AWS/Usage-EC2-vCPU-High` just paged on-call in `ap-south-1`. Pull the applied limit, `UsageMetric` utilization %, pending quota requests, and calculate the recommended new limit."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Terraform `apply` failed in `ap-south-1` with `Error: creating EC2 Subnet: VpcLimitExceeded: The maximum number of VPCs has been reached`. Check our current limit and utilization."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "We want to launch a `g5.4xlarge` GPU node in `ap-south-1` today—check whether our G/VT vCPU limit is still stuck at `0` and show the exact limit increase steps."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Calculate our Savings Plans hourly commitment target at 80% coverage after deducting $5,840/month in right-sizing opportunities.",
+      "expected_alternative_skill": "aws-finops-and-cost-optimization"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Why does Node.js `keepAliveTimeout = 5s` behind an Application Load Balancer with `idle_timeout = 60s` cause intermittent HTTP 502 errors?",
+      "expected_alternative_skill": "aws-observability-and-incident-triage"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Write a `karpenter.sh/v1` `NodePool` YAML with `consolidationPolicy: WhenEmptyOrUnderutilized` and `karpenter.sh/do-not-disrupt` pod annotations.",
+      "expected_alternative_skill": "eks-karpenter-autoscaling"
+    }
+  ]
+}

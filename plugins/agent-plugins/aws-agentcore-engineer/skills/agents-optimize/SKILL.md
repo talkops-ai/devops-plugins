@@ -9,7 +9,7 @@ description: >
   dashboard", "how much does my agent cost", "cost optimization", "logs
   not showing up", "logs missing", "spans not found", "eval failing",
   "eval error", "dev traces", "local traces", "agentcore dev traces",
-  "traces to CloudWatch".
+  "traces to CloudWatch", "Evaluate API", "sessionSpans", "AgentCore pricing".
   Not for debugging errors or crashes — use agents-debug. Slow but
   correct routes here; broken routes to debug.
 allowed-tools: Read Grep Glob Bash
@@ -37,6 +37,12 @@ Do NOT use for:
 - Debugging a specific broken agent (wrong answers, errors) → use `agents-debug`
 - Production security hardening (IAM, auth) → use `agents-harden`
 
+## MCP-Only Execution & Read-Only Safety
+
+- **MCP-Only Live Discovery & Docs:** Execute **all** live AWS discovery, AgentCore runtime/gateway/memory/evaluator inspection, telemetry/log/trace queries, pricing checks, IAM reviews, and documentation lookups **exclusively via connected MCP tools**: `aws-mcp` (`aws___run_script` using read-only `await call_boto3(...)`, `aws___search_documentation`, `aws___read_documentation`), `agentcore` (`search_agentcore_docs`, `fetch_agentcore_doc`, `list_agent_runtimes`, `get_agent_runtime`, etc.), `strands-agents` (`search_docs`, `fetch_doc`, `find_integrations`), `cloudwatch`, `appsignals`, `cloudtrail`, `awspricing`, `awsiac`, and `awsknowledge`.
+- **Zero Raw CLI Execution, Strictly Read-Only & Secret-Safe:** **Never** run raw `aws ...` or `agentcore ...` CLI commands in Bash/`run_command` to query or mutate live AWS accounts (present CLI commands in Markdown strictly as operator reference snippets). **Never** invoke live mutations (`create_*`, `update_*`, `delete_*`, `InvokeAgentRuntime`, `InvokeModel`) — refuse unapproved destructive/mutating requests and explain the safe, approval-gated operator workflow with verification and rollback steps. **Never** read or print plaintext secrets (`secretsmanager:GetSecretValue`, `ssm:GetParameter` with `WithDecryption=True`, `.env` / `.env.local` values, or raw memory record contents).
+- **Edge-Case Documentation Fallback:** For unmapped AWS/AgentCore/Bedrock observability, evaluator, or pricing edge cases, run 1–2 focused queries via `agentcore`, `strands-agents`, `awsknowledge`, or `aws-mcp` documentation search tools.
+
 ## Input
 
 `$ARGUMENTS` can be:
@@ -48,13 +54,13 @@ Do NOT use for:
 
 ## Process
 
-### Step 0: Verify CLI version
+### Step 0: Verify CLI version prerequisite
 
-Run `agentcore --version`. This skill requires v0.9.0 or later.
+AgentCore CLI `>= 0.9.0` is required (operators can check locally via `agentcore --version` and upgrade via `agentcore update`).
 
 ### Step 1: Read project context
 
-Read `agentcore/agentcore.json` to understand existing evaluators, online eval configs, and agent setup.
+Read `agentcore/agentcore.json` to understand existing evaluators, online eval configs, and agent setup (never read `.env` or `agentcore/.env.local`).
 
 If `agentcore/agentcore.json` is not found:
 > "This skill requires an AgentCore project. Use `agents-get-started` to create one."
@@ -84,7 +90,8 @@ Depends on the workflow — see the loaded reference for specific outputs.
 
 ## Quality criteria
 
-- Evaluator configuration uses only valid CLI flags
+- Evaluator configuration uses only valid CLI flags (when discussing custom `--rating-scale` definitions, contrast against all 4 built-in CLI presets: `1-5-quality`, `1-3-simple`, `pass-fail`, and `good-neutral-bad`)
+- Local vs. deployed eval boundary is explicit: works **without deploying** (`agentcore dev` local spans -> `agentcore run eval`, `OTEL_SDK_DISABLED=true pytest` for `@custom_code_based_evaluator`, `evaluate(sessionSpans=...)`) vs. **requires deploying** (`StartBatchEvaluation` / `agentcore run batch-evaluation`, `OnDemandEvaluationDatasetRunner`, and `online-eval`)
 - Online eval sampling rate is appropriate (not 100% in production without discussion)
 - CI/CD quality gate has a clear pass/fail threshold
 - Observability setup includes both tracing and logging

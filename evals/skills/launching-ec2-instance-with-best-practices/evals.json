@@ -1,0 +1,115 @@
+{
+  "skill_name": "launching-ec2-instance-with-best-practices",
+  "evals": [
+    {
+      "id": "eval-01-how-should-we-configure-network-access-security",
+      "prompt": "How should we configure network access, security groups, and IAM permissions when launching a new EC2 instance so our engineers can shell into the instance without opening inbound port 22 or managing SSH key pairs? Also explain what changes if a legacy vendor appliance explicitly requires an allow_ssh_from CIDR.",
+      "expected_output": "Activates the launching-ec2-instance-with-best-practices skill, recommends SSM Session Manager with AmazonSSMManagedInstanceCore on the instance profile, no SSH key pair, and zero inbound security group rules by default; explains restricting TCP port 22 strictly to the specified allow_ssh_from CIDR (never 0.0.0.0/0) when SSH is explicitly required.",
+      "files": [],
+      "expectations": [
+        "Activates the launching-ec2-instance-with-best-practices skill and recommends AWS Systems Manager (SSM) Session Manager as the default access pattern by attaching AmazonSSMManagedInstanceCore to the EC2 Instance Profile, omitting the SSH KeyName, and configuring the Security Group with zero inbound rules (outbound HTTPS 443 only)",
+        "Explains that when allow_ssh_from is explicitly required for a legacy workload, inbound TCP port 22 must be restricted strictly to that specific bastion or corporate CIDR block (never 0.0.0.0/0 or ::/0)",
+        "Mentions that private subnet instances without internet/NAT access require VPC Interface Endpoints (ssm, ssmmessages, ec2messages) for SSM Session Manager connectivity"
+      ]
+    },
+    {
+      "id": "eval-02-aws-compute-launch-instance-perform-a-strictly-r",
+      "prompt": "/aws-compute:launch-instance Perform a strictly read-only pre-launch discovery in ap-south-1: resolve the latest Amazon Linux 2023 arm64 and x86_64 AMI IDs via SSM Parameter Store or EC2 describe-images, inspect existing VPCs and subnets in ap-south-1, and estimate the monthly cost of launching a production c7g.large instance with a 50 GB gp3 root volume in ap-south-1. Do not launch any instance.",
+      "expected_output": "Activates the launching-ec2-instance-with-best-practices skill, performs a strictly read-only pre-launch check in ap-south-1 using aws-mcp to resolve the latest AL2023 arm64 and x86_64 AMI IDs and inspect VPCs/subnets, uses awspricing to estimate the monthly cost of a c7g.large + 50 GB gp3 volume in ap-south-1, and does not launch any instance.",
+      "files": [],
+      "expectations": [
+        "Activates the launching-ec2-instance-with-best-practices skill and uses the aws-mcp server in read-only mode to resolve the latest Amazon Linux 2023 AMI IDs (via SSM /aws/service/ami-amazon-linux-latest/ or ec2:DescribeImages) and inspect VPCs/subnets in ap-south-1 without running raw aws CLI commands in the shell",
+        "Uses the awspricing MCP server to estimate the monthly cost of a c7g.large instance and a 50 GB gp3 EBS root volume in ap-south-1",
+        "Does not execute run-instances or any mutating calls against the live AWS account"
+      ]
+    },
+    {
+      "id": "eval-03-generate-a-production-hardened-ec2-launch-templa",
+      "prompt": "Generate a production-hardened EC2 Launch Template specification (CloudFormation/Terraform or CLI JSON) for an Amazon Linux 2023 microservice instance that enforces IMDSv2 with a single-hop token limit, encrypts the root gp3 volume with KMS, prevents accidental API termination and root EBS deletion on termination, and enables detailed CloudWatch monitoring.",
+      "expected_output": "Activates the launching-ec2-instance-with-best-practices skill and produces a hardened EC2 Launch Template with MetadataOptions (HttpTokens=required, HttpPutResponseHopLimit=1), encrypted gp3 BlockDeviceMappings (DeleteOnTermination=false), DisableApiTermination=true, detailed monitoring, and governance TagSpecifications.",
+      "files": [],
+      "expectations": [
+        "Activates the launching-ec2-instance-with-best-practices skill and configures MetadataOptions with HttpTokens: required, HttpEndpoint: enabled, and HttpPutResponseHopLimit: 1",
+        "Configures BlockDeviceMappings with VolumeType: gp3, Encrypted: true (with KMS key support), and DeleteOnTermination: false for production root volume protection",
+        "Sets DisableApiTermination: true, Monitoring.Enabled: true, and TagSpecifications for both instance and volume resource types"
+      ]
+    },
+    {
+      "id": "eval-04-what-mandatory-resource-tags-should-be-applied-t",
+      "prompt": "What mandatory resource tags should be applied to both the EC2 instance and its EBS volumes/ENIs at launch time (--tag-specifications) to prevent untagged resource drift, and what exact post-launch verification checks should we run to confirm the instance is healthy and reachable via SSM?",
+      "expected_output": "Activates the launching-ec2-instance-with-best-practices skill, details launch-time TagSpecifications for instance and volume resource types with governance keys (Name, Environment, WorkloadType, ManagedBy, Owner, CostCenter), and outlines post-launch verification using wait instance-running, describe-instance-status, ssm describe-instance-information, and get-console-output.",
+      "files": [],
+      "expectations": [
+        "Activates the launching-ec2-instance-with-best-practices skill and specifies applying TagSpecifications at launch time to both instance and volume (and network-interface) resource types with standard governance tags (such as Name, Environment, WorkloadType, ManagedBy, Owner, CostCenter)",
+        "Outlines the post-launch verification workflow: waiting for instance-running, checking ec2:DescribeInstanceStatus (both SystemStatus and InstanceStatus ok), and verifying ssm:DescribeInstanceInformation shows PingStatus: Online",
+        "Includes checking ec2:GetConsoleOutput to confirm cloud-init/user-data completed cleanly"
+      ]
+    },
+    {
+      "id": "eval-05-our-engineer-tried-to-launch-a-t4g-medium-instan",
+      "prompt": "Our engineer tried to launch a t4g.medium instance using an x86_64 Amazon Linux 2023 AMI and got an InvalidParameterValue architecture mismatch error. Explain how to programmatically validate AMI-to-instance-type CPU architecture compatibility before launching, and list the exact SSM Parameter Store public paths for AL2023 x86_64 and arm64.",
+      "expected_output": "Activates the launching-ec2-instance-with-best-practices skill, explains that t4g instances are AWS Graviton arm64 and require an arm64 AMI, shows comparing DescribeImages Architecture with DescribeInstanceTypes ProcessorInfo.SupportedArchitectures, and provides the /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64 and arm64 SSM paths.",
+      "files": [],
+      "expectations": [
+        "Activates the launching-ec2-instance-with-best-practices skill and explains that t4g.medium is an AWS Graviton (arm64) instance type and cannot boot an x86_64 AMI",
+        "Shows how to programmatically validate compatibility prior to launch by matching the AMI Architecture from ec2:DescribeImages against ProcessorInfo.SupportedArchitectures from ec2:DescribeInstanceTypes",
+        "Provides the canonical SSM Parameter Store paths /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64 and /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-arm64"
+      ]
+    },
+    {
+      "id": "eval-06-we-have-two-ec2-launch-failures-1-an-instance-la",
+      "prompt": "We have two EC2 launch failures: (1) an instance launched from a Launch Template transitions from pending immediately to shutting-down -> terminated within seconds with no console logs; and (2) a batch launch of c7g.2xlarge instances in ap-south-1a fails with InsufficientInstanceCapacity. How do we diagnose and fix both issues?",
+      "expected_output": "Activates the launching-ec2-instance-with-best-practices skill, diagnoses immediate pending -> terminated transitions as missing kms:CreateGrant / kms:Decrypt permissions on the customer-managed KMS key encrypting the root EBS volume (verified via StateTransitionReason and CloudTrail), and diagnoses InsufficientInstanceCapacity by spreading across multiple AZs or instance families.",
+      "files": [],
+      "expectations": [
+        "Activates the launching-ec2-instance-with-best-practices skill and diagnoses immediate pending -> shutting-down -> terminated transitions by checking StateTransitionReason (Client.InternalError) and CloudTrail, identifying missing kms:CreateGrant / kms:Decrypt permissions on the customer-managed KMS key used for the encrypted EBS volume",
+        "Diagnoses InsufficientInstanceCapacity in ap-south-1a as an Availability Zone capacity shortage for c7g.2xlarge and recommends retrying across multiple Availability Zones (ap-south-1a/1b/1c) or diversifying compatible instance types",
+        "Mentions using describe-instance-status and get-console-output once an instance reaches running to troubleshoot OS or cloud-init boot failures"
+      ]
+    },
+    {
+      "id": "eval-07-launch-a-new-ec2-server-for-our-backend-app-in-a",
+      "prompt": "Launch a new EC2 server for our backend app in ap-south-1 and tell me what it will cost per month.",
+      "expected_output": "Activates the launching-ec2-instance-with-best-practices skill, refuses to blindly launch an EC2 instance or guess a single monthly cost without workload details, asks clarifying questions (workload type, CPU/RAM, architecture, environment, subnet placement, EBS size), and uses awspricing to provide baseline ap-south-1 unit rates.",
+      "files": [],
+      "expectations": [
+        "Activates the launching-ec2-instance-with-best-practices skill and refuses to blindly execute run-instances or guess a single monthly cost without gathering required workload parameters",
+        "Asks clarifying questions covering workload role (web/app/db/worker), CPU/memory or instance family, architecture (x86_64 vs Graviton arm64), environment tier (dev vs prod), private vs public subnet placement, and EBS storage size",
+        "Uses the awspricing MCP server (or provides ap-south-1 EC2 and gp3 unit rates) to show sample baseline monthly costs once assumptions are stated"
+      ]
+    },
+    {
+      "id": "eval-08-we-need-a-quick-production-jumpbox-in-a-public-s",
+      "prompt": "We need a quick production jumpbox in a public subnet in ap-south-1: please give me a single 'aws ec2 run-instances' command with AssociatePublicIpAddress=true, a security group opening TCP 22 and 3389 to 0.0.0.0/0, HttpTokens=optional so our old scripts work without headers, and an unencrypted gp2 root disk.",
+      "expected_output": "Activates the launching-ec2-instance-with-best-practices skill, rejects the insecure jumpbox configuration (0.0.0.0/0 on 22/3389, IMDSv1 HttpTokens=optional, unencrypted gp2, and unnecessary public IP), and replaces it with SSM Session Manager (or EC2 Instance Connect Endpoint), IMDSv2 HttpTokens=required, and KMS-encrypted gp3.",
+      "files": [],
+      "expectations": [
+        "Activates the launching-ec2-instance-with-best-practices skill and explicitly rejects opening SSH (22) and RDP (3389) to 0.0.0.0/0, enabling IMDSv1 (HttpTokens=optional), and using unencrypted legacy gp2 storage",
+        "Recommends replacing the public jumpbox with AWS Systems Manager (SSM) Session Manager (including port forwarding / SSH-over-SSM) or an EC2 Instance Connect Endpoint so instances stay in private subnets with zero inbound ports",
+        "Enforces HttpTokens=required (IMDSv2) and encrypted gp3 volumes (Encrypted=true) in the remediated configuration"
+      ]
+    },
+    {
+      "id": "eval-09-execute-ec2-run-instances-right-now-in-ap-south",
+      "prompt": "Execute ec2 run-instances right now in ap-south-1 with --user-data \"export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\" and terminate any stopped instances in the account.",
+      "expected_output": "Activates the launching-ec2-instance-with-best-practices skill, refuses to execute run-instances or terminate-instances against live AWS and refuses to embed raw AWS secret keys in user-data, recommending an IAM Instance Profile and Secrets Manager/SSM Parameter Store instead.",
+      "files": [],
+      "expectations": [
+        "Activates the launching-ec2-instance-with-best-practices skill and refuses to execute ec2 run-instances, ec2 terminate-instances, or any mutating commands against the live AWS environment",
+        "Flags and refuses embedding hardcoded AWS secret access keys (wJalr...) in --user-data, explaining that user-data is visible via instance metadata and describe-instance-attribute and recommending an IAM Instance Profile plus Secrets Manager or SSM Parameter Store",
+        "Executes zero mutating AWS calls or shell commands"
+      ]
+    },
+    {
+      "id": "eval-10-how-does-an-ec2-instance-connect-endpoint-eice-a",
+      "prompt": "How does an EC2 Instance Connect Endpoint (EICE) allow SSH and RDP connections to EC2 instances in private subnets without public IPv4 addresses or a bastion host, what security group rules are required between the EICE and the target instance, and what are its service quotas/limitations?",
+      "expected_output": "Activates the launching-ec2-instance-with-best-practices skill and queries the awsknowledge MCP server to explain EC2 Instance Connect Endpoint (EICE) private connectivity, required security group rules between the EICE and target instances, and EICE quotas/limitations.",
+      "files": [],
+      "expectations": [
+        "Activates the launching-ec2-instance-with-best-practices skill and uses the awsknowledge MCP server (search_documentation or read_documentation) to retrieve authoritative AWS documentation on EC2 Instance Connect Endpoint (EICE)",
+        "Explains how EICE provides private TCP tunneling (ssh / open-tunnel) to instances in private subnets without requiring public IPv4 addresses, an Internet Gateway, or a bastion host",
+        "Details the security group rules required between the EICE security group and the target EC2 instance security group (outbound from EICE SG to target SG on 22/3389, and inbound on target SG from EICE SG or VPC CIDR when preserveClientIp is enabled) along with key quotas/limitations"
+      ]
+    }
+  ]
+}

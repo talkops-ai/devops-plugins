@@ -1,0 +1,96 @@
+{
+  "skill_name": "dms-data-migration-execution",
+  "companion_skills": [
+    "dms-schema-conversion",
+    "rds-oracle",
+    "rds-oss",
+    "amazon-aurora-postgresql",
+    "db-ha-dr-and-schema-evolution"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Profile our Oracle LOB column sizes and configure Limited vs Inline vs Full LOB Mode in AWS DMS Task Settings JSON."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure StopTaskCachedChangesNotApplied so AWS DMS pauses after Full Load to build indexes before resuming CDC."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Set up parallel-load ranges segmentation in AWS DMS table-settings for an 800-million-row unpartitioned table."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "A stopped CDC replication task left an inactive pg_replication_slots slot retaining 540 GB of WAL on RDS Postgres!"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "CDCLatencySource is 2 seconds while CDCLatencyTarget jumped to 2,400 seconds\u2014diagnose the replication bottleneck."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Should we size dms.c7i vs dms.r7i or DMS Serverless DCUs, and which AZ should host the replication instance?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Audit ap-south-1 for DMS replication instances, Serverless ReplicationConfigs, endpoints, and tasks via MCP."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Configure binlog retention hours, archivelog retention, and supplemental logging on RDS sources for ongoing CDC."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Inspect awsdms_validation_failures_v1 row mismatches during our Full Load + CDC cutover rehearsal."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Convert Oracle PL/SQL packages and export PDF/CSV compatibility reports in DMS Schema Conversion."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Ingest clickstream events directly into Apache Iceberg S3 Tables using Amazon Data Firehose."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Set up Aurora Zero-ETL into Amazon Redshift Serverless for analytical BI."
+    }
+  ]
+}

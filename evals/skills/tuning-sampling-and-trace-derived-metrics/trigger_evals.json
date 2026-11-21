@@ -1,0 +1,112 @@
+{
+  "skill_name": "tuning-sampling-and-trace-derived-metrics",
+  "companion_skills": [
+    "controlling-telemetry-cardinality-and-noise",
+    "provisioning-opentelemetry-collectors",
+    "instrumenting-kubernetes-workloads",
+    "mapping-tempo-topology-and-alerts",
+    "operating-tempo-deployments-and-tenants"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure `tail_sampling` (`10%` baseline, `100%` error and `> 500ms` slow traces) alongside pre-sampling `spanmetrics` on `otel-tail-sampler` in `observability`.",
+      "notes": "Tail sampling + spanmetrics"
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Calculate the StatefulSet replica count, `num_traces` buffer, and pod memory limits needed to tail-sample `otel-demo` at 40,000 spans/sec with a 10-second `decision_wait`.",
+      "notes": "Tail sampling capacity calculator"
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Wire `spanmetrics` and `servicegraph` connectors on `opentelemetry-otel-collector` in `otel-demo` so Prometheus gets accurate RED histograms and service topology metrics.",
+      "notes": "Connector wiring"
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Cut our Tempo trace storage bill for `otel-demo` by 90% without losing any `checkout-service` error traces, slow `ad` latency spikes, or RED metric accuracy!",
+      "notes": "Pre-sampling RED metrics + tail sampling"
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Why do `otel-demo` checkout traces sampled by `tail_sampling` on our `otel-agent` DaemonSet have missing `payment` and `shipping` child spans in Tempo?",
+      "notes": "Trace-ID affinity violation"
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Switch `spanmetrics` histograms from 15 explicit `le` buckets to Prometheus native exponential histograms on `opentelemetry-otel-collector` in `otel-demo`.",
+      "notes": "Exponential histograms on spanmetrics"
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Tune the `servicegraph` connector `store.ttl` and `max_items` on `otel-tail-sampler` so 10-second slow `image-provider` RPCs in `otel-demo` still pair into complete dependency edges.",
+      "notes": "servicegraph store tuning"
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Render a valid `tail_sampling` processor policy YAML block for `otel-demo` that drops `/healthz` probes, keeps all `ERROR` traces, and samples `5%` of normal traffic.",
+      "notes": "Tail sampling policy generation"
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Map upstream and downstream callers of `checkout-service` directly from Grafana Tempo and generate `PrometheusRule` alerts from `traces_spanmetrics_*`.",
+      "expected_alternative_skill": "mapping-tempo-topology-and-alerts",
+      "notes": "Tempo topology query & PrometheusRule"
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Mask SSNs and customer emails in log bodies and normalize UUIDs in `frontend` `url.path` using OTTL `replace_pattern` on `opentelemetry-otel-collector`.",
+      "expected_alternative_skill": "controlling-telemetry-cardinality-and-noise",
+      "notes": "OTTL PII & attribute scrubbing"
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Create an OpenTelemetry `Instrumentation` CR in `otel-demo` and inject Java and Node.js auto-instrumentation agents into the `ad` and `payment` Deployments.",
+      "expected_alternative_skill": "instrumenting-kubernetes-workloads",
+      "notes": "SDK auto-instrumentation CR"
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Update Grafana Tempo's runtime `/api/overrides` config in `observability` to raise per-tenant `ingestion_rate_limit_bytes` and enable Tempo's server-side `local-blocks` generator.",
+      "expected_alternative_skill": "operating-tempo-deployments-and-tenants",
+      "notes": "Tempo server-side tenant overrides"
+    }
+  ]
+}

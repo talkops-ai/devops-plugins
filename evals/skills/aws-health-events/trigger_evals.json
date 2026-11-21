@@ -1,0 +1,61 @@
+{
+  "skill_name": "aws-health-events",
+  "companion_skills": [
+    "arc-region-switch",
+    "aws-billing-and-cost-management",
+    "aws-cloudformation",
+    "aws-compute",
+    "aws-deployment"
+  ],
+  "queries": [
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "How do I set up a multi-AZ deployment for my RDS instance?"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a Python script to list all S3 buckets in my account"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "What is the difference between an IAM role and an IAM user?"
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "How can I reduce my monthly AWS bill for EC2 instances?"
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "What are the best practices for designing a VPC with public and private subnets?"
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "How do I configure CloudWatch alarms for Lambda function errors?"
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Explain how to attach an IAM policy that allows read-only access to DynamoDB"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "launchdarkly": {
+      "type": "streamable-http",
+      "url": "${LAUNCHDARKLY_MCP_URL:-https://mcp.launchdarkly.com/mcp}",
+      "headers": {
+        "Authorization": "Bearer ${LAUNCHDARKLY_ACCESS_TOKEN:-}"
+      }
+    }
+  }
+}

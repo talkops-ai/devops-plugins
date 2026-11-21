@@ -1,7 +1,7 @@
 ---
 name: architect-for-startups
 description: >-
-  Startup-tailored AWS architecture advice for non-agent workloads, adjusted to the company's stage (pre-revenue through Series B+), team size, runway, and credits. Not for AI agents: deploying an AI agent on AWS, picking its runtime, or any agentic architecture is agent-advisor. Use when a founder wants guidance or a recommendation rather than code changes: which services to choose, how to plan or review an architecture, how to stretch credits and control cost, or how to prepare architecture for a fundraise or technical diligence. For an interactive discovery flow that scaffolds and writes the architecture into the codebase, use start-building-for-startups. Do not use for: writing or scaffolding code, factual AWS Activate / programs / credits lookups (see knowledge-base-for-startups), a single copy-paste prompt (see prompt-library-for-startups), or migration intent such as GCP-to-AWS, Azure-to-AWS, or Heroku-to-AWS (see the migration skills: `gcp-to-aws`, `azure-to-aws`, `heroku-to-aws`, `llm-to-bedrock`).
+  Startup-tailored AWS architecture advice for non-agent workloads, adjusted to company stage (pre-revenue through Series B+), team size, runway, and credits. Use when a founder wants service selection, architecture review, credit-stretching FinOps, or fundraising technical-diligence readiness without code changes. Not for AI agents (agent-advisor), code scaffolding (start-building-for-startups), Activate FAQ lookups (knowledge-base-for-startups), copy-paste prompts (prompt-library-for-startups), or cloud/LLM migrations. Query live AWS state via MCP tools only (never raw aws CLI).
 ---
 
 # Architect for Startups
@@ -111,6 +111,7 @@ guidance.
 
 ### Scaffolding
 
+- **Advisory-Only Boundary (No Code Mutation):** `architect-for-startups` provides architecture recommendations and reviews without writing or scaffolding code. Whenever a user asks to write/scaffold application or IaC files directly into their repository, state this advisory boundary explicitly and point them to **`start-building-for-startups`**.
 - [IaC project generation](references/iac-scaffold.md)
 
 ### Migration

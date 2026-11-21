@@ -1,0 +1,97 @@
+{
+  "skill_name": "aws-architecture-diagram",
+  "companion_skills": [
+    "serverless-sam-deploy",
+    "aws-deployment",
+    "container-ecs-deploy"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Generate a validated AWS architecture diagram as a `.drawio` file using official AWS4 icons for CloudFront, WAF, API Gateway, Lambda, and DynamoDB."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Scan our CDK and Terraform codebase and export a multi-AZ VPC architecture diagram to `./docs/platform-topology.drawio` with a clickable `app.diagrams.net` preview link."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Create a hand-drawn sketch-mode draw.io XML architecture visual for our Amazon Bedrock AgentCore runtime, Gateway, and Memory workflow."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Visualize our multi-region active-active Route 53, ECS Fargate, and Aurora Global Database design as an editable diagram file with numbered data-flow badges and a step legend."
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Fix the broken `mxGraphModel` `mxgraph.aws4.resourceIcon` styles and overlapping edge labels in `./docs/microservices.drawio` so the diagram validator passes."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Read our `template.yaml` SAM stack and draw a clean system design diagram showing Public vs Private Subnets, NAT Gateway, and SQS event flows."
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why should Region boundaries use `container=0` while VPC and Subnet groups use `container=1;pointerEvents=0;` with `light-dark()` fills in our AWS `.drawio` diagrams?"
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Map our hybrid Terraform stack (ALB, EKS, ElastiCache, plus external Stripe and Auth0 SaaS endpoints) into a validated `./docs/checkout-architecture.drawio` diagram."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Brainstorm an event-driven analytics architecture with me and produce a validated draw.io diagram with AWS4 category-tinted containers."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Package and deploy our FastAPI app to AWS Lambda using `template.yaml`, AWS Lambda Web Adapter (`LambdaAdapterLayerArm64`), and `sam deploy`.",
+      "expected_alternative_skill": "serverless-sam-deploy"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure AWS CodeDeploy blue/green canary traffic shifting for our ECS Fargate service with CloudWatch rollback alarms.",
+      "expected_alternative_skill": "aws-deployment"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Write a Grafana dashboard JSON panel with PromQL queries tracking p99 HTTP latency and error budgets.",
+      "expected_alternative_skill": "none"
+    }
+  ]
+}

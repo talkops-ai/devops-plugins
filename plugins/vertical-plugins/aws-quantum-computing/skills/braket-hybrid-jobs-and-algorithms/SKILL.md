@@ -1,11 +1,11 @@
 ---
 name: braket-hybrid-jobs-and-algorithms
-description: "Design, containerize, and execute Amazon Braket Hybrid Quantum-Classical Jobs (QAOA, VQE, QML, PennyLane, Qiskit-Braket), manage checkpointing and hyperparameters, and select optimal simulators (SV1, DM1, TN1) vs QPUs (IonQ, Rigetti, IQM, QuEra)."
+description: "Design, containerize, and execute Amazon Braket Hybrid Quantum-Classical Jobs (QAOA, VQE, QML, PennyLane, Qiskit-Braket, CUDA-Q), manage checkpointing and hyperparameters, and select optimal simulators (SV1, DM1, TN1) vs QPUs (IonQ, Rigetti, IQM, QuEra). Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # Amazon Braket Hybrid Jobs & Quantum-Classical Algorithms
 
-Use this skill to architect and execute **Amazon Braket Hybrid Jobs** (`CreateJob`), where classical compute containers run tightly coupled variational loops (VQE, QAOA, Quantum Machine Learning) with low-latency priority access to Braket managed simulators (`SV1`, `DM1`, `TN1`) or physical QPUs (`IonQ`, `Rigetti`, `IQM`, `QuEra`).
+Use this skill to architect and execute **Amazon Braket Hybrid Jobs** (`CreateJob`), where classical compute containers run tightly coupled variational loops (VQE, QAOA, Quantum Machine Learning) with low-latency priority access to Braket managed simulators (`SV1`, `DM1`, embedded PennyLane/CUDA-Q) or physical QPUs (`IonQ`, `Rigetti`, `IQM`, `QuEra` / neutral-atom AHS). Always follow the staged **`LocalSimulator` ($0 local unit test) → `SV1`/`DM1` (or embedded simulator) → `ONLINE` QPU** workflow, and note that Braket endpoints live in `us-east-1`, `us-west-1`, `us-west-2`, `eu-west-2`, and `eu-north-1` (not `ap-south-1`; always check live `deviceStatus == "ONLINE"` via `SearchDevices` because legacy devices such as `TN1` or older QPUs may be `RETIRED`).
 
 ## 1. Simulator vs. QPU Selection Matrix
 

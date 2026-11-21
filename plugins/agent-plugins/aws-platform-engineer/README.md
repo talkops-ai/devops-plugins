@@ -23,34 +23,45 @@ This is an **agent plugin**: every skill, command, hook, and MCP server below is
 | Skill | What it does |
 |---|---|
 | `amazon-ec2-image-builder` | Creates and automates custom image builds with EC2 Image Builder - Linux, Windows, and macOS AMIs, and container images to ECR. |
+| `aws-backup-coverage-review` | AWS Backup coverage and data protection posture review. |
 | `aws-compute` | Provisions, scales, and operates Amazon EC2 virtual-machine workloads: instance-type selection (Graviton/Arm64, burstable T credits, GPU, instance store vs EBS), launch templates, Auto Scaling groups (scaling policies,… |
 | `aws-containers` | Builds and deploys containerized workloads on Elastic Kubernetes Service (EKS), Elastic Container Service (ECS), Fargate, and ECR (Elastic Container Registry). |
 | `aws-finops-and-cost-optimization` | Generates pre-deployment AWS unit price and monthly run-rate estimates via the pricing MCP server, audits existing account spend and idle resources via the billing-cost MCP server (Cost Explorer, Cost Optimization Hub,… |
+| `aws-fsxn-operations-review` | Amazon FSx for NetApp ONTAP Operational Review. |
 | `aws-iac-cloudformation-cdk` | Authors, validates, compliance-checks, imports brownfield resources, reconciles drift, and troubleshoots AWS CloudFormation templates, AWS CDK applications, AWS SAM templates, and Terraform configurations using cfn-lint… |
 | `aws-iam-least-privilege-governance` | Designs, audits, and simulates least-privilege AWS IAM roles, inline/managed policies, trust policies, permissions boundaries, EKS Pod Identity / IRSA bindings, ECS task roles, and EC2 instance profiles using the iam an… |
 | `aws-landing-zone-and-platform-governance` | Architects and operates multi-account AWS Landing Zones, AWS Organizations (SCPs, RCPs, Declarative Policies), Control Tower guardrails, Shared VPCs via AWS RAM, hierarchical Amazon VPC IPAM, Amazon VPC Lattice zero-tru… |
 | `aws-messaging-and-streaming` | Guides general use of AWS messaging and streaming services. |
+| `aws-natgw-traffic-analysis` | Use this skill when a user wants to understand what traffic is going through an AWS NAT Gateway, why it takes that path, or how to reduce NAT Gateway cost - for example "why is my NAT Gateway bill so high", "what is goi… |
 | `aws-network-monitoring` | Installs, configures, and troubleshoots Network Flow Monitor agents on EC2 instances to monitor network path health. |
 | `aws-networking` | Routes AWS networking requests to the correct service skill for implementation. |
 | `aws-observability-and-incident-triage` | Diagnoses production and staging incidents, 5xx errors, latency spikes, container crashes, network blackholes, and resource exhaustion across AWS services using CloudWatch Metrics, PromQL, Logs Insights, Alarms, CloudTr… |
+| `aws-routing` | Use this skill when the user wants to know which path AWS will pick for their traffic, why traffic took an unexpected route, or how to make AWS prefer a path. |
 | `aws-serverless` | Builds, deploys, manages, debugs, configures, and optimizes serverless applications on AWS using Lambda, API Gateway, Step Functions, EventBridge, and SAM/CDK. |
 | `aws-stateful-data-and-caching-platform` | Designs, provisions, secures, and troubleshoots platform stateful data and caching layers across Amazon DynamoDB (tables, GSIs, streams, capacity modes), Amazon ElastiCache and MemoryDB (Valkey, Memcached), and Amazon A… |
 | `aws-storage` | Selects, investigates, and compares AWS object, file, and block storage services, and answers cost, performance, configuration, security, and troubleshooting questions about storage services. |
+| `aws-vpc-dns-investigation` | Use this skill when a name is not resolving as expected inside a VPC, or before applying a DNS control-plane change. |
 | `aws-well-architected-security-compliance` | Evaluates live AWS workloads and Infrastructure-as-Code templates against the AWS Well-Architected Framework Security Pillar using the well-architected-security, aws-iac, and iam MCP servers, coordinating KMS encryption… |
 | `cloudfront` | Configures Amazon CloudFront content delivery across six workflows: when to use CloudFront and how it fits with AWS WAF, Shield, CloudFront Functions, Lambda@Edge, Route 53, and origins (creating a distribution, caching… |
 | `configuring-vpc-endpoints-for-private-aws-service-access` | Configures VPC endpoints (interface and gateway) for private AWS service access using AWS PrivateLink. |
 | `connecting-vpcs-with-peering` | Establishes VPC peering connections between two VPCs for direct private network connectivity. |
 | `creating-production-vpc-multi-az` | Creates a production-ready VPC with public and private subnets across multiple Availability Zones, including internet gateway, NAT gateways, route tables, and security groups following AWS Well-Architected principles. |
 | `directconnect` | Configures AWS Direct Connect: choosing a connection model (dedicated, hosted, or a link aggregation group) and completing the cross connect; creating private, public, and transit virtual interfaces and bringing up BGP;… |
+| `dx-vif-resilience` | Assess Layer-3 (BGP prefix) failover resilience across redundant AWS Direct Connect virtual interfaces. |
+| `eks-karpenter-autoscaling` | Architect, bootstrap, audit, right-size, migrate, and troubleshoot Amazon EKS node and workload autoscaling with Karpenter v1 (`karpenter.sh/v1`), EKS Auto Mode (`eks.amazonaws.com/v1`), and HPA/KEDA/VPA. |
 | `enabling-lambda-vpc-internet-access` | Enables internet access for AWS Lambda functions deployed in VPC subnets by creating NAT Gateway infrastructure, configuring public/private subnet routing, and updating security groups. |
 | `launching-ec2-instance-with-best-practices` | Launches an EC2 instance with secure, cost-efficient defaults including AMI selection, burstable instance sizing, least-privilege IAM roles, hardened security groups, encrypted EBS volumes, and comprehensive tagging. |
+| `network-log-analyzer` | Use this skill when a user is troubleshooting AWS network connectivity: a connection times out, is refused, or resets; traffic flows only one way; flow logs show REJECT and they need to know whether a security group or… |
 | `platform-golden-path-scaffolder` | Translates high-level application developer or QA engineer requests (e.g., "deploy my web app", "spin up a staging environment", "set up a worker queue", "create an internal microservice") into production-ready, Well-Ar… |
 | `route53` | Configures Amazon Route 53 DNS: public and private records, traffic-steering routing policies, health checks, DNS Firewall, Route 53 Profiles, VPC Resolver (also known as Route 53 Resolver) for hybrid and Outposts netwo… |
 | `routing-traffic-with-route53-and-cloudfront` | Configures Amazon Route 53 to route traffic to a CloudFront distribution using a custom domain. |
+| `service-quota-check` | Use this skill during any incident investigation, capacity planning, or operational troubleshooting when the issue may be caused by hitting AWS service limits. |
 | `setting-up-ec2-instance-profiles` | Configures EC2 instances to securely call AWS services by creating and attaching IAM roles via instance profiles, eliminating hardcoded credentials. |
 | `shieldadvanced` | Configures AWS Shield Advanced for enhanced Distributed Denial of Service (DDoS) protection: subscribing accounts and adding resource protections, enabling automatic application layer (layer 7) mitigation through AWS WA… |
 | `signing-in-to-aws` | Gets AWS credentials for CLI/SDK access via `aws login`. |
 | `sitetositevpn` | Configures AWS Site-to-Site VPN: creating an IPsec VPN connection between an on-premises network and a VPC, choosing the target gateway (virtual private gateway, transit gateway, or AWS Cloud WAN), choosing static or dy… |
+| `storage-fsx-windows-sla-optimizer` | Read-only SLA-readiness, availability, and cost review of Amazon FSx for Windows File Server. |
+| `storage-s3-resiliency-expertise` | S3 resiliency, security, and data protection review. |
 | `transitgateway` | Configures AWS Transit Gateway: creating a hub and attaching VPCs, segmenting traffic with route tables, centralizing egress and inspection through a hub (appliances or a Gateway Load Balancer endpoint), forcing east-we… |
 | `troubleshooting-efs` | Diagnoses and resolves Amazon EFS issues including mount failures, NFS timeouts, permission errors, throughput problems, and burst credit exhaustion. |
 | `troubleshooting-s3-files` | Diagnoses and resolves Amazon S3 Files issues including mount failures, permission errors, synchronization problems, and performance issues. |
@@ -62,7 +73,8 @@ Declared in [`.mcp.json`](./.mcp.json) (Claude Code) and [`mcp.json`](./mcp.json
 
 | Server | Transport | Launch | Claude Code tool pattern | Notes |
 |---|---|---|---|---|
-| `aws-mcp` | stdio | `uvx mcp-proxy-for-aws-cli==1.7.0` `--skip-auth --metadata` | `mcp__plugin_aws-platform-engineer_aws-mcp__*` | Managed AWS MCP Server via the toolkit's pinned proxy (aws___call_aws, aws___search_documentation, aws___retrieve_skill, ...). |
+| `aws-mcp` | stdio | `uvx mcp-proxy-for-aws-cli==1.7.0` `--region us-east-1 --metadata` | `mcp__plugin_aws-platform-engineer_aws-mcp__*` | Managed AWS MCP Server via the toolkit's pinned proxy (aws___run_script, aws___search_documentation, aws___read_documentation, aws___retrieve_skill, ...). |
+| `awsknowledge` | streamable-http | `https://knowledge-mcp.global.api.aws` | `mcp__plugin_aws-platform-engineer_awsknowledge__*` | Official AWS Knowledge MCP server for authoritative documentation search and retrieval. |
 | `aws-iac` | stdio | `uvx fastmcp<4.0.0` `--with` | `mcp__plugin_aws-platform-engineer_aws-iac__*` | Pinned to 0.2.14 with fastmcp<4.0.0 to prevent FastMCP 4.0 breaking import crashes (awslabs/mcp#4567). |
 | `iam` | stdio | `uvx awslabs.iam-mcp-server@latest` | `mcp__plugin_aws-platform-engineer_iam__*` | Read-only by default (the server only mutates with --allow-write). Add --allow-write to allow IAM mutations. |
 | `cloudwatch` | stdio | `uvx awslabs.cloudwatch-mcp-server@latest` | `mcp__plugin_aws-platform-engineer_cloudwatch__*` |  |
@@ -97,3 +109,4 @@ Derived from the following open-source sources (see the repository `NOTICE`):
 - [`specialized-skills/networking-and-content-delivery-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws, Apache-2.0)
 - [`specialized-skills/operations-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws, Apache-2.0)
 - [`specialized-skills/storage-skills`](https://github.com/aws/agent-toolkit-for-aws) (aws/agent-toolkit-for-aws, Apache-2.0)
+- [`tools-for-devops-agent`](https://github.com/aws/tools-for-devops-agent) (aws/tools-for-devops-agent, Apache-2.0)

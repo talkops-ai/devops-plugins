@@ -1,0 +1,91 @@
+{
+  "skill_name": "processing-s3-uploads-with-step-functions",
+  "evals": [
+    {
+      "id": "eval-01-missing-parameters-single-prompt-acquisition-and-bucket-validation",
+      "prompt": "Deploy the Step Functions workflow that routes S3 file uploads to Lambda for small files and ECS Fargate for large files.",
+      "expectations": [
+        "Activates the processing-s3-uploads-with-step-functions skill",
+        "Asks for all required parameters upfront in a single prompt (`bucket_name`, `region`, `ecr_repo_name`, `state_machine_name`, plus optional `kms_key_arn`)",
+        "Notes S3 bucket naming validation rules (globally unique, lowercase, 3-63 characters) and does not execute mutating resource creation before parameter confirmation"
+      ]
+    },
+    {
+      "id": "eval-02-architecture-and-6mb-choice-state-routing-design",
+      "prompt": "Explain the end-to-end architecture of routing S3 uploads to AWS Lambda (`<= 6 MB`) vs Amazon ECS Fargate (`> 6 MB`) via EventBridge and AWS Step Functions, including why `6 MB` (`6,291,456` bytes) is the cutoff and how the Step Functions `Choice` state inspects the S3 EventBridge event.",
+      "expectations": [
+        "Activates the processing-s3-uploads-with-step-functions skill",
+        "Details the end-to-end flow: S3 (`EventBridgeConfiguration: {}`) -> EventBridge Rule (`source: [\"aws.s3\"]`, `detail-type: [\"Object Created\"]`) -> Step Functions `STANDARD` State Machine -> `Choice` state checking `$.detail.object.size` (`<= 6 MB` -> `lambda:invoke`; `> 6 MB` -> `ecs:runTask.sync` on Fargate)",
+        "Includes operational hardening: SQS Dead-Letter Queue (`DeadLetterConfig`) on the EventBridge target and CloudWatch `ExecutionsFailed` alarm (`AWS/States`)"
+      ]
+    },
+    {
+      "id": "eval-03-read-only-ap-south-1-preflight-for-s3-step-functions-fargate-workflow",
+      "prompt": "Before we deploy this S3 -> EventBridge -> Step Functions (Lambda / Fargate) workflow in `ap-south-1` (`bucket_name='acme-media-ingest-demo-2026'`, `ecr_repo_name='fargate-file-proc'`, `state_machine_name='s3-size-router'`), run read-only preflight checks in `ap-south-1` (account ID, Default VPC + 2 subnets, and whether those ECR/StateMachine names already exist) and pause before creating anything.",
+      "expectations": [
+        "Activates the processing-s3-uploads-with-step-functions skill and inspects live `ap-south-1` S3/VPC/subnet state via connected AWS MCP tools with zero raw `aws` CLI shell commands",
+        "Verifies whether `acme-media-ingest-demo-2026` already exists, reports the live `ap-south-1` VPC and subnet findings accurately, and stops prior to any mutating creation steps"
+      ]
+    },
+    {
+      "id": "eval-04-scoped-iam-roles-and-step-functions-ecs-iam-passrole-troubleshooting",
+      "prompt": "Our Step Functions state machine works for `< 6 MB` files (Lambda branch), but every `> 6 MB` file fails immediately at the `RunFargateTask` state with `AccessDeniedException: User: arn:aws:sts::...:assumed-role/sfn-state-machine-role/... is not authorized to perform: iam:PassRole`! List all 5 scoped IAM roles in this architecture and show the exact permissions required on `sfn-state-machine-role`.",
+      "expectations": [
+        "Activates the processing-s3-uploads-with-step-functions skill",
+        "Fixes the `AccessDeniedException` on `ecs:RunTask.sync` by granting `iam:PassRole` on BOTH the ECS Task Execution Role and ECS Task Role plus EventBridge managed-rule permissions (`events:PutTargets`, `events:PutRule`, `events:DescribeRule` on `StepFunctionsGetEventsForECSTaskRule`) for `.sync` execution",
+        "Enumerates all 5 distinct least-privilege IAM roles in the pipeline: (1) Lambda execution role, (2) ECS Task Execution role, (3) ECS Task role, (4) Step Functions state machine role, and (5) EventBridge target role (`states:StartExecution`)"
+      ]
+    },
+    {
+      "id": "eval-05-security-group-egress-hardening-and-vpc-endpoints-for-fargate",
+      "prompt": "Audit the networking security of the Fargate task security group in our S3 -> Step Functions -> Fargate workflow: why must we revoke the default allow-all (`IpProtocol=-1` `0.0.0.0/0`) egress rule, which exact outbound ports are scoped, and how do VPC Endpoints further harden production?",
+      "expectations": [
+        "Activates the processing-s3-uploads-with-step-functions skill",
+        "Shows revoking the default allow-all egress rule (`revoke-security-group-egress` `IpProtocol=-1, 0.0.0.0/0`) and scoping outbound rules strictly to HTTPS (`443`) and DNS (`53`)",
+        "Explains using VPC Endpoints (S3 Gateway Endpoint and ECR / CloudWatch Logs Interface Endpoints) so private Fargate tasks pull container images and access S3/logs privately"
+      ]
+    },
+    {
+      "id": "eval-06-s3-create-bucket-us-east-1-locationconstraint-and-eventbridge-gotchas",
+      "prompt": "Two bugs hit our deployment script: (1) `aws s3api create-bucket --bucket my-ingest-bkt --region us-east-1 --create-bucket-configuration LocationConstraint=us-east-1` failed with `InvalidLocationConstraint`! and (2) after fixing that in `ap-south-1`, uploading files to S3 NEVER triggers our `s3-to-stepfunctions` EventBridge rule! Diagnose both.",
+      "expectations": [
+        "Activates the processing-s3-uploads-with-step-functions skill",
+        "Fixes (1): `s3api create-bucket` in `us-east-1` MUST omit `--create-bucket-configuration LocationConstraint=...` (`LocationConstraint` is required for every region *except* `us-east-1`)",
+        "Fixes (2): S3 does NOT emit events to EventBridge by default \u2014 you MUST enable `put-bucket-notification-configuration --notification-configuration '{\"EventBridgeConfiguration\": {}}'` on the bucket AND verify the EventBridge rule `event-pattern` (`source: [\"aws.s3\"]`, `detail-type: [\"Object Created\"]`) and target role (`states:StartExecution`)"
+      ]
+    },
+    {
+      "id": "eval-07-fargate-task-stuck-in-provisioning-or-cannotpullcontainererror-triage",
+      "prompt": "In our Step Functions workflow, a 250 MB upload routed to the Fargate branch gets stuck in `PROVISIONING` and eventually fails with `CannotPullContainerError: pull image manifest has been retried: dial tcp ... i/o timeout`. Walk through the exact checklist to resolve it.",
+      "expectations": [
+        "Activates the processing-s3-uploads-with-step-functions skill",
+        "Checks: (1) image exists in ECR (`ecr describe-images`) and matches task architecture (`linux/amd64` vs `ARM64`), (2) subnet network path to ECR + S3 (`assignPublicIp=ENABLED` with attached Internet Gateway + `0.0.0.0/0` route in public subnet, OR NAT Gateway / `ecr.api`+`ecr.dkr`+`s3`+`logs` VPC Endpoints in private subnet), and (3) Security Group allows outbound TCP `443` and UDP `53`"
+      ]
+    },
+    {
+      "id": "eval-08-kms-encryption-for-s3-bucket-and-fargate-cloudwatch-log-group",
+      "prompt": "Show how to enforce KMS encryption at rest on BOTH the S3 upload bucket and the `/StepFunctionFargateTask` CloudWatch Log Group in this workflow, including the KMS Key Policy principal required so `logs associate-kms-key` does not fail with `AccessDeniedException`.",
+      "expectations": [
+        "Activates the processing-s3-uploads-with-step-functions skill",
+        "Shows `s3api put-bucket-encryption` (`SSEAlgorithm: aws:kms` + Bucket Key) and `logs associate-kms-key --log-group-name /StepFunctionFargateTask --kms-key-arn ...`",
+        "Includes the mandatory KMS Key Policy statement allowing service principal `logs.<region>.amazonaws.com` (`kms:Encrypt*`, `kms:Decrypt*`, `kms:ReEncrypt*`, `kms:GenerateDataKey*`, `kms:Describe*`) scoped with `kms:EncryptionContext:aws:logs:arn`"
+      ]
+    },
+    {
+      "id": "eval-09-when-not-to-use-this-hybrid-workflow-architectural-scope-check",
+      "prompt": "A team only uploads 20 KB JSON webhooks to S3 (`100%` of files are `< 50 KB`) and wants to stand up a VPC, ECR repository, Docker image pipeline, ECS cluster, Fargate task definition, and Step Functions Choice router using this workflow. Should they use this architecture?",
+      "expectations": [
+        "Activates the processing-s3-uploads-with-step-functions skill",
+        "Explicitly advises **against** deploying the full Fargate + ECR + Step Functions size-router when 100% of files are small (`<< 6 MB`) and don't need file-size-based compute routing \u2014 recommending direct **S3 -> EventBridge/SQS -> AWS Lambda** instead to eliminate unnecessary ECR/Fargate/State-Machine operational and cost overhead"
+      ]
+    },
+    {
+      "id": "eval-10-awsknowledge-step-functions-ecs-runtask-sync-vs-fire-and-forget",
+      "prompt": "Query AWS documentation via connected AWS documentation tools to explain the difference between `arn:aws:states:::ecs:runTask` (RequestResponse), `arn:aws:states:::ecs:runTask.sync` (Run a Job), and `arn:aws:states:::ecs:runTask.waitForTaskToken` in AWS Step Functions.",
+      "expectations": [
+        "Queries connected AWS documentation MCP tools (`awsknowledge`, `aws-mcp`, or `awsiac`) with zero raw `aws` CLI commands",
+        "Contrasts `arn:aws:states:::ecs:runTask` (fire-and-forget: completes immediately after `RunTask` returns) against `arn:aws:states:::ecs:runTask.sync` (waits synchronously using EventBridge `StepFunctionsGetEventsForECSTaskRule` / `ecs:DescribeTasks` until the Fargate task completes) and `ecs:runTask.waitForTaskToken` (`SendTaskSuccess`/`SendTaskFailure`/`SendTaskHeartbeat` callback pattern)"
+      ]
+    }
+  ]
+}

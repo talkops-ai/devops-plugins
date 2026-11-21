@@ -72,10 +72,32 @@ Follow each skill's routing rules and chain skills deterministically:
 
 ## Skills this agent uses
 
-- Auth & Setup: `signing-in-to-aws`
-- Lakehouse & Catalog: `exploring-data-catalog` · `finding-data-lake-assets` · `creating-data-lake-table`
-- Batch, Streaming & CDC Ingestion: `connecting-to-data-source` · `ingesting-into-data-lake` · `ingesting-streaming-and-cdc-data` · `managing-amazon-kinesis-data-streams` · `managing-amazon-msk` · `migrate-to-msk`
-- Distributed Transformation: `authoring-glue-and-emr-spark-jobs` · `developing-applications-on-managed-service-for-apache-flink`
-- Warehousing, Analytics & Search: `querying-data-lake` · `redshift-guide` · `migrating-to-amazon-redshift` · `amazon-opensearch-service`
-- Pipeline Orchestration: `orchestrating-serverless-data-pipelines` · `authoring-mwaa-workflow` · `testing-mwaa-workflow` · `debugging-mwaa-workflow` · `upgrading-mwaa-environments`
-- Quality, Governance, System Tables & IaC: `enforcing-data-quality` · `governing-and-securing-data-lake` · `auditing-aws-system-tables` · `provisioning-data-infrastructure-iac`
+- `signing-in-to-aws`
+- `exploring-data-catalog`
+- `finding-data-lake-assets`
+- `creating-data-lake-table`
+- `connecting-to-data-source`
+- `ingesting-into-data-lake`
+- `ingesting-streaming-and-cdc-data`
+- `managing-amazon-kinesis-data-streams`
+- `managing-amazon-msk`
+- `migrate-to-msk`
+- `authoring-glue-and-emr-spark-jobs`
+- `developing-applications-on-managed-service-for-apache-flink`
+- `querying-data-lake`
+- `redshift-guide`
+- `migrating-to-amazon-redshift`
+- `amazon-opensearch-service`
+- `orchestrating-serverless-data-pipelines`
+- `authoring-mwaa-workflow`
+- `testing-mwaa-workflow`
+- `debugging-mwaa-workflow`
+- `upgrading-mwaa-environments`
+- `enforcing-data-quality`
+- `governing-and-securing-data-lake`
+- `auditing-aws-system-tables`
+- `provisioning-data-infrastructure-iac`
+- `analytics-opensearch-expertise`
+- `firehose-operation-review`
+- `msk-operations`
+- `redshift-support-specialist`

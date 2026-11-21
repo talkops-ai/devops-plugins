@@ -1,9 +1,11 @@
 ---
 name: aws-pulumi
-description: Authors, previews, validates, and troubleshoots AWS infrastructure in TypeScript, Python, or Go using Pulumi ComponentResource abstractions, dual pulumi-aws + pulumi-aws-native providers, Pulumi ESC OIDC credential brokering, and CrossGuard Policy-as-Code.
+description: "Authors, previews, validates, and troubleshoots AWS infrastructure in TypeScript, Python, or Go using Pulumi ComponentResource abstractions, dual pulumi-aws + pulumi-aws-native providers, Pulumi ESC OIDC credential brokering, and CrossGuard Policy-as-Code. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # AWS Pulumi Infrastructure Engineering
+
+> **MCP-Only Live AWS Execution:** Execute ALL live AWS API discovery, account/region preflight checks (`sts:GetCallerIdentity`), stack/cluster/resource inspection, pricing (`awspricing`/`billing`), IaC validation (`awsiac`), and documentation lookups (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___run_script` `call_boto3`, `awsknowledge`, `awsiac`, `awspricing`, `eks`, `ecs`, `cloudwatch`) — **never invoke raw `aws ...` CLI commands in shell (`run_command`)**. Offline local linters/synthesizers (`cdk synth`, `terraform validate`, `python3`) may run locally without mutating live AWS.
 
 Use this skill whenever authoring, migrating, previewing, or troubleshooting **Pulumi** infrastructure programs (`Pulumi.yaml`, `Pulumi.<stack>.yaml`) in TypeScript, Python, or Go targeting AWS.
 

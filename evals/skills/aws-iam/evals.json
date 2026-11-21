@@ -1,0 +1,90 @@
+{
+  "skill_name": "aws-iam",
+  "evals": [
+    {
+      "id": "eval-01-forallvalues-vacuous-truth-bug-and-null-condition-fix",
+      "prompt": "Security review this IAM policy statement intended to allow `ec2:RunInstances` ONLY when the caller passes approved tag keys `[\"CostCenter\", \"Environment\"]`: `{\"Effect\": \"Allow\", \"Action\": \"ec2:RunInstances\", \"Resource\": \"*\", \"Condition\": {\"ForAllValues:StringEquals\": {\"aws:TagKeys\": [\"CostCenter\", \"Environment\"]}}}`. What happens if a caller passes **zero tags** at all, and what is the exact verified fix?",
+      "expectations": [
+        "Activates the aws-iam skill",
+        "Identifies the **`ForAllValues` vacuous truth bug**: when `aws:TagKeys` is missing or empty in the request context, `ForAllValues:StringEquals` evaluates to **`true`**, allowing untagged `RunInstances` calls!",
+        "Adds `\"Null\": {\"aws:TagKeys\": \"false\"}` on the **exact same context key** (`aws:TagKeys`) alongside `ForAllValues:StringEquals` so at least one tag key must be present and non-null"
+      ]
+    },
+    {
+      "id": "eval-02-iam-passrole-wildcard-and-8-policy-mutation-privilege-escalation-paths",
+      "prompt": "A developer role has `ec2:RunInstances`, `lambda:CreateFunction`, and `iam:PassRole` on `Resource: \"*\"` (plus `iam:CreatePolicyVersion`). Explain both the `iam:PassRole` privilege-escalation chain AND list the 8 direct IAM policy-manipulation privilege-escalation actions that must be blocked or bounded.",
+      "expectations": [
+        "Activates the aws-iam skill",
+        "Explains how `iam:PassRole` with `Resource: \"*\"` + compute creation (`ec2:RunInstances` / `lambda:CreateFunction` / `ecs:RegisterTaskDefinition`) lets an attacker attach an existing `Administrator` role to compute they control and escalate to full account admin \u2014 remediated by scoping `PassRole` `Resource` to exact role ARNs/paths + `iam:PassedToService`",
+        "Lists the 8 direct IAM policy-escalation actions (`PutUserPolicy`, `PutGroupPolicy`, `PutRolePolicy`, `CreatePolicy`, `CreatePolicyVersion`, `AttachUserPolicy`, `AttachGroupPolicy`, `AttachRolePolicy` \u2014 plus `SetDefaultPolicyVersion`)"
+      ]
+    },
+    {
+      "id": "eval-03-generate-least-privilege-iam-policy-from-python-app-code-autopilot-rule",
+      "prompt": "Generate a baseline least-privilege IAM policy for this Python worker code: `s3.get_object(Bucket='invoices-raw', Key=k); ddb.put_item(TableName='InvoicesIndex', Item=item); kms.decrypt(CiphertextBlob=blob)`. Follow our mandatory IAM policy-generation workflow rather than guessing action names from memory.",
+      "expectations": [
+        "Activates the aws-iam skill and reads `references/aws-iam-policy-generation.md`",
+        "Uses or instructs running **`iam-policy-autopilot`** (`generate-policies`) rather than hand-guessing IAM actions from memory, and covers scoping/reviewing the generated policy (`--account`, `--region`, `--tf-dir` or narrowing wildcard ARNs) before production deployment"
+      ]
+    },
+    {
+      "id": "eval-04-sts-role-chaining-1hour-limit-getsessiontoken-and-opt-in-region-quirks",
+      "prompt": "Fact-check three AWS STS edge cases hit by our platform team: (1) Role A assumes Role B requesting `DurationSeconds=14400` (4 hours, since Role B's `MaxSessionDuration` is set to `43200`s) and STS rejects it! (2) Credentials from `sts:GetSessionToken` (without MFA) fail calling `iam:ListUsers` and `sts:GetFederationToken`! (3) Account `1111` calls `sts:AssumeRole` into Account `2222` using regional STS endpoint `ap-southeast-3` (Jakarta opt-in region) \u2014 which account must have enabled `ap-southeast-3`?",
+      "expectations": [
+        "Activates the aws-iam skill",
+        "Explains all 3 verified STS edge cases accurately: (1) **Role chaining** (assuming a role using temporary role credentials) has a hard **1-hour (`3,600s`) maximum session duration** regardless of `MaxSessionDuration`, (2) `GetSessionToken` credentials cannot call **any `iam:*` API unless MFA parameters were included**, and among `sts:*` APIs can **only call `AssumeRole` and `GetCallerIdentity`**, and (3) for cross-account `AssumeRole` in an opt-in Region, the **TARGET account (`2222`)** must enable the opt-in Region (not the calling account)"
+      ]
+    },
+    {
+      "id": "eval-05-service-role-creation-confused-deputy-and-redshift-serverless-dual-principal",
+      "prompt": "Create least-privilege IAM Role trust policies (`AssumeRolePolicyDocument`) for two AWS services in account `111122223333`: (1) an AWS CloudTrail / EventBridge service role protected against confused deputy, and (2) an **Amazon Redshift Serverless** role used for `COPY` from S3 (explaining why single-principal `redshift.amazonaws.com` fails on Redshift Serverless!).",
+      "expectations": [
+        "Activates the aws-iam skill",
+        "Includes `aws:SourceAccount` (`111122223333`) and `aws:SourceArn` conditions on the service role trust policy to prevent cross-account confused-deputy assumption",
+        "Includes **BOTH `redshift-serverless.amazonaws.com` AND `redshift.amazonaws.com`** in the Redshift Serverless trust policy `Principal.Service` (omitting `redshift-serverless.amazonaws.com` causes `Not authorized to get credentials of role` on `COPY`!)"
+      ]
+    },
+    {
+      "id": "eval-06-same-account-resource-policy-bypassing-permissions-boundary-gotcha",
+      "prompt": "True or False (and explain the exact IAM evaluation rule): \"If we attach an IAM Permissions Boundary denying/omitting `s3:*` to IAM User `alice` (`arn:aws:iam::111122223333:user/alice`), then even if an S3 Bucket Policy in the **same account `111122223333`** explicitly grants `Principal: {\"AWS\": \"arn:aws:iam::111122223333:user/alice\"}` `Effect: Allow` on `s3:GetObject`, `alice` still cannot read the bucket because of her Permissions Boundary!\"",
+      "expectations": [
+        "Activates the aws-iam skill",
+        "Correctly answers **False** (unless the Permissions Boundary contains an explicit **`Deny`**!): in the **same AWS account**, a resource-based policy that directly names an IAM User/Role principal (`arn:aws:iam::111122223333:user/alice`) grants access on its own and **bypasses the absence of `Allow` in that user's Permissions Boundary** (whereas an explicit `Effect: Deny` in a Permissions Boundary or SCP always wins!)"
+      ]
+    },
+    {
+      "id": "eval-07-aws-organizations-quirks-closed-account-removal-delegated-policy-and-handshakes",
+      "prompt": "Verify three AWS Organizations & CloudTrail edge cases for our landing-zone runbook: (1) If we suspend/close a member AWS account first, can we immediately run `remove-account-from-organization` the same day? (2) Should we use `register-delegated-administrator` or `put-resource-policy` to delegate Organizations policy management? (3) When a member account accepts an org handshake (`AcceptHandshake`), is that logged in the Management account's single-account CloudTrail or the Acting account?",
+      "expectations": [
+        "Activates the aws-iam skill",
+        "Confirms all 3 verified quirks: (1) **NO** \u2014 suspended/closed accounts cannot be removed from an Organization until permanently closed (~90 days); **remove the account FIRST, then close it**! (2) Use **`PutResourcePolicy`** (resource-based delegation policy) for Organizations policy management delegation, NOT `register-delegated-administrator`; and (3) `AcceptHandshake`/`DeclineHandshake` is logged in the **ACTING account ONLY** (requiring an Organization trail for centralized visibility)"
+      ]
+    },
+    {
+      "id": "eval-08-boto3-iam-accesskey-methods-and-managed-policy-version-cap",
+      "prompt": "Fix two bugs in our Python `boto3` IAM automation script: (1) `iam_resource.AccessKey('alice', 'AKIA...').update(Status='Inactive')` raises `AttributeError`, and (2) calling `iam_client.create_policy_version(...)` on a customer-managed policy fails on the 6th deployment with `LimitExceededException`!",
+      "expectations": [
+        "Activates the aws-iam skill",
+        "Fixes (1): `boto3` `iam.AccessKey` resource has methods **`.activate()`, `.deactivate()`, and `.delete()` \u2014 there is NO `.update()` method** (or use `iam_client.update_access_key(UserName=..., AccessKeyId=..., Status='Inactive')` on the low-level client)",
+        "Fixes (2): customer-managed IAM policies support a **maximum of `5` versions** \u2014 before creating a 6th version, list `list_policy_versions` and `delete_policy_version` on the oldest non-default (`IsDefaultVersion == False`) version"
+      ]
+    },
+    {
+      "id": "eval-09-live-ap-south-1-iam-caller-and-role-posture-read-only-check",
+      "prompt": "Verify our current caller identity (`sts:GetCallerIdentity`) and perform a read-only check on IAM password policy / Access Analyzer or sample IAM roles in our live AWS account via MCP tools, summarizing any confused-deputy or wildcard-`PassRole` checks you evaluate without mutating anything.",
+      "expectations": [
+        "Activates the aws-iam skill and calls `sts:GetCallerIdentity` + read-only IAM/AccessAnalyzer checks via connected AWS MCP tools with zero raw `aws` CLI shell commands",
+        "Accurately reports the live caller/role posture (handling any restricted IAM read permissions gracefully without fabricating findings)",
+        "Makes zero mutating AWS calls"
+      ]
+    },
+    {
+      "id": "eval-10-awsknowledge-s3-bucket-policy-vpce-deny-pattern-with-breakglass-exclusions",
+      "prompt": "Query AWS documentation via connected AWS documentation tools to write a safe S3 Bucket Policy `Deny` statement restricting `s3:*` data access to a specific VPC Endpoint (`aws:sourceVpce = vpce-0123456789abcdef0`) WITHOUT locking out AWS control-plane/admin break-glass roles or failing when `aws:sourceVpce` is null.",
+      "expectations": [
+        "Queries connected AWS documentation MCP tools (`awsknowledge`, `aws-mcp`, or `awsiac`) with zero raw `aws` CLI commands",
+        "Uses `StringNotEquals: { \"aws:sourceVpce\": \"vpce-0123456789abcdef0\" }` (which evaluates safely even when `aws:sourceVpce` is absent!) scoped carefully to data actions (`s3:GetObject`, `s3:PutObject`, `s3:DeleteObject`, `s3:ListBucket` rather than locking out `s3:PutBucketPolicy` admin break-glass principals, or excluding specific admin `aws:PrincipalArn` / `aws:PrincipalIsAWSService`)"
+      ]
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stop hook: verify modified CloudFormation templates and .drawio/.mmd diagrams pass validation before turn completion."""
+"""Stop hook: verify modified IaC templates pass syntax/lint validation before completing the turn."""
 
 from __future__ import annotations
 
@@ -17,7 +17,11 @@ def main() -> int:
     except ValueError:
         return 0
 
-    if not isinstance(data, dict) or data.get("stop_hook_active"):
+    if not isinstance(data, dict):
+        return 0
+
+    # Prevent infinite Stop-hook loops
+    if data.get("stop_hook_active"):
         return 0
 
     try:
@@ -34,15 +38,7 @@ def main() -> int:
     if proc.returncode != 0 or not proc.stdout.strip():
         return 0
 
-    validator = (
-        Path(__file__).resolve().parent.parent
-        / "skills"
-        / "aws-architecture-diagramming"
-        / "scripts"
-        / "validate_mermaid.py"
-    )
     failures: list[str] = []
-
     for line in proc.stdout.splitlines():
         if len(line) < 4:
             continue
@@ -71,25 +67,14 @@ def main() -> int:
                 if lint.returncode != 0:
                     detail = (lint.stdout.strip() or lint.stderr.strip())[:400]
                     failures.append(f"cfn-lint failed on {rel_path}: {detail}")
-        elif ext in (".drawio", ".mmd", ".mermaid") and validator.is_file():
-            diag = subprocess.run(
-                [sys.executable, str(validator), rel_path],
-                capture_output=True,
-                text=True,
-                timeout=5,
-                check=False,
-            )
-            if diag.returncode != 0:
-                detail = (diag.stderr.strip() or diag.stdout.strip())[:400]
-                failures.append(f"Diagram validation failed on {rel_path}: {detail}")
 
     if failures:
         json.dump(
             {
                 "decision": "block",
                 "reason": (
-                    "Modified architecture deliverable(s) failed validation. "
-                    "Fix the reported errors before completing your response:\n"
+                    "Modified CloudFormation template(s) failed cfn-lint validation. "
+                    "Fix the reported template errors before completing your response:\n"
                     + "\n".join(failures)
                 ),
             },

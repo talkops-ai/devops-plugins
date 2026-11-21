@@ -1,0 +1,127 @@
+{
+  "skill_name": "triaging-tempo-service-errors",
+  "evals": [
+    {
+      "id": "eval-01-full-red-error-triage-cohort-skew-and-downstream-origin",
+      "prompt": "`checkout-service` (`oteldemo.CheckoutService/PlaceOrder` in namespace `otel-demo`) just paged on-call with `OtelCheckoutErrorBudgetBurn` over the last 15 minutes after `paymentFailure` was toggled in `flagd`. Quantify its RED error severity in Grafana Tempo compared against 1 hour ago, check whether the errors are skewed to one pod or version, pinpoint which service in the call chain is actually originating the errors, and produce a structured incident brief.",
+      "expected_output": "Reads `tempo://server/capabilities` and `tempo://system/backends`, discovers attributes via `tempo_get_attribute_names`, calls `tempo_analyze_service_red(service=\"checkout-service\", since=\"15m\", baseline_offset=\"1h\")` classifying severity (`CRITICAL`), runs `tempo_compare_span_cohorts` (`selection='{ status = error }'`) to check pod/version/route skew, samples failing traces, reads `tempo://traces/default/<trace_id>` and calls `tempo_summarize_trace` to distinguish `error_origin_service = \"payment\"` (`deepest_error_span = \"oteldemo.PaymentService/Charge\"`) from `checkout-service`, runs `scripts/render_incident_report.py`, and formats the structured incident brief.",
+      "files": [],
+      "expectations": [
+        "Calls `tempo_get_attribute_names` and `tempo_analyze_service_red` on `checkout-service` comparing against 1 hour ago and classifies severity accurately",
+        "Calls `tempo_compare_span_cohorts` on error spans to check pod, version, and feature-flag skew",
+        "Inspects a failing trace via `tempo_summarize_trace` (and `tempo://traces/default/<trace_id>`) identifying `payment` (`oteldemo.PaymentService/Charge`) as `error_origin_service` rather than blaming `checkout-service`",
+        "Runs `render_incident_report.py` and emits a structured incident brief citing `tempo://traces/<backend_id>/<trace_id>`"
+      ]
+    },
+    {
+      "id": "eval-02-pivot-from-w3c-traceparent-log-line-and-reject-zero-trace-id",
+      "prompt": "Jump from these two `otel-demo` container error log lines to the distributed trace in Grafana Tempo (`observability`) and inspect what failed downstream:\nLine 1: `level=error service=product-catalog-service msg=\"startup config check\" trace_id=00000000000000000000000000000000`\nLine 2: `2026-06-01T10:12:04Z ERROR frontend-proxy traceparent=\"00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01\" path=\"/api/checkout\" status=500`",
+      "expected_output": "Runs `scripts/extract_trace_ids_from_logs.py` to reject Line 1's all-zero `00000000000000000000000000000000` trace ID as an uninitialized SDK context, calls `tempo_get_trace_from_log` on Line 2 (`frontend-proxy` `/api/checkout`) extracting `extracted_trace_id=\"4bf92f3577b34da6a3ce929d0e0e4736\"` and `extracted_span_id=\"00f067aa0ba902b7\"` (`format=\"traceparent\"`) along with `trace_summary`, and inspects the failing downstream spans (`payment` / `email`) via `tempo_get_trace` or `tempo_summarize_trace`.",
+      "files": [],
+      "expectations": [
+        "Rejects the all-zero `00000000000000000000000000000000` trace ID on `product-catalog-service` as invalid uninitialized context",
+        "Calls `tempo_get_trace_from_log` on Line 2 (`frontend-proxy`) and extracts `4bf92f3577b34da6a3ce929d0e0e4736` (`00f067aa0ba902b7`)",
+        "Follows up with `tempo_get_trace` or `tempo_summarize_trace` to inspect downstream error details on the `otel-demo` trace"
+      ]
+    },
+    {
+      "id": "eval-03-exemplar-pivot-with-traceql-metrics-query",
+      "prompt": "`product-catalog-service` in `otel-demo` is showing elevated error rates on metrics dashboards over the last 30 minutes while `productCatalogFailure` is active on product `L9ECAV7KIM`. Pivot from Tempo error rate metrics to up to 5 concrete exemplar traces for `product-catalog-service` and pull the exact exception type, message, and stacktrace on `oteldemo.ProductCatalogService/GetProduct`.",
+      "expected_output": "Calls `tempo_get_exemplar_traces(backend_id=\"default\", query='{ resource.service.namespace = \"otel-demo\" && resource.service.name = \"product-catalog-service\" && status = error } | rate()', since=\"30m\", limit=5)` (passing a valid TraceQL metrics expression, NOT PromQL), reads `trace_candidates`, runs `tempo_summarize_trace` to locate `deepest_error_span` (`oteldemo.ProductCatalogService/GetProduct`), and calls `tempo_get_trace` to extract `exception.type`, `exception.message` (`L9ECAV7KIM`), and `exception.stacktrace`.",
+      "files": [],
+      "expectations": [
+        "Calls `tempo_get_exemplar_traces` with a valid TraceQL metrics query (`{ ... && resource.service.name = \"product-catalog-service\" && status = error } | rate()`)",
+        "Runs `tempo_summarize_trace` on an exemplar candidate to locate `deepest_error_span` (`oteldemo.ProductCatalogService/GetProduct`)",
+        "Calls `tempo_get_trace` to extract `exception.type`, `exception.message` (`L9ECAV7KIM`), and `exception.stacktrace` span events"
+      ]
+    },
+    {
+      "id": "eval-04-canary-version-skew-detection-80-percent-rule",
+      "prompt": "Right after rolling out a canary image (`2.3.0-rc1`) on `ad` (`oteldemo.AdService/GetAds`) in `otel-demo` alongside stable `2.2.0`, RPC error alerts started firing! Investigate `ad` errors in Grafana Tempo over the last 30 minutes to determine whether the errors are concentrated in the newly rolled-out `2.3.0-rc1` canary version (`>= 80%` version skew), verify the exception on a failing canary trace, and tell us whether to halt and roll back.",
+      "expected_output": "Calls `tempo_compare_span_cohorts` on `ad` (`selection='{ status = error }'`), observes that `resource.service.version = \"2.3.0-rc1\"` accounts for `>= 80%` of error spans while serving a minority of baseline traffic, flags `2.3.0-rc1` as a bad canary rollout per `references/triage-thresholds.md`, runs `tempo_traceql_search` + `tempo_summarize_trace` / `tempo_get_trace` scoped to `resource.service.name = \"ad\" && resource.service.version = \"2.3.0-rc1\" && status = error` to confirm the Java exception, and recommends rolling back `ad` (`helm rollback ad`).",
+      "files": [],
+      "expectations": [
+        "Calls `tempo_compare_span_cohorts` on `ad` error spans and identifies canary release regression because `service.version = \"2.3.0-rc1\"` exceeds the `>= 80%` error cohort skew threshold",
+        "Inspects a failing `2.3.0-rc1` `ad` trace via `tempo_traceql_search` and `tempo_summarize_trace` / `tempo_get_trace` to verify the Java exception",
+        "Recommends halting or rolling back the `ad` canary rollout citing `tempo://traces/<backend_id>/<trace_id>` evidence"
+      ]
+    },
+    {
+      "id": "eval-05-single-pod-infrastructure-defect-60-percent-skew",
+      "prompt": "`cart-service` (`oteldemo.CartService/AddItem` and `GetCart` in `otel-demo`) has been throwing intermittent `valkey-cart:6379` errors over the last 30 minutes even though nobody deployed code changes today. Check Grafana Tempo to see whether `cart-service` errors are isolated to a single degraded pod (`>= 60%` pod skew) rather than a fleet-wide C#/.NET code bug, classify the severity, and recommend the safest remediation.",
+      "expected_output": "Calls `tempo_analyze_service_red` on `cart-service` and `tempo_compare_span_cohorts` (`selection='{ status = error }'`), applies the single-pod skew heuristic (`>= 60%` of error cohort vs `< 20%` of baseline on pod `cart-6d8f9b-x7k2p`), diagnoses an isolated pod/socket defect (`valkey-cart:6379` stale TCP connection or memory pressure) rather than a fleet-wide code release bug, and recommends inspecting/restarting pod `cart-6d8f9b-x7k2p` instead of rolling back the `cart` chart.",
+      "files": [],
+      "expectations": [
+        "Runs `tempo_analyze_service_red` and `tempo_compare_span_cohorts` on `cart-service` over the 30-minute window",
+        "Applies the single-pod skew heuristic (`>= 60%` error share vs `< 20%` baseline share on `cart-6d8f9b-x7k2p`)",
+        "Recommends targeted `cart-6d8f9b-x7k2p` pod/node inspection and restart rather than a fleet-wide Helm rollback"
+      ]
+    },
+    {
+      "id": "eval-06-local-blocks-disabled-fallback-error-triage",
+      "prompt": "Triage `shipping-service` -> `quote` (`/getquote`) HTTP 5xx errors in `otel-demo` over the last 30 minutes against our `tempo-no-local-blocks` Tempo instance in `observability` (where `local-blocks` TraceQL Metrics is disabled) and identify which service is actually originating the failures.",
+      "expected_output": "Detects that `local-blocks` is disabled on `tempo-no-local-blocks` (via `tempo://server/capabilities` or catching the metrics fallback), pivots cleanly to `tempo_get_attribute_names` -> `tempo_traceql_search(backend_id=\"tempo-no-local-blocks\", query='{ resource.service.namespace = \"otel-demo\" && resource.service.name = \"shipping-service\" && status = error }', since=\"30m\", limit=20)` -> `tempo_summarize_trace` -> `tempo_get_trace` across sampled error traces, and identifies `error_origin_service = \"quote\"` (`POST /getquote` PHP `:8080`).",
+      "files": [],
+      "expectations": [
+        "Recognizes `local-blocks` unavailability on `tempo-no-local-blocks` and pivots cleanly to `tempo_traceql_search` + `tempo_summarize_trace`",
+        "Samples `shipping-service` error traces to inspect common failing attributes (`k8s.pod.name`, `service.version`, `http.route`)",
+        "Identifies `quote` as `error_origin_service` (`deepest_error_span`) via `tempo_summarize_trace` and `tempo_get_trace`"
+      ]
+    },
+    {
+      "id": "eval-07-severity-classification-matrix-boundaries",
+      "prompt": "Classify incident severity (`CRITICAL`, `WARNING`, `ELEVATED`, or `NOMINAL`) and render structured incident report JSON fields for four `otel-demo` services observed in Tempo: `payment` (`100 req/s`, `6.2 err/s` during `paymentFailure`), `recommendation` (`200 req/s`, `0.8 err/s`), `product-catalog-service` (`50 req/s`, `1.2 err/s` on `L9ECAV7KIM`), and `currency-service` (`500 req/s`, `0.1 err/s`).",
+      "expected_output": "Runs `scripts/render_incident_report.py` for each service applying deterministic RED severity rules (`CRITICAL` if `error_ratio >= 0.05` OR `error_rate >= 1.0/s`; `WARNING` if `0.01 <= error_ratio < 0.05`; `ELEVATED` if `0.001 <= error_ratio < 0.01`; `NOMINAL` if `< 0.001`): `payment` = `CRITICAL` (`6.2%` and `6.2/s`), `recommendation` = `ELEVATED` (`0.4%`, `< 1.0/s`), `product-catalog-service` = `CRITICAL` (`2.4%` ratio, but `1.2 err/s >= 1.0/s` triggers `CRITICAL`!), `currency-service` = `NOMINAL` (`0.02%`).",
+      "files": [],
+      "expectations": [
+        "Runs `render_incident_report.py` and classifies `payment` as `CRITICAL` (`error_ratio >= 0.05` and `error_rate >= 1.0`)",
+        "Classifies `product-catalog-service` as `CRITICAL` because `error_rate = 1.2 >= 1.0/s` even though `error_ratio = 2.4% < 5%`",
+        "Classifies `recommendation` as `ELEVATED` (`0.004` ratio) and `currency-service` as `NOMINAL` (`0.0002` ratio)"
+      ]
+    },
+    {
+      "id": "eval-08-cross-pillar-handoff-to-loki-correlated-logs",
+      "prompt": "Inspect failing `PlaceOrder` trace `4bf92f3577b34da6a3ce929d0e0e4736` in `otel-demo`—specifically check why the Ruby `email` service (`POST /send_order_confirmation` while `emailMemoryLeak` is active) recorded an error span without attaching an exception stacktrace event on the span, and pivot to its correlated container logs in Grafana Loki (`observability`) to recover the exact Ruby error.",
+      "expected_output": "Calls `tempo_summarize_trace` and `tempo_get_trace` on `4bf92f3577b34da6a3ce929d0e0e4736` to extract the `email` span's exact timestamps, `k8s.pod.name` (`email-5d9c8b-k2m9q`), and `span_id`, then pivots to Grafana Loki (`loki_correlate_trace_logs(correlation_id=\"4bf92f3577b34da6a3ce929d0e0e4736\", scope_selector='{namespace=\"otel-demo\"}', org_id=\"otel-demo\")` or bounded pod/timestamp query) to recover the Ruby `NoMemoryError` log line from `email`.",
+      "files": [],
+      "expectations": [
+        "Inspects `4bf92f3577b34da6a3ce929d0e0e4736` in Tempo (`tempo_summarize_trace` / `tempo_get_trace`) to extract `email` span attributes (`k8s.pod.name`, timestamps, status)",
+        "Pivots to Grafana Loki (`loki_correlate_trace_logs` or bounded LogQL query) using `trace_id=\"4bf92f3577b34da6a3ce929d0e0e4736\"` in `otel-demo`",
+        "Targets `email` (`email-5d9c8b-k2m9q`) rather than upstream `checkout-service` or `frontend`"
+      ]
+    },
+    {
+      "id": "eval-09-downstream-origin-exoneration-of-frontend-proxy",
+      "prompt": "The on-call team wants to restart `frontend-proxy` (Envoy `:8090` in `otel-demo`) because its server spans show a `9.5%` HTTP 500/502 error rate on `/api/recommendations`. Inspect representative failing trace `8899aabbccddeeff0011223344556677` in Grafana Tempo and advise the team whether restarting `frontend-proxy` will fix the incident.",
+      "expected_output": "Reads `tempo://traces/default/8899aabbccddeeff0011223344556677` and calls `tempo_summarize_trace` + `tempo_get_trace` on `8899aabbccddeeff0011223344556677`, proving `error_origin_service = \"product-catalog-service\"` (`deepest_error_span = \"oteldemo.ProductCatalogService/GetProduct\"` throwing `ProductCatalogFailureError` on `L9ECAV7KIM`) while `recommendation`, `frontend`, and `frontend-proxy` are cascading victims propagating the failure upstream; advises against restarting `frontend-proxy` and directs remediation to `product-catalog-service` / `flagd`.",
+      "files": [],
+      "expectations": [
+        "Inspects trace `8899aabbccddeeff0011223344556677` in Tempo and distinguishes `root_service` (`frontend-proxy`) from `error_origin_service` (`product-catalog-service`) at `max(depth)`",
+        "Advises against restarting `frontend-proxy` since its 502s are cascading symptoms of `product-catalog-service` `GetProduct` errors on `L9ECAV7KIM`",
+        "Cites `tempo://traces/default/8899aabbccddeeff0011223344556677` and `deepest_error_span` evidence"
+      ]
+    },
+    {
+      "id": "eval-10-extract-multiple-trace-id-formats-from-raw-log-bundle",
+      "prompt": "Extract every valid non-zero trace ID from this mixed `otel-demo` incident log paste (`recommendation` Python JSON log, `checkout-service` Go logfmt, and `cart-service` readiness probe) and fetch their trace summaries in Grafana Tempo:\n```\n{\"level\":\"ERROR\",\"service\":\"recommendation\",\"otelTraceID\":\"abcdef0123456789abcdef0123456789\",\"msg\":\"GetProduct L9ECAV7KIM failed\"}\nts=2026-06-01T11:00:02Z level=error service=checkout-service traceId=11223344556677889900aabbccddeeff msg=\"PaymentService/Charge unavailable\"\ntrace_id=00000000000000000000000000000000 service=cart-service msg=\"readiness probe\"\n```",
+      "expected_output": "Runs `scripts/extract_trace_ids_from_logs.py` to extract deduplicated valid 32-hex trace IDs `abcdef0123456789abcdef0123456789` (`recommendation` `otelTraceID` JSON) and `11223344556677889900aabbccddeeff` (`checkout-service` `traceId` logfmt), discards `00000000000000000000000000000000`, and calls `tempo_get_trace_from_log` / `tempo_summarize_trace` on both valid `otel-demo` traces.",
+      "files": [],
+      "expectations": [
+        "Runs `extract_trace_ids_from_logs.py` extracting both `otelTraceID` (`recommendation` JSON) and `traceId` (`checkout-service` logfmt) 32-hex trace IDs",
+        "Filters out the all-zero `00000000000000000000000000000000` `cart-service` healthcheck trace ID",
+        "Fetches Tempo trace summaries via `tempo_get_trace_from_log` or `tempo_summarize_trace` for both valid `otel-demo` trace IDs"
+      ]
+    },
+    {
+      "id": "eval-11-slash-command-triage-workflow",
+      "prompt": "/triage checkout-service in otel-demo --window 30m",
+      "expected_output": "Reads `commands/triage.md`, verifies Tempo capabilities/backends (`tempo://server/capabilities`, `tempo://system/backends`), evaluates 30-minute RED metrics (`tempo_analyze_service_red`), error cohort skew (`tempo_compare_span_cohorts`), and representative failing traces (`tempo_summarize_trace` identifying downstream `payment` `Charge` failures), correlating across Alertmanager/Prometheus/Loki signals where available and delivering a structured incident remediation brief.",
+      "files": [],
+      "expectations": [
+        "Reads `commands/triage.md` and follows the correlated incident triage workflow for `checkout-service` in `otel-demo` over `30m`",
+        "Executes `tempo_analyze_service_red`, `tempo_compare_span_cohorts`, and `tempo_summarize_trace` to isolate downstream `payment` `Charge` errors",
+        "Correlates cross-pillar context and delivers an evidence-backed root-cause summary with concrete mitigation steps"
+      ]
+    }
+  ]
+}

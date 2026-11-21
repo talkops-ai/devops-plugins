@@ -1,0 +1,114 @@
+{
+  "skill_name": "rolling-back-kargo-stages",
+  "evals": [
+    {
+      "id": "eval-01-checkout-grpc-5xx-errors-started-spiking-in-prod",
+      "prompt": "Checkout gRPC 5xx errors started spiking in production right after `checkout-bad-231` landed on Kargo Stage `prod-us` in project `otel-demo`! Diagnose `prod-us`, check its deployment history, preview rolling `prod-us` back to the immediate prior known-good `2.2.0-checkout` bundle, and execute the rollback right now.",
+      "expected_output": "Calls `kargo_diagnose_stage(project=\"otel-demo\", stage=\"prod-us\", include_events=True)` and reads `kargo://projects/otel-demo/stages/prod-us`, identifies `freightHistory[0]` (`checkout-bad-231`) as active and `freightHistory[1]` (`checkout-good-220`) as the immediate prior target, previews `kargo_rollback_stage(project=\"otel-demo\", stage=\"prod-us\", dry_run=True)`, executes `dry_run=False, confirm=True`, and confirms the roll-forward `Promotion` and `autoPromotionHolds` on `prod-us`.",
+      "files": [],
+      "expectations": [
+        "Diagnoses `prod-us` via `kargo_diagnose_stage` and inspects `freightHistory` (`freightHistory[0]` current broken bundle vs `freightHistory[1]` prior `checkout-good-220`)",
+        "Previews via `kargo_rollback_stage(..., dry_run=True)` before executing `dry_run=False, confirm=True`",
+        "Verifies the rollback creates a new roll-forward `Promotion` and engages `autoPromotionHolds` on `prod-us`"
+      ]
+    },
+    {
+      "id": "eval-02-stage-staging-in-kargo-project-otel-demo-current",
+      "prompt": "Stage `staging` in Kargo project `otel-demo` currently has an active promotion stuck in progress, AND the bundle right before this one (`otel-leak-230`) also had the `emailMemoryLeak` flag enabled—so we need to abort the active promotion on `staging` and roll back two steps to `otel-clean-220`! Please preview and execute that recovery.",
+      "expected_output": "Diagnoses `staging` (`kargo_diagnose_stage`) and queries/inspects `freightHistory` (`kargo_query_freight` / `kargo://projects/otel-demo/stages/staging`) to resolve `otel-clean-220`'s Freight ID, aborts the active promotion (`kargo_manage_promotion(..., action=\"abort\")` and/or `abort_running_promotion=True`), previews `kargo_rollback_stage` targeting `otel-clean-220`, and executes `dry_run=False, confirm=True`.",
+      "files": [],
+      "expectations": [
+        "Inspects `staging` and resolves `otel-clean-220` (`freightHistory[2]`) via `kargo_diagnose_stage` / `kargo_query_freight`",
+        "Aborts the stuck in-flight promotion on `staging`",
+        "Previews and executes `kargo_rollback_stage` explicitly targeting `otel-clean-220` (`dry_run=True` -> `False`)"
+      ]
+    },
+    {
+      "id": "eval-03-earlier-we-rolled-back-kargo-stage-staging-resum",
+      "prompt": "Earlier we rolled back Kargo Stage `staging-resume` in project `otel-demo`, which placed an auto-promotion hold on `staging-resume` for Warehouse `resume-wh`. Now the fixed `otel-checkout-fix-232` Freight bundle has arrived in `resume-wh`—explain why Kargo placed that hold after our rollback, then resume normal delivery from `resume-wh` onto `staging-resume` and confirm the hold cleared.",
+      "expected_output": "Inspects `staging-resume` via `kargo_diagnose_stage`, explains that Kargo v1.11+ sets `Stage.status.autoPromotionHolds` after a rollback so the auto-promoter does not immediately overwrite the rolled-back Stage with the broken Freight, previews and executes `kargo_promote(project=\"otel-demo\", stage=\"staging-resume\", origin_warehouse=\"resume-wh\", dry_run=True -> False, confirm=True)`, and confirms `autoPromotionHolds` cleared.",
+      "files": [],
+      "expectations": [
+        "Explains why `Stage.status.autoPromotionHolds` is an intentional safety lock preventing immediate re-promotion of the broken Freight",
+        "Promotes from origin Warehouse `resume-wh` onto `staging-resume` (`origin_warehouse=\"resume-wh\"`) via `kargo_promote` (`dry_run=True` -> `False`)",
+        "Verifies `autoPromotionHolds` cleared on `staging-resume`"
+      ]
+    },
+    {
+      "id": "eval-04-one-of-our-developers-on-the-otel-app-team-asked",
+      "prompt": "One of our developers on the `OTEL-APP` team asked: 'Why shouldn't I just run `git revert HEAD` on `charts/frontend-proxy/values.yaml` on the `stage/prod-us` branch instead of rolling back through Kargo?' Give them a clear architectural explanation.",
+      "expected_output": "Explains that an out-of-band `git revert` on `stage/prod-us` leaves Kargo's `Stage.status.freightHistory` desynchronized from Git/ArgoCD state, fails to set `Stage.status.autoPromotionHolds` (allowing Kargo to overwrite the revert), and bypasses promotion templates and post-promotion `AnalysisTemplate` SLO checks—whereas Kargo rollback creates an audited roll-forward `Promotion` re-applying the prior `Freight`.",
+      "files": [],
+      "expectations": [
+        "Explains that Kargo rollback is a roll-forward re-promotion of a prior `Freight` (`Promotion` CRD) rather than an out-of-band `git revert`",
+        "Points out that manual `git revert` desynchronizes `Stage.status.freightHistory` and fails to engage `autoPromotionHolds`",
+        "Notes that rolling back through Kargo also re-runs Stage promotion steps and post-promotion `AnalysisTemplate` verification"
+      ]
+    },
+    {
+      "id": "eval-05-check-our-newly-launched-regional-stage-prod-eu",
+      "prompt": "Check our newly launched regional Stage `prod-eu-new` in Kargo project `otel-demo`—it has only ever received its initial deployment (`1` item in its deployment history). What happens if we try a default rollback on `prod-eu-new` with no explicit target, and what are our safe recovery options?",
+      "expected_output": "Reads `kargo://projects/otel-demo/stages/prod-eu-new` (confirming `len(freightHistory) == 1`), explains that omitting `target_freight` fails because there is no `freightHistory[1]` prior deployment on `prod-eu-new`, and outlines concrete options: querying verified Freight via `kargo_query_freight` to promote an older verified bundle explicitly or promoting a forward hotfix Freight.",
+      "files": [],
+      "expectations": [
+        "Inspects `kargo://projects/otel-demo/stages/prod-eu-new` and confirms `freightHistory` only has 1 entry (no `freightHistory[1]`)",
+        "Explains why an implicit rollback with no target Freight cannot run when fewer than 2 `freightHistory` entries exist",
+        "Provides concrete recovery options (explicitly promoting another verified Freight from `kargo_query_freight` or rolling forward a hotfix)"
+      ]
+    },
+    {
+      "id": "eval-06-we-attempted-a-rollback-on-stage-prod-eu-broken",
+      "prompt": "We attempted a rollback on Stage `prod-eu-broken-rb` in Kargo project `otel-demo`, and the rollback promotion itself errored out! Diagnose `prod-eu-broken-rb` and its failed promotion to tell us why even a rollback promotion failed and what needs to be fixed on the target ArgoCD application.",
+      "expected_output": "Calls `kargo_diagnose_stage(project=\"otel-demo\", stage=\"prod-eu-broken-rb\", include_events=True)` and inspects the failed `Promotion` (`kargo://projects/otel-demo/promotions/{promotion}`), identifies `ARGOCD_SYNC_OR_AUTH_FAILED` because rollback re-executes the Stage's `promotionTemplate` (`argocd-update`) and target ArgoCD Application `otel-checkout-unauth` lacks `kargo.akuity.io/authorized-stage: \"otel-demo:prod-eu-broken-rb\"`, and explains adding the annotation before retrying.",
+      "files": [],
+      "expectations": [
+        "Inspects `prod-eu-broken-rb` via `kargo_diagnose_stage` and reads the failed rollback `Promotion` details",
+        "Explains that Kargo rollback re-runs `promotionTemplate` steps (`argocd-update`), so missing `kargo.akuity.io/authorized-stage: \"otel-demo:prod-eu-broken-rb\"` blocks rollback promotions too",
+        "Prescribes adding the authorization annotation to `otel-checkout-unauth` and re-running the rollback"
+      ]
+    },
+    {
+      "id": "eval-07-stage-staging-bundle-in-kargo-project-otel-demo",
+      "prompt": "Stage `staging-bundle` in Kargo project `otel-demo` deploys multi-artifact bundles combining images, Helm charts, and `OTEL-APP` Git commits. Before we roll `staging-bundle` back, inspect its Stage status, Stage YAML manifest, and the exact constituent image tags, chart versions, and Git commits inside its immediate prior Freight (`freightHistory[1]`), and run a dry-run rollback preview only—do not execute the live rollback yet.",
+      "expected_output": "Reads `kargo://projects/otel-demo/stages/staging-bundle`, `kargo://projects/otel-demo/stages/staging-bundle/manifest`, and `kargo://projects/otel-demo/freight/{prior_freight}` to list every constituent image tag, chart version, and Git commit in `freightHistory[1]`, and runs `kargo_rollback_stage(project=\"otel-demo\", stage=\"staging-bundle\", dry_run=True)` without executing `dry_run=False`.",
+      "files": [],
+      "expectations": [
+        "Inspects `staging-bundle` (`kargo://projects/otel-demo/stages/staging-bundle` and `/manifest`) and reads the prior `Freight` resource to list exact constituent artifacts",
+        "Previews the rollback via `kargo_rollback_stage(..., dry_run=True)` and holds without executing `dry_run=False`"
+      ]
+    },
+    {
+      "id": "eval-08-in-kargo-project-otel-demo-check-our-pipeline-to",
+      "prompt": "In Kargo project `otel-demo`, check our pipeline topology and explain what happens to a downstream production Stage if auto-promotion is enabled for it and that downstream Stage uses the `MatchUpstream` selection policy when we roll its upstream `staging` Stage back to an older `product-catalog` Freight.",
+      "expected_output": "Reads `kargo://projects/otel-demo/pipeline` and `kargo://projects/otel-demo`, warning that with `autoPromotionEnabled: true` + `selectionPolicy: MatchUpstream` on a downstream Stage, rolling back upstream `staging` will automatically propagate and trigger a rollback re-promotion on the downstream production Stage as soon as `staging` verification passes.",
+      "files": [],
+      "expectations": [
+        "Inspects `kargo://projects/otel-demo/pipeline` before advising on upstream Stage rollback",
+        "Clearly explains how `selectionPolicy: MatchUpstream` automatically cascades an upstream `staging` rollback to downstream auto-promoted stages once verification succeeds",
+        "Recommends confirming whether downstream production should also roll back or temporarily disabling downstream auto-promotion first"
+      ]
+    },
+    {
+      "id": "eval-09-on-stage-prod-hold-guard-in-kargo-project-otel-d",
+      "prompt": "On Stage `prod-hold-guard` in Kargo project `otel-demo`, we rolled back from broken `hold-broken-231` to `hold-good-220`, and `hold-broken-231` is STILL the newest bundle in Warehouse `hold-guard-wh` (no `2.3.2` fix has been built yet). Trigger a promotion from Warehouse `hold-guard-wh` onto `prod-hold-guard` right now just to clear the hold warning off our dashboard!",
+      "expected_output": "Checks `prod-hold-guard` (`kargo_diagnose_stage`) and `hold-guard-wh` (`kargo_query_freight`), refuses to promote from `hold-guard-wh` while broken `hold-broken-231` is still the latest Freight, and explains that clearing `autoPromotionHolds` right now would immediately re-deploy broken `hold-broken-231` onto `prod-hold-guard` and undo the rollback.",
+      "files": [],
+      "expectations": [
+        "Checks `prod-hold-guard` and `hold-guard-wh` (`kargo_diagnose_stage` / `kargo_query_freight`) to confirm `hold-broken-231` is still the newest Freight",
+        "Refuses to promote from `hold-guard-wh` and warns that doing so would immediately re-deploy broken `hold-broken-231` onto `prod-hold-guard`",
+        "Explains that the hold on `prod-hold-guard` is an informational safety lock that must remain until a fixed Freight arrives in `hold-guard-wh`"
+      ]
+    },
+    {
+      "id": "eval-10-yesterday-someone-manually-promoted-an-older-fre",
+      "prompt": "Yesterday someone manually promoted an older Freight onto Stage `staging-hold` in Kargo project `otel-demo`, which put an automatic-promotion hold on `staging-hold` for Warehouse `hold-wh`. Now a newer Freight has arrived in `hold-wh`—inspect the hold on `staging-hold`, clear the hold by promoting the latest Freight from `hold-wh`, and verify the hold is gone.",
+      "expected_output": "Reads `kargo://projects/otel-demo/stages/staging-hold` to confirm `autoPromotionHolds` referencing `hold-wh`, previews and runs `kargo_promote(project=\"otel-demo\", stage=\"staging-hold\", origin_warehouse=\"hold-wh\", dry_run=True -> False, confirm=True)`, and verifies `autoPromotionHolds` cleared on `staging-hold`.",
+      "files": [],
+      "expectations": [
+        "Inspects `staging-hold` (`kargo://projects/otel-demo/stages/staging-hold` / `kargo_diagnose_stage`) and identifies the active `autoPromotionHolds` entry for Warehouse `hold-wh`",
+        "Promotes from origin Warehouse `hold-wh` on `staging-hold` (`origin_warehouse=\"hold-wh\"`) via `kargo_promote` (`dry_run=True` -> `False`)",
+        "Confirms `autoPromotionHolds` is cleared on `staging-hold`"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "skill_name": "setting-up-cloudwatch-alarm-notifications",
+  "companion_skills": [
+    "troubleshooting-application-failures",
+    "live-site-incident-postmortem",
+    "prometheus-and-grafana-sre",
+    "setting-up-cloudtrail-multi-region"
+  ],
+  "queries": [
+    {
+      "id": "trig-pos-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Set up an encrypted Amazon SNS topic with email and PagerDuty HTTPS webhook subscriptions and link it to our CloudWatch `HighCPU` alarm (`AlarmActions` and `OKActions`)."
+    },
+    {
+      "id": "trig-pos-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Fix `KMSAccessDeniedException` (`cloudwatch.amazonaws.com` blocked by `alias/aws/sns`) and `PendingConfirmation` when configuring CloudWatch alarm SNS notifications."
+    },
+    {
+      "id": "trig-pos-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Safely add SNS `AlarmActions` to an existing CloudWatch alarm via `describe-alarms` -> `put-metric-alarm` without wiping `TreatMissingData` or `DatapointsToAlarm`."
+    },
+    {
+      "id": "trig-pos-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Configure an SNS Topic Access Policy with `aws:SourceArn` confused-deputy guards, SMS E.164 formatting, and Composite Alarm `ActionsSuppressor`."
+    },
+    {
+      "id": "trig-pos-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Compare CloudWatch Alarm -> SNS -> AWS Chatbot Slack notifications vs direct `lambda.alarms.cloudwatch.amazonaws.com` actions."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Create a multi-region AWS CloudTrail trail logging API calls to S3."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Run Athena SQL queries on VPC Flow Logs in `s3tablescatalog/aws-cloudwatch`."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Discover CloudWatch Log Groups and analyze Python stack traces for a failing application."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write PromQL `histogram_quantile` queries on Amazon Managed Service for Prometheus."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Add Amazon Cognito PKCE login to a React frontend."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure AWS Direct Connect BGP peering and SiteLink."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Use `asm-exec` to resolve Secrets Manager dynamic references."
+    }
+  ]
+}

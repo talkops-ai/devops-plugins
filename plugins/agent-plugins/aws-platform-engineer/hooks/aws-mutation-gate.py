@@ -27,6 +27,7 @@ Self-test: python3 aws-mutation-gate.py --self-test
 
 from __future__ import annotations
 
+import ast
 import json
 import os
 import re
@@ -275,6 +276,232 @@ def classify_shell(command: str) -> str | None:
     return None
 
 
+def _op_to_kebab(op: str) -> str:
+    s = re.sub(r"([A-Z]+)([A-Z][a-z])", r"\1-\2", op)
+    s = re.sub(r"([a-z0-9])([A-Z])", r"\1-\2", s)
+    return s.replace("_", "-").lower()
+
+
+def _const_str(node: ast.AST | None) -> str | None:
+    if isinstance(node, ast.Constant) and isinstance(node.value, str):
+        return node.value
+    return None
+
+
+def _extract_boto3_arg(call: ast.Call, kw_name: str, pos_idx: int) -> ast.AST | None:
+    for kw in call.keywords:
+        if kw.arg is None:
+            return None  # **kwargs cannot be statically proven read-only
+        if kw.arg == kw_name:
+            return kw.value
+    if len(call.args) > pos_idx:
+        return call.args[pos_idx]
+    return None
+
+
+def classify_run_script(name: str, inp: dict) -> str | None:
+    """Inspect aws___run_script Python AST; allow only provably read-only call_boto3 / pure-Python scripts."""
+    code = inp.get("code")
+    if not isinstance(code, str) or not code.strip():
+        return f"{name} (arbitrary script against AWS)"
+    try:
+        tree = ast.parse(code)
+    except SyntaxError:
+        return f"{name} (unparseable script against AWS)"
+
+    # Block dynamic execution/reflection primitives that could obscure AWS mutations
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
+            if node.func.id in ("eval", "exec", "compile", "__import__"):
+                return f"{name} (dynamic {node.func.id} in run_script)"
+            if node.func.id == "getattr":
+                attr_lit = _const_str(node.args[1]) if len(node.args) >= 2 else None
+                tgt = node.args[0] if node.args else None
+                bad_tgt = isinstance(tgt, ast.Name) and tgt.id in ("aws_mcp", "builtins", "__builtins__")
+                if attr_lit is None or attr_lit == "call_boto3" or bad_tgt:
+                    return f"{name} (dynamic getattr in run_script)"
+        if isinstance(node, (ast.Import, ast.ImportFrom)):
+            mods = [a.name for a in node.names]
+            if isinstance(node, ast.ImportFrom) and node.module:
+                mods.append(node.module)
+            if any(m == "aws_mcp" or m.startswith("aws_mcp.") for m in mods):
+                # Allow aws_mcp only if every attribute call on aws_mcp is search_functions
+                for sub in ast.walk(tree):
+                    if isinstance(sub, ast.Attribute) and isinstance(sub.value, ast.Name) and sub.value.id == "aws_mcp":
+                        if sub.attr not in ("search_functions",):
+                            return f"{name} (aws_mcp.{sub.attr} in run_script)"
+
+    boto_name_refs = [n for n in ast.walk(tree) if isinstance(n, ast.Name) and n.id == "call_boto3"]
+    boto_calls = [
+        n for n in ast.walk(tree)
+        if isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id == "call_boto3"
+    ]
+    # Disallow aliasing or passing call_boto3 as a first-class value
+    if len(boto_name_refs) != len(boto_calls):
+        return f"{name} (aliased call_boto3 in run_script)"
+    if not boto_calls:
+        return None  # Pure Python computation (e.g., CIDR / DNS simulation math) with zero AWS API calls
+
+    # Collect single-assignment constant list/tuple variables (e.g., ops = [("versioning", "GetBucketVersioning"), ...])
+    assign_counts: dict[str, int] = {}
+    seq_candidates: dict[str, ast.List | ast.Tuple] = {}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign):
+            for tgt in node.targets:
+                if isinstance(tgt, ast.Name):
+                    assign_counts[tgt.id] = assign_counts.get(tgt.id, 0) + 1
+                    if isinstance(node.value, (ast.List, ast.Tuple)):
+                        seq_candidates[tgt.id] = node.value
+                elif isinstance(tgt, (ast.Tuple, ast.List)):
+                    for elt in tgt.elts:
+                        if isinstance(elt, ast.Name):
+                            assign_counts[elt.id] = assign_counts.get(elt.id, 0) + 1
+        elif isinstance(node, (ast.AugAssign, ast.AnnAssign)) and isinstance(node.target, ast.Name):
+            assign_counts[node.target.id] = assign_counts.get(node.target.id, 0) + 1
+    const_seqs = {k: v for k, v in seq_candidates.items() if assign_counts.get(k) == 1}
+
+    def _bind_iter_target(
+        target: ast.AST,
+        iter_node: ast.AST,
+        cur_loops: dict[str, list[str]],
+    ) -> dict[str, list[str]]:
+        seq_node: ast.List | ast.Tuple | None = None
+        if isinstance(iter_node, (ast.List, ast.Tuple)):
+            seq_node = iter_node
+        elif isinstance(iter_node, ast.Name) and iter_node.id in const_seqs:
+            seq_node = const_seqs[iter_node.id]
+        if seq_node is None:
+            return cur_loops
+        new_loops = dict(cur_loops)
+        if isinstance(target, ast.Name):
+            vals = [_const_str(el) for el in seq_node.elts]
+            if vals and all(v is not None for v in vals):
+                new_loops[target.id] = [v for v in vals if v is not None]
+        elif isinstance(target, (ast.Tuple, ast.List)) and all(isinstance(t, ast.Name) for t in target.elts):
+            names = [t.id for t in target.elts if isinstance(t, ast.Name)]
+            per_idx: list[list[str]] = [[] for _ in names]
+            ok = bool(seq_node.elts)
+            for el in seq_node.elts:
+                if not (isinstance(el, (ast.Tuple, ast.List)) and len(el.elts) == len(names)):
+                    ok = False
+                    break
+                strs = [_const_str(item) for item in el.elts]
+                if any(s is None for s in strs):
+                    ok = False
+                    break
+                for idx, s in enumerate(strs):
+                    per_idx[idx].append(s or "")
+            if ok:
+                for idx, nm in enumerate(names):
+                    new_loops[nm] = per_idx[idx]
+        return new_loops
+
+    # Map enclosing function definitions and constant for-loop / comprehension bindings for ALL ast.Call nodes
+    func_defs: dict[str, ast.FunctionDef | ast.AsyncFunctionDef] = {}
+    parent_func: dict[int, ast.FunctionDef | ast.AsyncFunctionDef] = {}
+    call_loop_bindings: dict[int, dict[str, list[str]]] = {}
+
+    def _walk_scope(
+        node: ast.AST,
+        cur_fn: ast.FunctionDef | ast.AsyncFunctionDef | None,
+        cur_loops: dict[str, list[str]],
+    ) -> None:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            func_defs[node.name] = node
+            cur_fn = node
+        if isinstance(node, ast.For):
+            cur_loops = _bind_iter_target(node.target, node.iter, cur_loops)
+        elif isinstance(node, (ast.ListComp, ast.SetComp, ast.GeneratorExp)):
+            comp_loops = dict(cur_loops)
+            for gen in node.generators:
+                comp_loops = _bind_iter_target(gen.target, gen.iter, comp_loops)
+            cur_loops = comp_loops
+        if isinstance(node, ast.Call):
+            if cur_fn is not None:
+                parent_func[id(node)] = cur_fn
+            call_loop_bindings[id(node)] = cur_loops
+        for child in ast.iter_child_nodes(node):
+            _walk_scope(child, cur_fn, cur_loops)
+
+    _walk_scope(tree, None, {})
+
+    def _resolve_expr_strs(expr: ast.AST | None, call_id: int) -> list[str] | None:
+        if expr is None:
+            return None
+        lit = _const_str(expr)
+        if lit is not None:
+            return [lit]
+        if isinstance(expr, ast.Name):
+            bound = call_loop_bindings.get(call_id, {}).get(expr.id)
+            if bound:
+                return bound
+        return None
+
+    def _resolve_fn_arg(call_node: ast.Call, param_names: list[str], target_param: str) -> list[str] | None:
+        for kw in call_node.keywords:
+            if kw.arg is None:
+                return None
+            if kw.arg == target_param:
+                return _resolve_expr_strs(kw.value, id(call_node))
+        if target_param in param_names:
+            idx = param_names.index(target_param)
+            if len(call_node.args) > idx:
+                return _resolve_expr_strs(call_node.args[idx], id(call_node))
+        return None
+
+    resolved_pairs: list[tuple[str, str]] = []
+    for bcall in boto_calls:
+        if any(kw.arg is None for kw in bcall.keywords):
+            return f"{name} (**kwargs in call_boto3)"
+        svc_node = _extract_boto3_arg(bcall, "service_name", 0)
+        op_node = _extract_boto3_arg(bcall, "operation_name", 1)
+        if svc_node is None or op_node is None:
+            return f"{name} (missing service/operation in call_boto3)"
+
+        svcs = _resolve_expr_strs(svc_node, id(bcall))
+        ops = _resolve_expr_strs(op_node, id(bcall))
+        if svcs and ops:
+            for s in svcs:
+                for o in ops:
+                    resolved_pairs.append((s, o))
+            continue
+
+        # Check wrapper function parameters resolved at all wrapper call sites
+        enclosing = parent_func.get(id(bcall))
+        if enclosing is not None:
+            pnames = [a.arg for a in enclosing.args.posonlyargs + enclosing.args.args]
+            kwonly = [a.arg for a in enclosing.args.kwonlyargs]
+            all_params = pnames + kwonly
+            svc_param = svc_node.id if isinstance(svc_node, ast.Name) and svc_node.id in all_params else None
+            op_param = op_node.id if isinstance(op_node, ast.Name) and op_node.id in all_params else None
+            if (svcs is not None or svc_param is not None) and (ops is not None or op_param is not None):
+                fn_refs = [n for n in ast.walk(tree) if isinstance(n, ast.Name) and n.id == enclosing.name]
+                fn_calls = [
+                    n for n in ast.walk(tree)
+                    if isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id == enclosing.name
+                ]
+                if len(fn_refs) != len(fn_calls):
+                    return f"{name} (aliased wrapper {enclosing.name} in run_script)"
+                for fcall in fn_calls:
+                    s_vals = svcs if svcs is not None else _resolve_fn_arg(fcall, pnames, svc_param or "")
+                    o_vals = ops if ops is not None else _resolve_fn_arg(fcall, pnames, op_param or "")
+                    if not s_vals or not o_vals:
+                        return f"{name} (dynamic wrapper {enclosing.name} call in run_script)"
+                    for s_v in s_vals:
+                        for o_v in o_vals:
+                            resolved_pairs.append((s_v, o_v))
+                continue
+
+        return f"{name} (dynamic call_boto3 arguments in run_script)"
+
+    for svc, op in resolved_pairs:
+        svc_cli = "s3api" if svc == "s3" else svc
+        kebab_op = _op_to_kebab(op)
+        if classify_aws([svc_cli, kebab_op]):
+            return f"aws {svc} {kebab_op} (in run_script)"
+    return None
+
+
 def classify_tool(tool_name: str, tool_input) -> str | None:
     name = tool_name or ""
     inp = tool_input if isinstance(tool_input, dict) else {}
@@ -284,7 +511,7 @@ def classify_tool(tool_name: str, tool_input) -> str | None:
             command = " ".join(command)
         return classify_shell(str(command))
     if name.endswith("run_script"):
-        return f"{name} (arbitrary script against AWS)"
+        return classify_run_script(name, inp)
     if name.endswith("get_presigned_url"):
         method = str(inp.get("http_method") or inp.get("method") or "").upper()
         return None if method in ("", "GET", "HEAD") else f"{name} ({method} URL)"
@@ -419,6 +646,11 @@ def self_test() -> int:
         ("mcp__plugin_x_aws-mcp__aws___call_aws", {"cli_command": "aws ec2 describe-vpcs"}, False),
         ("mcp__plugin_x_aws-mcp__aws___call_aws", {"cli_command": "aws ec2 delete-vpc --vpc-id v"}, True),
         ("mcp__aws-mcp__aws___run_script", {"script": "..."}, True),
+        ("mcp__aws-mcp__aws___run_script", {"code": "result = await call_boto3(service_name='ec2', operation_name='DescribeVpcs')\nresult"}, False),
+        ("mcp__aws-mcp__aws___run_script", {"code": "async def safe_call(s, o):\n    return await call_boto3(service_name=s, operation_name=o)\nresult = await safe_call('ec2', 'DescribeVpcAttribute')\nresult"}, False),
+        ("mcp__aws-mcp__aws___run_script", {"code": "import ipaddress\nresult = str(ipaddress.ip_network('10.0.0.0/16'))\nresult"}, False),
+        ("mcp__aws-mcp__aws___run_script", {"code": "async def safe_call(s, o):\n    return await call_boto3(service_name=s, operation_name=o)\nresult = await safe_call('ec2', 'DeleteVpc')\nresult"}, True),
+        ("mcp__aws-mcp__aws___run_script", {"code": "result = await call_boto3(service_name='fsx', operation_name='UpdateFileSystem')\nresult"}, True),
         ("use_aws", {"service_name": "s3", "operation_name": "list_buckets"}, False),
         ("mcp__plugin_aws-agentcore-engineer_agentcore__search_agentcore_docs", {"query": "memory"}, False),
         ("mcp__plugin_aws-agentcore-engineer_agentcore__get_agent_runtime", {"agentRuntimeId": "r-1"}, False),

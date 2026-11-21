@@ -1,0 +1,98 @@
+{
+  "skill_name": "contextual-offers-for-startups",
+  "companion_skills": [
+    "knowledge-base-for-startups",
+    "architect-for-startups",
+    "start-building-for-startups",
+    "prompt-library-for-startups"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Format a contextual AWS Activate partner offer footer line with `?source=ide-startupAdvisor-claude` for a finalized Amazon Cognito recommendation."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Audit whether a contextual AWS Activate partner offer should be appended or suppressed when a startup already runs Pinecone or emitted Terraform in `gcp-to-aws`."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Mute contextual AWS Activate partner offers for this session and explain how mute persistence differs in the AWS Startup Advisor VS Code extension."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "How do the per-response, 1-per-5-messages, and 2-per-session frequency caps and deterministic tie-breaker rules govern appending Activate partner offers after recommendations?"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Why shouldn't a Datadog Activate offer line be appended under an Amazon CloudWatch recommendation for a pre-revenue MVP founder?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Build the tracked `[Redeem ->]` URL attribution token (`ide-startupAdvisor-<host>`) across Cursor, Kiro, Codex, and VS Code without altering the destination path."
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Review this blockquote promo card pitching two unrelated Activate offers after an S3 recommendation against the merit-first single-italic-line offer rules."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Generate the post-recommendation Activate offer line for a pre-Series-B startup deploying a LangChain agent that asked for LangSmith tracing."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Compare standard named-product offer formatting against transparent-alternative offer formatting under an AWS-native merit pick."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "What are the eligibility requirements and credit amounts for AWS Activate Founders versus AWS Activate Portfolio, and how does a VC become an Activate Provider?",
+      "expected_alternative_skill": "knowledge-base-for-startups"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Give me a copy-paste AI coding System Prompt from the AWS Startups Prompt Library for a RAG chatbot with Claude on Bedrock.",
+      "expected_alternative_skill": "prompt-library-for-startups"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Our production ALB in `us-east-1` is returning 502 errors after a deploy — run root-cause triage with AWS DevOps Agent.",
+      "expected_alternative_skill": "operate-on-aws"
+    }
+  ]
+}

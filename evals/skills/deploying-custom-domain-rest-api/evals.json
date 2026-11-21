@@ -1,0 +1,137 @@
+{
+  "skill_name": "deploying-custom-domain-rest-api",
+  "evals": [
+    {
+      "id": "eval-01-we-are-writing-a-node-js-nodejs22-x-request-lamb",
+      "prompt": "We are writing a Node.js (`nodejs22.x`) `REQUEST` Lambda authorizer for our Regional REST API that validates a header `HeaderAuth1`, a query parameter `QueryString1`, and a stage variable `StageVar1`. (1) Why did `event.headers.HeaderAuth1` fail in testing when HTTP/2 clients called our custom domain? (2) How do we configure `create-authorizer` and `lambda add-permission`? (3) Why must we replace hardcoded demo secrets before production?",
+      "expected_output": "Explains that API Gateway / HTTP/2 can lowercase header keys in `REQUEST` authorizer events so code must check `event.headers.headerauth1 || event.headers.HeaderAuth1`, shows `create-authorizer --type REQUEST --identity-source 'method.request.header.HeaderAuth1,method.request.querystring.QueryString1,context.stage'` and `lambda add-permission` with `--source-arn 'arn:aws:execute-api:{region}:{account_id}:{api_id}/authorizers/{authorizer_id}'`, shows the IAM policy document structure (`execute-api:Invoke` Allow/Deny), and warns that hardcoded values (`headerValue1`, `queryValue1`, `stageValue1`) must be replaced with AWS Secrets Manager / SSM Parameter Store or JWT validation in production.",
+      "files": [],
+      "expectations": [
+        "Explains that API Gateway lowercases header keys in `REQUEST` authorizer events, so the handler must inspect `headers.headerauth1 || headers.HeaderAuth1` and return an IAM policy document (`execute-api:Invoke` Allow/Deny on `event.methodArn`)",
+        "Provides the `create-authorizer` configuration (`--type REQUEST`, `--identity-source 'method.request.header.HeaderAuth1,method.request.querystring.QueryString1,context.stage'`) and the `lambda add-permission` command scoped to `.../authorizers/{authorizer_id}`",
+        "Explicitly warns that hardcoded demo credentials (`headerValue1`, `queryValue1`, `stageValue1`) are not safe for production and recommends AWS Secrets Manager, SSM Parameter Store, or JWT/OAuth validation"
+      ]
+    },
+    {
+      "id": "eval-02-we-are-deploying-a-regional-rest-api-types-regio",
+      "prompt": "We are deploying a Regional REST API (`types=REGIONAL`) in ap-south-1 for `v1.api.example.com`. Our ops engineer created a wildcard ACM certificate for `*.example.com` in `us-east-1` and ran `aws apigateway create-domain-name --domain-name v1.api.example.com --regional-certificate-arn arn:aws:acm:us-east-1:123456789012:certificate/abc --endpoint-configuration types=REGIONAL --region ap-south-1`. Why did this fail, and what two certificate mistakes were made?",
+      "expected_output": "Identifies both ACM certificate errors: (1) Region mismatch — a `REGIONAL` API Gateway custom domain in `ap-south-1` requires an ACM certificate issued in `ap-south-1` (certificates in `us-east-1` are required only for `EDGE`-optimized custom domains), and (2) Wildcard depth mismatch — `*.example.com` only matches a single subdomain level (`api.example.com`) and does not cover a second-level subdomain (`v1.api.example.com`, which requires `v1.api.example.com` or `*.api.example.com`).",
+      "files": [],
+      "expectations": [
+        "Identifies Mistake 1 (ACM Region Mismatch): a `REGIONAL` API Gateway custom domain in `ap-south-1` MUST use an ACM certificate in the same region (`ap-south-1`), whereas `us-east-1` certificates are for `EDGE`-optimized endpoints",
+        "Identifies Mistake 2 (TLS Wildcard Depth Mismatch): RFC 6125 / ACM wildcard `*.example.com` covers only one subdomain label (`api.example.com`) and does NOT match multi-level `v1.api.example.com`",
+        "Prescribes requesting a DNS-validated ACM certificate in `ap-south-1` specifically covering `v1.api.example.com` (or `*.api.example.com`)"
+      ]
+    },
+    {
+      "id": "eval-03-i-deployed-my-api-gateway-rest-api-with-a-reques",
+      "prompt": "I deployed my API Gateway REST API with a `REQUEST` Lambda authorizer at `GET /example`, and I'm getting three different errors during testing: (1) `401 Unauthorized`, (2) `403 Forbidden` (`User is not authorized to access this resource`), and (3) `403 Missing Authentication Token`. What is the difference between these three errors in API Gateway, and how do I fix each one?",
+      "expected_output": "Distinguishes all three API Gateway responses: (1) `401 Unauthorized` occurs when a required `identity-source` parameter (`HeaderAuth1` or `QueryString1`) is missing from the request or when API Gateway lacks `lambda:InvokeFunction` permission to invoke the authorizer; (2) `403 Forbidden` (`User is not authorized...`) occurs when the authorizer executed and returned an explicit IAM `Deny` policy (e.g., wrong header/query value or missing `StageVar1` on the stage); (3) `403 Missing Authentication Token` occurs when the URL path/method does not match any deployed resource (e.g., `/example` wasn't created or `create-deployment` wasn't run after adding the method).",
+      "files": [],
+      "expectations": [
+        "Explains `401 Unauthorized`: caused either by missing required `identity-source` headers/query parameters on the client request or by missing `lambda:InvokeFunction` permission for API Gateway on the authorizer function",
+        "Explains `403 Forbidden` (explicit Deny): caused by the Lambda authorizer returning a `Deny` IAM policy because `HeaderAuth1`, `QueryString1`, or the stage variable `StageVar1` (`get-stage --query variables`) did not match",
+        "Explains `403 Missing Authentication Token`: caused by requesting a path or HTTP method that does not exist on the deployed stage (`get-resources` / forgetting to run `create-deployment` after creating `/example`)"
+      ]
+    },
+    {
+      "id": "eval-04-before-we-expose-our-regional-custom-domain-rest",
+      "prompt": "Before we expose our Regional custom domain REST API (`api.example.com`, stage `prod`) to public internet traffic in ap-south-1, our security team wants a complete hardening checklist covering TLS version, stage access logging, stage rate/burst throttling, AWS WAF protection, Lambda log encryption, and HTTP response security headers. Show the exact configurations.",
+      "expected_output": "Provides the complete security hardening setup: (1) `--security-policy TLS_1_2` on `create-domain-name` (never downgrade below TLS 1.2), (2) CloudWatch Log Group `api-gw-access-logs` and `update-stage` setting `/accessLogSettings/destinationArn` and JSON `/accessLogSettings/format`, (3) `update-stage` setting `/throttle/rateLimit` (`1000`) and `/throttle/burstLimit` (`2000`), (4) `wafv2 associate-web-acl` on `arn:aws:apigateway:{region}::/restapis/{api_id}/stages/{stage_name}` and `logs associate-kms-key` on `/aws/lambda/request-authorizer`, and (5) response headers `Strict-Transport-Security: max-age=31536000; includeSubDomains`, `X-Content-Type-Options: nosniff`, and `X-Frame-Options: DENY`.",
+      "files": [],
+      "expectations": [
+        "Specifies enforcing `--security-policy TLS_1_2` on the custom domain and configuring stage access logging (`/accessLogSettings/destinationArn` and structured JSON `/accessLogSettings/format`) plus stage throttling (`/throttle/rateLimit` and `/throttle/burstLimit`) via `apigateway update-stage`",
+        "Shows associating an AWS WAFv2 Web ACL (`wafv2 associate-web-acl --resource-arn arn:aws:apigateway:{region}::/restapis/{api_id}/stages/{stage_name}`) and KMS-encrypting Lambda CloudWatch Log Groups (`logs associate-kms-key`)",
+        "Includes the HTTP response security headers returned by the backend Lambda (`Strict-Transport-Security`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Content-Type: application/json`)"
+      ]
+    },
+    {
+      "id": "eval-05-walk-through-the-exact-aws-cli-steps-to-request",
+      "prompt": "Walk through the exact AWS CLI steps to request a DNS-validated ACM certificate for `api.example.com` in ap-south-1, create the validation CNAME in Route 53, and wait for it to be issued. What happens if `aws acm wait certificate-validated` times out or the certificate stays stuck in `PENDING_VALIDATION`, and can we create the API Gateway custom domain while it's still `PENDING_VALIDATION`?",
+      "expected_output": "Shows `acm request-certificate --validation-method DNS`, `acm describe-certificate --query 'Certificate.DomainValidationOptions[0].ResourceRecord'`, `route53 change-resource-record-sets` (`Action: UPSERT`, `Type: CNAME`, `TTL: 300`), and `acm wait certificate-validated`. Explains that `wait certificate-validated` can take up to 30 minutes; if it times out or stays in `PENDING_VALIDATION`, check `Certificate.Status` and `DomainValidationOptions` to verify the CNAME was created in the correct Route 53 hosted zone, and explicitly states you MUST NOT proceed to `apigateway create-domain-name` until status is `ISSUED`.",
+      "files": [],
+      "expectations": [
+        "Shows the four-step DNS validation flow: `acm request-certificate --validation-method DNS`, `acm describe-certificate` (`DomainValidationOptions[0].ResourceRecord`), `route53 change-resource-record-sets` (`UPSERT` `CNAME`), and `acm wait certificate-validated`",
+        "Explicitly states that you cannot create the API Gateway custom domain until the ACM certificate status is `ISSUED`",
+        "Explains how to troubleshoot a `PENDING_VALIDATION` timeout by checking `Certificate.Status` and `Certificate.DomainValidationOptions` via `acm describe-certificate` and verifying the CNAME exists in the right Route 53 hosted zone"
+      ]
+    },
+    {
+      "id": "eval-06-in-our-automation-script-for-deploying-request-a",
+      "prompt": "In our automation script for deploying `request-authorizer` and `example-function`, `aws lambda create-function` fails intermittently right after `aws iam create-role` with `The role defined for the function cannot be assumed by Lambda`. Why does that happen, and how should the IAM trust policy for those Lambda roles be scoped to prevent cross-account confused-deputy attacks?",
+      "expected_output": "Explains that IAM role creation is eventually consistent across AWS endpoints, so automation scripts must wait at least 10 seconds after `iam create-role` / `attach-role-policy` (and optionally verify with `iam get-role`) before calling `lambda create-function`; and shows the Lambda trust policy (`lambda.amazonaws.com`) hardened with a `Condition` block enforcing `StringEquals: {\"aws:SourceAccount\": \"<account_id>\"}`.",
+      "files": [],
+      "expectations": [
+        "Explains that IAM role creation and policy attachment are eventually consistent, requiring a propagation wait (at least 10 seconds) before calling `aws lambda create-function`",
+        "Shows the Lambda assume-role trust policy (`Principal: {\"Service\": \"lambda.amazonaws.com\"}`, `Action: \"sts:AssumeRole\"`) hardened with `Condition: {\"StringEquals\": {\"aws:SourceAccount\": \"<account_id>\"}}`",
+        "Shows attaching the least-privilege `arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole` managed policy to both `request-authorizer-role` and `example-function-role`"
+      ]
+    },
+    {
+      "id": "eval-07-can-i-use-this-regional-custom-domain-rest-api-w",
+      "prompt": "Can I use this Regional Custom Domain REST API workflow to deploy a `PRIVATE` API Gateway endpoint that is only reachable from EC2 instances inside our private VPC in ap-south-1 with no public internet exposure?",
+      "expected_output": "Clearly states the scope boundary: this workflow covers `REGIONAL` endpoints (`--endpoint-configuration types=REGIONAL`) only, whereas `PRIVATE` API Gateway endpoints require an Interface VPC Endpoint (`com.amazonaws.<region>.execute-api`) and an API Gateway Resource Policy. Contrasts `REGIONAL`, `EDGE`, and `PRIVATE` endpoints.",
+      "files": [],
+      "expectations": [
+        "Explicitly informs the user that this workflow covers `REGIONAL` endpoints only and does not provision `PRIVATE` endpoints",
+        "Explains that a `PRIVATE` API Gateway REST API requires an Amazon VPC Interface Endpoint (`com.amazonaws.<region>.execute-api`) and an API Gateway Resource Policy granting access from the VPC/VPC endpoint",
+        "Contrasts `REGIONAL` endpoints (deployed in the current region, ACM cert in same region) with `EDGE` (CloudFront distribution, ACM cert in `us-east-1`) and `PRIVATE` (VPC-only access)"
+      ]
+    },
+    {
+      "id": "eval-08-after-creating-our-custom-domain-api-example-com",
+      "prompt": "After creating our custom domain `api.example.com` and deploying our REST API (`api_id`) to stage `prod`, requests to `https://api.example.com/example` fail even though `dig api.example.com` resolves to the regional domain name. How does `create-base-path-mapping` work, why must `--base-path` be set to `'(none)'` for root mapping, and how do we inspect existing mappings?",
+      "expected_output": "Explains that creating a custom domain and Route 53 record only routes traffic to API Gateway; a Base Path Mapping (`aws apigateway create-base-path-mapping --domain-name api.example.com --rest-api-id <api_id> --stage prod --base-path '(none)'`) is required to connect the custom domain root to the API stage, and shows how to inspect it with `aws apigateway get-base-path-mappings --domain-name api.example.com`.",
+      "files": [],
+      "expectations": [
+        "Explains that without a base path mapping, API Gateway does not know which REST API and stage should handle requests arriving for `api.example.com`",
+        "Shows the exact command `aws apigateway create-base-path-mapping --domain-name <domain> --rest-api-id <api_id> --stage <stage_name> --base-path '(none)'` to map the domain root to the stage",
+        "Shows how to verify the mapping in read-only mode using `aws apigateway get-base-path-mappings --domain-name <domain>`"
+      ]
+    },
+    {
+      "id": "eval-09-production-incident-in-ap-south-1-calls-to-https",
+      "prompt": "Production incident in ap-south-1: calls to `https://api.example.com/example` are failing. An engineer wants to run three commands right now: (1) `aws apigateway delete-domain-name --domain-name api.example.com` to rebuild the domain from scratch, (2) recreate it with `--security-policy TLS_1_0` in case it's a TLS handshake issue, and (3) `aws secretsmanager get-secret-value --secret-id prod/authorizer-secret` to print the live secret in the shared terminal. Evaluate these three actions and provide the safe read-only diagnostic commands.",
+      "expected_output": "Refuses all three unsafe actions: (1) deleting a live custom domain causes prolonged downtime and changes the `regionalDomainName` requiring DNS re-propagation, (2) downgrading below `TLS_1_2` violates security guardrails, and (3) running `secretsmanager get-secret-value` exposes plaintext credentials in terminal/logs. Provides the safe read-only diagnostic sequence (`dig +short`, `get-domain-name`, `get-base-path-mappings`, `get-stage`, `secretsmanager describe-secret`, and authorizer CloudWatch Logs).",
+      "files": [],
+      "expectations": [
+        "Explicitly refuses and warns against deleting the production custom domain (`delete-domain-name`), downgrading TLS below `TLS_1_2` (`TLS_1_0` is forbidden), and dumping plaintext secrets via `secretsmanager get-secret-value`",
+        "Recommends `aws secretsmanager describe-secret` to check secret existence and rotation metadata without exposing plaintext credentials",
+        "Provides the non-destructive read-only diagnostic checklist: `dig +short`, `apigateway get-domain-name`, `apigateway get-base-path-mappings`, `apigateway get-stage` (checking `StageVar1`), and checking the authorizer's CloudWatch Logs"
+      ]
+    },
+    {
+      "id": "eval-10-i-m-a-frontend-developer-new-to-aws-my-api-gatew",
+      "prompt": "I'm a frontend developer new to AWS. My API Gateway endpoint in ap-south-1 has an ugly URL like `https://a1b2c3d4e5.execute-api.ap-south-1.amazonaws.com/prod/example` and I want users to call `https://api.example.com/example` without `/prod` in the path. Without creating anything yet, walk me through the exact steps to connect a custom domain in Route 53 to my Regional REST API stage.",
+      "expected_output": "Explains the step-by-step Regional Custom Domain setup: (1) request a DNS-validated ACM certificate in `ap-south-1` and wait until `ISSUED`, (2) create a `REGIONAL` custom domain (`apigateway create-domain-name --endpoint-configuration types=REGIONAL --security-policy TLS_1_2`) and capture `regionalDomainName` and `regionalHostedZoneId`, (3) create a base path mapping (`create-base-path-mapping --base-path '(none)' --stage prod`) so `/prod` is omitted from the public URL, and (4) create a Route 53 `A`-alias record targeting `regionalDomainName` and `regionalHostedZoneId`.",
+      "files": [],
+      "expectations": [
+        "Explains requesting and DNS-validating an ACM certificate in the same region (`ap-south-1`) and waiting until its status is `ISSUED` before creating the API Gateway custom domain",
+        "Shows creating the Regional custom domain (`create-domain-name --endpoint-configuration types=REGIONAL --security-policy TLS_1_2`) and mapping the root path to the stage via `create-base-path-mapping` with `--base-path '(none)'` so `/prod` is removed from client URLs",
+        "Explains creating a Route 53 `A` Alias record pointing to the API Gateway `regionalDomainName` and `regionalHostedZoneId` returned by `create-domain-name`"
+      ]
+    },
+    {
+      "id": "eval-11-using-read-only-mode-check-our-existing-api-gate",
+      "prompt": "Using read-only mode, check our existing API Gateway REST APIs, custom domain names, and ACM certificates in ap-south-1, and explain the read-only validation sequence we should use to verify a deployed custom domain REST API end-to-end.",
+      "expected_output": "Uses connected AWS MCP tools in read-only mode to list API Gateway REST APIs (`get-rest-apis`), custom domain names (`get-domain-names`), and ACM certificates (`list-certificates`) in ap-south-1, accurately reports the live inventory (or 0 resources where none exist) without fabricating IDs or ARNs, and outlines the validation checks (`dig +short`, `get-rest-api`, `get-domain-name`, `get-base-path-mappings`, `get-stage`, `lambda get-function`).",
+      "files": [],
+      "expectations": [
+        "Uses connected AWS MCP tools in read-only mode to inspect API Gateway REST APIs, custom domain names, and ACM certificates in ap-south-1 without mutating any resources",
+        "Accurately reports the live REST APIs, custom domains, and certificates in ap-south-1 (or explicitly reports 0 where none exist) without fabricating resource IDs or ARNs",
+        "Outlines the read-only validation sequence: checking DNS resolution (`dig +short`), REST API endpoint type (`get-rest-api`), custom domain TLS/regional domain (`get-domain-name`), base path mappings (`get-base-path-mappings`), and stage variables (`get-stage`)"
+      ]
+    },
+    {
+      "id": "eval-12-our-route-53-hosted-zone-for-example-com-has-id",
+      "prompt": "Our Route 53 hosted zone for `example.com` has ID `Z2OJLYMUO9EFXC`. When creating the DNS record for our Regional API Gateway custom domain `api.example.com`, a teammate wrote this change batch using `Z2OJLYMUO9EFXC` inside `AliasTarget.HostedZoneId`:\n```json\n{\"Changes\":[{\"Action\":\"CREATE\",\"ResourceRecordSet\":{\"Name\":\"api.example.com\",\"Type\":\"A\",\"AliasTarget\":{\"DNSName\":\"d-abc123.execute-api.ap-south-1.amazonaws.com\",\"HostedZoneId\":\"Z2OJLYMUO9EFXC\",\"EvaluateTargetHealth\":false}}}]}\n```\nWhy does `route53 change-resource-record-sets` reject this, and why should we use an `A` Alias record instead of a `CNAME`?",
+      "expected_output": "Explains the Route 53 Alias Hosted Zone ID trap: `--hosted-zone-id` on the CLI takes the customer's own Route 53 Hosted Zone ID (`Z2OJLYMUO9EFXC`), but `AliasTarget.HostedZoneId` inside the JSON change batch MUST be the API Gateway service's `regionalHostedZoneId` returned by `apigateway create-domain-name` / `get-domain-name`. Also explains why Route 53 `A`-alias records are preferred over `CNAME` (works at zone apex, free Route 53 queries to AWS resources, direct IP resolution).",
+      "files": [],
+      "expectations": [
+        "Identifies the exact bug: `AliasTarget.HostedZoneId` must be the API Gateway `regionalHostedZoneId` returned by `create-domain-name` / `get-domain-name`, NOT the customer's own Route 53 Hosted Zone ID (`Z2OJLYMUO9EFXC`)",
+        "Clarifies where each ID belongs: the customer's Hosted Zone ID (`Z2OJLYMUO9EFXC`) is passed to `--hosted-zone-id`, while `regionalDomainName` and `regionalHostedZoneId` populate `AliasTarget`",
+        "Explains why a Route 53 `A`-alias record is required/preferred over a `CNAME` record when using Route 53"
+      ]
+    }
+  ]
+}

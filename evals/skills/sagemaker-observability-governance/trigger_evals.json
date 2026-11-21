@@ -1,0 +1,99 @@
+{
+  "skill_name": "sagemaker-observability-governance",
+  "companion_skills": [
+    "endpoint-diagnostics",
+    "sagemaker-mlops-pipelines",
+    "sagemaker-inference-architect",
+    "sagemaker-domain-vpc-iac",
+    "model-deployment"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure SageMaker Blue/Green Linear 20%-step traffic shifting with microsecond `ModelLatency` p99 and `Invocation5XXErrors` `AutoRollbackConfiguration` alarms."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Set up all 4 pillars of SageMaker Model Monitor (`DataCaptureConfig`, Data Quality, Model Quality with delayed ground-truth offsets, Clarify Bias, and KernelSHAP drift)."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Design a `ShadowProductionVariants` rollout mirroring 25% of live production traffic to a candidate `ml.inf2` variant without affecting customer responses."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why did our SageMaker `BlueGreenUpdatePolicy` roll back immediately when we set our p99 `ModelLatency` CloudWatch alarm `Threshold` to `200` intending 200ms?"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Join real-time fraud endpoint predictions with ground-truth chargeback labels arriving 12 hours later (`StartTimeOffset: -PT24H`) to monitor production F1 drift."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Audit our `ap-south-1` SageMaker Model Monitor schedules, `DataCaptureConfig` KMS settings, and `/aws/sagemaker/TrainingJobs` + `ProcessingJobs` error logs."
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Model risk management requires automated SHAP feature-attribution drift detection, bias drift monitoring, and zero-downtime canary rollbacks before approving our credit scorer."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Wire `CompletedWithViolations` alerts from our nightly data-drift monitor into EventBridge to trigger governed retraining while alerting on-call."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Write CloudWatch Logs Insights queries across `/aws/sagemaker/TrainingJobs`, `/aws/sagemaker/ProcessingJobs`, and `/aws/sagemaker/InferenceComponents/` to hunt OOM and worker crashes."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Design a SageMaker Asynchronous Inference endpoint supporting 900 MB payloads, 1-hour timeouts, and S3 input/output queues.",
+      "expected_alternative_skill": "sagemaker-inference-architect"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write AWS CDK TypeScript (`CfnDomain`, `CfnUserProfile`, `CfnSpace`) for a `VpcOnly` Studio Domain with 7 PrivateLink endpoints and 5-persona IAM roles.",
+      "expected_alternative_skill": "sagemaker-domain-vpc-iac"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Deploy a merged LoRA checkpoint (`checkpoints/hf_merged/`) to Amazon Bedrock using `BedrockModelBuilder`.",
+      "expected_alternative_skill": "model-deployment"
+    }
+  ]
+}

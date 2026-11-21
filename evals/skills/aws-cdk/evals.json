@@ -1,0 +1,98 @@
+{
+  "skill_name": "aws-cdk",
+  "evals": [
+    {
+      "id": "eval-01-cdk-v2-l2-construct-stack-with-cdk-nag-and-retain",
+      "prompt": "Author a production-ready AWS CDK v2 TypeScript stack that provisions an encrypted S3 bucket, a KMS key, and a Lambda function granted read-only access to the bucket, wired with `cdk-nag` (`AwsSolutionsChecks`). Explain the key CDK v2 import and stateful safety rules applied.",
+      "expectations": [
+        "Activates the aws-cdk skill",
+        "Uses unified `aws-cdk-lib` and `constructs` imports (never legacy `@aws-cdk/*` v1 packages)",
+        "Applies `RemovalPolicy.RETAIN` (or explicit stateful retention), `BlockPublicAccess.BLOCK_ALL`, KMS encryption, and L2 grant methods (`bucket.grantRead(fn)`) instead of wildcard IAM policies",
+        "Applies `Aspects.of(app).add(new AwsSolutionsChecks())` (or stack-level `cdk-nag`) and recommends verifying with `npx cdk synth` / `npx cdk diff`"
+      ]
+    },
+    {
+      "id": "eval-02-prevent-stateful-logical-id-replacement-during-cdk-refactor",
+      "prompt": "We moved our production `rds.DatabaseCluster` construct inside a new nested `DatabaseConstruct` wrapper in AWS CDK v2, and `cdk diff` now shows `[-] AWS::RDS::DBCluster` and `[+] AWS::RDS::DBCluster` (full database replacement!). Explain why this happens and show the two safe ways (`cdk refactor` vs `overrideLogicalId` / `allocateLogicalId`) to refactor without replacing the database.",
+      "expectations": [
+        "Activates the aws-cdk skill",
+        "Explains that CloudFormation logical IDs in CDK are derived from the construct tree path + ID, so reparenting a construct changes its logical ID and triggers replacement",
+        "Covers `cdk refactor` (CloudFormation stack refactoring mapping old logical IDs to new paths) and `CfnResource.overrideLogicalId(...)`",
+        "Mandates `RemovalPolicy.RETAIN` on stateful database constructs and verifying `cdk diff` shows zero `AWS::RDS::DBCluster` replacements before `cdk deploy`"
+      ]
+    },
+    {
+      "id": "eval-03-hotswap-vs-express-deployments-dev-only-tradeoffs",
+      "prompt": "Our serverless engineers are waiting 4 minutes per Lambda code change during local CDK dev loops. Compare `cdk deploy --hotswap` (`--hotswap-fallback`), `cdk watch`, and CDK Express / `--method=direct` deployments, and explain why `--hotswap` must never be used in production pipelines.",
+      "expectations": [
+        "Activates the aws-cdk skill",
+        "Contrasts `--hotswap` / `--hotswap-fallback` (bypasses CloudFormation Change Sets to update supported resources like Lambda code/Step Functions directly, introducing deliberate CloudFormation drift) against `--method=direct` / standard CloudFormation deployments",
+        "Explicitly warns that `--hotswap` is strictly for non-production developer inner loops because it causes CloudFormation stack drift and skips rollback guarantees"
+      ]
+    },
+    {
+      "id": "eval-04-cross-stack-export-deadlock-troubleshooting",
+      "prompt": "We removed an `s3.Bucket` reference passed from `StorageStack` to `ComputeStack` in CDK v2 and ran `cdk deploy --all`, which failed with `Export StorageStack:ExportsOutputFnGetAtt... cannot be deleted as it is in use by ComputeStack`. Explain why CDK created this deadlock and provide the exact two-phase `exportValue()` fix.",
+      "expectations": [
+        "Activates the aws-cdk skill",
+        "Explains that CloudFormation blocks deleting a `Fn::Export` in the producer stack while the deployed consumer stack still imports it via `Fn::ImportValue`",
+        "Provides the standard two-deployment decoupling procedure: Phase 1 explicitly retains the export in `StorageStack` via `this.exportValue(...)` while deploying `ComputeStack` without the reference; Phase 2 removes `this.exportValue(...)` from `StorageStack` and deploys cleanly"
+      ]
+    },
+    {
+      "id": "eval-05-cdk-v1-to-v2-migration-checklist",
+      "prompt": "We inherited an older CDK v1 TypeScript repo (`@aws-cdk/core`, `@aws-cdk/aws-lambda`, `@aws-cdk/aws-dynamodb` in `package.json` and legacy feature flags in `cdk.json`). Give us the step-by-step migration plan to AWS CDK v2 without causing resource replacements in production.",
+      "expectations": [
+        "Activates the aws-cdk skill",
+        "Replaces split `@aws-cdk/*` v1 dependencies with single `aws-cdk-lib` + `constructs` (`^10.x`) packages and updates TypeScript imports accordingly",
+        "Warns against enabling breaking `cdk.json` context feature flags during the v1->v2 upgrade if they alter logical IDs or synthesize resource diffs",
+        "Requires re-bootstrapping with CDK v2 (`cdk bootstrap` modern template) and validating zero unintended resource replacements via `cdk diff` before deploying"
+      ]
+    },
+    {
+      "id": "eval-06-troubleshooting-cdk-bootstrap-qualifier-and-ssm-version-error",
+      "prompt": "`npx cdk deploy` in our CI pipeline just failed with: `SSM parameter /cdk-bootstrap/hnb659fds/version not found. Has the environment been bootstrapped?` Even though our landing zone team says they bootstrapped the account with custom qualifier `corpsec`. Diagnose the root cause and fix.",
+      "expectations": [
+        "Activates the aws-cdk skill",
+        "Identifies the bootstrap qualifier mismatch (`DefaultStackSynthesizer` defaulting to `hnb659fds` while the account was bootstrapped under custom qualifier `corpsec`, or wrong target account/region)",
+        "Shows how to configure `@aws-cdk/core:bootstrapQualifier` in `cdk.json` context or pass `DefaultStackSynthesizer({ qualifier: 'corpsec' })` (and verify account/region resolution)",
+        "Avoids telling the user to blindly run `AdministratorAccess` `cdk bootstrap` if a landing-zone custom qualifier already exists"
+      ]
+    },
+    {
+      "id": "eval-07-deterministic-synth-ban-env-lookups-vs-context-lookups",
+      "prompt": "Code-review this CDK snippet: `const vpcId = process.env.PROD_VPC_ID!; const secret = process.env.DB_PASSWORD!;` inside `lib/app-stack.ts`, plus `Vpc.fromLookup(this, 'Vpc', { isDefault: true })` in a stack where `env` is omitted (`new AppStack(app, 'AppStack')`). Explain every synthesis bug and security flaw and rewrite it cleanly.",
+      "expectations": [
+        "Activates the aws-cdk skill",
+        "Flags environment-agnostic stacks (`env` omitted) breaking `Vpc.fromLookup` (`account` and `region` must be explicitly specified on `StackProps.env` and `cdk.context.json` committed for deterministic synth)",
+        "Flags passing plaintext `DB_PASSWORD` via `process.env` into CloudFormation template synthesis (which bakes plaintext secrets into synthesized CloudFormation templates/assets) and replaces it with `SecretValue.secretsManager(...)` or `rds.Credentials.fromGeneratedSecret(...)`"
+      ]
+    },
+    {
+      "id": "eval-08-live-ap-south-1-cloudformation-cdktoolkit-bootstrap-audit",
+      "prompt": "Check `ap-south-1` in our live AWS account (read-only) to see whether `CDKToolkit` is already bootstrapped, what bootstrap version SSM parameter exists (if any), and report whether `ap-south-1` is ready for CDK v2 deployments.",
+      "expectations": [
+        "Activates the aws-cdk skill and inspects `CDKToolkit` stack / `/cdk-bootstrap/hnb659fds/version` in `ap-south-1` via connected AWS MCP tools (`mcp_aws-mcp_aws___call_aws`) with zero raw `aws` CLI shell commands",
+        "Accurately reports the live `CDKToolkit` bootstrap status and version (or absence) in `ap-south-1`",
+        "Makes zero mutating AWS calls (does not run `cdk bootstrap`)"
+      ]
+    },
+    {
+      "id": "eval-09-escape-hatches-l1-cfn-property-overrides-for-new-aws-feature",
+      "prompt": "AWS just launched a new CloudFormation property on `AWS::Lambda::Function` that isn't exposed on the CDK v2 L2 `lambda.Function` TypeScript interface yet. Show how to use CDK L1 escape hatches (`node.defaultChild as lambda.CfnFunction` and `addPropertyOverride`) cleanly without dropping down to raw CloudFormation YAML.",
+      "expectations": [
+        "Activates the aws-cdk skill",
+        "Demonstrates casting `fn.node.defaultChild as lambda.CfnFunction` and calling `cfnFn.addPropertyOverride(...)` (or L1 properties / `CfnFunctionPropsMixin`) for brand-new CloudFormation properties",
+        "Recommends verifying the synthesized CloudFormation JSON template via `cdk synth` or `aws-cdk-lib/assertions` (`Template.fromStack`)"
+      ]
+    },
+    {
+      "id": "eval-10-awsknowledge-cdk-assertions-fine-grained-and-snapshot-testing",
+      "prompt": "Check AWS CDK documentation via connected AWS documentation tools and show how to write unit tests with `aws-cdk-lib/assertions` (`Template.fromStack`, `hasResourceProperties`, `Match.objectLike`, and `resourceCountIs`) for a CDK v2 stack.",
+      "expectations": [
+        "Queries connected AWS documentation MCP tools (`awsknowledge`, `aws-mcp`, or `awsiac`) with zero raw `aws` CLI commands",
+        "Provides concrete TypeScript test examples using `Template.fromStack(stack)`, `template.hasResourceProperties(...)`, `Match.objectLike(...)`, and `template.resourceCountIs(...)`"
+      ]
+    }
+  ]
+}

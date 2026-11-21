@@ -1,0 +1,93 @@
+{
+  "skill_name": "app-data-layer-remediation",
+  "evals": [
+    {
+      "id": "eval-01-oracle-to-aurora-postgresql-java-hibernate-and-sql-rewrite",
+      "prompt": "We ran DMS Schema Conversion on our Oracle 19c schema to Aurora PostgreSQL (`NUMBER(1)` -> `BOOLEAN`), and now need to remediate our Java Spring Data JPA / Hibernate repository containing: `SELECT * FROM (SELECT o.*, NVL(o.discount, 0) AS disc, DECODE(o.tier, 1, 'GOLD', 'STD') AS badge, SYSDATE AS checked_at FROM orders o CONNECT BY PRIOR o.id = o.parent_order_id) WHERE ROWNUM <= 20` plus `orders_seq.NEXTVAL` and `FROM DUAL`. Rewrite the SQL, JPA sequence generator, and type mappings cleanly.",
+      "expectations": [
+        "Activates the app-data-layer-remediation skill",
+        "Rewrites every Oracle proprietary SQL construct to standard PostgreSQL (`NVL` -> `COALESCE`, `DECODE` -> `CASE ... WHEN ... END`, `SYSDATE` -> `clock_timestamp()` / `CURRENT_TIMESTAMP`, `CONNECT BY PRIOR` -> `WITH RECURSIVE`, `ROWNUM <= 20` -> deterministic `ORDER BY ... LIMIT 20`, `seq.NEXTVAL` -> `nextval('orders_seq')`, and drops `FROM DUAL`)",
+        "Synchronizes JPA/Hibernate mappings with DMS SC (`NUMBER(1)` -> `boolean`/`Boolean`, PostgreSQL dialect, and `@SequenceGenerator` `allocationSize` matching the PostgreSQL sequence `INCREMENT BY`)"
+      ]
+    },
+    {
+      "id": "eval-02-sqlserver-tsql-to-aurora-postgresql-efcore-remediation",
+      "prompt": "Remediate this C# .NET 8 Entity Framework Core + raw Dapper T-SQL data layer migrating from SQL Server 2019 to Aurora PostgreSQL: `DECLARE @ids TABLE (id BIGINT); SELECT TOP (50) id, ISNULL(notes, 'N/A'), GETDATE() FROM Invoices WITH (NOLOCK);` plus `IDENTITY(1,1)` columns, `@@ROWCOUNT` checks, and `SqlException.Number == 2627` unique-key error handling.",
+      "expectations": [
+        "Activates the app-data-layer-remediation skill",
+        "Rewrites T-SQL to PostgreSQL (`SELECT TOP (50)` -> `LIMIT 50`, `ISNULL` -> `COALESCE`, `GETDATE()` -> `clock_timestamp()` / `CURRENT_TIMESTAMP`, removes `WITH (NOLOCK)` since PostgreSQL MVCC reads never block writes, `@table_variable` -> `TEMPORARY TABLE` or `WITH` CTE, `IDENTITY(1,1)` -> `GENERATED ALWAYS AS IDENTITY`, and `@@ROWCOUNT` -> `GET DIAGNOSTICS ... = ROW_COUNT` / driver affected rows)",
+        "Updates EF Core (`UseNpgsql`) and replaces SQL Server error `2627`/`2601` checks with PostgreSQL 5-character `SQLSTATE` `23505` (`PostgresException.SqlState == \"23505\"`)"
+      ]
+    },
+    {
+      "id": "eval-03-vendor-error-code-to-postgresql-sqlstate-mapping-matrix",
+      "prompt": "Our Python and Java DAO exception handlers currently branch on Oracle `ORA-00001`, `ORA-00054`, `ORA-02291`, `ORA-00060` and SQL Server `2627`, `1205`, `547` error numbers to trigger retries or `409 Conflict` HTTP responses. Map all of these to exact PostgreSQL 5-character `SQLSTATE` codes and show safe retry vs non-retry classification.",
+      "expectations": [
+        "Activates the app-data-layer-remediation skill",
+        "Maps unique violation (`ORA-00001` / `2627`) -> `23505`, foreign-key violation (`ORA-02291` / `547`) -> `23503`, lock-not-available `NOWAIT` (`ORA-00054`) -> `55P03`, and deadlock (`ORA-00060` / `1205`) -> `40P01` (plus `40001` serialization failure for OCC/Serializable retries)",
+        "Distinguishes transient retryable errors (`40P01`, `40001`, `55P03` with jittered backoff) from deterministic integrity errors (`23505` -> `409 Conflict`, `23503` -> `400/422`)"
+      ]
+    },
+    {
+      "id": "eval-04-prohibit-dms-fleet-advisor-and-unsynchronized-ddl-guardrails",
+      "prompt": "A migration lead proposed: (1) setting up **AWS DMS Fleet Advisor** this week to discover our 40 Oracle schemas, (2) running DMS Schema Conversion to push converted DDL straight to production Aurora PostgreSQL first while letting app teams update their Java repositories next quarter, and (3) connecting our `postgres` MCP tool as `rds_superuser` with write permissions to test `UPDATE` queries directly against staging. Audit all three proposals against mandatory 2026 guardrails.",
+      "expectations": [
+        "Activates the app-data-layer-remediation skill and flags all three proposals as strict guardrail violations",
+        "States that **AWS DMS Fleet Advisor has reached End of Support (EOL)** (route discovery/assessment through `dms-schema-conversion` + `aws-mcp`)",
+        "Forbids unsynchronized DDL-without-application-PR migrations and mandates invoking the `postgres` MCP strictly in read-only mode (`--readonly True` and `--privilege_check enforce`, never `rds_superuser` or mutating DDL/DML)"
+      ]
+    },
+    {
+      "id": "eval-05-flyway-and-liquibase-versioned-cicd-pipeline-with-secrets-manager",
+      "prompt": "Show how Step 7 packages converted DMS Schema Conversion baseline DDL and incremental application schema changes into a versioned **Flyway** CI/CD pipeline targeting Aurora PostgreSQL without hardcoding database credentials in GitHub Actions or `flyway.conf`.",
+      "expectations": [
+        "Activates the app-data-layer-remediation skill",
+        "Structures immutable versioned migrations (`V1__baseline_schema.sql`, `V2__...sql`, repeatable `R__...sql` for views/functions) validated with checksums in CI before deployment",
+        "Uses short-lived OIDC IAM roles + AWS Secrets Manager / IAM database authentication (`rds_iam` token) rather than static passwords in `flyway.conf` or Git"
+      ]
+    },
+    {
+      "id": "eval-06-aurora-dsql-application-persistence-remediation-occ-and-no-fk",
+      "prompt": "We are migrating a .NET / Node.js microservice from SQL Server to **Amazon Aurora DSQL** instead of Aurora PostgreSQL. What additional application data-layer remediations are required beyond standard PostgreSQL syntax (specifically around Optimistic Concurrency Control `SQLSTATE 40001`, foreign keys, sequences/UUIDs, and connection token lifespan)?",
+      "expectations": [
+        "Activates the app-data-layer-remediation skill",
+        "Covers Aurora DSQL application persistence requirements: mandatory client-side transaction retry loops on **OCC conflict `SQLSTATE 40001`**, enforcing referential integrity in the application/domain layer (no enforced `FOREIGN KEY` constraints or triggers), using `UUID` (`gen_random_uuid()`) or `GENERATED BY DEFAULT AS IDENTITY (CACHE ...)` keys instead of `SERIAL`, and refreshing short-lived IAM auth tokens on pooled connections"
+      ]
+    },
+    {
+      "id": "eval-07-mybatis-xml-mapper-oracle-to-postgresql-pagination-and-bulk-upsert",
+      "prompt": "Convert a MyBatis XML mapper migrating from Oracle to Aurora PostgreSQL that uses Oracle `MERGE INTO inventory USING DUAL ON (sku = #{sku}) WHEN MATCHED THEN UPDATE ... WHEN NOT MATCHED THEN INSERT ...`, `NVL`, string concatenation with empty string `''` treated as `NULL` in Oracle, and `ROWNUM` pagination.",
+      "expectations": [
+        "Activates the app-data-layer-remediation skill",
+        "Rewrites Oracle `MERGE ... USING DUAL` into idiomatic PostgreSQL `INSERT INTO inventory (...) VALUES (...) ON CONFLICT (sku) DO UPDATE SET ...` (or PG 15+ standard `MERGE` without `DUAL`)",
+        "Warns about the critical semantic difference where **Oracle treats empty string `''` as `NULL`, whereas PostgreSQL treats `''` and `NULL` as distinct** (`NULLIF(col, '')` / `COALESCE` adjustments!), and converts `ROWNUM` to `LIMIT #{limit} OFFSET #{offset}` (or keyset pagination)"
+      ]
+    },
+    {
+      "id": "eval-08-hibernate-sequence-allocationsize-mismatch-negative-id-bug",
+      "prompt": "After migrating from Oracle to Aurora PostgreSQL, our Spring Boot JPA app started throwing duplicate Primary Key (`23505`) and negative ID errors on `@GeneratedValue(strategy = GenerationType.SEQUENCE)` entities where DMS SC created `CREATE SEQUENCE order_seq INCREMENT BY 1`! Explain the exact Hibernate `allocationSize` bug and fix.",
+      "expectations": [
+        "Activates the app-data-layer-remediation skill",
+        "Explains that JPA `@SequenceGenerator` defaults to **`allocationSize = 50`** (pooled hi/lo optimizer), which assumes the PostgreSQL sequence increments by `50` \u2014 when the DB sequence has `INCREMENT BY 1`, Hibernate computes negative or colliding IDs!",
+        "Provides both valid fixes: either `ALTER SEQUENCE order_seq INCREMENT BY 50` (preferred for 50x fewer sequence round-trips) OR explicitly set `@SequenceGenerator(..., allocationSize = 1)` to match `INCREMENT BY 1`"
+      ]
+    },
+    {
+      "id": "eval-09-case-sensitivity-and-unquoted-identifier-folding-oracle-vs-postgres",
+      "prompt": "DMS Schema Conversion converted our Oracle tables to lowercase unquoted identifiers in Aurora PostgreSQL, and now our Node.js TypeORM / raw SQL queries like `SELECT \"OrderID\", \"CustomerID\" FROM \"ORDERS\"` fail with `ERROR: relation \"ORDERS\" does not exist (42P01)`! Explain why Oracle vs PostgreSQL identifier folding caused this and how to align DMS SC + application code cleanly.",
+      "expectations": [
+        "Activates the app-data-layer-remediation skill",
+        "Explains that **Oracle folds unquoted identifiers to `UPPERCASE`**, whereas **PostgreSQL folds unquoted identifiers to `lowercase`** \u2014 so double-quoting `\"ORDERS\"` in PostgreSQL looks for an exact uppercase table name while DMS SC created lowercase `orders`!",
+        "Recommends removing uppercase double-quotes in application SQL/ORM mappings (standardizing on unquoted/lowercase `snake_case` PostgreSQL identifiers aligned with DMS SC transformation rules)"
+      ]
+    },
+    {
+      "id": "eval-10-awsknowledge-aurora-postgresql-babelfish-vs-native-pg-app-remediation",
+      "prompt": "Query AWS documentation via connected AWS documentation tools to compare remediating a .NET SQL Server application directly to native **Aurora PostgreSQL (`Npgsql`)** versus migrating via **Babelfish for Aurora PostgreSQL (`Microsoft.Data.SqlClient` on TDS port `1433` + `Babelfish Compass`)**.",
+      "expectations": [
+        "Activates the app-data-layer-remediation skill and queries connected AWS documentation MCP tools (`awsknowledge`, `aws-mcp`, or `awsiac`)",
+        "Contrasts native Aurora PostgreSQL remediation (switching driver to `Npgsql` on port `5432` and rewriting T-SQL/DDL to native PostgreSQL \u2014 zero TDS layer caveats) against Babelfish for Aurora PostgreSQL (preserving `SqlClient` T-SQL wire protocol on port `1433` while running **Babelfish Compass** to remediate unsupported T-SQL edge cases)"
+      ]
+    }
+  ]
+}

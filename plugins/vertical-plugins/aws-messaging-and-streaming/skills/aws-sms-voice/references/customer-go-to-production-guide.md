@@ -209,7 +209,12 @@ Apply to every production identity:
    prevent confused-deputy access. Restrict `sns:Subscribe` via the topic policy to known,
    authorized AWS accounts or endpoint patterns so only trusted recipients receive delivery
    metadata, and subscribe HTTPS-only endpoints.
-3. **Protect configuration** — block countries you never send to.
+3. **Protect configuration & AIT fraud defense** — block countries you never send to and layer cost caps:
+   - Audit existing protect configurations, pools, and spend limits (`describe-protect-configurations`, `describe-pools`, `describe-account-limits`, `describe-spend-limits`).
+   - Create a protect configuration (`aws pinpoint-sms-voice-v2 create-protect-configuration --deletion-protection-enabled --region <REGION>`) and configure country rule sets per capability (`SMS`, `MMS`, `VOICE`) via `aws pinpoint-sms-voice-v2 update-protect-configuration-country-rule-set --protect-configuration-id <ID> --number-capability SMS --country-rule-set-updates '{"IN":{"ProtectStatus":"ALLOW"},"US":{"ProtectStatus":"ALLOW"},"AF":{"ProtectStatus":"BLOCK"}}' --region <REGION>`.
+   - The four `ProtectStatus` country actions are: `ALLOW` (permit messages), `BLOCK` (reject messages to that country), `MONITOR` (deliver messages while logging audit metrics to evaluate impact before blocking), and `FILTER` (block known high-risk/fraudulent destination ranges while allowing legitimate traffic).
+   - Attach the Protect Configuration as the account default (`set-account-default-protect-configuration --protect-configuration-id <ID>`) or associate it with specific Configuration Sets (`associate-protect-configuration --protect-configuration-id <ID> --configuration-set-name <NAME>`).
+   - Combine with per-request price caps (`--max-price` on `send-text-message` / `send-media-message`, `--max-price-per-minute` on `send-voice-message`) and account-level monthly spend overrides (`set-text-message-spend-limit-override`, `set-voice-message-spend-limit-override`, `set-media-message-spend-limit-override`) below your Service Quotas ceiling.
 4. **Pool per use case** — put identities for one use case in one pool and send via the pool;
    mixing use cases on shared identities risks carrier filtering.
 5. **Resource policy** — required if another service (for example SNS) will use the number, even

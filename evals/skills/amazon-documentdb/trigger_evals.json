@@ -1,0 +1,96 @@
+{
+  "skill_name": "amazon-documentdb",
+  "companion_skills": [
+    "amazon-dynamodb",
+    "amazon-neptune",
+    "rds-oss",
+    "dms-data-migration-execution",
+    "aws-database"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Provision a production Amazon DocumentDB 8.0 Serverless cluster and run the 41-check Well-Architected review."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Diagnose a slow COLLSCAN query on Amazon DocumentDB using explain(), compound indexes, and BufferCacheHitRatio."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Plan a DMS Full Load + CDC migration from self-managed MongoDB 6.0 to Amazon DocumentDB 8.0."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Our Lambda function times out on port 27017 with MongoServerSelectionError when connecting with global-bundle.pem and replicaSet=rs0."
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Does AWS's managed MongoDB-compatible database support $graphLookup and wildcard indexes on nested product attributes?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Compare HNSW vs IVFFlat indexes for $vectorSearch RAG embeddings on our managed JSON document cluster."
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Audit all docdb clusters in ap-south-1 for KMS encryption, TLS enforcement, and audit/profiler CloudWatch logs."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Design a cross-region headless DR setup for our MongoDB-compatible cluster with <1s storage replication lag."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Check whether switching our write-heavy JSON document cluster to I/O-Optimized storage saves money."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Design a single-table Amazon DynamoDB schema with GSIs and native SearchVectors."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Migrate a Cassandra 4.0 keyspace to Amazon Keyspaces and check LWT batch compatibility."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure JSONB indexing and CREATE INDEX ASYNC on Amazon Aurora DSQL."
+    }
+  ]
+}

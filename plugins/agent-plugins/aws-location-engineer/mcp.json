@@ -16,7 +16,8 @@
         "awslabs.aws-location-mcp-server@latest"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     }
   }

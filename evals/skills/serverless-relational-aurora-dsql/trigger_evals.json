@@ -1,0 +1,61 @@
+{
+  "skill_name": "serverless-relational-aurora-dsql",
+  "companion_skills": [
+    "amazon-eventbridge-event-bus",
+    "amazon-eventbridge-scheduler-and-pipes",
+    "amazon-sqs-sns-async-messaging",
+    "api-gateway",
+    "aws-auth-and-environment-preflight"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use `serverless-relational-aurora-dsql` to help me design, validate, and troubleshoot serverless relational aurora dsql."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Walk me through best practices and production guardrails for serverless relational aurora dsql (`serverless-relational-aurora-dsql`)."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Architect and implement serverless relational SQL databases with Amazon Aurora DSQL and Aurora Serverless v2 (RDS Data API / RDS Proxy). Covers Aurora DSQL PostgreSQL compatibility"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating serverless relational aurora dsql?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "During our `ap-south-1` sprint readiness review, audit our serverless relational aurora dsql setup in read-only mode and highlight top risks."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Help me configure and troubleshoot amazon eventbridge event bus exclusively without touching serverless relational aurora dsql."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+    }
+  ]
+}

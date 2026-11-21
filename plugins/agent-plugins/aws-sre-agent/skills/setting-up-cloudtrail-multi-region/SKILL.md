@@ -1,10 +1,12 @@
 ---
 name: setting-up-cloudtrail-multi-region
-description: Enables a multi-region AWS CloudTrail trail with S3 log storage, CloudWatch Logs integration, and CloudWatch Logs Insights queries for security monitoring and compliance auditing. Use when setting up centralized API activity logging across all AWS regions.
+description: "Enables a multi-region AWS CloudTrail trail with S3 log storage, CloudWatch Logs integration, and CloudWatch Logs Insights queries for security monitoring and compliance auditing. Use when setting up centralized API activity logging across all AWS regions. Query live AWS state via MCP tools only (never raw aws CLI)."
 version: 1
 ---
 
 # Setting Up CloudTrail Multi-Region
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, caller/account verification (`sts:GetCallerIdentity`), resource inspection, logs/metrics queries, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___call_aws` / `aws___run_script`, `cloudwatch`, `cloudtrail`, `prometheus`, `dynamodb`, `serverless`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**.
 
 ## Overview
 

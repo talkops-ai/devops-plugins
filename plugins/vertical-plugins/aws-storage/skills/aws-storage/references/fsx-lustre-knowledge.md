@@ -1,6 +1,6 @@
 # Amazon FSx for Lustre
 
-This reference captures information addressing common gotchas and frequently asked questions for Amazon FSx for Lustre to support accurate model responses. It is not a complete specification. The authoritative source for current specifications, limits, quotas, and API behavior is the [Amazon FSx for Lustre User Guide](https://docs.aws.amazon.com/fsx/latest/LustreGuide/what-is.html), [Amazon FSx API Reference](https://docs.aws.amazon.com/fsx/latest/APIReference/), [Amazon FSx for Lustre product page](https://aws.amazon.com/fsx/lustre/), and [Amazon FSx for Lustre FAQs](https://aws.amazon.com/fsx/lustre/faqs/). Retrieve current specifications, limits, and quotas from those pages before citing specifics; cite figures only from those pages.
+This reference captures information addressing common gotchas and frequently asked questions for Amazon FSx for Lustre to support accurate model responses. It is not a complete specification. The authoritative source for current specifications, limits, quotas, and API behavior is the [Amazon FSx for Lustre User Guide](https://docs.aws.amazon.com/fsx/latest/LustreGuide/what-is.html), [Amazon FSx API Reference](https://docs.aws.amazon.com/fsx/latest/APIReference/), [Amazon FSx for Lustre product page](https://aws.amazon.com/fsx/lustre/), and [Amazon FSx for Lustre FAQs](https://aws.amazon.com/fsx/lustre/faqs/). 
 
 ## 1. Overview
 
@@ -10,9 +10,18 @@ This reference captures information addressing common gotchas and frequently ask
 
 See [When to choose Amazon FSx](https://aws.amazon.com/fsx/when-to-choose-fsx/) and [Amazon FSx for Lustre Features](https://aws.amazon.com/fsx/lustre/features/).
 
-## 2. Service Information
+## 2. Service Information & Operational Gotchas
 
-You MUST retrieve information from the linked documentation in the below table before answering any user question on the related topic.
+Use the specifications below directly; query connected documentation tools (`awsknowledge`) only if a niche detail is not covered here.
+
+- **Deployment Types (`Scratch 2` vs `Persistent 2` SSD vs `Intelligent-Tiering`)**:
+  - **Scratch 2**: Unreplicated temporary burst storage (`200 MB/s per TiB`); if a file server fails in transit, data is not replicated.
+  - **Persistent 2 (SSD)**: Replicated within the AZ with automatic hardware failover; selectable throughput tiers (`125`, `250`, `500`, or `1,000 MB/s per TiB` of SSD storage) and NVIDIA GPUDirect Storage (GDS) support.
+  - **Persistent 2 (Intelligent-Tiering)**: Elastic storage capacity with optional SSD read cache for cost-optimized HPC/ML datasets.
+- **S3 Data Repository Association (DRA) & Lazy-Load / Release Gotchas**:
+  - Links up to 8 S3 prefixes to a Lustre file system with **Auto-Import** (`NEW`, `NEW_CHANGED`, `NEW_CHANGED_DELETED`) — which immediately imports POSIX file/directory **metadata** from S3 while **lazily loading file data bytes on first read** (causing higher latency on initial read unless pre-warmed with `create-data-repository-task --type IMPORT_METADATA` / `nohup find ... -type f -exec head -c 1 {} +` or `lfs hsm_restore`).
+  - **Auto-Export** (`NEW`, `NEW_CHANGED`, `NEW_CHANGED_DELETED`) asynchronously writes modified Lustre files back to S3.
+  - When local SSD space fills up on an S3-linked Lustre file system, run `lfs hsm_release <file>` (or a `RELEASE_DATA_FROM_FILESYSTEM` Data Repository Task) to free local SSD capacity while keeping POSIX metadata so the file stays transparently readable from S3. Note: AWS native backups are only supported on **Persistent** file systems that are **not** linked to an S3 data repository (for S3-linked file systems, S3 is the durable backing store).
 
 | Topic | Example service characteristics, features, and actions | Documentation |
 | --- | --- | --- |
@@ -27,16 +36,12 @@ You MUST retrieve information from the linked documentation in the below table b
 
 ### Related services and integrations
 
-You MUST retrieve information from the linked documentation in the below table before answering any user question on the related service.
-
 | Example service | Example characteristics and common workloads | Documentation |
 | --- | --- | --- |
 | Amazon EKS (FSx for Lustre CSI driver) | dynamic and static Kubernetes volume provisioning; pod access to shared Lustre | [Amazon FSx for Lustre CSI driver](https://docs.aws.amazon.com/eks/latest/userguide/fsx-csi.html) |
 | Amazon SageMaker | high-throughput training-data input; file-system mount for training jobs | [Setting up training jobs to access datasets](https://docs.aws.amazon.com/sagemaker/latest/dg/model-access-training-data.html) |
 
 ## 3. Troubleshooting
-
-You MUST retrieve information from the linked documentation in the below table before providing the user with any guidance on the related area.
 
 | Example area | Example errors | Example fixes | Documentation |
 | --- | --- | --- | --- |

@@ -1,0 +1,99 @@
+{
+  "skill_name": "aws-natgw-traffic-analysis",
+  "companion_skills": [
+    "configuring-vpc-endpoints-for-private-aws-service-access",
+    "network-log-analyzer",
+    "aws-routing",
+    "aws-vpc-dns-investigation",
+    "enabling-lambda-vpc-internet-access"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Analyze what traffic is going through our AWS NAT Gateway from flow logs in GB and % and check why S3 traffic is still hitting NAT despite a Gateway Endpoint."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Why is our NAT Gateway volume so high, which VPC Flow Logs (`interface-id`) should we query for NAT analysis, and is a Cross-Region S3 Interface Endpoint safe to recommend?"
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Trace which AWS service or customer-owned resource sits behind the top destination IPs in our NAT Gateway VPC Flow Logs."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Our EKS worker nodes in private subnets already have `ecr.api` and `ecr.dkr` Interface Endpoints, yet `BytesOutToDestination` on `nat-0abc123` spikes by hundreds of gigabytes every time pods pull container images!"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Why are our private microservices sending 2 TB a week through `nat-09988` to our own Elastic IP `13.127.88.40` when active VPC Peering already connects the two VPCs?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Before we enable Private DNS on a Cross-Region S3 Interface Endpoint to stop cross-region S3 reads from traversing NAT, what S3 API operation could silently break across our entire VPC?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Flow logs on `eni-0nat555` over 14 days show `4,500 GB` to `52.219.64.0/22` (`ap-south-1` S3), `3,000 GB` to `52.216.0.0/15` (`us-east-1` S3), and `1,500 GB` to `AMAZON` IPs. Categorize and diagnose."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "A teammate pulled flow logs from EC2 instance `eni-0inst111` instead of `nat-0111`'s ENI to measure how many GB crossed NAT—explain why those numbers are wrong and how to query the right ENI."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "CloudTrail filtered on `sourceIPAddress = 13.232.100.50` (our NAT EIP) shows 2.4M calls to `logs.amazonaws.com` and `sts.amazonaws.com`—check our Interface Endpoint coverage."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "VPC Flow Logs on `eni-0db111` show `ACCEPT` on TCP SYN to port `5432` and `REJECT` on the outbound `SYN-ACK`—determine whether an SG or NACL dropped it.",
+      "expected_alternative_skill": "network-log-analyzer"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Simulate whether adding a Route 53 Resolver `FORWARD` rule for `.corp` will shadow our `internal.corp` Private Hosted Zone inside `vpc-0167f5c4bb94b89db`.",
+      "expected_alternative_skill": "aws-vpc-dns-investigation"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Explain why AS-path prepending on a Mumbai Direct Connect VIF does not override Direct Connect Gateway local-region preference.",
+      "expected_alternative_skill": "aws-routing"
+    }
+  ]
+}

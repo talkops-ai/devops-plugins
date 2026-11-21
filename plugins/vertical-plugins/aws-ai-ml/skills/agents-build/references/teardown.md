@@ -28,18 +28,20 @@ agentcore remove gateway --name MyGateway
 # Remove a credential
 agentcore remove credential --name MyAPIKey
 
-# Remove an evaluator
-agentcore remove evaluator --name ResponseQuality
-
-# Remove an online eval config
+# Remove an online eval config BEFORE removing its parent evaluator
 agentcore remove online-eval --name production_monitor
 
-# Remove a policy
+# Remove an evaluator (remove all online-eval configs referencing it first)
+agentcore remove evaluator --name ResponseQuality
+
+# Remove a policy BEFORE removing its parent policy engine
 agentcore remove policy --name SpendingLimit --engine MyPolicyEngine
 
 # Remove a policy engine (remove all its policies first)
 agentcore remove policy-engine --name MyPolicyEngine
 ```
+
+> **Strict Parent-Child Removal Order:** Always remove child resources before their parent (`gateway-target` before `gateway`, `policy` before `policy-engine`, and `online-eval` before `evaluator`), then apply with `agentcore deploy -y`.
 
 After removing, deploy to apply the changes:
 

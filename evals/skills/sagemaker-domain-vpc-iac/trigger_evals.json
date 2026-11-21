@@ -1,0 +1,99 @@
+{
+  "skill_name": "sagemaker-domain-vpc-iac",
+  "companion_skills": [
+    "sagemaker-solution-architect",
+    "sagemaker-cost-estimator",
+    "sagemaker-mlops-pipelines",
+    "sagemaker-inference-architect",
+    "sagemaker-training-architect"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Write AWS CDK TypeScript (`CfnDomain`, `CfnUserProfile`, `CfnSpace`) for a `VpcOnly` SageMaker Studio Domain in `ap-south-1` with KMS CMK encryption and validate it with `cfn-guard`."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Design the 5-persona least-privilege IAM roles and PrivateLink VPC Endpoints (`sagemaker.studio`, `sagemaker.api`, `ecr.dkr`) for our enterprise SageMaker Studio platform."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Build a custom BYOI SageMaker Studio Docker image (`UID 1000`, `CfnImage`, `CfnAppImageConfig`) with AWS SOCI lazy-loading."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why did CloudFormation fail when we set `sharingType: 'Shared'` on a `CodeEditor` Space and included `singleSignOnUserValue` under `authMode: 'IAM'`?"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Our `VpcOnly` SageMaker Studio Spaces fail to mount EFS home directories — which inbound ports (`2049` and `8192-65535`) are missing on our Domain Security Group?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Set up a Cognito JWT portal Lambda calling `sagemaker:CreatePresignedDomainUrl` so external users can launch isolated SageMaker Studio UserProfiles."
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Platform engineering needs a CloudFormation stack for an air-gapped financial-services SageMaker Studio environment in Mumbai with 60-minute Space idle auto-shutdown."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Enforce IAM `Condition` keys so data scientists in Studio cannot launch `CreateTrainingJob` outside our private subnets or without a KMS volume key."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "An engineer wrote `new sagemaker.Domain(this, 'Studio', ...)` in CDK v2 and got a TypeScript compile error — fix the CDK Studio infrastructure code."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Estimate monthly TCO in `COST_ESTIMATE.md` comparing `InferenceComponent` bin-packing vs dedicated `ml.g5` endpoints using live `awspricing` queries.",
+      "expected_alternative_skill": "sagemaker-cost-estimator"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure DJL Serving / LMI vLLM on `ml.inf2` (`transformers_neuronx`, `OPTION_TENSOR_PARALLEL_DEGREE=2`) and two-policy Scale-to-Zero (`NoCapacityInvocationFailures`).",
+      "expected_alternative_skill": "sagemaker-inference-architect"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Author a parameterized `sagemaker.workflow.pipeline.Pipeline` DAG with `@step`, `ConditionStep`, `FailStep`, and Iceberg `FeatureStore` offline tables.",
+      "expected_alternative_skill": "sagemaker-mlops-pipelines"
+    }
+  ]
+}

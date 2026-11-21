@@ -1,0 +1,95 @@
+{
+  "skill_name": "processing-s3-uploads-with-step-functions",
+  "companion_skills": [
+    "serverless-data-and-file-processing",
+    "aws-serverless",
+    "aws-lambda",
+    "aws-containers"
+  ],
+  "queries": [
+    {
+      "id": "trig-pos-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Deploy an event-driven AWS Step Functions workflow triggered by S3 EventBridge uploads that routes files <= 6 MB to Lambda and > 6 MB to ECS Fargate."
+    },
+    {
+      "id": "trig-pos-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Build a hybrid S3 file-processing pipeline with EventBridge, Step Functions Choice state, Lambda for small files, and ECR/ECS Fargate for large files."
+    },
+    {
+      "id": "trig-pos-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Fix `iam:PassRole` and Fargate `PROVISIONING` errors in our S3 -> EventBridge -> Step Functions Lambda/Fargate file router."
+    },
+    {
+      "id": "trig-pos-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Set up the VPC security group, ECR repo, Lambda function, ECS Fargate task, and Step Functions state machine for size-based S3 upload routing."
+    },
+    {
+      "id": "trig-pos-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Compare `ecs:runTask.sync` vs `lambda:invoke` in a Step Functions workflow routing S3 `Object Created` events by `detail.object.size`."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Connect an existing Lambda function to an API Gateway REST API with `AWS_PROXY`."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Connect a Lambda function to DynamoDB Streams with `NEW_AND_OLD_IMAGES`."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure AWS Direct Connect BGP peering and Link Aggregation Groups."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Set up AWS WAF Fraud Control Account Takeover Prevention on `/login`."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Audit CloudTrail Lake events for root user logins and unauthorized `AssumeRole` calls."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure Prometheus PromQL multi-window SLO burn-rate alerts."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Migrate Oracle PL/SQL queries and Hibernate entities to Aurora PostgreSQL."
+    }
+  ]
+}

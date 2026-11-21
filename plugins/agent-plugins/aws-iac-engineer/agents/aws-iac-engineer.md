@@ -67,4 +67,16 @@ You are the **Principal AWS IaC Engineer** — a senior platform architect and i
 
 ## Skills this agent uses
 
-`iac-architecture-advisor` · `aws-terraform` · `aws-pulumi` · `aws-crossplane` · `aws-cdk` · `aws-cloudformation` · `aws-brownfield-migration` · `aws-iam-and-security` · `aws-networking-and-compute` · `aws-finops-and-cost` · `aws-deployment` · `signing-in-to-aws`
+- `iac-architecture-advisor`
+- `aws-terraform`
+- `aws-pulumi`
+- `aws-crossplane`
+- `aws-cdk`
+- `aws-cloudformation`
+- `aws-brownfield-migration`
+- `aws-iam-and-security`
+- `aws-networking-and-compute`
+- `aws-finops-and-cost`
+- `aws-deployment`
+- `signing-in-to-aws`
+- `eks-karpenter-autoscaling`

@@ -1,0 +1,99 @@
+{
+  "skill_name": "bedrock-adoption-readiness",
+  "companion_skills": [
+    "bedrock-operation-review",
+    "agentcore-ops-review",
+    "agentcore-observability-setup",
+    "amazon-bedrock",
+    "service-quota-check"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Run an Amazon Bedrock production adoption readiness review in ap-south-1 covering IAM governance, Zero Data Retention (ZDR), TPM quota headroom, and observability."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Are we ready for Bedrock production launch across both Standard Bedrock and Mantle (`AWS/BedrockMantle`)? Give us a Go/No-Go assessment."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Perform a Bedrock security and ZDR compliance readiness audit (`D1`, `D2`, `D3`, `D6`) for our HIPAA workload."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Check whether our Claude Covered Models (`Mythos 5` / `Fable 5`) and OpenAI `GPT-5` Mantle endpoints violate our Zero Data Retention requirements before go-live."
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Calculate our real Claude Sonnet 4.5 TPM quota headroom accounting for the 5:1 output token burndown rate and `CacheReadInputTokenCount` exemptions."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Inspect all IAM roles and Organization SCPs in our account for wildcard `bedrock:*` / `bedrock-mantle:*` permissions ahead of our security sign-off."
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Our CISO blocked our GenAI release until we prove provider data sharing is disabled, Bedrock runtime CloudTrail data events are on, and per-model TPM utilization won't throttle on launch day."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "We use both Claude on `bedrock-runtime` and OpenAI models via `bedrock-mantle` — audit whether we meet `READY`, `READY WITH ACTIONS`, or `NOT READY` criteria."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Before flipping DNS to our new Bedrock clinical summarizer in Mumbai, verify IAM role wildcards, ZDR regime status, VPC endpoints, and throttle alarms."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Review our AgentCore Runtimes (`AC-RUN-1..4`), Gateways (`GW-01`), and Long-Term Memory ingestion error rates (`AC-MEM-1..4`) for operational hygiene.",
+      "expected_alternative_skill": "agentcore-ops-review"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Validate CloudWatch Transaction Search and AWS Lambda OpenTelemetry Layer wrapper variables for an AgentCore agent emitting zero X-Ray spans.",
+      "expected_alternative_skill": "agentcore-observability-setup"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Check our VPC (`L-F678F1CE`), NAT Gateway (`L-FE5A380F`), and EC2 Standard vCPU (`L-1216C47A`) limits in ap-south-1.",
+      "expected_alternative_skill": "service-quota-check"
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "skill_name": "transitgateway",
+  "companion_skills": [
+    "directconnect",
+    "aws-networking-and-compute",
+    "route53",
+    "waf"
+  ],
+  "queries": [
+    {
+      "id": "trig-pos-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Create an AWS Transit Gateway in `ap-south-1` with `DefaultRouteTableAssociation` disabled and segment `Prod`, `NonProd`, and `SharedServices` VPCs."
+    },
+    {
+      "id": "trig-pos-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Force east-west VPC-to-VPC traffic through AWS Network Firewall using Transit Gateway route tables and `ApplianceModeSupport=enable`."
+    },
+    {
+      "id": "trig-pos-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Centralize outbound internet egress through a shared NAT Egress VPC on AWS Transit Gateway and add RFC 1918 blackhole routes."
+    },
+    {
+      "id": "trig-pos-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Migrate 10 VPCs off a 45-link VPC Peering mesh onto AWS Transit Gateway without dropping traffic, and enable VPN ECMP across 4 IPsec tunnels."
+    },
+    {
+      "id": "trig-pos-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure AWS Transit Gateway inter-Region peering static routes and IP Multicast (`Igmpv2Support=enable`) domains."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Order an AWS Direct Connect Dedicated cross-connect and configure MACsec Layer-2 encryption."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Create a Route 53 Public Hosted Zone Alias record and DNS Firewall blocklist."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure AWS WAF Bot Control Targeted rules and strip spoofed `x-amzn-waf-*` headers."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Subscribe to AWS Shield Advanced and configure SRT access."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Connect an AWS Lambda function to DynamoDB Streams."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Rewrite Oracle `CONNECT BY PRIOR` queries to PostgreSQL `WITH RECURSIVE`."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Audit CloudTrail logs for root user console logins."
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "skill_name": "orchestrating-serverless-data-pipelines",
+  "companion_skills": [
+    "amazon-opensearch-service",
+    "analytics-opensearch-expertise",
+    "auditing-aws-system-tables",
+    "authoring-glue-and-emr-spark-jobs",
+    "authoring-mwaa-workflow"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Design an AWS Step Functions state machine in ASL that orchestrates Glue startJobRun.sync, Glue Data Quality, Athena startQueryExecution.sync, and SNS failure alerts."
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure an AWS Step Functions Distributed Map state (`Mode: DISTRIBUTED`) with S3 listObjectsV2 ItemReader and MaxConcurrency to process 100,000 Parquet files."
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Set up an Amazon EventBridge Scheduler schedule and S3 Object Created rule with an SQS DLQ to trigger our serverless data lake pipeline."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Compare AWS Step Functions vs AWS Glue Workflows vs Amazon MWAA for orchestrating a serverless daily batch ETL pipeline."
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Orchestrate an Amazon EMR Serverless application run (`emr-serverless:startJobRun.sync`) and Redshift Data API load using AWS Step Functions."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Upgrade an Amazon MWAA provisioned Apache Airflow 2.8 environment to Airflow 3.0."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Size an Amazon OpenSearch Service cluster for k-NN vector search."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Migrate a self-managed Apache Kafka cluster on EC2 to Amazon MSK Express."
+    }
+  ]
+}

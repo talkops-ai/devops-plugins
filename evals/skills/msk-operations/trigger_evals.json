@@ -1,0 +1,68 @@
+{
+  "skill_name": "msk-operations",
+  "companion_skills": [
+    "amazon-opensearch-service",
+    "analytics-opensearch-expertise",
+    "auditing-aws-system-tables",
+    "authoring-glue-and-emr-spark-jobs",
+    "authoring-mwaa-workflow"
+  ],
+  "queries": [
+    {
+      "id": "trig-pos-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Which skill would help me troubleshoot high produce latency on an MSK cluster? Just name it; do not run it."
+    },
+    {
+      "id": "trig-pos-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Is there a skill available for investigating consumer lag on Amazon MSK? Answer yes or no with the skill name; do not execute it."
+    },
+    {
+      "id": "trig-pos-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Name the skill that covers MSK cluster health checks and best-practices review. Do not run any audit."
+    },
+    {
+      "id": "trig-pos-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "I'm planning a Kafka version upgrade on my Amazon MSK Provisioned cluster and want to understand how rolling restarts impact producers and consumers. Which skill covers this?"
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Write a Python script that sorts a list of numbers"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "How do I configure autoscaling on an Amazon MSK Serverless cluster?"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Create a CloudFormation template for an S3 bucket"
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "How do I set up an RDS Multi-AZ Aurora cluster?"
+    }
+  ]
+}

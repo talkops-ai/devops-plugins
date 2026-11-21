@@ -112,3 +112,8 @@ Match the user's intent to the appropriate stage and load the designated skill's
 - `sdk-getting-started`
 - `signing-in-to-aws`
 - `use-case-specification`
+- `aiml-access-diagnostics`
+- `aiml-gpu-training-cluster-investigation`
+- `bedrock-adoption-readiness`
+- `bedrock-operation-review`
+- `sagemaker-ai-ops-review`

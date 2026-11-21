@@ -4,15 +4,15 @@ description: >-
   Import data into the AWS data lake from S3 files, local uploads, JDBC databases
   (Oracle, SQL Server, PostgreSQL, MySQL, RDS, Aurora), Amazon Redshift, Snowflake,
   BigQuery, DynamoDB, or existing Glue catalog tables (migration). Default target
-  is S3 Tables; standard Iceberg on a general purpose bucket is supported where S3
+  is S3 Tables; standard Iceberg on general-purpose S3 is supported where S3
   Tables is not adopted. Handles one-time loads, recurring pipelines, migrations.
   Triggers on: import data, load data, ingest, sync database, migrate table, move
   data to AWS, set up pipeline, ETL, pull from Snowflake, query BigQuery into S3,
-  export DynamoDB, CTAS, convert to Iceberg. Do NOT use for setting up or troubleshooting
-  Glue connections (use connecting-to-data-source), creating empty tables (use creating-data-lake-table),
+  export DynamoDB, CTAS, convert to Iceberg. Do NOT use for Glue connections
+  (use connecting-to-data-source), creating empty tables (use creating-data-lake-table),
   running queries (use querying-data-lake), finding tables by fuzzy name (use finding-data-lake-assets),
   catalog audit (use exploring-data-catalog), or continuous streaming/CDC/SaaS ingestion via
-  Data Firehose, AWS DMS, DynamoDB Streams, or Amazon AppFlow (use ingesting-streaming-and-cdc-data).
+  Data Firehose, AWS DMS, DynamoDB Streams, or AppFlow (use ingesting-streaming-and-cdc-data).
 metadata:
   version: "2"
   argument-hint: "'[source-path|connection-name|table-name] [--target s3-tables|iceberg|parquet]'"

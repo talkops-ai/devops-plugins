@@ -8,8 +8,7 @@ version: 2
 
 ## Overview
 
-> **Recommended**: Use the [AWS MCP Server](https://docs.aws.amazon.com/aws-mcp/latest/userguide/what-is-mcp-server.html) with SES permissions for sandboxed execution and CloudTrail audit logging.
-> **Without MCP**: All operations use standard AWS CLI syntax (`aws sesv2 ...`).
+> **Execution & References (MCP-First)**: Execute live `sesv2` and `route53` inspections via connected MCP tools first (`aws-mcp` `aws___call_aws` / `aws___run_script`, `sns-sqs`, `cloudwatch`, `awspricing`), falling back to `aws sesv2` and `aws route53` CLI commands only when MCP tools are unavailable. Read the local `references/*.md` files directly from the skill directory, and if no local reference matches an edge-case question, query `awsknowledge` (`aws___search_documentation` / `aws___read_documentation` in 1–2 focused searches) and answer directly.
 
 Takes a developer who is not an email authentication expert from an empty AWS account to a
 real, authenticated email in their inbox, and on to production sending if AWS approves the
@@ -43,15 +42,12 @@ This distinction applies only to the skill's own packaged files. User data and s
   the operations this journey needs — production-access requests, and DKIM plus MAIL FROM
   attributes in a single identity read — exist only in v2. Models trained on published CLI
   examples tend to default to the v1 syntax.
-- **MUST NOT** volunteer API version mechanics, internal limit figures, or other plumbing.
-  Explain only what the user has to decide, consent to, pay for, or act on. Surface the rest
-  only when they ask, when their problem turns on it, or when a reference file names the
-  disclosure as required.
-- **MUST** ask for missing inputs in ONE question set rather than one at a time — and **MUST NOT**
-  ask for inputs the request does not need. Scope the questions to what the user asked for: a
-  request that already names the domain and MAIL FROM subdomain is a complete domain-setup
-  request, so read state and execute rather than stalling for send-time or production-access
-  inputs. If nothing is missing for the chosen scope, ask nothing.
+- **Architectural Depth & Read-Only Audits**: When the user asks for a read-only audit, onboarding roadmap, DNS authentication design, or security/architecture review, do NOT withhold technical details or stall with clarifying questions—run the read-only `aws sesv2` discovery commands immediately (`get-account`, `list-email-identities`, `list-configuration-sets`, `list-suppressed-destinations`, etc.) and provide complete, architect-grade explanations, DNS tables, CLI commands, and reputation thresholds:
+  - **Domain Identity & Easy DKIM (`RSA_2048_BIT`)**: Always prefer Domain Identity over individual Email Address Identities using `aws sesv2 create-email-identity --email-identity <domain> --dkim-signing-attributes '{"NextSigningKeyLength":"RSA_2048_BIT"}'`, which issues 3 CNAME records (`<token>._domainkey.<domain> -> <token>.dkim.amazonses.com`).
+  - **Custom MAIL FROM & SPF (RFC 7208)**: Configure a subdomain (`mail.<domain>`) via `aws sesv2 put-email-identity-mail-from-attributes --email-identity <domain> --mail-from-domain mail.<domain>` with 1 MX record (`10 feedback-smtp.<region>.amazonses.com`) and 1 SPF TXT record (`"v=spf1 include:amazonses.com ~all"`). Never publish two `v=spf1` TXT records on the same hostname (causes RFC 7208 SPF `PermError`—merge mechanisms into one record or place SES SPF on the Custom MAIL FROM subdomain).
+  - **Phased DMARC Rollout**: Publish `_dmarc.<domain>` TXT record starting with monitoring (`"v=DMARC1; p=none; pct=100; rua=mailto:dmarc@<domain>"`), then graduate to `p=quarantine`, and finally `p=reject` after verifying DKIM and SPF alignment.
+  - **Production Access (`put-account-details`), Reputation Thresholds & Configuration Sets**: Request production access via `aws sesv2 put-account-details --mail-type TRANSACTIONAL|MARKETING --website-url <url> --use-case-description <desc> --production-access-enabled` (never use purchased/cold email lists). Maintain **Bounce rate `< 2%` healthy** (proactively halt at `3%`; AWS probation/suspension review triggers at `>= 5%`) and **Complaint rate `< 0.05%` healthy** (proactively halt at `0.08%`; AWS probation/suspension review triggers at `>= 0.1%`). Keep account-level `SuppressedReasons` set to `["BOUNCE", "COMPLAINT"]`, enforce Configuration Set TLS (`--delivery-options '{"TlsPolicy":"REQUIRE"}'`), and track `BOUNCE`, `COMPLAINT`, `REJECT`, `SEND`, and `DELIVERY` events via SNS/EventBridge/CloudWatch/Firehose with `aws:SourceAccount` and `aws:SourceArn` conditions.
+- **Interactive Mutations Only**: Only ask for missing inputs in ONE question set when executing a live mutating onboarding workflow where required parameters (like the user's real domain) were omitted. For read-only audits or architectural reviews, ask nothing and answer completely.
 - **MUST NOT** ask which AWS CLI profile or Region to use while either can still be resolved.
   Honour `--profile` only if the user names one. **Resolve the Region in this order, taking the
   first that yields a value:** a Region the user named; `AWS_REGION`; `AWS_DEFAULT_REGION`;

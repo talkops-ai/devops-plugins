@@ -1,0 +1,68 @@
+{
+  "skill_name": "auditing-aws-system-tables",
+  "companion_skills": [
+    "amazon-opensearch-service",
+    "analytics-opensearch-expertise",
+    "authoring-glue-and-emr-spark-jobs",
+    "authoring-mwaa-workflow",
+    "connecting-to-data-source"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Enable and query Amazon Redshift SYS_* system tables (`sys_query_history`, `sys_connection_log`) published to the `aws-redshift` S3 Table bucket."
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Query Amazon S3 Metadata (`journal` and `inventory` tables) and S3 Storage Lens metrics in the `aws-s3` S3 Table bucket via Athena."
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Audit SageMaker Unified Studio / DataZone catalog assets missing business descriptions or owners in `s3tablescatalog/aws-sagemaker-catalog`."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure the dual-principal KMS key policy (`systemtables.redshift.amazonaws.com` and `maintenance.s3tables.amazonaws.com`) for Redshift S3 Tables system table publishing."
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Write an Athena query against `s3tablescatalog/aws-s3` `journal` table to audit recent S3 object `DELETE` events over the last 24 hours."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Import a 100 GB PostgreSQL orders table into Amazon S3 Tables using AWS Glue."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Upgrade our Amazon MWAA environment from Apache Airflow 2.8 to Airflow 3.0."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Size an Amazon MSK Express cluster for 150 MB/s Kafka streaming ingress."
+    }
+  ]
+}

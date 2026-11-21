@@ -1,0 +1,68 @@
+{
+  "skill_name": "aws-social-messaging",
+  "companion_skills": [
+    "amazon-eventbridge-event-bus",
+    "amazon-eventbridge-scheduler-and-pipes",
+    "amazon-ses",
+    "amazon-sqs-sns-async-messaging",
+    "aws-messaging-and-streaming"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "List our linked WhatsApp Business Accounts in ap-south-1 and show me how to send an interactive WhatsApp list message using aws socialmessaging send-whatsapp-message."
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "How do I create a WhatsApp UTILITY or MARKETING message template with positional variables and quick reply buttons in AWS End User Messaging Social?"
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Walk me through uploading a PDF invoice to S3, registering it with post-whatsapp-message-media, and downloading inbound WhatsApp customer media."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure a WhatsApp Business Account event destination to forward inbound WhatsApp messages and delivery receipts to Amazon EventBridge or SNS with put-whatsapp-business-account-event-destinations."
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Our WhatsApp messages are failing with Meta error code 131047 and 132000 in AWS End User Messaging Social—help me troubleshoot the 24-hour customer service window and template parameters."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "How do I register an India DLT Sender ID (IN_SENDER_ID_REGISTRATION) or US 10DLC campaign for SMS using aws pinpoint-sms-voice-v2?"
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Check our Amazon SES account sending quota, DKIM verification status, and Custom MAIL FROM domain in ap-south-1 using aws sesv2."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Help me design an Amazon Kinesis Data Streams consumer with Enhanced Fan-Out and Managed Service for Apache Flink tumbling windows."
+    }
+  ]
+}

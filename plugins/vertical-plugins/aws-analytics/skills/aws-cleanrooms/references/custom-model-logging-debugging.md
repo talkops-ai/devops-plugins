@@ -58,16 +58,17 @@ If `configuredModelAlgorithmAssociationArn` is not in the response, use: `aws cl
 - `aws iam list-attached-role-policies --role-name ${role_name}`
 - For each inline policy: `aws iam get-role-policy --role-name ${role_name} --policy-name ${policy_name}`
 - For each attached managed policy: `aws iam get-policy --policy-arn ${policy_arn}` then `aws iam get-policy-version --policy-arn ${policy_arn} --version-id ${version_id}`
-- Required permissions: `logs:CreateLogGroup`, `logs:CreateLogStream`, `logs:PutLogEvents` on `arn:aws:logs:*:*:log-group:/aws/cleanroomsml/*`
+- Required permissions: `logs:CreateLogGroup`, `logs:CreateLogStream`, `logs:PutLogEvents`, `logs:DescribeLogStreams` on `arn:aws:logs:*:*:log-group:/aws/cleanroomsml/*`
 - Also check `cloudwatch:PutMetricData` (requires `"Resource": "*"`) for training metrics
-- Trust policy must allow `cleanrooms-ml.amazonaws.com`
+- Trust policy must allow `cleanrooms-ml.amazonaws.com` (with `aws:SourceArn` / `aws:SourceAccount` conditions)
 
-### 6. Check CloudWatch Log Groups
+### 6. Check CloudWatch Log Groups and KMS Key Policy
 
 - `aws logs describe-log-groups --log-group-name-prefix /aws/cleanroomsml/TrainedModels --region ${region}`
 - `aws logs describe-log-groups --log-group-name-prefix /aws/cleanroomsml/TrainedModelInferenceJobs --region ${region}`
 - If groups exist, check streams using the discovered log group name:
   - `aws logs describe-log-streams --log-group-name ${log_group_name} --order-by LastEventTime --descending --max-items 5 --region ${region}`
+- **If the CloudWatch log group is KMS-encrypted (`kmsKeyId` present)**: inspect the KMS key policy (`aws kms get-key-policy --key-id ${kms_key_id} --policy-name default`) and verify it grants `kms:Encrypt`, `kms:Decrypt`, `kms:ReEncrypt*`, `kms:GenerateDataKey*`, and `kms:DescribeKey` to `logs.${region}.amazonaws.com` (with `kms:EncryptionContext:aws:logs:arn`) as well as the ML Configuration role.
 - If groups don't exist, this may indicate missing `logs:CreateLogGroup` permission. Cross-reference with logsStatus and privacy config.
 
 ### 7. Log Publishing Status Interpretation

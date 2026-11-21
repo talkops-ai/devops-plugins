@@ -1,0 +1,95 @@
+{
+  "skill_name": "legacy-vm-and-mainframe-replatform",
+  "companion_skills": [
+    "modernization-parity-and-cutover",
+    "app-data-layer-remediation",
+    "aws-containers",
+    "aws-serverless"
+  ],
+  "queries": [
+    {
+      "id": "trig-pos-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Containerize our legacy Linux Tomcat and Windows IIS virtual machines to ECS Fargate using the 5-stage AWS App2Container (`app2container`) workflow."
+    },
+    {
+      "id": "trig-pos-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Modernize our IBM z/OS COBOL, CICS, JCL, and VSAM mainframe estate using AWS Transform \u2014 compare AWS Blu Age automated refactoring vs Rocket Software replatforming."
+    },
+    {
+      "id": "trig-pos-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Wire `AWSMGN-App2Container-Containerize` as an AWS MGN post-launch SSM automation action during our VM migration."
+    },
+    {
+      "id": "trig-pos-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Explain why AWS Mainframe Modernization (M2) Managed Runtime is closed to new customers and handle EBCDIC-to-ASCII collation order changes."
+    },
+    {
+      "id": "trig-pos-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Replatform a stateful 4-hour TCP session service onto AWS Lambda MicroVMs with `/ready` and `/validate` snapshot hooks."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Run k6 load benchmarks and staged 1% -> 10% -> 50% -> 100% API Gateway canary cutover with rollback."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Rewrite Hibernate Oracle `ROWNUM` and `DECODE` queries to Aurora PostgreSQL."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure AWS Direct Connect BGP communities and MACsec encryption."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Set up AWS WAF Fraud Control and Bot Control on an ALB."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Audit CloudTrail Lake SQL logs for unauthorized IAM `PassRole` events."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Connect a Lambda function to DynamoDB Streams with `BisectBatchOnFunctionError`."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Perform an AWS Well-Architected Framework review across all 6 pillars."
+    }
+  ]
+}

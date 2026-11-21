@@ -1,17 +1,22 @@
 ---
 name: aws-cdk
-description: Authors, deploys, and troubleshoots AWS infrastructure using CDK with TypeScript or Python. Covers best practices, stack architecture, and construct patterns. Applies when writing CDK constructs, bootstrapping environments, running cdk deploy/synth/diff, fixing CDK or CloudFormation errors, planning stack structure, importing existing resources, resolving drift, or refactoring stacks without resource replacement.
+description: "Authors, deploys, and troubleshoots AWS infrastructure using AWS CDK (TypeScript or Python), construct patterns, cdk-nag, bootstrapping, cdk synth/diff/deploy/import/refactor, and CloudFormation stack error recovery. Do NOT use for Terraform, Pulumi, Crossplane, AWS Blocks scaffolding, standalone CodeDeploy/ECS release pipelines without CDK, or non-CDK service setup (CloudTrail, Route 53, RDS SQL tuning). Query live AWS state via MCP tools only (never raw aws CLI)."
 metadata:
   version: "2"
 ---
 
 # AWS CDK
 
+> **MCP-Only Live AWS Execution:** Execute ALL live AWS API discovery, account/region preflight checks (`sts:GetCallerIdentity`), stack/cluster/resource inspection, pricing (`awspricing`/`billing`), IaC validation (`awsiac`), and documentation lookups (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___run_script` `call_boto3`, `awsknowledge`, `awsiac`, `awspricing`, `eks`, `ecs`, `cloudwatch`) — **never invoke raw `aws ...` CLI commands in shell (`run_command`)**. Offline local linters/synthesizers (`cdk synth`, `terraform validate`, `python3`) may run locally without mutating live AWS.
+
 ## Overview
 
-Domain expertise for CDK construct authoring, deployment workflows, compliance, drift, importing resources, safe refactoring, and troubleshooting CDK CLI / CloudFormation errors.
+Domain expertise for AWS CDK (v2) construct authoring in TypeScript or Python, `cdk-nag` (`AwsSolutionsChecks`) security enforcement, `awsiac` MCP validation on synthesized CloudFormation templates, deployment workflows, drift detection, resource import (`cdk import`), safe refactoring (`cdk refactor`), and stack failure diagnosis.
 
-**When NOT to use:** Raw CloudFormation YAML/JSON. SAM. Terraform/Pulumi. CI/CD beyond CDK Pipelines. Use builtin knowledge or specialized skills for these.
+**MCP-First CDK Workflow (`awsiac`):**
+1. Before authoring unfamiliar constructs, query `search_cdk_documentation`, `search_cdk_samples_and_constructs`, and `cdk_best_practices` on the `awsiac` MCP server.
+2. Wire `Aspects.of(app).add(new AwsSolutionsChecks({ verbose: true }))` (`cdk-nag`) at the app root and set `RemovalPolicy.RETAIN` on stateful stores (RDS, DynamoDB, S3, KMS).
+3. Run `cdk synth --strict` and pass the synthesized template (`cdk.out/<Stack>.template.json`) through `validate_cloudformation_template` (`cfn-lint`) and `check_cloudformation_template_compliance` (`cfn-guard`) before presenting `cdk diff` for user approval.
 
 ## Critical Warnings
 

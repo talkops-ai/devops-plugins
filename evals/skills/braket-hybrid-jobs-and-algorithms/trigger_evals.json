@@ -1,0 +1,96 @@
+{
+  "skill_name": "braket-hybrid-jobs-and-algorithms",
+  "companion_skills": [
+    "amazon-braket",
+    "braket-cost-governance-and-security"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Write an Amazon Braket `@hybrid_job` for a 50-step VQE variational loop with `save_job_checkpoint`, `log_metric`, and priority QPU queueing on IonQ."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Optimize our PennyLane QML Braket Hybrid Job using `diff_method='adjoint'` and an embedded `local:pennylane/lightning.gpu` container via `retrieve_image`."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Compare `SV1`, `DM1`, `TN1`, gate-based QPUs, and `QuEra Aquila` for our QAOA and Maximum Independent Set (MIS) quantum-classical algorithms on Amazon Braket."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Our 33-qubit strongly entangled state-vector simulation runs out of memory on a single GPU inside a Braket Hybrid Job — how do we pool multi-GPU VRAM with CUDA-Q `mgpu`?"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Why does reading `os.environ['learning_rate']` and `open('s3://amazon-braket-.../results.json', 'w')` fail inside our Braket Hybrid Job container?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "How can we debug our custom Qiskit-Braket Hybrid Job Docker container locally with `LocalQuantumJob` before submitting cloud jobs?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Add `add_verbatim_box` native-gate compilation and Zero-Noise Extrapolation (ZNE) to our QAOA Braket Hybrid Job targeting superconducting Rigetti/IQM hardware."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Configure `copy_checkpoints_from_job` and `load_job_checkpoint` so our variational quantum algorithm resumes cleanly across physical QPU availability windows."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why did raw `boto3.client('braket').create_quantum_task` calls inside our Hybrid Job script lose priority scheduling on the QPU queue (`AMZN_BRAKET_JOB_TOKEN`)?"
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure per-device `CreateSpendingLimit` caps, S3 SSE-KMS bucket policies, and private `VpcConfig` PrivateLink endpoints to govern our Braket AWS account.",
+      "expected_alternative_skill": "braket-cost-governance-and-security"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Run a multi-node PyTorch FSDP distributed LLM fine-tuning job on SageMaker `ml.p5.48xlarge` instances with Managed Spot checkpointing.",
+      "expected_alternative_skill": "none"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure an SQS Event Source Mapping in AWS SAM with `ReportBatchItemFailures` and `ScalingConfig.MaximumConcurrency`.",
+      "expected_alternative_skill": "serverless-sam-deploy"
+    }
+  ]
+}

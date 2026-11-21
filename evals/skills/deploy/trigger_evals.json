@@ -1,0 +1,97 @@
+{
+  "skill_name": "deploy",
+  "companion_skills": [
+    "launch-with-aws",
+    "preflight-discovery",
+    "verify-and-rollback",
+    "aws-finops-and-cost",
+    "aws-deployment",
+    "directconnect"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Deploy our Dockerized FastAPI + PostgreSQL repo to `ap-south-1` end-to-end: run preflight discovery, estimate monthly cost, synthesize hardened IaC, and wait for my approval."
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Orchestrate a full-stack AWS deployment for this Next.js + DynamoDB app with pre-deploy FinOps estimation and `cfn-guard` security checks."
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Analyze my application codebase, pick the right AWS compute archetype (S3+CloudFront vs Lambda vs ECS Fargate), estimate costs, and generate a deployment plan."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Run the 6-phase AWS deployment orchestrator in Terraform compatibility mode with `dev` vs `prod` sizing defaults."
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Prepare our Go microservice for production AWS deployment with preflight checks, FinOps cost gate, compliance validation, and Day-2 verification."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Migrate our Heroku app using the `launch_with_aws.py` OAuth PKCE workflow (`create-launch` and `poll`)."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Write a Crossplane `CompositeResourceDefinition` (XRD) for an internal Kubernetes platform."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Convert AWS SDK for JavaScript v2 `S3.upload()` calls to modular `@aws-sdk/lib-storage` v3 `Upload`."
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Import 12 unmanaged ClickOps security groups into Pulumi using `pulumi import`."
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Analyze Aurora PostgreSQL `LWLock:BufferContent` wait events in Performance Insights."
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Set up AWS Direct Connect SiteLink between Tokyo and Singapore Direct Connect gateways."
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Query AWS CloudTrail Lake SQL for deleted KMS keys over the last 30 days."
+    }
+  ]
+}

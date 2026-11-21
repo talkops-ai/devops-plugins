@@ -1,0 +1,95 @@
+{
+  "skill_name": "aws-deployment",
+  "evals": [
+    {
+      "id": "eval-01-github-actions-iam-oidc-federation-for-multi-engine-iac",
+      "prompt": "Replace our long-lived `AWS_ACCESS_KEY_ID` GitHub Actions secrets with short-lived AWS IAM OIDC federation (`token.actions.githubusercontent.com`) for a repository `org/infra-platform` where pull requests run read-only `plan`/`diff` using a Plan role and merges to `main` require a GitHub Environment approval gate using a Deploy role.",
+      "expectations": [
+        "Activates the aws-deployment skill",
+        "Configures the AWS IAM OIDC provider (`https://token.actions.githubusercontent.com`, `sts.amazonaws.com` audience) with strict `sub` subject claim conditions separating PR branches (`PlanRole` read-only) from `environment:production` / `ref:refs/heads/main` (`DeployRole`)",
+        "Provides the GitHub Actions workflow using `permissions: { id-token: write, contents: read }` and `aws-actions/configure-aws-credentials@v4` with zero static IAM keys"
+      ]
+    },
+    {
+      "id": "eval-02-codepipeline-v2-with-codeconnections-and-manual-approval",
+      "prompt": "Design an AWS-native CI/CD pipeline in `ap-south-1` for our containerized ECS service: pull from GitHub Enterprise Cloud, build/scan the container image in CodeBuild, gate production behind manual approval, and deploy via CodeDeploy blue/green. Specify exact modern AWS service primitives and warnings.",
+      "expectations": [
+        "Activates the aws-deployment skill",
+        "Uses CodePipeline **V2** (`pipelineType: V2` with triggers/variables) and **AWS CodeConnections** (`codestar-connections` / `codeconnections` GitHub App)",
+        "Includes a `Manual` approval gate prior to the production deploy stage and a KMS-encrypted S3 artifact store"
+      ]
+    },
+    {
+      "id": "eval-03-codedeploy-ecs-blue-green-canary-and-alarm-auto-rollback",
+      "prompt": "Our ECS Fargate checkout service suffered a 15-minute outage when a bad release replaced tasks all at once. Show how to configure AWS CodeDeploy Blue/Green progressive delivery (`Canary10Percent5Minutes` or `Linear10PercentEvery1Minute`) with ALB test listener validation and automatic CloudWatch Alarm rollback.",
+      "expectations": [
+        "Activates the aws-deployment skill",
+        "Configures ECS `CODE_DEPLOY` deployment controller with two ALB target groups (blue/green), production + optional test listener hooks (`AfterAllowTestTraffic`), and a canary/linear `deploymentConfigName` (`CodeDeployDefault.ECSCanary10Percent5Minutes` or `ECSLinear10PercentEvery1Minute`)",
+        "Enables `autoRollbackConfiguration` triggered on `DEPLOYMENT_FAILURE` and `DEPLOYMENT_STOP_ON_ALARM` wired to CloudWatch 5xx/latency/unhealthy-host alarms"
+      ]
+    },
+    {
+      "id": "eval-04-terraform-pr-automation-atlantis-vs-hcp-terraform-plan-apply-lock",
+      "prompt": "Two engineers merged Terraform PRs 30 seconds apart and the second `apply` overwrote changes because PR plans weren't locked to the exact `tfplan` artifact. Compare HCP Terraform vs self-hosted Atlantis PR automation and detail the plan-artifact + state-lock invariants required to prevent race conditions.",
+      "expectations": [
+        "Activates the aws-deployment skill",
+        "Compares HCP Terraform (managed remote runs, Sentinel/OPA policy checks, workspace locking) against Atlantis (PR-level directory/workspace locking before merge, running `plan` on PR and applying the exact approved plan via PR comment)",
+        "Mandates state locking (e.g., S3 native lockfile `use_lockfile = true` / DynamoDB lock) and applying a saved/checksummed binary plan (`terraform plan -out=tfplan` -> `terraform apply tfplan`) rather than re-planning blind on `main`"
+      ]
+    },
+    {
+      "id": "eval-05-gitlab-ci-oidc-federation-with-aud-and-sub-claims",
+      "prompt": "Show how to configure GitLab CI/CD (`CI_JOB_JWT_V2` / `id_tokens`) with AWS IAM OIDC federation so only protected `main` pipelines in project `finops/ledger-iac` can assume `arn:aws:iam::111122223333:role/gitlab-prod-deploy`.",
+      "expectations": [
+        "Activates the aws-deployment skill",
+        "Defines GitLab `id_tokens` (`GITLAB_OIDC_TOKEN` with explicit `aud` matching the IAM OIDC provider) and exchanges the JWT via `aws sts assume-role-with-web-identity` or `AWS_WEB_IDENTITY_TOKEN_FILE` + `AWS_ROLE_ARN` native SDK credential resolution",
+        "Locks the IAM role trust policy `Condition` (`StringEquals` / `StringLike` on `sub` and `aud`) strictly to protected release branches/tags so arbitrary feature-branch MRs cannot assume the production role"
+      ]
+    },
+    {
+      "id": "eval-06-codebuild-least-privilege-caching-and-vpc-build-troubleshooting",
+      "prompt": "Our CodeBuild job inside a private VPC subnet times out trying to pull npm packages and push Docker layers to ECR, and someone suggested putting `AdministratorAccess` on the CodeBuild service role and moving it to a public subnet. Diagnose why CodeBuild in a public subnet still fails without NAT and give the secure fix.",
+      "expectations": [
+        "Activates the aws-deployment skill",
+        "Explains that CodeBuild ENIs placed inside VPC subnets never receive public IPs \u2014 so placing CodeBuild in a public subnet breaks outbound internet access; VPC-attached CodeBuild projects MUST run in private subnets routed through a NAT Gateway (or VPC Interface/Gateway Endpoints for ECR, S3, CloudWatch Logs)",
+        "Rejects `AdministratorAccess` on the CodeBuild role and scopes IAM permissions to specific ECR repository push, S3 artifact/cache bucket, and CloudWatch log group ARNs"
+      ]
+    },
+    {
+      "id": "eval-07-codeartifact-upstream-npm-pypi-supply-chain-setup",
+      "prompt": "We need private internal npm and Python packages shared across CodeBuild pipelines while caching public npmjs/PyPI dependencies safely against dependency confusion attacks. Walk through setting up AWS CodeArtifact domains, internal vs upstream repositories, and short-lived `GetAuthorizationToken` login in CI.",
+      "expectations": [
+        "Activates the aws-deployment skill",
+        "Architects a single CodeArtifact Domain with an upstream external-connection caching repository and internal package pattern/origin controls (`ALLOW`/`BLOCK` upstream origin controls to prevent dependency confusion)",
+        "Uses short-lived CodeArtifact auth tokens (`codeartifact login` / `GetAuthorizationToken`, 12-hour max TTL) minted via the CI OIDC/CodeBuild IAM role rather than static npm/twine tokens"
+      ]
+    },
+    {
+      "id": "eval-08-live-ap-south-1-cicd-pipeline-and-codebuild-inventory",
+      "prompt": "Perform a read-only audit of any existing AWS CodePipeline pipelines, CodeBuild projects, and CodeDeploy applications in `ap-south-1` in our AWS account, and summarize their configuration posture.",
+      "expectations": [
+        "Activates the aws-deployment skill and queries CodePipeline, CodeBuild, and CodeDeploy in `ap-south-1` via connected AWS MCP tools (`mcp_aws-mcp_aws___call_aws`) with zero raw `aws` CLI shell commands",
+        "Accurately reports the live inventory in `ap-south-1` (including cleanly reporting empty/zero resources if none are deployed)",
+        "Remains strictly read-only with zero mutating AWS calls"
+      ]
+    },
+    {
+      "id": "eval-09-pulumi-github-actions-esc-oidc-and-crossguard-gate",
+      "prompt": "How do we wire Pulumi TypeScript deployments in GitHub Actions so PRs post a `pulumi preview` + CrossGuard policy pack comment using dynamic Pulumi ESC AWS OIDC credentials, and merges run `pulumi up` without storing static AWS keys?",
+      "expectations": [
+        "Activates the aws-deployment skill",
+        "Configures `pulumi/actions` running `pulumi preview --policy-pack ...` on `pull_request` (posting PR diff comments) and `pulumi up --yes --policy-pack ...` gated on protected `main` / GitHub Environment",
+        "Uses Pulumi ESC dynamic OIDC credentials (`aws-login` / GitHub OIDC) instead of static `AWS_SECRET_ACCESS_KEY` secrets"
+      ]
+    },
+    {
+      "id": "eval-10-awsknowledge-codedeploy-lambda-linear-vs-canary-appspec-hooks",
+      "prompt": "Using AWS documentation via connected AWS documentation tools, verify the exact `AppSpec` lifecycle event hook order (`BeforeAllowTraffic`, `AfterAllowTraffic`) and built-in `Canary` vs `Linear` traffic shifting configurations for AWS CodeDeploy Lambda alias deployments.",
+      "expectations": [
+        "Queries connected AWS documentation MCP tools (`awsknowledge`, `aws-mcp`, or `awsiac`) with zero raw `aws` CLI commands",
+        "Lists the exact Lambda `AppSpec` hook execution order (`BeforeAllowTraffic` -> traffic shift -> `AfterAllowTraffic`)",
+        "Accurately describes `CodeDeployDefault.LambdaCanary*`, `CodeDeployDefault.LambdaLinear*`, and `CodeDeployDefault.LambdaAllAtOnce` alias shifting configurations"
+      ]
+    }
+  ]
+}

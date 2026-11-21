@@ -1,21 +1,13 @@
 ---
 name: querying-aws-cloudwatch
-description: >-
-  Runs SQL queries on CloudWatch Logs data exported as Apache Iceberg tables in S3 Tables.
-  Covers VPC Flow Logs, WAF logs, CloudFront access logs, Route 53 resolver logs, Network
-  Firewall logs, EKS audit logs, Verified Access logs, SES logs, VPC Lattice logs, Step
-  Functions logs, NLB access logs, and 20+ other AWS vended data sources. Applies when
-  analyzing network traffic, investigating security incidents, querying exported logs with
-  SQL, enabling S3 Tables integration, configuring log export, correlating logs with other
-  data, or running Athena queries on the aws-cloudwatch table bucket. Trigger phrases: query
-  logs with SQL, analyze logs in Athena, SQL on VPC flow logs, investigate network traffic,
-  run SQL on exported logs, enable S3 Tables for CloudWatch, correlate logs, historical log
-  analysis, set up log querying.
+description: "Runs SQL queries on CloudWatch Logs data exported as Apache Iceberg tables in S3 Tables. Covers VPC Flow Logs, WAF logs, CloudFront access logs, Route 53 resolver logs, Network Firewall logs, EKS audit logs, Verified Access logs, SES logs, VPC Lattice logs, Step Functions logs, NLB access logs, and 20+ other AWS vended data sources. Applies when analyzing network traffic, investigating security incidents, querying exported logs with SQL, enabling S3 Tables integration, configuring log export, correlating logs with other data, or running Athena queries on the aws-cloudwatch table bucket. Trigger phrases: query logs with SQL, analyze logs in Athena, SQL on VPC flow logs, investigate network traffic, run SQL on exported logs, enable S3 Tables for CloudWatch, correlate logs, historical log analysis, set up log querying. Query live AWS state via MCP tools only (never raw aws CLI)."
 version: 1
 argument-hint: "[query|data-source-name|'configure'|'status']"
 ---
 
 # Query AWS CloudWatch System Tables
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, caller/account verification (`sts:GetCallerIdentity`), resource inspection, logs/metrics queries, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___call_aws` / `aws___run_script`, `cloudwatch`, `cloudtrail`, `prometheus`, `dynamodb`, `serverless`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**.
 
 ## Overview
 

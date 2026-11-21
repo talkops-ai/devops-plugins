@@ -17,7 +17,15 @@ Amazon Bedrock supports two distinct target paths for migrating OpenAI workloads
 
 - **Global CRIS (`global.openai.gpt-5.6-sol`, `-terra`, `-luna`)**: 1.0x OpenAI standard list price (exact cost parity, plus eligible for AWS Activate credits). Recommend for startups without strict single-geography residency requirements.
 - **Geo CRIS (`us.openai.gpt-5.6-*`, `in.openai.gpt-5.6-*`) and bare mantle IDs**: 1.10x OpenAI standard list price (parity with OpenAI's Data Residency tier).
-- **PriceList API Caveat**: The live AWS PriceList API (`pricing:GetProducts`) does **not** return rows for `openai.gpt-5*` models. Never report them as "unavailable" when `GetProducts` returns empty — always read their rates from [`../../shared/pricing/bedrock-pricing.json`](../../shared/pricing/bedrock-pricing.json) or `skills/llm-to-bedrock/scripts/bedrock_pricing.py`.
+- **PriceList API Caveat**: The live AWS PriceList API (`pricing:GetProducts`) does **not** return rows for `openai.gpt-5*` models. Never report them as "unavailable" when `GetProducts` returns empty — always read their rates from [`./shared/pricing/bedrock-pricing.json`](./shared/pricing/bedrock-pricing.json) or `skills/llm-to-bedrock/scripts/bedrock_pricing.py`.
+
+### Responses API Statefulness & Reasoning-Item Round-Trip (`gpt-5*`)
+
+- **On Bedrock Responses API (`https://bedrock-mantle.{region}.api.aws/openai/v1` — never bare `/v1` — via `BedrockOpenAI` + `aws_bedrock_token_generator` / `aws-bedrock-token-generator`, or `bedrock-runtime` `/openai/v1`)**:
+  - `store: true` and `previous_response_id` chaining are supported on the Responses surface (verify data-retention / ZDR compliance before leaving `store: true` enabled).
+  - **`reasoning-items-must-round-trip`**: Whenever `store: false` is set or multi-turn / tool-call `input` lists are constructed manually, callers **must append full `response.output` items (including encrypted/reasoning items) into the next turn's `input`** rather than extracting assistant text strings alone — dropping reasoning items silently degrades multi-step reasoning and tool-calling quality.
+- **When Migrating Off Responses to Stateless `bedrock-runtime` `Converse` / `ConverseStream` (`in.*` / `us.*` / `global.*` CRIS)**:
+  - Server-side `previous_response_id` and `store: true` are not available on `Converse`; persist and replay multi-turn message history explicitly in application state or **Amazon Bedrock AgentCore Memory**.
 
 ---
 

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "launchdarkly",
+  "version": "0.2.0",
+  "description": "Official LaunchDarkly feature flag management, progressive guarded rollouts, experimentation, observability (logs, traces, errors, sessions), and AI Config / Agent Control graph skills with bundled remote MCP configuration (`LAUNCHDARKLY_ACCESS_TOKEN`).",
+  "author": {
+    "name": "LaunchDarkly",
+    "url": "https://launchdarkly.com"
+  },
+  "license": "Apache-2.0",
+  "keywords": [
+    "launchdarkly",
+    "mcp",
+    "devops",
+    "observability"
+  ]
+}

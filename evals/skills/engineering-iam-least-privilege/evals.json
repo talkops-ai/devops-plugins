@@ -1,0 +1,39 @@
+{
+  "skill_name": "engineering-iam-least-privilege",
+  "evals": [
+    {
+      "id": "eval-01-our-engineers-use-ai-coding-assistants-connected",
+      "prompt": "Our engineers use AI coding assistants connected to AWS via `aws-mcp`. Write an IAM policy (`DenyDestructiveActionsViaMCP`) that allows the engineer's IAM principal to perform normal operations directly from their terminal, but strictly blocks destructive IAM, S3, RDS, DynamoDB, KMS, and CloudTrail deletions whenever a request is initiated through the AWS MCP Server.",
+      "expected_output": "Provides a complete IAM policy document using `\"Effect\": \"Deny\"` and `\"Condition\": {\"Bool\": {\"aws:CalledViaAWSMCP\": \"true\"}}` blocking destructive operations (`iam:Delete*`, `iam:CreateAccessKey`, `s3:DeleteBucket`, `rds:DeleteDBInstance`, `rds:DeleteDBCluster`, `dynamodb:DeleteTable`, `kms:ScheduleKeyDeletion`, `cloudtrail:StopLogging`, `cloudtrail:DeleteTrail`).",
+      "files": [],
+      "expectations": [
+        "Uses `\"Effect\": \"Deny\"` with the `\"Condition\": {\"Bool\": {\"aws:CalledViaAWSMCP\": \"true\"}}` condition key",
+        "Blocks high-blast-radius destructive actions across IAM (`iam:Delete*`, `iam:CreateAccessKey`), S3 (`s3:DeleteBucket`), RDS (`rds:DeleteDBInstance`, `rds:DeleteDBCluster`), DynamoDB (`dynamodb:DeleteTable`), KMS (`kms:ScheduleKeyDeletion`), and CloudTrail (`cloudtrail:StopLogging`, `cloudtrail:DeleteTrail`)",
+        "Explains that because `aws:CalledViaAWSMCP` is `true` only when requests traverse the AWS MCP Server, human engineers retain their direct CLI/IaC permissions when not routing through MCP"
+      ]
+    },
+    {
+      "id": "eval-02-our-ci-cd-pipeline-in-github-repository-talkops",
+      "prompt": "Our CI/CD pipeline in GitHub repository `talkops-ai/payments-service` currently uses long-lived `AKIA*` IAM user access keys stored in GitHub Secrets to deploy to AWS account `123456789012`. Design a keyless GitHub Actions OIDC (`sts:AssumeRoleWithWebIdentity`) IAM role trust policy pinned strictly to the `main` branch and `production` GitHub Environment, and explain why omitting the `sub` condition is a critical vulnerability.",
+      "expected_output": "Provides the `aws_iam_openid_connect_provider` for `https://token.actions.githubusercontent.com` and an IAM role trust policy for `sts:AssumeRoleWithWebIdentity` with `StringEquals`/`StringLike` conditions on both `token.actions.githubusercontent.com:aud` (`sts.amazonaws.com`) and `token.actions.githubusercontent.com:sub`, explaining cross-repo takeover if `sub` is omitted.",
+      "files": [],
+      "expectations": [
+        "Configures the IAM OIDC provider ARN `arn:aws:iam::123456789012:oidc-provider/token.actions.githubusercontent.com` with `Action: \"sts:AssumeRoleWithWebIdentity\"`",
+        "Pins `token.actions.githubusercontent.com:aud` to `\"sts.amazonaws.com\"`",
+        "Pins `token.actions.githubusercontent.com:sub` to `\"repo:talkops-ai/payments-service:ref:refs/heads/main\"` and/or `\"repo:talkops-ai/payments-service:environment:production\"`",
+        "Explains that omitting the `sub` claim condition allows ANY GitHub repository in the world to assume the IAM role via `token.actions.githubusercontent.com`"
+      ]
+    },
+    {
+      "id": "eval-03-we-want-to-allow-a-developer-ci-cd-role-appdeplo",
+      "prompt": "We want to allow a developer CI/CD role (`AppDeployerRole`) in account `123456789012` to create new IAM roles (`iam:CreateRole`, `iam:AttachRolePolicy`, `iam:PutRolePolicy`) for microservices without allowing privilege escalation to `AdministratorAccess`. Design the IAM Permission Boundary policy (`WorkloadPermissionsBoundary`) and the `AppDeployerRole` policy that forces every created role to attach that boundary.",
+      "expected_output": "Provides both the `WorkloadPermissionsBoundary` policy (capping maximum permissions and denying IAM/Organizations/CloudTrail escalation) and the `AppDeployerRole` policy requiring `\"StringEquals\": {\"iam:PermissionsBoundary\": \"arn:aws:iam::123456789012:policy/WorkloadPermissionsBoundary\"}` on `iam:CreateRole`, `iam:AttachRolePolicy`, and `iam:PutRolePolicy`, plus an explicit `Deny` on deleting or detaching the boundary.",
+      "files": [],
+      "expectations": [
+        "Enforces `\"StringEquals\": {\"iam:PermissionsBoundary\": \"arn:aws:iam::123456789012:policy/WorkloadPermissionsBoundary\"}` as a mandatory condition on `iam:CreateRole`, `iam:AttachRolePolicy`, `iam:DetachRolePolicy`, `iam:PutRolePolicy`, and `iam:DeleteRolePolicy`",
+        "Includes an explicit `Deny` preventing `AppDeployerRole` from calling `iam:DeleteRolePermissionsBoundary` or modifying/deleting the `WorkloadPermissionsBoundary` policy itself (`iam:CreatePolicyVersion`, `iam:DeletePolicy`)",
+        "Scopes `iam:CreateRole` and `iam:PassRole` to a dedicated path or naming prefix (e.g., `arn:aws:iam::123456789012:role/app-*`) so the deployer cannot modify administrative roles"
+      ]
+    }
+  ]
+}

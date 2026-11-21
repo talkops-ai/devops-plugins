@@ -11,6 +11,11 @@ metadata:
 
 Ensure all platform infrastructure changes are declarative, version-controlled, syntactically valid, security-compliant, drift-free, and reproducible. This skill supersedes direct imperative resource creation via raw AWS CLI calls or Cloud Control API mutations.
 
+## MCP-Only Execution & Edge-Case Fallback Rules (Mandatory)
+
+1. **MCP-Only Execution (Zero Raw Shell CLI):** Execute **all** schema/construct lookups, template validations, compliance checks, stack failure diagnostics, CloudTrail lookups, and brownfield/drift inspections **exclusively via connected MCP servers**: `aws-iac` (`validate_cloudformation_template`, `check_cloudformation_template_compliance`, `troubleshoot_cloudformation_deployment`, `get_cloudformation_pre_deploy_validation_instructions`, `search_cloudformation_documentation`, `search_cdk_documentation`, `search_cdk_samples_and_constructs`, `cdk_best_practices`, `read_iac_documentation_page`), `cloudtrail` (`lookup_events`), `aws-mcp` (`aws___run_script` using read-only `call_boto3` for `cloudformation` `ListStacks`, `DescribeStacks`, `DescribeStackEvents`, `DescribeStackResourceDrifts`, `ListResourceScans`), and `pricing` (`get_pricing` / `analyze_cdk_project` / `analyze_terraform_project`). **Never** shell out to raw `aws ...`, `cdk deploy`, `sam deploy`, `terraform apply`, or `python3 -c` commands in Bash/`run_command`.
+2. **`awsknowledge` Fallback:** When a question covers an IaC feature not covered by `aws-iac` documentation tools (e.g., CloudFormation Hooks Lambda/Guard invocation specifics, StackSets Organizations delegated admin, CDK Aspects internals), query `awsknowledge` / `aws-mcp` (`aws___search_documentation` / `aws___read_documentation` — 1–2 focused searches) and answer directly.
+
 ---
 
 ## Operational Directives
@@ -20,7 +25,7 @@ Ensure all platform infrastructure changes are declarative, version-controlled, 
 Never guess CloudFormation resource property names or CDK construct props from memory:
 1. **Documentation & Construct Lookup**: Before authoring CloudFormation resources or CDK constructs, invoke:
    - `search_cloudformation_documentation` and `read_iac_documentation_page` (`aws-iac` MCP) to verify exact CloudFormation resource types, required properties, return values (`Fn::GetAtt`, `Ref`), and update behaviors (*Replacement* vs *No interruption*).
-   - `search_cdk_documentation`, `search_cdk_samples_and_constructs`, and `cdk_best_practices` (`aws-iac` MCP) to select hardened **AWS CDK L2/L3 constructs** and **AWS Solutions Constructs** over raw L1 `Cfn*` resources.
+   - `search_cdk_documentation`, `search_cdk_samples_and_constructs`, and `cdk_best_practices` (`aws-iac` MCP) to select hardened **AWS CDK L2/L3 constructs** and **AWS Solutions Constructs** over raw L1 `Cfn*` resources (always explaining all three advantages over 1:1 L1 `Cfn*` classes: built-in encryption & S3 Block Public Access defaults, least-privilege `grant*()` IAM helpers, and construct-level **`cdk-nag` (`AwsSolutionsChecks`)** compliance verification).
 2. **Stateful vs. Stateless Stack Separation**:
    - Decouple stateful foundation resources (VPCs, KMS keys, RDS/Aurora clusters, DynamoDB tables, S3 buckets, ECR repositories) from stateless application compute (ECS services, EKS deployments, Lambda functions, API Gateway stages).
    - Always attach explicit retention and backup policies to stateful resources:

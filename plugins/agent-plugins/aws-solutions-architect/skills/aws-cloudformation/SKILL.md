@@ -38,9 +38,10 @@ fetch or write customer data through `retrieve_skill`.
 
 ## Common Tasks
 
-**AWS MCP server:** For steps that call AWS APIs, the AWS MCP server (`call_aws`
-tool) is recommended for sandboxed execution and audit logging, but not required
-— every step also works with the AWS CLI.
+**MCP Tooling (`awsiac` + `aws-mcp`):**
+- **Research**: Query `search_cloudformation_documentation` (`awsiac`) and `aws___search_documentation` / `aws___get_regional_availability` (`aws-mcp`) for exact resource types and properties.
+- **Two-Stage Validation**: Always run `validate_cloudformation_template` (`cfn-lint` syntax/schema check) followed by `check_cloudformation_template_compliance` (`cfn-guard` CIS/Well-Architected security rules) via `awsiac`, and follow `get_cloudformation_pre_deploy_validation_instructions` before creating/executing Change Sets.
+- **Failure Diagnosis**: On stack failure or rollback, call `troubleshoot_cloudformation_deployment` (`awsiac`) and `aws___call_aws` (`cloudformation describe-events` / `describe-stack-events`) to identify the first root-cause `_FAILED` resource event.
 
 ### Configure author-time template intelligence
 

@@ -1,13 +1,11 @@
 ---
 name: deploy
-description: >
-  Orchestrate full-stack AWS application deployments, architecture recommendations, real-time FinOps
-  cost estimation, and multi-IaC synthesis (AWS CDK TypeScript/Python, CloudFormation, and Terraform).
-  Triggers on requests to "deploy to AWS", "host on AWS", "recommend AWS architecture", "estimate AWS
-  cost", or "generate AWS infrastructure".
+description: "Orchestrate full-stack AWS application deployments, architecture recommendations, real-time FinOps cost estimation, and multi-IaC synthesis (AWS CDK TypeScript/Python, CloudFormation, and Terraform). Triggers on requests to \"deploy to AWS\", \"host on AWS\", \"recommend AWS architecture\", \"estimate AWS cost\", or \"generate AWS infrastructure\". Do NOT use for launch_with_aws.py OAuth migration jobs (use launch-with-aws), brownfield state imports, Crossplane XRDs, SDK code refactors, or standalone Direct Connect/Route 53/CloudTrail tasks. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # AWS Full-Stack Deployment Orchestrator Skill
+
+> **MCP-Only Live AWS Execution:** Execute ALL live AWS API discovery, account/region preflight checks (`sts:GetCallerIdentity`), stack/cluster/resource inspection, pricing (`awspricing`/`billing`), IaC validation (`awsiac`), and documentation lookups (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___run_script` `call_boto3`, `awsknowledge`, `awsiac`, `awspricing`, `eks`, `ecs`, `cloudwatch`) — **never invoke raw `aws ...` CLI commands in shell (`run_command`)**. Offline local linters/synthesizers (`cdk synth`, `terraform validate`, `python3`) may run locally without mutating live AWS.
 
 ## Security and Scope Constraints (MANDATORY)
 

@@ -1,0 +1,95 @@
+{
+  "skill_name": "eks-post-upgrade-validation-and-rollback",
+  "companion_skills": [
+    "eks-al2-to-al2023-migration",
+    "eks-eos-and-extended-support-cost",
+    "eks-karpenter-and-addon-upgrades",
+    "verify-and-rollback"
+  ],
+  "queries": [
+    {
+      "id": "trig-pos-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Triage our stalled EKS Managed Node Group upgrade failing with `PodEvictionFailure` and `InsufficientInstanceCapacity`."
+    },
+    {
+      "id": "trig-pos-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Run a read-only post-upgrade smoke validation checklist on our upgraded EKS 1.32 cluster and check 7-day rollback readiness."
+    },
+    {
+      "id": "trig-pos-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why did new EKS worker nodes fail with `NodeCreationFailure` after updating our Launch Template AMI, and how do we diagnose it read-only?"
+    },
+    {
+      "id": "trig-pos-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "We upgraded EKS from 1.31 to 1.32 two days ago and hit a critical admission webhook regression \u2014 what is the reverse-order rollback sequence?"
+    },
+    {
+      "id": "trig-pos-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Our post-upgrade `aws-ebs-csi-driver` update threw `ConfigurationConflict` and checkout latency spiked \u2014 triage both issues."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Translate our legacy AL2 `/etc/eks/bootstrap.sh` script into AL2023 `nodeadm` `NodeConfig` YAML."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Compute our annual EKS Extended Support `$0.50/hr` surcharge across 20 clusters and build a wave roadmap."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Migrate Karpenter `v1beta1` `NodePool` manifests to `v1` (`WhenEmptyOrUnderutilized`) using the two-step `karpenter-crd` Helm flow."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Diagnose a CloudFormation stack stuck in `UPDATE_ROLLBACK_FAILED` after an IAM role was deleted out-of-band."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Triage GuardDuty, Security Hub, and Inspector CVE findings in `ap-south-1` and map ARNs to Terraform."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Design a single-table DynamoDB schema with composite sort keys and a Sparse GSI."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure AWS Transit Gateway inter-region peering static routes."
+    }
+  ]
+}

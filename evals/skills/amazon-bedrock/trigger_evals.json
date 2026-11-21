@@ -1,0 +1,99 @@
+{
+  "skill_name": "amazon-bedrock",
+  "companion_skills": [
+    "aws-ai-ml",
+    "agent-advisor",
+    "llm-to-bedrock",
+    "bedrock-adoption-readiness",
+    "bedrock-operation-review"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Build a Python RAG application on Amazon Bedrock using the `Converse` API, Managed Knowledge Bases (`AgenticRetrieveStream`), and a version-pinned Guardrail."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Migrate our application from Claude Sonnet 4.5 to Claude Sonnet 4.6 on Amazon Bedrock — handle assistant prefill removal, `adaptive` thinking, `effort` failover, and `2,048` cache token floors."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Convert our Classic Amazon Bedrock Agent (and `InvokeInlineAgent` calls) into an AgentCore Harness checking for the 4 hard-stops and generating Lambda/KB shims."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why did leaving `maxTokens` unset on `bedrock-runtime.converse()` cause immediate `ThrottlingException` at only 35 requests/minute against a 2M TPM quota?"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Our Bedrock prompt caching shows `cacheWriteInputTokens > 0` and `cacheReadInputTokens == 0` on a 1,500-token prompt with Claude Haiku 4.5 — calculate break-even and fix it."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Why is unmasked PII still appearing in our CloudWatch Model Invocation Logs and `ConverseStream` `async` responses even though our Bedrock Guardrail PII filter is enabled?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Our SharePoint Online Bedrock Knowledge Base sync broke after April 2, 2026 because it used Azure ACS App-Only auth — switch it to Entra ID `OAUTH2_CLIENT_CREDENTIALS`."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Compare `Converse` vs `InvokeModel` across Bedrock's 8 boto3 client endpoints and configure adaptive retries that never retry `ValidationException`."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Wire Stripe Privy (`wallet-auth:` key stripping) and x402 v1 vs v2 headers for AgentCore Payments in `us-east-1`."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Fine-tune Qwen-2.5-7B on SageMaker Serverless Model Customization using `RLVRTrainer`, dataset format validation, and Hub recipe selection.",
+      "expected_alternative_skill": "aws-ai-ml"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Score AgentCore vs ECS vs EKS vs Lambda vs Lambda MicroVMs for migrating our Temporal-orchestrated Python agents to AWS.",
+      "expected_alternative_skill": "agent-advisor"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Rewrite our Python repository's direct OpenAI and Google Gemini SDK calls onto Amazon Bedrock on a clean git branch with golden-dataset prompt evaluation.",
+      "expected_alternative_skill": "llm-to-bedrock"
+    }
+  ]
+}

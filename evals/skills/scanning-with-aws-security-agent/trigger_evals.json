@@ -1,0 +1,61 @@
+{
+  "skill_name": "scanning-with-aws-security-agent",
+  "companion_skills": [
+    "auditing-cloudtrail-forensics",
+    "diff-scanning-with-aws-security-agent",
+    "engineering-iam-least-privilege",
+    "enrich-with-aws-security-agent",
+    "executing-synthetic-release-tests"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use `scanning-with-aws-security-agent` to help me design, validate, and troubleshoot scanning with aws security agent."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Walk me through best practices and production guardrails for scanning with aws security agent (`scanning-with-aws-security-agent`)."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Run an AWS Security Agent scan on the workspace — uploads the source to AWS, scans it with the managed Security Agent service, and returns ranked, verified findings with code locat"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating scanning with aws security agent?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "During our `ap-south-1` sprint readiness review, audit our scanning with aws security agent setup in read-only mode and highlight top risks."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Help me configure and troubleshoot auditing cloudtrail forensics exclusively without touching scanning with aws security agent."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+    }
+  ]
+}

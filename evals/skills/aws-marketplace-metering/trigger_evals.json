@@ -1,0 +1,97 @@
+{
+  "skill_name": "aws-marketplace-metering",
+  "companion_skills": [
+    "aws-marketplace-catalog-and-listings",
+    "aws-marketplace-private-offers-and-agreements",
+    "aws-marketplace-saas-architecture"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Debug why our AWS Marketplace SaaS PAYG `BatchMeterUsage` pipeline hit `InvalidLicenseException`, `DuplicateRecord`, and `UnprocessedRecords` under Concurrent Agreements."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Query `metering-marketplace.amazonaws.com` in regional CloudTrail Event History for the last 14 days and reconcile `Success` submissions against Seller Reports."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Set up a serverless AWS Marketplace usage-based metering pipeline (`awsmp-events-stack` and `awsmp-<productCode>-metering`) with `MeteringLockHours` and VMT `usageAllocations`."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why were our usage rows marked `TooManyTags` and `MixedAllocatedAndUnallocated` before reaching `BatchMeterUsage`, and what is the VMT tag limit?"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Does `License Deprovisioned` or `Purchase Agreement Ended` open the 1-hour final-usage flush window that meters the in-progress current hour?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Why did a 30-hour-old SaaS usage record age out to `SubmissionExpired` (`TimestampOutOfBoundsException`), and why is our submitter pinned to `ReservedConcurrentExecutions=1`?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Explain why `licenseArn` is the partition key in our Concurrent Agreements `subscribers` and `usage` tables and why buyer KYB PII goes in `customer-profile`."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Can we combine `LicenseArn`s from two SaaS products in a single `BatchMeterUsage` call, or call `BatchMeterUsage` in a region that returns `DisabledApiException`?"
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why shouldn't we create a CloudTrail Lake event data store to calculate billed AWS Marketplace SaaS revenue over the past year?"
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Create a 3-year AWS Marketplace Private Offer (`CreateOffer` + `PaymentScheduleTerm` Flexible Payment Scheduler + SCMP legal terms) and query `marketplace-agreement`.",
+      "expected_alternative_skill": "aws-marketplace-private-offers-and-agreements"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Publish a new ContainerProduct version with an ECR Helm delivery option via `marketplace-catalog` `StartChangeSet` and check buyer seats with `GetEntitlements`.",
+      "expected_alternative_skill": "aws-marketplace-catalog-and-listings"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Architect a multi-tenant SaaS onboarding state machine with AWS Step Functions, DynamoDB `TenantId` GSI, and EKS Pod Identity IAM roles for AWS Marketplace.",
+      "expected_alternative_skill": "aws-marketplace-saas-architecture"
+    }
+  ]
+}

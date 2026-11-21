@@ -1,16 +1,12 @@
 ---
 name: amazon-aurora-postgresql
-description: >-
-  Amazon Aurora PostgreSQL — creates, modifies, and advises on Aurora PostgreSQL clusters
-  specifically (PostgreSQL-compatible engine, Aurora serverless, express configuration,
-  pgvector, Babelfish). Trigger for Aurora PostgreSQL cluster operations, express-configuration
-  quick-start, ACU sizing, I/O-Optimized storage, commitment pricing, or PostgreSQL
-  upgrade planning. For Aurora MySQL, use amazon-aurora-mysql instead. Contains safety
-  guardrails, express-first routing, and response templates that override defaults.
+description: "Amazon Aurora PostgreSQL — creates, modifies, and advises on Aurora PostgreSQL clusters specifically (PostgreSQL-compatible engine, Aurora serverless, express configuration, pgvector, Babelfish). Trigger for Aurora PostgreSQL cluster operations, express-configuration quick-start, ACU sizing, I/O-Optimized storage, commitment pricing, or PostgreSQL upgrade planning. For Aurora MySQL, use amazon-aurora-mysql instead. Contains safety guardrails, express-first routing, and response templates that override defaults. Query live AWS state via MCP tools only (never raw aws CLI)."
 version: 1
 ---
 
 # Amazon Aurora PostgreSQL
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, account/region checks (`sts:GetCallerIdentity`), cluster/instance/table inspection, CloudWatch telemetry, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___run_script` `call_boto3`, `dynamodb`, `elasticache`, `postgres`, `mysql`, `cloudwatch`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**. Local offline helper scripts under `scripts/` may be run via `python3` or `node`.
 
 A modular toolkit for **Aurora PostgreSQL** organized as a registry of sub-skills. Each sub-skill handles one domain of Aurora PostgreSQL work. The router matches user intent to the right sub-skill, then loads only the references needed. (For Aurora MySQL, use the `amazon-aurora-mysql` skill.)
 
@@ -140,25 +136,6 @@ Bundled scripts in `scripts/` for offline analysis. MUST use these when the user
 | `io_optimized_analyzer.py` | I/O-Optimized breakeven | `python3 scripts/io_optimized_analyzer.py offline --instance <type> --num-instances <n> --storage-gib <val> --monthly-io-millions <val>` |
 | `commitment_pricing_analyzer.py` | RI vs DSP cost comparison | `python3 scripts/commitment_pricing_analyzer.py offline --instance <type> --num-instances <n> --region <region>` (provisioned) or `--serverless --avg-acu <val>` (Aurora serverless) |
 
-## Troubleshooting
+## Extended Reference, Critical Facts & Troubleshooting
 
-- **AccessDenied**: Attach `AmazonRDSReadOnlyAccess` + `CloudWatchReadOnlyAccess` for reads. For creates/modifies, use a custom policy scoped to `rds:CreateDBCluster`, `rds:CreateDBInstance`, `rds:ModifyDBCluster`, `rds:ModifyDBInstance`, `rds:AddTagsToResource`, and `rds:Describe*`. See [Identity and access management for Amazon Aurora](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/UsingWithRDS.IAM.html).
-- **ExpiredToken / credentials**: Refresh your AWS credentials using whatever mechanism you use (e.g. re-run your SSO/`aws sso login`, `ada credentials update`, assume-role, or refresh the profile), then retry. Do not assume a specific credential tool.
-- **DBClusterNotFoundFault**: Verify region and cluster ID.
-- **Throttling**: Retry once, then narrow scope.
-
-## Additional Resources
-
-- [Aurora User Guide](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/)
-- [Aurora pricing](https://aws.amazon.com/rds/aurora/pricing/)
-- [Aurora serverless](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless-v2.html)
-- [Aurora PostgreSQL upgrades](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_UpgradeDBInstance.PostgreSQL.html)
-
-## Handoff from aws-database-selection
-
-This skill can be entered from `aws-database-selection` after it produces a `requirements.json`. When you see a path matching `aws_dbs_requirements/*/requirements.json` in conversation:
-
-1. Read the artifact. Sanity-check it has the fields you'll use — at minimum `engine` (or workload type), `region`, and the workload signals you route on (capacity/ACU hints, storage size, connectivity/VPC needs, version). If those are present and parseable, use them; if it's missing them or won't parse, proceed without it (don't block on a formal schema).
-2. Acknowledge relevant facts in 1-2 bold sentences.
-3. Scope-check: if the artifact doesn't match Aurora (e.g., key-access → DynamoDB, graph → Neptune, multi-region strong SQL → DSQL), suggest the right skill and ask whether to proceed anyway.
-4. Continue with this skill's sub-skill routing.
+**IMPORTANT:** Before answering domain-specific questions, troubleshooting errors, or applying rubric checklists, read [`references/aurora-pg-troubleshooting-and-resources.md`](references/aurora-pg-troubleshooting-and-resources.md) for the complete verbatim critical facts, workflows, security controls, and troubleshooting playbooks.

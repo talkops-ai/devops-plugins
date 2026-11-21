@@ -1,0 +1,110 @@
+{
+  "skill_name": "migrate-to-msk",
+  "companion_skills": [
+    "amazon-opensearch-service",
+    "analytics-opensearch-expertise",
+    "auditing-aws-system-tables",
+    "authoring-glue-and-emr-spark-jobs",
+    "authoring-mwaa-workflow"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Migrate our self-managed 9-broker Apache Kafka 3.5 cluster on EC2 to Amazon MSK Express (Kafka 3.9 KRaft) using MirrorMaker 2."
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Run compatibility.py and sizing.py against our source Kafka cluster-config.json to assess migrating from on-premises ZooKeeper Kafka to Amazon MSK."
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Generate an MSK migration simulation and load-test CloudFormation template using simulation_load_test_config.py to rehearse MirrorMaker 2 cutover."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Plan a zero-downtime consumer and producer cutover from Confluent Server / self-hosted Kafka to Amazon MSK using MSK Connect MirrorSourceConnector and MirrorCheckpointConnector."
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Migrate our legacy Amazon MSK Provisioned Standard ZooKeeper cluster to a new Amazon MSK Express KRaft cluster."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Verify topic parity, ACL migration, and consumer group offset translation (`sync.group.offsets.enabled=true`) before cutting over from EC2 Kafka to MSK."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Assess schema registry, Kafka Connect connector, and SASL/SCRAM to MSK IAM authentication changes for our Kafka-to-MSK migration."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Set up a parallel-run Kafka migration rehearsal in AWS with producer/consumer EC2 load generators and CloudWatch lag monitoring."
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Migrate our on-premises Teradata 17 data warehouse tables and BTEQ scripts to Amazon Redshift Serverless."
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Import a 500 GB PostgreSQL database table into an Apache Iceberg table in Amazon S3 Tables using AWS Glue."
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Upgrade an Amazon MWAA Apache Airflow 2.8 environment to Airflow 3.0 using a rehearsed in-place upgrade."
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Build a stateful Java streaming application on Amazon Managed Service for Apache Flink with RocksDB checkpointing."
+    },
+    {
+      "id": "trig-13",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure an Amazon OpenSearch Service domain with k-NN vector search and Bedrock Titan embeddings."
+    },
+    {
+      "id": "trig-14",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Write a Glue Data Quality DQDL ruleset to validate column completeness and uniqueness on an S3 lakehouse table."
+    }
+  ]
+}

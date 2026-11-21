@@ -1,15 +1,29 @@
 ---
 name: aws-serverless
-description: Builds, deploys, manages, debugs, configures, and optimizes serverless applications on AWS using Lambda, API Gateway, Step Functions, EventBridge, and SAM/CDK. Covers cold starts, CORS debugging, event source mappings, troubleshooting, concurrency, SnapStart, Powertools, function URLs, EventBridge Scheduler, Lambda layers, and production readiness. Triggers on mentions of Lambda, API Gateway, Step Functions, SAM templates, CDK serverless stacks, DynamoDB stream triggers, SQS event sources, cold starts, timeouts, 502/504 errors, throttling, concurrency, CORS, Powertools, or any event-driven architecture on AWS, even without the word "serverless." Does not apply to EC2, ECS/Fargate containers, or Amplify hosting.
+description: "Builds, deploys, manages, debugs, configures, and optimizes serverless applications on AWS using Lambda, API Gateway, Step Functions, EventBridge, and SAM/CDK. Covers cold starts, CORS debugging, event source mappings, troubleshooting, concurrency, SnapStart, Powertools, function URLs, EventBridge Scheduler, Lambda layers, and production readiness. Triggers on mentions of Lambda, API Gateway, Step Functions, SAM templates, CDK serverless stacks, DynamoDB stream triggers, SQS event sources, cold starts, timeouts, 502/504 errors, throttling, concurrency, CORS, Powertools, or any event-driven architecture on AWS, even without the word \"serverless.\" Does not apply to EC2, ECS/Fargate containers, or Amplify hosting. Query live AWS state via MCP tools only (never raw aws CLI)."
 metadata:
   version: "4"
 ---
 
 # AWS Serverless
 
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, caller/account verification (`sts:GetCallerIdentity`), resource inspection, logs/metrics queries, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___call_aws` / `aws___run_script`, `cloudwatch`, `cloudtrail`, `prometheus`, `dynamodb`, `serverless`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**.
+
 Domain expertise for building serverless applications on AWS: Lambda, API Gateway, Step Functions, EventBridge, event source mappings, concurrency, cold starts, deployment, and troubleshooting.
 
-**Works best with** the [AWS MCP server](https://docs.aws.amazon.com/aws-mcp/) — run CLI commands, query CloudWatch, validate configs directly. All guidance also works with standard AWS CLI access.
+**Works best with** the [`serverless` MCP server (`awslabs.aws-serverless-mcp-server`)](https://github.com/awslabs/mcp/tree/main/src/aws-serverless-mcp-server) and the [AWS MCP server](https://docs.aws.amazon.com/aws-mcp/) — enabling native AWS SAM CLI lifecycle automation, Event Source Mapping (ESM) optimization, EventBridge Schema Registry lookups, CloudWatch telemetry, and configuration validation directly. All guidance also works with standard AWS CLI access.
+
+## Serverless MCP Server Orchestration (`serverless` MCP)
+
+When operating with bound serverless MCP servers (`aws-serverless-mcp` / `serverless`, `aws-mcp`, `sns-sqs`, `dynamodb`, `cloudwatch`, `awspricing`, `awsknowledge`), prefer connected MCP tools over raw `aws` CLI shell commands:
+
+| Capability | `serverless` MCP Tools to Invoke | Platform Engineering Rule |
+|---|---|---|
+| **Architecture & IaC Guidance** | `get_lambda_guidance`, `get_iac_guidance`, `get_serverless_templates`, `get_lambda_event_schemas`, `deploy_serverless_app_help` | Call before authoring new SAM/CDK serverless stacks; default Lambda architecture to **`arm64` (Graviton)** for 20% lower cost and up to 34% better price-performance. |
+| **SAM Build, Local Testing & Deploy** | `sam_init`, `sam_build`, `sam_local_invoke`, `sam_deploy`, `sam_logs` | Validate templates with `aws-iac` (`validate_cloudformation_template` + `check_cloudformation_template_compliance`) and test handlers locally via `sam_local_invoke` before proposing `sam_deploy`. |
+| **Full-Stack Web Apps (Lambda Web Adapter)** | `deploy_webapp`, `update_webapp_frontend`, `configure_domain`, `webapp_deployment_help` | Use for FastAPI, Express, Next.js, or Flask HTTP services running on Lambda with zero-code-change HTTP adapters. |
+| **Event Source Mapping (ESM) & Kafka Tuning** | `esm_guidance`, `esm_optimize` (`analyze`, `validate`, `generate_template`), `esm_kafka_troubleshoot` | Always set `FunctionResponseTypes: [ReportBatchItemFailures]`, configure a DLQ / `OnFailure` destination, and enforce SQS `VisibilityTimeout >= 6 * Lambda Timeout + MaximumBatchingWindowInSeconds`. Never leave Kinesis/DynamoDB Stream `MaximumRetryAttempts` at `-1` (infinite); enable `BisectBatchOnFunctionError: true`. |
+| **EventBridge Schema Registry & Metrics** | `list_registries`, `search_schema`, `describe_schema`, `get_metrics` | Validate event producer/consumer schemas against Schema Registry and correlate `get_metrics` with `cloudwatch` Logs Insights before right-sizing memory (remember `1,769 MB = 1 vCPU`; check whether a function is CPU-bound or I/O-bound before lowering memory). |
 
 ## Specialized skills — check these first
 

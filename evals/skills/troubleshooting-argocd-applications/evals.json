@@ -1,0 +1,104 @@
+{
+  "skill_name": "troubleshooting-argocd-applications",
+  "evals": [
+    {
+      "id": "eval-01-opentelemetry-collector-is-failing-spec-checks-i",
+      "prompt": "`opentelemetry-collector` is failing spec checks in ArgoCD and refusing to deploy. Take a read-only look and tell me why ArgoCD is blocking it.",
+      "expected_output": "Calls `get_application_details(app_name=\"opentelemetry-collector\", detail_level=\"full\")` and `get_project(project_name=\"otel-demo-prod\")`, discovers that target namespace `observability` is not permitted in `otel-demo-prod`'s `destinations`, and recommends moving it to an `observability` project or updating project permissions.",
+      "files": [],
+      "expectations": [
+        "Calls `get_application_details` on `opentelemetry-collector` and `get_project` on its assigned AppProject (`otel-demo-prod`)",
+        "Pinpoints the AppProject RBAC mismatch (`observability` namespace / source or resource restrictions not allowed in `otel-demo-prod`)",
+        "Outputs a clear Root-Cause Report recommending project RBAC remediation without making unapproved changes"
+      ]
+    },
+    {
+      "id": "eval-02-frontend-proxy-in-argocd-is-stuck-with-an-unknow",
+      "prompt": "`frontend-proxy` in ArgoCD is stuck with an Unknown sync status and won't generate manifests. Can you investigate what's wrong and give me a root-cause summary without changing anything?",
+      "expected_output": "Calls `get_application_details(app_name=\"frontend-proxy\", detail_level=\"full\")`, classifies the `ComparisonError` condition, checks `get_repository` and `refresh_application(..., mode=\"hard\")`, pinpoints repository authentication/access failure, and outputs the structured 4-section Root-Cause Report.",
+      "files": [],
+      "expectations": [
+        "Calls `get_application_details` on `frontend-proxy` and identifies the `ComparisonError` manifest-generation failure",
+        "Checks repository status (`get_repository`) and/or refreshes manifest cache (`refresh_application`) without mutating cluster workloads",
+        "Presents findings in the structured 4-section Root-Cause Report (Symptom Summary, Failing Component(s), Root Cause Evidence, Recommended Remediation)"
+      ]
+    },
+    {
+      "id": "eval-03-our-product-catalog-app-in-argocd-failed-during",
+      "prompt": "Our `product-catalog` app in ArgoCD failed during its database seed job, and checking error-filtered logs didn't show anything useful. Dig into the app's resource tree, events, and full pod logs to find the real failure.",
+      "expected_output": "Inspects `get_application_details`, `get_sync_status`, and `get_application_resource_tree` on `product-catalog` to find the failing seed `Job` and its `Pod`, queries `get_application_logs` (falling back from `errors_only=True` to `errors_only=False` to read stdout `psql` constraint output), correlates `get_application_events`, and produces the 4-section Root-Cause Report.",
+      "files": [],
+      "expectations": [
+        "Uses `get_application_resource_tree` and `get_sync_status` to locate the failing seed `Job` and child `Pod` under `product-catalog`",
+        "Retrieves full pod startup output via `get_application_logs` (`errors_only=False` fallback when `errors_only=True` returns 0 lines) to uncover the `psql` failure message",
+        "Correlates `get_application_events` and summarizes findings in the 4-section Root-Cause Report"
+      ]
+    },
+    {
+      "id": "eval-04-argocd-failed-to-sync-our-postgresql-app-in-stag",
+      "prompt": "ArgoCD failed to sync our `postgresql` app in staging with an immutable field error on its schema init Job. Check the app and explain why Kubernetes rejected the update and the safest way to fix it without disrupting the database.",
+      "expected_output": "Inspects `postgresql` via `get_application_details`, `get_sync_status`, and `get_application_diff`, explains that Kubernetes forbids in-place `kubectl apply` mutations to immutable `Job.spec.template` / `selector` fields, and recommends `argocd.argoproj.io/hook-delete-policy: BeforeHookCreation` or resource-level `Replace=true` on the Job rather than whole-app force replacement.",
+      "files": [],
+      "expectations": [
+        "Inspects `postgresql` sync status and diffs via read-only ArgoCD MCP tools",
+        "Explains why Kubernetes rejects in-place updates on immutable `Job` template/selector fields",
+        "Recommends `argocd.argoproj.io/hook-delete-policy: BeforeHookCreation` or resource-level `Replace=true` while warning against whole-app force replacement on stateful `postgresql`"
+      ]
+    },
+    {
+      "id": "eval-05-whenever-traffic-spikes-in-otel-demo-prod-and-ou",
+      "prompt": "Whenever traffic spikes in `otel-demo-prod` and our autoscaler scales `frontend` up, ArgoCD marks `frontend` out of sync—and when self-healing was enabled, ArgoCD kept scaling our pods back down to 1! Check what's drifting on `frontend` right now and tell us how to fix this permanently.",
+      "expected_output": "Calls `get_application_details` and `get_application_diff(app_name=\"frontend\", validate=True)` to confirm `Deployment/frontend` replica count drift (`1` in Git vs scaled live replicas), explains the HPA vs ArgoCD `selfHeal` controller fight, and prescribes omitting `spec.replicas` when HPA is enabled plus `ignoreDifferences` (`/spec/replicas`) with `RespectIgnoreDifferences=true`.",
+      "files": [],
+      "expectations": [
+        "Uses `get_application_diff` on `frontend` to verify `Deployment/frontend` replica drift against Git",
+        "Explains why hardcoding `replicas: 1` in Git causes ArgoCD `selfHeal` to fight `HorizontalPodAutoscaler`",
+        "Prescribes omitting `spec.replicas` when HPA is active and configuring `ignoreDifferences` (`/spec/replicas`) + `RespectIgnoreDifferences=true`"
+      ]
+    },
+    {
+      "id": "eval-06-argocd-shows-cart-as-synced-in-otel-demo-yet-the",
+      "prompt": "ArgoCD shows `cart` as Synced in `otel-demo`, yet the app still isn't healthy and pods aren't ready. Trace down what's holding `cart` back without changing anything.",
+      "expected_output": "Calls `get_application_details`, walks `get_application_resource_tree(app_name=\"cart\")` from `Deployment/cart` -> `ReplicaSet` -> `Pod`, inspects `get_application_events` and `get_application_logs` (including initContainer / `valkey-cart:6379` wait state), and delivers the 4-section Root-Cause Report.",
+      "files": [],
+      "expectations": [
+        "Traverses `get_application_resource_tree` on `cart` to identify the exact unhealthy `Pod` under `Deployment/cart`",
+        "Inspects `get_application_events` and `get_application_logs` for `cart` without running shell `kubectl` commands",
+        "Identifies the missing `valkey-cart` dependency / stuck init or readiness state in a 4-section Root-Cause Report"
+      ]
+    },
+    {
+      "id": "eval-07-after-we-renamed-redis-cart-to-valkey-cart-in-gi",
+      "prompt": "After we renamed `redis-cart` to `valkey-cart` in Git and synced without pruning, `valkey-cart` in ArgoCD still sits out of sync. Check what's left behind in `valkey-cart` and tell us what to double-check before cleaning it up.",
+      "expected_output": "Calls `get_application_resource_tree` and `get_application_diff` on `valkey-cart` to confirm `Service/redis-cart` is an unpruned orphan, advises verifying downstream `cart` points to `valkey-cart:6379` rather than `redis-cart:6379`, and recommends previewing a pruned sync before deleting it.",
+      "files": [],
+      "expectations": [
+        "Uses `get_application_diff` and `get_application_resource_tree` on `valkey-cart` to identify `Service/redis-cart` as an unpruned orphan resource",
+        "Advises verifying no downstream service (`cart`) still references `redis-cart` before removing it",
+        "Recommends previewing resource pruning first rather than mutating cluster state during triage"
+      ]
+    },
+    {
+      "id": "eval-08-checkout-in-otel-demo-prod-is-unhealthy-in-argoc",
+      "prompt": "`checkout` in `otel-demo-prod` is unhealthy in ArgoCD right now. Investigate its status, resource tree, events, and logs and give me a root-cause report—do not sync, roll back, or change anything.",
+      "expected_output": "Uses strictly read-only ArgoCD diagnostic tools (`get_application_details`, `get_sync_status`, `get_application_resource_tree`, `get_application_events`, `get_application_logs`, `get_application_diff`) on `checkout`, performs zero mutations, and outputs the 4-section Root-Cause Report.",
+      "files": [],
+      "expectations": [
+        "Uses read-only ArgoCD MCP tools (`get_application_details`, `get_application_resource_tree`, `get_application_events`, `get_application_logs`) to inspect `checkout`",
+        "Performs zero mutating calls (no sync, rollback, update, or delete)",
+        "Delivers findings in the structured 4-section Root-Cause Report"
+      ]
+    },
+    {
+      "id": "eval-09-on-call-just-got-paged-list-every-unhealthy-argo",
+      "prompt": "On-call just got paged—list every unhealthy ArgoCD application across the cluster right now and tell us which ones to investigate first based on service dependencies, without modifying anything.",
+      "expected_output": "Calls `list_applications(health_status=\"Degraded\")` (and checks `Progressing`/`OutOfSync` if needed) via the ArgoCD MCP server, prioritizes foundational infrastructure (`postgresql`, `valkey-cart`, `flagd`, `kafka`) ahead of downstream microservices, and performs zero mutations.",
+      "files": [],
+      "expectations": [
+        "Queries unhealthy applications via `list_applications` on the ArgoCD MCP server without shell `kubectl` or `argocd` CLI commands",
+        "Prioritizes foundational data/config services ahead of downstream storefront microservices based on live results",
+        "Executes zero mutating operations"
+      ]
+    }
+  ]
+}

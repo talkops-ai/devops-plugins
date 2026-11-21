@@ -22,6 +22,10 @@ This is an **agent plugin**: every skill, command, hook, and MCP server below is
 
 | Skill | What it does |
 |---|---|
+| `aiml-access-diagnostics` | Use this skill when diagnosing IAM and access failures for Bedrock and SageMaker. |
+| `aiml-gpu-training-cluster-investigation` | Use this skill for GPU training or inference clusters on SageMaker HyperPod (Slurm or EKS), ParallelCluster, or self-managed EC2/EKS GPU instances. |
+| `bedrock-adoption-readiness` | Amazon Bedrock production readiness assessment covering IAM governance, data retention (ZDR), quota and capacity headroom, and operational observability across Standard Bedrock and Mantle surfaces. |
+| `bedrock-operation-review` | Comprehensive Amazon Bedrock review aligned with the AWS Well-Architected Framework and Bedrock best practices. |
 | `dataset-evaluation` | Validates dataset formatting and quality for SageMaker model fine-tuning (SFT, DPO, or RLVR). |
 | `dataset-transformation` | Generates code that transforms datasets between ML schemas for model training or evaluation. |
 | `directory-management` | Manages project directory setup and artifact organization. |
@@ -42,6 +46,7 @@ This is an **agent plugin**: every skill, command, hook, and MCP server below is
 | `model-selection` | Selects a base model or ML algorithm pathway for the user's use case. |
 | `planning` | Discovers user intent and generates a structured, step-by-step execution and architectural plan across the entire Amazon SageMaker AI lifecycle — including Well-Architected ML solution design, Studio Domain VPC/IAM/KMS… |
 | `querying-aws-sagemaker-catalog` | Runs SQL analytics on SageMaker Catalog asset metadata tables exported as Apache Iceberg in S3 Tables. |
+| `sagemaker-ai-ops-review` | Amazon SageMaker AI Operational Review. |
 | `sagemaker-cost-estimator` | Calculates pre-provisioning FinOps cost estimates and architectural savings comparisons for Amazon SageMaker AI workloads using live queries to the awspricing MCP server. |
 | `sagemaker-domain-vpc-iac` | Architects and generates production-grade AWS CDK (TypeScript/Python) and CloudFormation Infrastructure-as-Code for Amazon SageMaker AI Studio Domains, User Profiles, Private/Shared Spaces (JupyterLab & CodeEditor), Cus… |
 | `sagemaker-inference-architect` | Architects and generates production inference and model-hosting solutions across all Amazon SageMaker AI deployment patterns. |

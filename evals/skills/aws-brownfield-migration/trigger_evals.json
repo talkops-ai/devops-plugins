@@ -1,0 +1,95 @@
+{
+  "skill_name": "aws-brownfield-migration",
+  "companion_skills": [
+    "preflight-discovery",
+    "aws-terraform",
+    "aws-cdk",
+    "aws-crossplane"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Adopt 20 unmanaged ClickOps S3 buckets, VPCs, and RDS instances into Terraform 1.8 using `import {}` blocks and `-generate-config-out` with zero downtime."
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Run a CloudFormation IaC Generator resource scan (`start-resource-scan`) and generate an `IMPORT` Change Set for our unmanaged AWS resources."
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Migrate an existing stateful CloudFormation stack to Pulumi TypeScript without recreating our Aurora cluster or losing data."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Use Crossplane `managementPolicies: [\"Observe\"]` to observe and safely adopt an existing brownfield AWS RDS instance into our control plane."
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Enumerate live unmanaged AWS resources via AWS Cloud Control API `list-resources` and `get-resource` so we can import them into AWS CDK via `cdk import`."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Scaffold a brand-new Next.js + Cognito greenfield SaaS app using `npx @aws-blocks/create-blocks-app my-app`."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Set up a GitHub Actions OIDC deployment pipeline with CodeBuild and CodeDeploy canary traffic shifting."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Estimate the monthly AWS cost of a new greenfield 3-AZ VPC with NAT Gateways and ECS Fargate tasks before deploying."
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Diagnose `CrashLoopBackOff` and `OOMKilled` pods on our Amazon EKS cluster."
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Upgrade our AWS SDK for JavaScript v2 Lambda handlers to modular `@aws-sdk/client-s3` v3 clients."
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Design a single-table DynamoDB partition and sort key model for multi-tenant e-commerce orders."
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure AWS Shield Advanced proactive engagement and Route 53 health checks for DDoS protection."
+    }
+  ]
+}

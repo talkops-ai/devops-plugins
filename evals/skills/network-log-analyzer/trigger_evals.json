@@ -1,0 +1,99 @@
+{
+  "skill_name": "network-log-analyzer",
+  "companion_skills": [
+    "aws-vpc-dns-investigation",
+    "aws-routing",
+    "aws-natgw-traffic-analysis",
+    "aws-network-monitoring",
+    "aws-observability-and-incident-triage"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Analyze these VPC Flow Log records showing `ACCEPT` inbound and `REJECT` outbound on `eni-0abc` to determine whether a Security Group or Network ACL blocked the traffic."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Inspect this `tshark` TCP packet capture summary showing `tcp.analysis.retransmission` on 4000-byte TLS packets with `MSS=8961` and diagnose the root cause."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Write a scoped CloudWatch Logs Insights query for our custom v5 VPC Flow Logs using `pkt-srcaddr` and `tcp-flags` to find the real EKS pod IP behind rejected flows."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Small `ping` and SSH sessions work across our Transit Gateway VPN, but large HTTPS POST uploads hang indefinitely and never finish the TLS handshake."
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Connections through our Network Load Balancer work fine when active, but after sitting idle for 6 minutes the very next request gets a `TCP RST` (`Connection reset by peer`)."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "I captured a 300 MB `.pcapng` file on an EC2 host where file transfers crawl at 1.5 MB/s with zero packet loss—how do I export safe header-only CSV data for analysis and what causes zero-loss slowness?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Flow log line `5 123456789012 eni-011 10.0.1.8 10.0.2.9 44120 443 6 4 240 1731910000 1731910060 REJECT OK` has `reject-reason` `BPA` on one subnet and `SKIPDATA` on another—interpret both."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "`tcpdump` on `i-09911` shows `SYN` -> `SYN-ACK` in `14ms`, `SYN-ACK` -> `ACK` in `0.04ms`, followed by `tcp.analysis.zero_window` from the peer. Fix the capture point and bottleneck."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Why are zero packets to `169.254.169.253` showing up in our `TrafficType=ALL` VPC Flow Logs on `eni-0abc123`?"
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Our EC2 instances in `ap-south-1` get `NXDOMAIN` for `orders.internal.corp` even though the Route 53 Private Hosted Zone is attached to the VPC—diagnose the DNS precedence collision.",
+      "expected_alternative_skill": "aws-vpc-dns-investigation"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Categorize our NAT Gateway traffic in GB and % across local S3, cross-region S3, and customer Elastic IPs to see why our NAT Gateway volume spiked.",
+      "expected_alternative_skill": "aws-natgw-traffic-analysis"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Install and configure the Amazon CloudWatch Network Flow Monitor agent (`aws-network-flow-monitor-agent`) on our Amazon Linux 2023 EC2 instances.",
+      "expected_alternative_skill": "aws-network-monitoring"
+    }
+  ]
+}

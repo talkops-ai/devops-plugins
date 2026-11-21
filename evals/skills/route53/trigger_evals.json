@@ -1,0 +1,95 @@
+{
+  "skill_name": "route53",
+  "companion_skills": [
+    "waf",
+    "shieldadvanced",
+    "transitgateway",
+    "directconnect"
+  ],
+  "queries": [
+    {
+      "id": "trig-pos-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Create a Route 53 Public Hosted Zone Alias record at the zone apex and set up active-passive Failover routing with HTTPS Health Checks."
+    },
+    {
+      "id": "trig-pos-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Configure bidirectional hybrid private DNS using Route 53 Resolver Inbound and Outbound Endpoints shared via Route 53 Profiles."
+    },
+    {
+      "id": "trig-pos-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Block malicious C2 domains using Route 53 Resolver DNS Firewall and diagnose which rule group wins across multiple priorities."
+    },
+    {
+      "id": "trig-pos-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Split blue/green canary traffic with Route 53 Weighted Routing and set up Route 53 Global Resolver with DoH/DoT."
+    },
+    {
+      "id": "trig-pos-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Enable DNSSEC KSK signing with an asymmetric `ECC_NIST_P256` KMS key in `us-east-1` on our Route 53 hosted zone."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure AWS Direct Connect LAG members and MACsec Layer-2 encryption."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Create an AWS WAFv2 WebACL with Bot Control Targeted rules and rate limiting."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Subscribe to AWS Shield Advanced and request DDoS cost-protection credits."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Attach 10 VPCs to an AWS Transit Gateway with Network Firewall east-west inspection."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Debug why our Lambda function times out calling RDS PostgreSQL."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Design a DynamoDB single-table schema with sparse GSIs."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Audit Security Hub CSPM failed CIS controls across our account."
+    }
+  ]
+}

@@ -1,0 +1,111 @@
+{
+  "skill_name": "triaging-tempo-service-errors",
+  "companion_skills": [
+    "investigating-tempo-latency-regressions",
+    "triaging-loki-incidents-and-errors",
+    "triaging-prometheus-incidents-and-slos",
+    "diagnosing-tempo-ingestion-and-health"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Triage a 25% `PlaceOrder` error spike on `checkout-service` in Grafana Tempo (`otel-demo`) and pinpoint the downstream service originating the errors.",
+      "notes": "Direct Tempo service error triage"
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Extract the trace ID from this `frontend-proxy` `traceparent` error log line and inspect the failing `payment` `Charge` span exception in Tempo.",
+      "notes": "Log-to-trace error pivot"
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Investigate failing `GetAds` spans on `ad` in `otel-demo` in Grafana Tempo to see whether a single canary pod or new image tag is responsible for the error spike.",
+      "notes": "Error cohort skew analysis"
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "`frontend-proxy` Envoy is returning HTTP 502 on `/api/recommendations`—use distributed traces to find which downstream `otel-demo` microservice is actually throwing exceptions!",
+      "notes": "Downstream error origin isolation"
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Pull error exemplar traces for `product-catalog-service` (`L9ECAV7KIM` failures) in Tempo and produce a structured incident brief with stacktraces.",
+      "notes": "Exemplar-to-trace incident brief"
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Quantify Tempo RED error severity (`CRITICAL` vs `WARNING` vs `ELEVATED`) for `cart-service` and `payment` in `otel-demo` over the last 15 minutes.",
+      "notes": "Tempo RED severity classification"
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Parse `otelTraceID` (`recommendation`) and `traceparent` (`frontend-proxy`) headers out of these `otel-demo` crash logs and look up the traces in Tempo.",
+      "notes": "Multi-format log trace extraction"
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Verify in Tempo whether `product-catalog-service` errors are concentrated on product `L9ECAV7KIM` (`GetProduct`) or spread across `ListProducts` and `SearchProducts`.",
+      "notes": "Endpoint/product error skew triage"
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "`frontend` error rate is 0%, but p99 latency jumped from `180ms` to `5.4s` (`imageSlowLoad`)—diff fast vs slow traces in Tempo.",
+      "expected_alternative_skill": "investigating-tempo-latency-regressions",
+      "notes": "Pure latency regression without errors"
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Summarize top error log signatures for `checkout-service` in Grafana Loki and compare log volume against 1 hour ago.",
+      "expected_alternative_skill": "triaging-loki-incidents-and-errors",
+      "notes": "Loki log-first N->1 triage"
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Evaluate 30-day multi-window multi-burn-rate error budget consumption for `checkout-service` in Prometheus.",
+      "expected_alternative_skill": "triaging-prometheus-incidents-and-slos",
+      "notes": "Prometheus SLO burn-rate triage"
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Tempo itself in `observability` is returning HTTP 503 on `/api/search` and ingester ring members are unhealthy—diagnose the Tempo cluster.",
+      "expected_alternative_skill": "diagnosing-tempo-ingestion-and-health",
+      "notes": "Tempo infrastructure health vs app service errors"
+    }
+  ]
+}

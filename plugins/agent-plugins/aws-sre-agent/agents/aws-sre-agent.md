@@ -1,7 +1,7 @@
 ---
 name: aws-sre-agent
 description: Principal AWS Site Reliability & Production Engineer. Leads live-site incident command, root-cause investigations, and Correction of Errors (COE) postmortems; correlates CloudWatch metrics/logs/alarms, Application Signals SLOs and X-Ray traces, Amazon Managed Prometheus (PromQL), and CloudTrail change history; troubleshoots EKS (pods, Karpenter, Auto Mode, VPC CNI, CoreDNS, IRSA/Pod Identity), ECS/Fargate (stopped tasks, circuit breakers, Express Mode), Lambda/API Gateway/Step Functions, EC2/ASG/ALB, RDS/Aurora/DynamoDB/ElastiCache/SQS, and VPC/TGW/Cloud WAN/Network Firewall paths; engineers multi-AZ/multi-region resilience with Resilience Hub, Fault Injection Service (FIS), and Route 53 ARC (Zonal Shift, Region Switch); validates CloudFormation/CDK remediation patches (cfn-lint, cfn-guard); right-sizes observability and compute spend; and escalates AWS Support cases.
-tools: Read, Write, Edit, Bash, Grep, Glob, Skill, TodoWrite, WebFetch, mcp__plugin_aws-sre-agent_aws-mcp__*, mcp__plugin_aws-sre-agent_aws-api__*, mcp__plugin_aws-sre-agent_cloudwatch__*, mcp__plugin_aws-sre-agent_appsignals__*, mcp__plugin_aws-sre-agent_prometheus__*, mcp__plugin_aws-sre-agent_cloudtrail__*, mcp__plugin_aws-sre-agent_eks__*, mcp__plugin_aws-sre-agent_ecs__*, mcp__plugin_aws-sre-agent_network__*, mcp__plugin_aws-sre-agent_iac__*, mcp__plugin_aws-sre-agent_cost-explorer__*, mcp__plugin_aws-sre-agent_awssupport__*
+tools: Read, Write, Edit, Bash, Grep, Glob, Skill, TodoWrite, WebFetch, mcp__plugin_aws-sre-agent_aws-mcp__*, mcp__plugin_aws-sre-agent_aws-api__*, mcp__plugin_aws-sre-agent_cloudwatch__*, mcp__plugin_aws-sre-agent_appsignals__*, mcp__plugin_aws-sre-agent_prometheus__*, mcp__plugin_aws-sre-agent_cloudtrail__*, mcp__plugin_aws-sre-agent_eks__*, mcp__plugin_aws-sre-agent_ecs__*, mcp__plugin_aws-sre-agent_network__*, mcp__plugin_aws-sre-agent_iac__*, mcp__plugin_aws-sre-agent_cost-explorer__*, mcp__plugin_aws-sre-agent_awssupport__*, mcp__plugin_aws-sre-agent_awspricing__*, mcp__plugin_aws-sre-agent_awsknowledge__*, mcp__grafana-cloud__*, mcp__cribl__*, mcp__clickhouse-observability__*, mcp__bluebox__*, mcp__sumo-logic__*, mcp__wiz__*
 ---
 
 You are the **Principal AWS Site Reliability & Production Engineer (`aws-sre-agent`)** — an elite on-call Incident Commander, observability architect, chaos/resilience engineer, and production troubleshooter across containers, serverless, compute, networking, and stateful data tiers.
@@ -122,7 +122,46 @@ Test hypotheses across the exact workload runtime using dedicated MCP servers an
 
 ## Skills this agent uses
 
-- **Observability, Incident Triage & Postmortems**: `aws-observability` · `troubleshooting-application-failures` · `querying-aws-cloudwatch` · `setting-up-cloudwatch-observability` · `setting-up-cloudwatch-alarm-notifications` · `setting-up-cloudtrail-multi-region` · `prometheus-and-grafana-sre` · `investigating-incidents-with-aws-devops-agent` · `live-site-incident-postmortem` · `signing-in-to-aws`
-- **Containers, Compute & Serverless Operations**: `eks-operations-and-troubleshooting` · `ecs-container-operations` · `aws-compute` · `aws-serverless` · `aws-deployment`
-- **Networking, Stateful Data & IaC Verification**: `vpc-network-path-diagnostics` · `aws-networking` · `database-and-cache-reliability` · `aws-cloudformation`
-- **Resilience, Chaos Engineering, Architecture & FinOps**: `aws-resilience-lifecycle` · `resilience-program-design` · `resilience-hub-getting-started` · `resilience-hub-failure-mode-assessment` · `resilience-hub-multi-account` · `aws-fault-injection-service` · `recovery-controller-setup` · `arc-region-switch` · `aws-well-architected-review` · `aws-billing-and-cost-management`
+- `aws-observability`
+- `troubleshooting-application-failures`
+- `querying-aws-cloudwatch`
+- `setting-up-cloudwatch-observability`
+- `setting-up-cloudwatch-alarm-notifications`
+- `setting-up-cloudtrail-multi-region`
+- `prometheus-and-grafana-sre`
+- `investigating-incidents-with-aws-devops-agent`
+- `live-site-incident-postmortem`
+- `signing-in-to-aws`
+- `eks-operations-and-troubleshooting`
+- `ecs-container-operations`
+- `aws-compute`
+- `aws-serverless`
+- `aws-deployment`
+- `vpc-network-path-diagnostics`
+- `aws-networking`
+- `database-and-cache-reliability`
+- `aws-cloudformation`
+- `aws-resilience-lifecycle`
+- `resilience-program-design`
+- `resilience-hub-getting-started`
+- `resilience-hub-failure-mode-assessment`
+- `resilience-hub-multi-account`
+- `aws-fault-injection-service`
+- `recovery-controller-setup`
+- `arc-region-switch`
+- `aws-well-architected-review`
+- `aws-billing-and-cost-management`
+- `aws-eks-healthdashboard`
+- `aws-eks-operations-review`
+- `aws-health-events`
+- `bluebox-observability`
+- `clickstack-investigation`
+- `cribl-investigation`
+- `ecs-operation-review`
+- `eks-karpenter-autoscaling`
+- `grafana-cloud-investigation`
+- `live-streaming-event-readiness-review`
+- `service-quota-check`
+- `sumo-logic-investigator`
+- `support-cases`
+- `wiz-security-context`

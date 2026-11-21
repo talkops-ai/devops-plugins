@@ -208,9 +208,10 @@ def check_portable(plugin_dir: Path, claude_manifest: dict, rep: Report) -> None
             continue
         for key in sorted(set(conf) - allowed):
             rep.err(where, f"server '{sname}': key '{key}' is not allowed for type {conf['type']!r}")
-        values = [*conf.get("args", []), *conf.get("env", {}).values(), conf.get("cwd", ""), conf.get("url", "")]
-        if any(NON_PORTABLE_RE.search(v) for v in values) or any("${" in v for v in conf.get("headers", {}).values()):
-            rep.err(where, f"server '{sname}': only ${{PLUGIN_ROOT}}/${{PLUGIN_DATA}} expand in the portable format")
+        if conf.get("type") == "stdio":
+            values = [*conf.get("args", []), *conf.get("env", {}).values(), conf.get("cwd", "")]
+            if any(NON_PORTABLE_RE.search(v) for v in values):
+                rep.err(where, f"server '{sname}': only ${{PLUGIN_ROOT}}/${{PLUGIN_DATA}} expand in stdio portable servers")
         if sname not in claude_servers:
             rep.err(where, f"server '{sname}' is not in .mcp.json; both files must describe the same servers")
 

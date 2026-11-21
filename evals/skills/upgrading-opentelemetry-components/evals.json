@@ -1,0 +1,116 @@
+{
+  "skill_name": "upgrading-opentelemetry-components",
+  "evals": [
+    {
+      "id": "eval-01-upgrade-collector-v0-98-to-v0-152-breaking-config-migrations",
+      "prompt": "Audit our `otel-legacy-collector` (`0.98.0`) in the `otel-demo` namespace for breaking config removals (`logging` exporter, `memory_ballast` extension, and legacy internal telemetry address), validate the migrated configuration against `0.152.1`, preview the upgrade first, apply it safely, and verify the upgraded collector pods are healthy.",
+      "expected_output": "Reads `otel://collector/otel-demo/otel-legacy-collector` and `otel://collector/otel-demo/otel-legacy-collector/config`, detects all breaking removals (via `scripts/check_config_deprecations.py`: `exporters.logging` -> `exporters.debug: {verbosity: normal}`; `extensions.memory_ballast` -> `GOMEMLIMIT=80%` + `memory_limiter`; `service.telemetry.metrics.address` -> `service.telemetry.metrics.readers` pull Prometheus `:8888`), calls `otel_validate_collector_config(namespace=\"otel-demo\", name=\"otel-legacy-collector\", config_yaml=..., checks=[\"pipeline\", \"order\", \"deprecations\", \"security\"], target_version=\"0.152.1\")`, previews `otel_patch_collector(namespace=\"otel-demo\", name=\"otel-legacy-collector\", config_yaml=..., workload_options={\"image\": \"otel/opentelemetry-collector-contrib:0.152.1\"}, dry_run=True)`, applies `dry_run=False, confirm=True`, and verifies via `otel_diagnose_collector`.",
+      "files": [],
+      "expectations": [
+        "Replaces `logging` exporter with `debug`, `memory_ballast` with `GOMEMLIMIT` + `memory_limiter`, and `service.telemetry.metrics.address` with `readers` (`:8888`)",
+        "Calls `otel_validate_collector_config` passing `target_version=\"0.152.1\"`",
+        "Calls `otel_patch_collector` on `otel-legacy-collector` passing `image: \"otel/opentelemetry-collector-contrib:0.152.1\"` with `dry_run=True` before `dry_run=False, confirm=True`",
+        "Verifies post-upgrade pod health via `otel_diagnose_collector`"
+      ]
+    },
+    {
+      "id": "eval-02-migrate-v1alpha1-string-config-collector-crd-to-v1beta1-dict",
+      "prompt": "Audit and migrate this legacy `opentelemetry.io/v1alpha1` `OpenTelemetryCollector` manifest for `otel-demo` (where `spec.config` is a multiline YAML string) to `opentelemetry.io/v1beta1`:\n```yaml\napiVersion: opentelemetry.io/v1alpha1\nkind: OpenTelemetryCollector\nmetadata:\n  name: opentelemetry-otel-collector\n  namespace: otel-demo\nspec:\n  mode: deployment\n  config: |\n    receivers:\n      otlp:\n        protocols:\n          grpc:\n            endpoint: 0.0.0.0:4317\n          http:\n            endpoint: 0.0.0.0:4318\n    extensions:\n      memory_ballast:\n        size_mib: 256\n    exporters:\n      logging:\n        loglevel: info\n    service:\n      extensions: [memory_ballast]\n      pipelines:\n        traces:\n          receivers: [otlp]\n          exporters: [logging]\n```",
+      "expected_output": "Runs `scripts/check_config_deprecations.py` on the `v1alpha1` multiline string `spec.config`, flags removed `memory_ballast` and `logging`, converts `apiVersion` to `opentelemetry.io/v1beta1` with structured YAML mapping `spec.config` (not string!), adds `memory_limiter` + `GOMEMLIMIT` + `debug: {verbosity: normal}` + `service.telemetry.metrics.readers`, and validates via `otel_validate_collector_config(target_version=\"0.152.1\")`.",
+      "files": [],
+      "expectations": [
+        "Parses the `v1alpha1` multiline string `spec.config` and flags removed `memory_ballast` and `logging` components",
+        "Converts `apiVersion` to `opentelemetry.io/v1beta1` with structured dict `spec.config` preserving `:4317` and `:4318` OTLP endpoints",
+        "Validates the migrated `v1beta1` configuration via `otel_validate_collector_config`"
+      ]
+    },
+    {
+      "id": "eval-03-two-tier-upgrade-ordering-gateway-before-agent",
+      "prompt": "We run both `otel-agent` (DaemonSet in `observability`) and `opentelemetry-otel-collector` (Gateway Deployment in `otel-demo`) on `v0.108.0`. Survey our live topology and explain in what exact order we must upgrade them to `v0.152.1`, and why.",
+      "expected_output": "Surveys the topology via `otel_survey_cluster(namespaces=[\"otel-demo\", \"observability\"])` and enforces **Tier 2 Gateway (`opentelemetry-otel-collector` / `otel-tail-sampler` / `otel-gateway`) FIRST, Tier 1 DaemonSet Agents (`otel-agent`) SECOND** so newer OTLP schema/semantic conventions or protocol features emitted by upgraded agents are already understood by the downstream Gateway, gating the `otel-agent` rollout on clean `otel_diagnose_collector` verification of the Gateway.",
+      "files": [],
+      "expectations": [
+        "Surveys `otel-demo` and `observability` via `otel_survey_cluster` and upgrades Tier 2 Gateways/Tail-Samplers completely BEFORE Tier 1 `otel-agent` DaemonSets",
+        "Explains OTLP backward/forward compatibility between upstream agents and downstream gateways",
+        "Gates starting the `otel-agent` rollout on clean health verification of the Gateway tier"
+      ]
+    },
+    {
+      "id": "eval-04-instant-rollback-via-otel-revert-collector-config-on-upgrade-failure",
+      "prompt": "Right after upgrading `otel-upgrade-rollback` in `otel-demo` to `0.152.1`, its collector pods entered `CrashLoopBackOff` and OTLP exports started failing! Inspect its config snapshot history, preview the emergency rollback, execute it, and confirm the collector recovers.",
+      "expected_output": "Checks `otel_diagnose_collector(namespace=\"otel-demo\", name=\"otel-upgrade-rollback\", include=[\"status\", \"pods\", \"logs\"])` and `otel://collector/otel-demo/otel-upgrade-rollback/history` (`otel.mcp/last-known-good`), previews rollback via `otel_revert_collector_config(namespace=\"otel-demo\", name=\"otel-upgrade-rollback\", dry_run=True)`, executes `otel_revert_collector_config(..., dry_run=False, confirm=True)`, and verifies pods recover via `otel_diagnose_collector`.",
+      "files": [],
+      "expectations": [
+        "Reads `otel://collector/otel-demo/otel-upgrade-rollback/history` via MCP",
+        "Calls `otel_revert_collector_config` on `otel-upgrade-rollback` in `otel-demo` with `dry_run=True` first, then `dry_run=False, confirm=True`",
+        "Confirms post-rollback recovery via `otel_diagnose_collector`"
+      ]
+    },
+    {
+      "id": "eval-05-http-semconv-stabilization-spanmetrics-and-dashboard-migration",
+      "prompt": "In `otel-demo`, we are upgrading `Instrumentation/otel-demo-instrumentation` for Java `ad` (`1.32 -> 2.11`), Python `recommendation` & `load-generator` (`0.43b0 -> 0.50b0`), and Node.js `payment` & `frontend` (`0.48 -> 0.56`) alongside `opentelemetry-otel-collector` (where `spanmetrics` currently uses `dimensions: [\"http.method\", \"http.status_code\"]`). What will break in Prometheus alerts and Grafana dashboards, and how do we migrate without a blind spot?",
+      "expected_output": "Flags HTTP semantic convention breaking renames (`http.method -> http.request.method`, `http.status_code -> http.response.status_code`, `http.url -> url.full`, `net.peer.name -> server.address`), warns that `spanmetrics` labels `http_method` / `http_status_code` will go blank if SDKs switch abruptly, and provides a zero-blind-spot transition plan using `OTEL_SEMCONV_STABILITY_OPT_IN=http/dup` on `otel-demo-instrumentation` (or an OTTL attribute bridge) while migrating `spanmetrics.dimensions` and PromQL rules to `http.request.method` and `http.response.status_code`.",
+      "files": [],
+      "expectations": [
+        "Flags `http.method -> http.request.method` and `http.status_code -> http.response.status_code` semconv breaking changes across the upgraded SDKs",
+        "Warns that existing `spanmetrics` dimensions and PromQL alerts on `http_method` / `http_status_code` will go blank without dual-emission or bridging",
+        "Provides a zero-blind-spot migration plan (`OTEL_SEMCONV_STABILITY_OPT_IN=http/dup` or OTTL bridge + `spanmetrics` dimension update)"
+      ]
+    },
+    {
+      "id": "eval-06-opencensus-and-deprecated-loki-exporter-migration",
+      "prompt": "Audit this older collector YAML from `otel-demo` that uses `exporters.opencensus` (`endpoint: tempo-distributor.observability.svc:55678`) for `checkout` traces and `exporters.loki` (`endpoint: http://loki.observability.svc:3100/loki/api/v1/push`) for `frontend-proxy` logs, and modernize + validate it for Collector `0.152.1`:\n```yaml\nreceivers:\n  otlp:\n    protocols:\n      grpc:\n        endpoint: 0.0.0.0:4317\n      http:\n        endpoint: 0.0.0.0:4318\nprocessors:\n  memory_limiter:\n    check_interval: 5s\n    limit_percentage: 80\n    spike_limit_percentage: 25\n  batch: {}\nexporters:\n  opencensus:\n    endpoint: tempo-distributor.observability.svc:55678\n  loki:\n    endpoint: http://loki.observability.svc:3100/loki/api/v1/push\nservice:\n  pipelines:\n    traces:\n      receivers: [otlp]\n      processors: [memory_limiter, batch]\n      exporters: [opencensus]\n    logs:\n      receivers: [otlp]\n      processors: [memory_limiter, batch]\n      exporters: [loki]\n```",
+      "expected_output": "Runs `scripts/check_config_deprecations.py` (flagging `exporters.opencensus` and deprecated `exporters.loki`), migrates `opencensus` to `otlp` (`tempo-distributor.observability.svc:4317` with `sending_queue` + `retry_on_failure`) and `exporters.loki` to `otlphttp/loki` (`endpoint: http://loki.observability.svc:3100/otlp` or `http://loki-gateway.observability.svc:80/otlp`), and validates via `otel_validate_collector_config(target_version=\"0.152.1\")`.",
+      "files": [],
+      "expectations": [
+        "Flags both `exporters.opencensus` and legacy `exporters.loki`",
+        "Migrates `opencensus` to `otlp` (`:4317`) and `loki` to `otlphttp/loki` targeting `/otlp`",
+        "Validates the modernized config via `otel_validate_collector_config(target_version=\"0.152.1\")`"
+      ]
+    },
+    {
+      "id": "eval-07-targetallocator-crd-v1beta1-upgrade-compatibility",
+      "prompt": "Inspect our Target Allocator setup for `otel-ta-collector` in `otel-demo` (which scrapes `frontend-proxy`, `postgresql`, and `valkey-cart`) and verify CRD schema compatibility before we upgrade the OpenTelemetry Operator.",
+      "expected_output": "Reads `otel://operator/status`, `otel://collector/otel-demo/otel-ta-collector`, and `otel://target-allocator/otel-demo/otel-ta-collector`, verifies that `OpenTelemetryCollector` (with embedded `spec.targetAllocator`) uses `opentelemetry.io/v1beta1` while standalone `TargetAllocator`, `Instrumentation`, and `OpAMPBridge` CRDs use `opentelemetry.io/v1alpha1`, checks `allocationStrategy: consistent-hashing` and `prometheusCR.enabled`, and notes keeping the TargetAllocator image aligned with the Operator release.",
+      "files": [],
+      "expectations": [
+        "Reads `otel://operator/status` and `otel://target-allocator/otel-demo/otel-ta-collector` via MCP",
+        "Accurately distinguishes `OpenTelemetryCollector` (`opentelemetry.io/v1beta1` with embedded `spec.targetAllocator`) from `opentelemetry.io/v1alpha1` standalone `TargetAllocator`, `Instrumentation`, and `OpAMPBridge` CRDs",
+        "Verifies `allocationStrategy: consistent-hashing` and TargetAllocator/Operator version alignment"
+      ]
+    },
+    {
+      "id": "eval-08-block-upgrade-when-target-version-validation-has-errors",
+      "prompt": "A teammate wants to bump `image: otel/opentelemetry-collector-contrib:0.152.1` on `otel-legacy-address-collector` in `otel-demo` right now without touching its `spec.config` (which still has `service.telemetry.metrics.address: 0.0.0.0:8888`). Validate against `0.152.1`, explain why an image-only bump is unsafe, and preview the safe atomic upgrade.",
+      "expected_output": "Calls `otel_validate_collector_config(namespace=\"otel-demo\", name=\"otel-legacy-address-collector\", checks=[\"deprecations\", \"pipeline\"], target_version=\"0.152.1\")`, refuses an image-only bump because `service.telemetry.metrics.address` fails config unmarshaling on `v0.120.0+` / `v0.152.1` (`valid: False`) and would `CrashLoopBackOff` the collector; migrates `metrics.address` to `service.telemetry.metrics.readers` (`:8888`) and previews the atomic config + image update via `otel_patch_collector(..., dry_run=True)`.",
+      "files": [],
+      "expectations": [
+        "Refuses an image-only bump on `otel-legacy-address-collector` that leaves removed `service.telemetry.metrics.address` in `spec.config`",
+        "Demonstrates via `otel_validate_collector_config(target_version=\"0.152.1\")` that `0.152.1` rejects `metrics.address`",
+        "Combines the `metrics.readers` config migration and `image: \"otel/opentelemetry-collector-contrib:0.152.1\"` into one atomic `otel_patch_collector(..., dry_run=True)` preview"
+      ]
+    },
+    {
+      "id": "eval-09-pin-collector-contrib-image-tag-never-latest",
+      "prompt": "Should we switch `opentelemetry-otel-collector` in `otel-demo` and `otel-agent` in `observability` to `otel/opentelemetry-collector-contrib:latest` so we automatically stay on the newest collector release without manual upgrades?",
+      "expected_output": "Refuses/warns strongly against `:latest` on OpenTelemetry Collector because minor `0.x` releases frequently remove deprecated config fields or rename internal metrics—meaning routine node scale-out pod pulls would suddenly `CrashLoopBackOff` on existing `spec.config` and drop `otel-demo` telemetry; recommends pinning an explicit validated version (e.g. `otel/opentelemetry-collector-contrib:0.152.1`) after running `otel_validate_collector_config(target_version=\"0.152.1\")`.",
+      "files": [],
+      "expectations": [
+        "Refuses/warns against `:latest` image tags due to frequent `0.x` Collector config breaking changes on node scale-out",
+        "Recommends pinning an explicit deterministic tag (`otel/opentelemetry-collector-contrib:0.152.1`)",
+        "Requires validating against `target_version` via `otel_validate_collector_config` before any image bump"
+      ]
+    },
+    {
+      "id": "eval-10-cluster-wide-deprecation-inventory-before-operator-upgrade",
+      "prompt": "Before we upgrade the cluster OpenTelemetry Operator next sprint, inventory every `OpenTelemetryCollector` and `Instrumentation` CR across `otel-demo` and `observability`, validate each collector config against `0.152.1`, and produce a staged fleet upgrade readiness plan.",
+      "expected_output": "Calls `otel_survey_cluster(namespaces=[\"otel-demo\", \"observability\"], include=[\"collectors\", \"instrumentations\", \"operator\"])` and inspects `otel://operator/status`, runs `otel_validate_collector_config(..., checks=[\"deprecations\", \"pipeline\", \"order\"], target_version=\"0.152.1\")` across the discovered collectors, and outputs an ordered upgrade plan (Operator/CRDs -> Gateways/Tail-Samplers -> `opentelemetry-otel-collector` -> DaemonSet Agents -> `Instrumentation` SDKs).",
+      "files": [],
+      "expectations": [
+        "Surveys all collectors and instrumentations across `otel-demo` and `observability` via `otel_survey_cluster` and `otel://operator/status`",
+        "Runs `otel_validate_collector_config` (`target_version=\"0.152.1\"`) across discovered collectors",
+        "Produces a staged rollout plan upgrading Gateways/Tail-Samplers before DaemonSet Agents"
+      ]
+    }
+  ]
+}

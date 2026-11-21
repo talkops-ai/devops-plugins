@@ -96,4 +96,12 @@ Always load `amplify-workflow` first to establish the active lifecycle phases, t
 
 ## Skills this agent uses
 
-`amplify-workflow` · `amplify-auth-cognito` · `amplify-data-appsync` · `amplify-storage-s3` · `amplify-functions-cdk` · `amplify-ai-kit` · `amplify-hosting-cicd` · `aws-blocks` · `signing-in-to-aws`
+- `amplify-workflow`
+- `amplify-auth-cognito`
+- `amplify-data-appsync`
+- `amplify-storage-s3`
+- `amplify-functions-cdk`
+- `amplify-ai-kit`
+- `amplify-hosting-cicd`
+- `aws-blocks`
+- `signing-in-to-aws`

@@ -1,11 +1,13 @@
 ---
 name: aws-database
-description: "Principal Database Architect router and FinOps evaluator for AWS databases — choosing, comparing, estimating TCO, getting started with, or operating any AWS operational database. Routes to service-specific engine skills (Aurora, DSQL, RDS OSS/Oracle/SQL Server/Db2, DynamoDB, Keyspaces, DocumentDB, Neptune, Timestream for InfluxDB, ElastiCache) and cross-engine operational lifecycle skills (db-observability-and-wait-triage, dms-schema-conversion, dms-data-migration-execution, db-ha-dr-and-schema-evolution), while enforcing the boundary between Operational Databases and Analytical Data Platforms (aws-data-engineer)."
+description: "Principal Database Architect router and FinOps evaluator for AWS databases — choosing, comparing, estimating TCO, getting started with, or operating any AWS operational database. Routes to service-specific engine skills (Aurora, DSQL, RDS OSS/Oracle/SQL Server/Db2, DynamoDB, Keyspaces, DocumentDB, Neptune, Timestream for InfluxDB, ElastiCache) and cross-engine operational lifecycle skills (db-observability-and-wait-triage, dms-schema-conversion, dms-data-migration-execution, db-ha-dr-and-schema-evolution), while enforcing the boundary between Operational Databases and Analytical Data Platforms (aws-data-engineer). Query live AWS state via MCP tools only (never raw aws CLI)."
 metadata:
   version: "4"
 ---
 
 # AWS Database — Principal Architect Router & FinOps Evaluator
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, account/region checks (`sts:GetCallerIdentity`), cluster/instance/table inspection, CloudWatch telemetry, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___run_script` `call_boto3`, `dynamodb`, `elasticache`, `postgres`, `mysql`, `cloudwatch`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**. Local offline helper scripts under `scripts/` may be run via `python3` or `node`.
 
 **STOP — Do not answer from general knowledge.** Before responding to any database question, match the user's request against the architectural boundary, cross-engine lifecycle skills, and sub-skill registry below and follow its procedure. If the procedure says to hand off to a service or lifecycle skill, you MUST load that skill before providing operational guidance. Never skip the routing step.
 

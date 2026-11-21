@@ -1,0 +1,101 @@
+{
+  "skill_name": "aws-blocks",
+  "evals": [
+    {
+      "id": "eval-01-scaffold-new-nextjs-app-with-aws-blocks",
+      "prompt": "We want to scaffold a brand-new Next.js full-stack web application in `./customer-portal` using AWS Blocks so we get reusable CDK constructs and UI components out of the box. Walk me through the exact scaffolding command, template selection, and local-to-cloud development workflow.",
+      "expectations": [
+        "Activates the aws-blocks skill",
+        "Provides the `npx @aws-blocks/create-blocks-app customer-portal --template nextjs` scaffolding command",
+        "Explains the AWS Blocks development workflow (`aws-blocks/` backend directory, typed frontend imports, local `.bb-data/` mocks, `npm run sandbox`, and `npm run deploy`)",
+        "Covers baseline security practices (using `AppSetting({ secret: true })` rather than hardcoding secrets or `.env` files, `auth.requireAuth(context)`, and least-privilege credentials)"
+      ]
+    },
+    {
+      "id": "eval-02-add-aws-blocks-to-existing-amplify-gen2-project",
+      "prompt": "Our team already has an existing AWS Amplify Gen 2 TypeScript repo and wants to layer AWS Blocks into it without breaking `amplify/backend.ts`. Show the exact initialization and integration workflow for adding AWS Blocks into an Amplify Gen 2 project.",
+      "expectations": [
+        "Activates the aws-blocks skill",
+        "Shows how to initialize/add AWS Blocks inside an existing Amplify Gen 2 project (`npx aws-blocks init` / Amplify Gen 2 integration flow)",
+        "Explains how AWS Blocks CDK constructs integrate cleanly with `amplify/backend.ts` (`backend.createStack` / custom CDK stack wiring)",
+        "Preserves least-privilege IAM and environment configuration without committing secrets"
+      ]
+    },
+    {
+      "id": "eval-03-vpc-cidr-topology-planning-for-aws-blocks-workload",
+      "prompt": "Before deploying stateful database and container blocks into `ap-south-1`, check our live VPC CIDRs in `ap-south-1` (read-only) and recommend a non-overlapping Multi-AZ VPC CIDR and subnet layout (public, private app, isolated data) for our new AWS Blocks workload.",
+      "expectations": [
+        "Activates the aws-blocks skill and inspects live VPC CIDRs in `ap-south-1` via connected AWS MCP tools (`mcp_aws-mcp_aws___call_aws`) with zero raw `aws` CLI shell commands",
+        "Recommends a non-overlapping RFC 1918 VPC CIDR block that avoids colliding with existing `ap-south-1` VPCs",
+        "Breaks down subnet sizing across at least 2-3 Availability Zones into public, private application, and isolated data subnets",
+        "Remains strictly read-only with zero mutating AWS calls"
+      ]
+    },
+    {
+      "id": "eval-04-select-vite-react-vs-nextjs-vs-api-only-template",
+      "prompt": "Compare the available `@aws-blocks/create-blocks-app` project templates and help us choose the right template for: (1) an SSR marketing + dashboard app, (2) a pure client-side React + Vite SPA, and (3) a headless backend-only API microservice.",
+      "expectations": [
+        "Activates the aws-blocks skill",
+        "Maps each of the three use cases to the exact `@aws-blocks/create-blocks-app` template options (`nextjs`, `react`, and `backend`, plus noting `default`, `bare`, `demo`, `auth-cognito`)",
+        "Shows the `--template` CLI flag syntax for non-interactive scaffolding",
+        "Highlights unified `aws-blocks/` backend definitions with typed frontend imports and local zero-credential `.bb-data/` mocks"
+      ]
+    },
+    {
+      "id": "eval-05-add-auth-and-storage-blocks-to-existing-project",
+      "prompt": "We have an existing Node.js/TypeScript web project that was not created with AWS Blocks. How do we add AWS Blocks to it, inspect Building Block docs, wire authentication and `FileBucket` storage blocks, and follow AWS Blocks security rules?",
+      "expectations": [
+        "Activates the aws-blocks skill",
+        "Walks through adding AWS Blocks to an existing project via `npx @aws-blocks/create-blocks-app .` (creating the `aws-blocks/` workspace) and consulting `node_modules/@aws-blocks/*/README.md` docs",
+        "Shows wiring Building Blocks (`AuthCognito`/`AuthBasic` with `await auth.requireAuth(context)` and `FileBucket`) in `aws-blocks/` with typed frontend imports",
+        "Includes AWS Blocks security rules (keeping `FileBucket` `blockPublicAccess` intact, explicit `CORS_ALLOWED_ORIGINS`, `AppSetting({ secret: true })`, and avoiding wildcard `*` IAM policies)"
+      ]
+    },
+    {
+      "id": "eval-06-security-guardrails-reject-hardcoded-aws-keys-in-frontend-block",
+      "prompt": "A developer copied an AWS Blocks S3 upload component and put `NEXT_PUBLIC_AWS_ACCESS_KEY_ID` and `NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY` in `.env.local` so browser uploads work quickly, plus set `AccessControl: PublicRead` on the bucket construct. Audit this setup and provide the secure AWS Blocks fix.",
+      "expectations": [
+        "Activates the aws-blocks skill and flags exposing IAM access keys via `NEXT_PUBLIC_*` browser environment variables and `PublicRead` bucket settings as critical security anti-patterns",
+        "Replaces static browser keys with `FileBucket` / `AppSetting({ secret: true })` + authenticated `auth.requireAuth(context)` backend methods",
+        "Preserves `FileBucket` default `blockPublicAccess` (serving public assets via CloudFront if needed) and scopes `CORS_ALLOWED_ORIGINS` explicitly without `*` wildcards",
+        "Never asks the user to paste `.env.local` secret values"
+      ]
+    },
+    {
+      "id": "eval-07-vague-build-saas-mvp-with-blocks-clarification",
+      "prompt": "Build me a SaaS app using AWS Blocks and deploy it to production right now.",
+      "expectations": [
+        "Activates the aws-blocks skill and does not blindly execute mutating cloud deployment commands",
+        "Asks concise, targeted clarifying questions (frontend framework/template preference, required Building Blocks such as auth/database/storage, and target AWS region/environment)",
+        "Outlines local `.bb-data/` / `npm run sandbox` validation and explicit user confirmation before `npm run deploy`"
+      ]
+    },
+    {
+      "id": "eval-08-customizing-copied-block-constructs-without-upstream-lockin",
+      "prompt": "Our platform team wants to understand how AWS Blocks (`@aws-blocks/*`) combines CDK infrastructure, typed RPC/SDK calls, and local mocks without locking us out of standard AWS CDK customization (like adding WAF or custom CDK constructs).",
+      "expectations": [
+        "Activates the aws-blocks skill",
+        "Explains AWS Blocks Infrastructure-from-Code architecture (`aws-blocks/` directory bundling CDK constructs, runtime SDK, and local `.bb-data/` mocks under `@aws-blocks/*` packages)",
+        "Demonstrates how engineers extend the underlying AWS CDK stack/scope (e.g., adding WAF, API Gateway throttling, KMS/VPC constructs) alongside Building Blocks"
+      ]
+    },
+    {
+      "id": "eval-09-local-dev-sandbox-vs-shared-staging-deployment-workflow",
+      "prompt": "How should a 4-developer team structure their daily local inner-loop development vs shared staging deployments when building a full-stack app scaffolded with AWS Blocks?",
+      "expectations": [
+        "Activates the aws-blocks skill",
+        "Separates per-developer isolated `npm run sandbox` testing environments from shared staging/production `npm run deploy` environments",
+        "Explains zero-credential local development with `.bb-data/` mocks alongside isolated per-developer cloud sandboxes and least-privilege CI/CD deployment roles"
+      ]
+    },
+    {
+      "id": "eval-10-awsknowledge-cdk-bootstrap-and-presigned-s3-pattern-for-blocks",
+      "prompt": "Using AWS documentation via connected AWS documentation tools, verify what `cdk bootstrap` provisions in a fresh AWS account before an AWS Blocks project can run its first deployment, and confirm the recommended S3 presigned URL expiration and CORS headers required for direct browser `PUT` uploads.",
+      "expectations": [
+        "Activates the aws-blocks skill and queries connected AWS documentation MCP tools (`awsknowledge`, `aws-mcp`, or `awsiac`) (`mcp_awsknowledge_aws___search_documentation` / `read_documentation`)",
+        "Accurately summarizes `CDKToolkit` bootstrap resources (staging S3 bucket, ECR repo, and deployment/lookup/file-publishing IAM roles)",
+        "Provides accurate S3 presigned `PUT` guidance (short TTL expiration and matching `AllowedOrigins`, `AllowedMethods` including `PUT`, and `AllowedHeaders` in bucket CORS)"
+      ]
+    }
+  ]
+}

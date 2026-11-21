@@ -1,0 +1,114 @@
+{
+  "skill_name": "auditing-observability-security-posture",
+  "companion_skills": [
+    "controlling-telemetry-cardinality-and-noise",
+    "provisioning-opentelemetry-collectors",
+    "instrumenting-kubernetes-workloads",
+    "troubleshooting-telemetry-pipelines",
+    "reviewing-helm-release-security",
+    "auditing-traefik-security-posture",
+    "auditing-alertmanager-governance"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Run a comprehensive OpenTelemetry security posture audit across `otel-demo` covering collectors, instrumentation CRs, eBPF pods, and RBAC roles, and produce a Markdown compliance report.",
+      "notes": "Full OTel security posture audit on OTEL-APP"
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Scan our collectors in `otel-demo` for hardcoded plaintext bearer tokens, `insecure_skip_verify: true`, and wildcard Kubernetes RBAC permissions.",
+      "notes": "Collector secret/TLS/RBAC audit"
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Harden the eBPF `obi` DaemonSet tracing `shipping` and `currency` in `otel-demo` so it drops `privileged: true` and uses least-privilege `BPF` and `PERFMON` capabilities.",
+      "notes": "eBPF least-privilege hardening"
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Prepare our `otel-demo` OpenTelemetry telemetry pipeline (`checkout`, `payment`, `email`) for an upcoming SOC 2 and PCI-DSS security compliance audit.",
+      "notes": "Compliance review of OTEL-APP pipeline"
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Kubernetes Pod Security Admission `restricted` in `otel-demo` blocked our collector pod from starting because it ran as root without a `seccompProfile`—harden its `securityContext`.",
+      "notes": "PSA restricted hardening"
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Check whether any collector in `otel-demo` exposes unauthenticated `pprof` (`:1777`) or `zpages` (`:55679`) diagnostic endpoints on `0.0.0.0`.",
+      "notes": "Debug extension exposure audit"
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Remediate hardcoded exporter API keys on `otel-insecure-collector` in `otel-demo` using Kubernetes `Secret` `secretKeyRef` and `${env:...}` variable expansion.",
+      "notes": "Inline secret remediation"
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Review the `ClusterRole` attached to our collector ServiceAccount in `otel-demo` and our `filelog` DaemonSet host mounts to ensure `secrets` access, write verbs, and writable `/var/log` mounts are absent.",
+      "notes": "Collector RBAC & hostPath audit"
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Render and audit the Helm chart security posture of `charts/image-provider` and `charts/postgresql` in `otel-demo` before installing those Helm releases.",
+      "expected_alternative_skill": "reviewing-helm-release-security",
+      "notes": "Helm release security review"
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Audit Traefik v3 `IngressRoute` and `TLSOptions` CRs fronting `frontend-proxy` in `otel-demo` for TLS 1.0/1.1 cipher weaknesses and insecure dashboard flags.",
+      "expected_alternative_skill": "auditing-traefik-security-posture",
+      "notes": "Traefik ingress security audit"
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Drop healthy `200 OK` `flagd` `/healthz` spans and normalize numeric product IDs in `frontend` `url.path` using OTTL to cut metric series cardinality.",
+      "expected_alternative_skill": "controlling-telemetry-cardinality-and-noise",
+      "notes": "Cardinality & noise reduction without security audit"
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Audit Alertmanager silence hygiene, catch-all route leaks, and HA peer gossip mesh health in `observability` for `otel-demo` alerts.",
+      "expected_alternative_skill": "auditing-alertmanager-governance",
+      "notes": "Alertmanager governance"
+    }
+  ]
+}

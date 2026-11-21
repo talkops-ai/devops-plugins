@@ -1,0 +1,112 @@
+{
+  "skill_name": "troubleshooting-telemetry-pipelines",
+  "companion_skills": [
+    "upgrading-opentelemetry-components",
+    "provisioning-opentelemetry-collectors",
+    "diagnosing-tempo-ingestion-and-health",
+    "operating-loki-deployments-and-ingestion",
+    "instrumenting-kubernetes-workloads"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Investigate why our `opentelemetry-otel-collector` pods in `otel-demo` keep restarting with `OOMKilled` (`ExitCode 137`) whenever load testing starts.",
+      "notes": "Collector OOM diagnostics"
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "`opentelemetry-otel-collector` in `otel-demo` went into `CrashLoopBackOff` right after a bad `postgresql` receiver edit—roll it back to the previous known-good collector config immediately!",
+      "notes": "Instant collector config revert"
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Analyze this `:8888/metrics` internal telemetry scrape from `opentelemetry-otel-collector` in `otel-demo` for exporter queue saturation, send failures, and receiver refusals.",
+      "notes": "Offline :8888/metrics saturation analysis"
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "`otelcol_exporter_enqueue_failed_spans` and `otelcol_receiver_refused_spans` are spiking on `opentelemetry-otel-collector` in `otel-demo`—what's backed up in the pipeline?",
+      "notes": "Backpressure & queue drop triage"
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Our `otel-agent` DaemonSet collector logs in `observability` are flooded with `cannot get resource \"nodes/stats\"` 403 Forbidden errors and node CPU metrics are missing.",
+      "notes": "Collector RBAC runtime failure"
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why is the OpenTelemetry Operator mutating admission webhook failing with `tls: bad certificate` whenever we update `OpenTelemetryCollector` or deploy `ad` in `otel-demo`?",
+      "notes": "Operator webhook cert failure"
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "`otel-gateway` gRPC receiver logs in `observability` show `ResourceExhausted: grpc: received message larger than max (6291456 vs. 4194304)` and upstream collector exports are failing.",
+      "notes": "gRPC max_recv_msg_size_mib error"
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Target Allocator stopped assigning `frontend-proxy` and `postgresql` `ServiceMonitor` targets to our `opentelemetry-otel-collector` StatefulSet in `otel-demo`—diagnose why.",
+      "notes": "TargetAllocator runtime troubleshooting"
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Grafana Tempo's `ingester` hash ring in `observability` is `UNHEALTHY` and Tempo `compactor` has block lag while ingesting traces.",
+      "expected_alternative_skill": "diagnosing-tempo-ingestion-and-health",
+      "notes": "Tempo backend health"
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Plan a zero-downtime upgrade of `opentelemetry-otel-collector` in `otel-demo` from `v0.98.0` to `v0.152.1` and migrate deprecated `logging` and `memory_ballast` blocks.",
+      "expected_alternative_skill": "upgrading-opentelemetry-components",
+      "notes": "Planned Collector version upgrade"
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Design and provision a greenfield 2-tier OpenTelemetry Collector architecture across `otel-demo` and `observability`.",
+      "expected_alternative_skill": "provisioning-opentelemetry-collectors",
+      "notes": "Greenfield Collector provisioning"
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Grafana Loki's Compactor in `observability` is lagging and `loki_discarded_samples_total` shows `per_stream_rate_limit` drops inside Loki.",
+      "expected_alternative_skill": "operating-loki-deployments-and-ingestion",
+      "notes": "Loki backend diagnostics"
+    }
+  ]
+}

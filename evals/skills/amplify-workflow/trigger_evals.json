@@ -1,0 +1,62 @@
+{
+  "skill_name": "amplify-workflow",
+  "companion_skills": [
+    "amplify-ai-kit",
+    "amplify-auth-cognito",
+    "amplify-data-appsync",
+    "amplify-functions-cdk",
+    "amplify-hosting-cicd"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use `amplify-workflow` to design, validate, and troubleshoot amplify workflow."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Walk me through production best practices and operational guardrails for amplify workflow (`amplify-workflow`)."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We need an operational review and step-by-step runbook covering: Master 4-phase orchestrator (Backend -> Sandbox -> Frontend -> Production) to build and deploy full-stack web and mobile apps with AWS Amplify Gen 2 (TypeScript code-first). Coordi"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "What are the critical failure modes, configuration checks, and verification commands for amplify workflow?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our amplify workflow setup in read-only mode."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure and troubleshoot amplify ai kit exclusively without touching amplify workflow.",
+      "expected_alternative_skill": "amplify-ai-kit"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+    }
+  ]
+}

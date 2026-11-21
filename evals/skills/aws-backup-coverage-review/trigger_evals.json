@@ -1,0 +1,99 @@
+{
+  "skill_name": "aws-backup-coverage-review",
+  "companion_skills": [
+    "storage-s3-resiliency-expertise",
+    "aws-storage",
+    "aws-fsxn-operations-review",
+    "storage-fsx-windows-sla-optimizer",
+    "aws-landing-zone-and-platform-governance"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Run an AWS Backup coverage review across our account in ap-south-1 and show which resources are unprotected."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Audit my AWS Backup plans, backup selections, vault lock settings, and per-Region resource opt-in posture."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Perform a backup gap analysis on our AWS account to check for `OptInBlocked`, `SelectedNotProtected`, and `OrphanedRecoveryPoint` states."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "What isn't being backed up in our `ap-south-1` region right now, and do our volumes and databases actually have recent recovery points?"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "We haven't enabled AWS Config or Backup Audit Manager yet—can you check from read-only APIs which eligible resources in our account have zero recovery points?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Are my EBS volumes and DynamoDB tables protected by a backup plan in `ap-south-1`, or is resource-type opt-in blocking them?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Before our DR audit tomorrow, review account `123456789012` in `ap-south-1` to verify every backup vault's KMS encryption, Vault Lock status, cross-Region copy rules, and recovery point freshness."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Our `daily-prod` backup selection matches `Backup=true`, yet 4 DynamoDB tables and 2 Neptune clusters have zero recovery points—run a coverage posture check."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "`ListProtectedResources` still lists 12 deleted EBS volumes from last year while live resources may be missing selections—audit our backup coverage and check matrix."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Audit S3 bucket `s3://example-prod-1234-as1-terraform-tfstate` across all 9 S3 resiliency dimensions including bucket versioning, CRR, Object Lock, Ownership Controls, and website hosting.",
+      "expected_alternative_skill": "storage-s3-resiliency-expertise"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Run a 46-check operational posture review on our Amazon FSx for NetApp ONTAP file systems and SVMs in ap-south-1.",
+      "expected_alternative_skill": "aws-fsxn-operations-review"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Review our FSx for Windows File Server `fs-0123456789abcdef0` for Single-AZ vs Multi-AZ SLA readiness, Active Directory health, and throughput right-sizing.",
+      "expected_alternative_skill": "storage-fsx-windows-sla-optimizer"
+    }
+  ]
+}

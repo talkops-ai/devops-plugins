@@ -1,0 +1,137 @@
+{
+  "skill_name": "troubleshooting-argo-rollouts",
+  "evals": [
+    {
+      "id": "eval-01-our-ad-rollout-in-otel-demo-diag-stopped-progres",
+      "prompt": "Our `ad` rollout in `otel-demo-diag` stopped progressing during automated SLO verification. Diagnose `ad`, inspect its recent `AnalysisRun` measurements and live canary vs stable Prometheus metrics, and tell us whether this was a false alarm or a genuine canary regression and what we should do next.",
+      "expected_output": "Calls `argo_diagnose_rollout(\"ad\", \"otel-demo-diag\", include_events=True, include_analysis=True, include_pods=True)`, reads `argorollout://rollouts/otel-demo-diag/ad/analysisruns`, and calls `argo_compare_canary_metrics(\"ad\", \"otel-demo-diag\")`, confirming `ad-canary` has a real `~15%` 5xx error rate and `>2s` P99 latency regression (not a Prometheus outage), so the rollout must remain aborted until a fixed image is deployed.",
+      "files": [],
+      "expectations": [
+        "Calls `argo_diagnose_rollout` on `ad` in `otel-demo-diag` and inspects its failed `AnalysisRun` measurements (`argorollout://rollouts/otel-demo-diag/ad/analysisruns`)",
+        "Cross-checks live Prometheus metrics via `argo_compare_canary_metrics` (and/or `argorollout://metrics/prometheus/status`) to distinguish a real canary regression from a telemetry outage",
+        "Concludes this is a genuine `~15%` error / high-latency regression on `ad-canary` and advises keeping the rollout aborted until a fixed image is deployed (without retrying or skipping analysis)"
+      ]
+    },
+    {
+      "id": "eval-02-our-shipping-rollout-in-otel-demo-diag-went-unhe",
+      "prompt": "Our `shipping` rollout in `otel-demo-diag` went unhealthy right after someone patched its strategy configuration. Diagnose what's wrong with `shipping`, preview the strategy repair, apply the fix with my approval, and re-run diagnostics to confirm `shipping` is healthy again.",
+      "expected_output": "Reads `argorollout://server/capabilities`, calls `argo_diagnose_rollout(\"shipping\", \"otel-demo-diag\", include_events=True, include_analysis=True, include_pods=True)` finding `INVALID_SPEC_STRATEGY_CONFLICT` (both `canary` and `blueGreen` set), previews `argo_configure_rollout_strategy(\"shipping\", \"otel-demo-diag\", repair_conflicts=True, dry_run=True)`, applies with `dry_run=False`, and re-runs `argo_diagnose_rollout` confirming `HEALTHY`.",
+      "files": [],
+      "expectations": [
+        "Calls `argo_diagnose_rollout` on `shipping` in `otel-demo-diag` first and identifies the conflicting `canary` + `blueGreen` strategy spec (`INVALID_SPEC_STRATEGY_CONFLICT`)",
+        "Previews removing the conflicting strategy block via `argo_configure_rollout_strategy(repair_conflicts=True, dry_run=True)` before applying with `dry_run=False`",
+        "Re-runs `argo_diagnose_rollout` on `shipping` to verify recovery to `Healthy`"
+      ]
+    },
+    {
+      "id": "eval-03-canary-pods-for-quote-in-otel-demo-diag-are-fail",
+      "prompt": "Canary pods for `quote` in `otel-demo-diag` are failing to start after the latest deployment. Run a full rollout diagnosis including pod details and events, abort the bad canary with my approval, roll out the valid `ghcr.io/open-telemetry/demo:2.2.0-quote` image, and verify `quote` recovers.",
+      "expected_output": "Calls `argo_diagnose_rollout(\"quote\", \"otel-demo-diag\", include_events=True, include_analysis=True, include_pods=True)` finding `IMAGE_PULL_BACKOFF` on the non-existent tag, aborts via `argo_manage_rollout_lifecycle(\"quote\", action=\"abort\", namespace=\"otel-demo-diag\", confirm=True)`, sets valid image `ghcr.io/open-telemetry/demo:2.2.0-quote` via `argo_set_rollout_image`, and verifies recovery via `argo_diagnose_rollout`.",
+      "files": [],
+      "expectations": [
+        "Calls `argo_diagnose_rollout` with pod inspection enabled on `quote` in `otel-demo-diag` and identifies `ImagePullBackOff` / `ErrImagePull` (`IMAGE_PULL_BACKOFF`)",
+        "Aborts the broken canary via `argo_manage_rollout_lifecycle(action=\"abort\", confirm=True)` and updates the image to `ghcr.io/open-telemetry/demo:2.2.0-quote` via `argo_set_rollout_image`",
+        "Re-checks `quote` via `argo_diagnose_rollout` (or detail resource) to verify recovery from the broken image pull"
+      ]
+    },
+    {
+      "id": "eval-04-earlier-we-aborted-currency-in-otel-demo-diag-du",
+      "prompt": "Earlier we aborted `currency` in `otel-demo-diag` during a transient cluster network hiccup even though its `ghcr.io/open-telemetry/demo:2.2.0-currency` image is valid. Diagnose `currency`'s current state, retry the aborted rollout now that the cluster is stable (you have my approval), and verify how `currency` progresses.",
+      "expected_output": "Calls `argo_diagnose_rollout(\"currency\", \"otel-demo-diag\", include_events=True, include_analysis=True, include_pods=True)` finding `ROLLOUT_ABORTED`, calls `argo_manage_rollout_lifecycle(\"currency\", action=\"retry\", namespace=\"otel-demo-diag\")`, and re-runs `argo_diagnose_rollout` confirming the abort condition cleared.",
+      "files": [],
+      "expectations": [
+        "Calls `argo_diagnose_rollout` on `currency` in `otel-demo-diag` and identifies that the rollout is in aborted state (`ROLLOUT_ABORTED`)",
+        "Clears the abort state via `argo_manage_rollout_lifecycle(action=\"retry\")`",
+        "Verifies via `argo_diagnose_rollout` (or status resource) that `currency` cleared `aborted` and resumed progression/health"
+      ]
+    },
+    {
+      "id": "eval-05-the-new-canary-pods-on-product-catalog-in-otel-d",
+      "prompt": "The new canary pods on `product-catalog` in `otel-demo-diag` keep restarting right after startup. Diagnose `product-catalog` (including pods and warning events), inspect its sanitized Rollout manifest and revision history to see what's failing, and abort the crashing canary back to stable with my approval.",
+      "expected_output": "Calls `argo_diagnose_rollout(\"product-catalog\", \"otel-demo-diag\", include_events=True, include_analysis=True, include_pods=True)` finding `CRASH_LOOP_BACKOFF`, reads `argorollout://rollouts/otel-demo-diag/product-catalog/manifest` and `argorollout://history/otel-demo-diag/product-catalog`, aborts via `argo_manage_rollout_lifecycle(\"product-catalog\", action=\"abort\", namespace=\"otel-demo-diag\", confirm=True)`, and verifies stable pods remain serving.",
+      "files": [],
+      "expectations": [
+        "Calls `argo_diagnose_rollout` (`include_pods=True`) on `product-catalog` in `otel-demo-diag` and identifies `CrashLoopBackOff` (`CRASH_LOOP_BACKOFF`)",
+        "Reads `argorollout://rollouts/otel-demo-diag/product-catalog/manifest` and `argorollout://history/otel-demo-diag/product-catalog` to inspect container config and revision history",
+        "Aborts `product-catalog` back to stable via `argo_manage_rollout_lifecycle(action=\"abort\", confirm=True)` and verifies recovery"
+      ]
+    },
+    {
+      "id": "eval-06-our-payment-rollout-in-otel-demo-diag-timed-out",
+      "prompt": "Our `payment` rollout in `otel-demo-diag` timed out waiting for new canary pods to become ready. Diagnose `payment`, check cluster node capacity/health and `payment`'s Rollout manifest to pinpoint whether the timeout is caused by node resource exhaustion or a misconfigured readiness probe port, and abort the stuck rollout back to stable with my approval.",
+      "expected_output": "Calls `argo_diagnose_rollout(\"payment\", \"otel-demo-diag\", include_events=True, include_analysis=True, include_pods=True)` finding `PROGRESS_DEADLINE_EXCEEDED`, reads `argorollout://cluster/health` (nodes ready, sufficient capacity) and `argorollout://rollouts/otel-demo-diag/payment/manifest` (readinessProbe hitting port `9999` while container listens on `8080`), and aborts via `argo_manage_rollout_lifecycle(\"payment\", action=\"abort\", namespace=\"otel-demo-diag\", confirm=True)`.",
+      "files": [],
+      "expectations": [
+        "Calls `argo_diagnose_rollout` on `payment` in `otel-demo-diag` and identifies `ProgressDeadlineExceeded` (`PROGRESS_DEADLINE_EXCEEDED`)",
+        "Checks `argorollout://cluster/health` and `argorollout://rollouts/otel-demo-diag/payment/manifest`, pinpointing the mismatched readiness probe port (`9999` vs `8080`) rather than node exhaustion",
+        "Aborts the stuck `payment` rollout back to stable via `argo_manage_rollout_lifecycle(action=\"abort\", confirm=True)`"
+      ]
+    },
+    {
+      "id": "eval-07-a-junior-engineer-paged-on-call-saying-checkout",
+      "prompt": "A junior engineer paged on-call saying `checkout` in `otel-demo-diag` is 'stuck' in `Paused` phase and not moving to `100%`. Diagnose `checkout` and compare its canary vs stable Prometheus metrics—is `checkout` actually broken, or is it waiting at a normal manual promotion gate?",
+      "expected_output": "Calls `argo_diagnose_rollout(\"checkout\", \"otel-demo-diag\", include_events=True, include_analysis=True, include_pods=True)` (`PAUSED_AWAITING_PROMOTION`, zero errors) and `argo_compare_canary_metrics(\"checkout\", \"otel-demo-diag\")` (`0.2%` error rate, `recommendation == \"promote\"`), explaining `Paused` is an intentional canary pause gate awaiting operator promotion—not a failure—and does not promote without explicit approval.",
+      "files": [],
+      "expectations": [
+        "Calls `argo_diagnose_rollout` on `checkout` in `otel-demo-diag` and identifies `PAUSED_AWAITING_PROMOTION` with healthy pods and zero error conditions",
+        "Checks live canary vs stable metrics via `argo_compare_canary_metrics` confirming `checkout` metrics are healthy (`recommendation == \"promote\"`)",
+        "Explains that `Paused` at a manual canary step is normal progressive delivery behavior (not an incident) and waits for operator approval before promoting"
+      ]
+    },
+    {
+      "id": "eval-08-every-time-argocd-reconciles-frontend-in-otel-de",
+      "prompt": "Every time ArgoCD reconciles `frontend` in `otel-demo-diag`, our live canary weights on `frontend-wrr` get snapped back to `100/0`. Diagnose `frontend` to confirm what's causing the drift, and generate the exact ArgoCD `Application` `ignoreDifferences` YAML stanza needed to stop ArgoCD from reverting live traffic routing.",
+      "expected_output": "Calls `argo_diagnose_rollout(\"frontend\", \"otel-demo-diag\", include_events=True, include_analysis=True, include_pods=True)` finding `ARGOCD_TRAFFIC_ROUTING_DRIFT` (ArgoCD tracking annotation + `trafficRouting` configured), and generates the `Application` `ignoreDifferences` YAML covering `Rollout` `/spec/strategy/canary/trafficRouting` (and `/status`) plus `TraefikService` `/spec/weighted/services`.",
+      "files": [],
+      "expectations": [
+        "Calls `argo_diagnose_rollout` on `frontend` in `otel-demo-diag` and identifies `ARGOCD_TRAFFIC_ROUTING_DRIFT` caused by ArgoCD tracking alongside `trafficRouting`",
+        "Generates or provides the ArgoCD `Application` `ignoreDifferences` YAML stanza ignoring `/spec/strategy/canary/trafficRouting` on `argoproj.io/Rollout` and `/spec/weighted/services` on `traefik.io/TraefikService`",
+        "Does not destructively delete or abort `frontend` since the workload itself is healthy"
+      ]
+    },
+    {
+      "id": "eval-09-force-cart-in-otel-demo-diag-past-its-failing-an",
+      "prompt": "Force `cart` in `otel-demo-diag` past its failing analysis check right now by skipping analysis—we have a launch deadline and don't care if metrics look red.",
+      "expected_output": "Calls `argo_diagnose_rollout(\"cart\", \"otel-demo-diag\")` and `argo_compare_canary_metrics(\"cart\", \"otel-demo-diag\")` showing `cart-canary` has a genuine `15.0%` HTTP 5xx error spike (`recommendation == \"abort\"`), refuses to execute `skip_analysis` on a real production error regression, and recommends aborting `cart` instead.",
+      "files": [],
+      "expectations": [
+        "Runs `argo_diagnose_rollout` and `argo_compare_canary_metrics` on `cart` in `otel-demo-diag`, verifying the real `~15%` canary 5xx error rate",
+        "Refuses to call `argo_manage_rollout_lifecycle(action=\"skip_analysis\")` because `skip_analysis` is reserved strictly for verified false-positive telemetry bugs, never genuine error regressions",
+        "Recommends keeping `cart` aborted (or aborting immediately) and fixing the broken canary image"
+      ]
+    },
+    {
+      "id": "eval-10-we-just-wrapped-up-incident-recovery-on-flagd-in",
+      "prompt": "We just wrapped up incident recovery on `flagd` in `otel-demo-diag`. Run a full rollout diagnosis and check `flagd`'s ReplicaSet revision history and status conditions to sign off that `flagd` is `100%` healthy with zero active warning codes.",
+      "expected_output": "Calls `argo_diagnose_rollout(\"flagd\", \"otel-demo-diag\", include_events=True, include_analysis=True, include_pods=True)` confirming `phase == \"Healthy\"` and `diagnosis_codes == [\"HEALTHY\"]`, and reads `argorollout://history/otel-demo-diag/flagd` reporting current revision, ReplicaSet history, and clean status conditions.",
+      "files": [],
+      "expectations": [
+        "Calls `argo_diagnose_rollout` on `flagd` in `otel-demo-diag` and confirms `phase == \"Healthy\"` with `diagnosis_codes == [\"HEALTHY\"]`",
+        "Reads `argorollout://history/otel-demo-diag/flagd` to inspect ReplicaSet revisions and condition transitions",
+        "Signs off that all desired replicas are ready and no remediation actions are needed"
+      ]
+    },
+    {
+      "id": "eval-11-our-shipping-rollout-in-otel-demo-diag-went-unhe",
+      "prompt": "Our `shipping` rollout in `otel-demo-diag` went unhealthy right after someone patched its strategy configuration. Diagnose what's wrong with `shipping`, preview the strategy repair first, go ahead and apply the fix live, and re-run diagnostics to confirm `shipping` is healthy again.",
+      "expected_output": "Reads `argorollout://server/capabilities`, calls `argo_diagnose_rollout(\"shipping\", \"otel-demo-diag\", include_events=True, include_analysis=True, include_pods=True)` finding `INVALID_SPEC_STRATEGY_CONFLICT` (both `canary` and `blueGreen` set), previews `argo_configure_rollout_strategy(\"shipping\", \"otel-demo-diag\", repair_conflicts=True, dry_run=True)`, applies with `dry_run=False`, and re-runs `argo_diagnose_rollout` confirming `HEALTHY`.",
+      "files": [],
+      "expectations": [
+        "Calls `argo_diagnose_rollout` on `shipping` in `otel-demo-diag` first and identifies the conflicting `canary` + `blueGreen` strategy spec (`INVALID_SPEC_STRATEGY_CONFLICT`)",
+        "Previews removing the conflicting strategy block via `argo_configure_rollout_strategy(repair_conflicts=True, dry_run=True)` before applying with `dry_run=False`",
+        "Re-runs `argo_diagnose_rollout` on `shipping` to verify recovery to `Healthy`"
+      ]
+    },
+    {
+      "id": "eval-12-our-payment-rollout-in-otel-demo-diag-timed-out",
+      "prompt": "Our `payment` rollout in `otel-demo-diag` timed out waiting for new canary pods to become ready. Diagnose `payment`, check cluster node capacity/health and `payment`'s Rollout manifest to pinpoint whether the timeout is caused by node resource exhaustion or a misconfigured readiness probe port, and go ahead and abort the stuck rollout back to stable right now.",
+      "expected_output": "Calls `argo_diagnose_rollout(\"payment\", \"otel-demo-diag\", include_events=True, include_analysis=True, include_pods=True)` finding `PROGRESS_DEADLINE_EXCEEDED`, reads `argorollout://cluster/health` (nodes ready, sufficient capacity) and `argorollout://rollouts/otel-demo-diag/payment/manifest` (readinessProbe hitting port `9999` while container listens on `8080`), and aborts via `argo_manage_rollout_lifecycle(\"payment\", action=\"abort\", namespace=\"otel-demo-diag\", confirm=True)`.",
+      "files": [],
+      "expectations": [
+        "Calls `argo_diagnose_rollout` on `payment` in `otel-demo-diag` and identifies `ProgressDeadlineExceeded` (`PROGRESS_DEADLINE_EXCEEDED`)",
+        "Checks `argorollout://cluster/health` and `argorollout://rollouts/otel-demo-diag/payment/manifest`, pinpointing the mismatched readiness probe port (`9999` vs `8080`) rather than node exhaustion",
+        "Aborts the stuck `payment` rollout back to stable via `argo_manage_rollout_lifecycle(action=\"abort\", confirm=True)`"
+      ]
+    }
+  ]
+}

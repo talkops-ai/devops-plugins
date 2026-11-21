@@ -1,0 +1,116 @@
+{
+  "skill_name": "investigating-tempo-latency-regressions",
+  "evals": [
+    {
+      "id": "eval-01-bimodal-tail-spike-cohort-and-trace-diff",
+      "prompt": "`frontend` p99 storefront latency in `otel-demo` jumped from `~180ms` to over `5` seconds in the last 30 minutes while median p50 stayed near `190ms` after a `flagd` configuration rollout (`imageSlowLoad=\"5sec\"`). Check our Tempo backend profile and investigate this tail latency regression against 1 hour ago.",
+      "expected_output": "Reads `tempo://server/capabilities` and `tempo://system/backends/default`, calls `tempo_analyze_service_red(service=\"frontend\", since=\"30m\", baseline_offset=\"1h\")`, classifies the shape as bimodal long-tail (`p99 / p50 >= 5.0`), runs `tempo_compare_span_cohorts(base_query='{ resource.service.namespace = \"otel-demo\" && resource.service.name = \"frontend\" && kind = server }', selection='{ duration > 4s }')`, samples fast baseline vs slow `image-provider` (`:8081`) outlier traces, and runs `tempo_summarize_trace` + `tempo_compare_traces` to isolate `imageSlowLoad`.",
+      "files": [],
+      "expectations": [
+        "Reads `tempo://system/backends/default` (and/or `tempo://server/capabilities`), calls `tempo_analyze_service_red` on `frontend` comparing against 1 hour ago, and identifies a bimodal tail spike (`p99 / p50 >= 5.0`)",
+        "Calls `tempo_compare_span_cohorts` to isolate attributes (`image-provider` / `imageSlowLoad` / `url.path`) skewed in the `> 4s` tail cohort",
+        "Samples representative fast and slow `otel-demo` traces via `tempo_get_exemplar_traces` or `tempo_traceql_search`",
+        "Runs `tempo_summarize_trace` and `tempo_compare_traces` before recommending resetting `imageSlowLoad` in `flagd`"
+      ]
+    },
+    {
+      "id": "eval-02-n-plus-one-orm-query-fanout-detection",
+      "prompt": "Compare fast baseline `recommendation` trace `11112222333344445555666677778888` (`140ms`, `recommendationCacheFailure=\"off\"`) against slow degraded trace `9999aaaabbbbccccddddeeeeffff0000` (`1.85s`, `recommendationCacheFailure=\"on\"`) in Grafana Tempo (`otel-demo`) and tell us whether we should scale up `postgresql:5432` or fix an application query pattern.",
+      "expected_output": "Calls `tempo_compare_traces(trace_id_a=\"11112222333344445555666677778888\", trace_id_b=\"9999aaaabbbbccccddddeeeeffff0000\")` and `tempo_summarize_trace`, classifying the regression as an **N+1 Fan-Out Regression** (`comparison_count / baseline_count >= 3x` on `oteldemo.ProductCatalogService/GetProduct` / `SELECT * FROM catalog.products` while per-call `avg_duration_delta_ms` stayed flat `< 20%`), recommending disabling `recommendationCacheFailure` in `flagd` and batching `ListProducts` RPCs instead of vertically scaling `postgresql:5432`.",
+      "files": [],
+      "expectations": [
+        "Calls `tempo_compare_traces` with baseline `11112222333344445555666677778888` and degraded `9999aaaabbbbccccddddeeeeffff0000`",
+        "Applies the N+1 fan-out heuristic (`comparison_count / baseline_count >= 3` on `GetProduct` / `catalog.products` with flat per-span `avg_duration_delta_ms < 20%`)",
+        "Recommends restoring recommendation caching (`recommendationCacheFailure=\"off\"`) / batch `ListProducts` RPCs rather than vertically scaling `postgresql`"
+      ]
+    },
+    {
+      "id": "eval-03-single-operation-slowdown-vs-local-compute-self-time",
+      "prompt": "Diff healthy `otel-demo` storefront trace `aaaa1111bbbb2222cccc3333dddd4444` (`220ms`) against slow trace `eeee5555ffff66660000777788889999` (`1.62s`) in Grafana Tempo after `adManualGc` and `adHighCpu` were enabled in `flagd`, and classify whether the slowdown is caused by extra downstream RPCs or local compute/GC inside a single service.",
+      "expected_output": "Calls `tempo_compare_traces` and `tempo_summarize_trace`, identifying a **Single-Operation Slowdown** (`baseline_count == comparison_count`, `only_in_comparison` empty, `oteldemo.AdService/GetAds` accounting for `>= 60%` of `duration_delta_ms`) combined with a **Local Compute / GC Hotspot** (`self_time_ratio >= 0.40` inside Java `ad` `:8080`, `300Mi` limit), pinpointing `adManualGc` / `adHighCpu` JVM stop-the-world GC or CPU saturation.",
+      "files": [],
+      "expectations": [
+        "Calls `tempo_compare_traces` and `tempo_summarize_trace` on `aaaa1111bbbb2222cccc3333dddd4444` and `eeee5555ffff66660000777788889999`",
+        "Classifies the structural diff as Single-Operation Slowdown (`>= 60%` of `duration_delta_ms` on `oteldemo.AdService/GetAds` with identical span counts)",
+        "Flags `self_time_ratio >= 0.40` on `ad` as JVM GC (`adManualGc`) / CPU (`adHighCpu`) local execution rather than downstream wait"
+      ]
+    },
+    {
+      "id": "eval-04-new-synchronous-dependency-and-retry-amplification",
+      "prompt": "After upgrading the `checkout` Helm chart (`checkout-service:2.3.0-checkout`) in `otel-demo`, `PlaceOrder` p95 latency more than doubled. Compare baseline trace `abcd0001abcd0001abcd0001abcd0001` (`2.2.0`) against `2.3.0-checkout` trace `abcd0002abcd0002abcd0002abcd0002` in Grafana Tempo to determine whether newly added synchronous `flagd:8013` RPC hops or `payment` (`Charge`) retry loops are driving the slowdown.",
+      "expected_output": "Calls `tempo_compare_traces(trace_id_a=\"abcd0001abcd0001abcd0001abcd0001\", trace_id_b=\"abcd0002abcd0002abcd0002abcd0002\")` and `tempo_summarize_trace`, inspecting `only_in_comparison` (newly introduced synchronous `flagd.evaluation.v1.Service/ResolveBoolean` calls) and `error_count_delta` / `operation_diffs` (sequential `oteldemo.PaymentService/Charge` retries), cleanly separating new synchronous dependencies from retry amplification.",
+      "files": [],
+      "expectations": [
+        "Calls `tempo_compare_traces` and inspects `only_in_comparison`, `operation_diffs`, and `error_count_delta` between `abcd0001abcd0001abcd0001abcd0001` and `abcd0002abcd0002abcd0002abcd0002`",
+        "Distinguishes newly added synchronous `flagd` RPC spans from `payment` `Charge` retry amplification (`error_count_delta > 0` with repeated `Charge` spans)",
+        "Validates bottleneck classification before recommending local flag caching, retry tuning, or `helm rollback checkout`"
+      ]
+    },
+    {
+      "id": "eval-05-find-related-traces-across-async-messaging-hops",
+      "prompt": "gRPC `oteldemo.CheckoutService/PlaceOrder` trace `1234567890abcdef1234567890abcdef` finishes in just `90ms` after publishing an order message to `kafka:9092` (`orders` topic in `otel-demo`), yet customers report an `18`-second delay before `accounting` persists their order while `kafkaQueueProblems` is active in `flagd`. Find the linked downstream async consumer trace in Grafana Tempo and pinpoint where the 18-second delay occurs.",
+      "expected_output": "Calls `tempo_find_related_traces` starting from producer `trace_id=\"1234567890abcdef1234567890abcdef\"` (`correlation_strategy=\"span_links\"` or inbound span-link discovery) to locate the linked `orders` consumer trace in `otel-demo`, then runs `tempo_summarize_trace` on that consumer trace to separate `kafkaQueueProblems` consumer lag / queue dwell time from the fast `postgresql` `accounting` `INSERT` execution.",
+      "files": [],
+      "expectations": [
+        "Calls `tempo_find_related_traces` starting from `checkout-service` producer `trace_id=\"1234567890abcdef1234567890abcdef\"` to discover linked async consumer traces",
+        "Inspects the linked `orders` consumer trace via `tempo_summarize_trace`",
+        "Separates `kafkaQueueProblems` queue lag / consumer delay from `postgresql` `accounting` SQL `INSERT` execution time"
+      ]
+    },
+    {
+      "id": "eval-06-offline-otlp-trace-json-self-time-hotspot-analysis",
+      "prompt": "Analyze this exported `otel-demo` OTLP trace JSON (`batches[].scopeSpans[].spans[]`) for `frontend` (`GET /api/products/L9ECAV7KIM`) calling `product-catalog-service` and `ad` concurrently in parallel, and calculate the exact exclusive self-time for each span:\n```json\n{\"batches\":[{\"scopeSpans\":[{\"spans\":[{\"spanId\":\"root1\",\"name\":\"GET /api/products/L9ECAV7KIM\",\"startTimeUnixNano\":\"1000000000\",\"endTimeUnixNano\":\"2000000000\"},{\"spanId\":\"c1\",\"parentSpanId\":\"root1\",\"name\":\"oteldemo.ProductCatalogService/GetProduct\",\"startTimeUnixNano\":\"1100000000\",\"endTimeUnixNano\":\"1500000000\"},{\"spanId\":\"c2\",\"parentSpanId\":\"root1\",\"name\":\"oteldemo.AdService/GetAds\",\"startTimeUnixNano\":\"1300000000\",\"endTimeUnixNano\":\"1700000000\"}]}]}]}\n```",
+      "expected_output": "Runs `scripts/analyze_otlp_trace_critical_path.py` to merge the overlapping child intervals `[1100ms, 1500ms]` (`GetProduct`) and `[1300ms, 1700ms]` (`GetAds`) into `[1100ms, 1700ms]` (`600ms` merged child wall-clock, NOT `400 + 400 = 800ms`), computing `GET /api/products/L9ECAV7KIM` `duration_ms = 1000.0` and `self_time_ms = 400.0` (`self_time_ratio = 0.40`), alongside `GetProduct` (`400.0ms`) and `GetAds` (`400.0ms`).",
+      "files": [],
+      "expectations": [
+        "Runs `analyze_otlp_trace_critical_path.py` merging overlapping parallel child intervals (`[1100ms, 1700ms] = 600ms`) instead of naively summing `400ms + 400ms`",
+        "Computes `GET /api/products/L9ECAV7KIM` `duration_ms = 1000.0` and `self_time_ms = 400.0` (`self_time_ratio = 0.40`) accurately",
+        "Ranks `self_time_hotspots` descending by `self_time_ms`"
+      ]
+    },
+    {
+      "id": "eval-07-downstream-wait-bottleneck-classification",
+      "prompt": "Inspect `otel-demo` trace `fedcba9876543210fedcba9876543210` (`GET /images/LensCleaningKit.jpg` through `frontend-proxy` Envoy `:8090` -> `image-provider` Nginx `:8081`) in Grafana Tempo—is `frontend-proxy` causing the 5-second delay or passively waiting on a downstream service?",
+      "expected_output": "Calls `tempo_summarize_trace(trace_id=\"fedcba9876543210fedcba9876543210\")`, classifies `frontend-proxy` (`duration_ms=5100`, `self_time_ms=18`, `self_time_ratio < 0.15`) as pure **Downstream Wait**, and attributes the bottleneck to leaf dependency `image-provider` (`5040ms` self-time from `imageSlowLoad=\"5sec\"`).",
+      "files": [],
+      "expectations": [
+        "Calls `tempo_summarize_trace` on `fedcba9876543210fedcba9876543210` to inspect critical path and per-span `self_time_ms`",
+        "Exonerates `frontend-proxy` Envoy because `self_time_ratio < 0.15` indicates passive downstream wait",
+        "Pinpoints leaf span `image-provider` (`self_time_ms = 5040ms`, `imageSlowLoad`) as the true latency root cause"
+      ]
+    },
+    {
+      "id": "eval-08-uniform-latency-shift-across-p50-and-p99",
+      "prompt": "Both median p50 (`80ms -> 195ms`) and tail p99 (`210ms -> 490ms`) latency rose by more than `130%` across `GetProduct`, `ListProducts`, and `SearchProducts` on `product-catalog-service` in `otel-demo` over the last 20 minutes compared against 1 hour ago. Diagnose what kind of latency shift this is in Grafana Tempo and verify what shared resource is saturated.",
+      "expected_output": "Calls `tempo_analyze_service_red(service=\"product-catalog-service\", since=\"20m\", baseline_offset=\"1h\")` and `tempo_compare_span_cohorts`, classifying the pattern as a **Uniform Latency Shift** (both `p50` and `p99` increased `>= 50%`), pointing to shared resource saturation (`product-catalog-service` CPU throttling / `GOMEMLIMIT=160MiB` pressure or `postgresql:5432` connection pool contention) and verifying via `tempo_compare_traces` / `tempo_traceql_search`.",
+      "files": [],
+      "expectations": [
+        "Calls `tempo_analyze_service_red` on `product-catalog-service` comparing against the 1-hour baseline",
+        "Classifies simultaneous `>= 50%` rises in both `p50` and `p99` as a Uniform Latency Shift rather than a rare outlier tail",
+        "Checks shared infrastructure dimensions (`k8s.pod.name`, `k8s.node.name`, `postgresql:5432` DB pool wait) via `tempo_compare_span_cohorts` and trace inspection"
+      ]
+    },
+    {
+      "id": "eval-09-exemplar-extraction-for-slow-latency-bucket",
+      "prompt": "Pull slow exemplar traces directly from Grafana Tempo for `checkout-service` `PlaceOrder` server spans exceeding `1.5` seconds in `otel-demo` over the last 30 minutes, then summarize the slowest trace's critical path and self-time hotspots.",
+      "expected_output": "Calls `tempo_get_exemplar_traces(backend_id=\"default\", query='{ resource.service.namespace = \"otel-demo\" && resource.service.name = \"checkout-service\" && kind = server && duration > 1500ms } | rate()', since=\"30m\", limit=5)` (using a valid TraceQL metrics query, NOT PromQL), selects the slowest `PlaceOrder` candidate from `trace_candidates`, and runs `tempo_summarize_trace`.",
+      "files": [],
+      "expectations": [
+        "Passes a valid TraceQL metrics expression for `checkout-service` (`duration > 1500ms` / `duration > 1.5s`) to `tempo_get_exemplar_traces`",
+        "Selects a slow `PlaceOrder` candidate from `trace_candidates`",
+        "Calls `tempo_summarize_trace` to extract critical path and `self_time_ms` hotspots across downstream `otel-demo` hops"
+      ]
+    },
+    {
+      "id": "eval-10-uninstrumented-time-gap-guardrail-during-latency-triage",
+      "prompt": "A teammate wants to double CPU limits on `checkout-service` and `recommendation` in `otel-demo` because `checkout-service` trace `33333333333333333333333333333333` took `3.4s` end-to-end with only `180ms` of child spans (`payment` + `shipping-service` + `cart-service`), and `recommendation` trace `00112233445566778899aabbccddeeff` took `3.2s` wall-clock with only `620ms` on its critical path! Inspect both traces and Tempo health in `observability`—should we blame CPU saturation?",
+      "expected_output": "Calls `tempo_summarize_trace` on `33333333333333333333333333333333` and `00112233445566778899aabbccddeeff` observing `has_time_gaps: true` (`TRACE_TIME_GAPS`, `< 50%` child/critical-path coverage), refuses to blame CPU saturation prematurely, calls `tempo_get_diagnostics` to check whether child spans were dropped (`SPANS_DISCARDED`), and recommends checking gRPC thread-pool queue starvation, DNS/connection pool stalls, or disabled OTel instrumentation (`otel.enabled=false`) before changing pod CPU limits.",
+      "files": [],
+      "expectations": [
+        "Inspects the traces in Tempo and recognizes `< 50%` critical-path / child-span coverage as an uninstrumented time-gap condition (`TRACE_TIME_GAPS`), not proven CPU compute",
+        "Calls `tempo_get_diagnostics` to rule out dropped child spans (`SPANS_DISCARDED`)",
+        "Recommends checking gRPC thread-pool queue wait, DNS/connection pool stalls, or `otel.enabled=false` hops before raising pod CPU limits"
+      ]
+    }
+  ]
+}

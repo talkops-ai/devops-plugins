@@ -1,0 +1,95 @@
+{
+  "skill_name": "waf",
+  "companion_skills": [
+    "shieldadvanced",
+    "route53",
+    "aws-security",
+    "connecting-lambda-to-api-gateway"
+  ],
+  "queries": [
+    {
+      "id": "trig-pos-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Create a `REGIONAL` AWS WAFv2 WebACL in `ap-south-1` with `aws-waf-logs-` logging (`authorization`/`cookie` redacted) and tune `AWSManagedRulesCommonRuleSet` in `Count` mode."
+    },
+    {
+      "id": "trig-pos-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Configure AWS WAF Bot Control `TARGETED` level, forward `x-amzn-waf-*` bot confidence headers, and strip spoofed inbound headers."
+    },
+    {
+      "id": "trig-pos-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Stop credential stuffing on `/login` and fake signups on `/signup` using AWS WAF Fraud Control (`ATP` and `ACFP`)."
+    },
+    {
+      "id": "trig-pos-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Fix a `CrossSiteScripting_BODY` false positive using surgical `RuleActionOverrides` + WAF labels instead of disassociating our WebACL."
+    },
+    {
+      "id": "trig-pos-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure `ForwardedIPConfig` (`X-Forwarded-For`) behind a CDN and manage AI crawler traffic in AWS WAF."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Subscribe to AWS Shield Advanced in `us-east-1` and request DDoS cost-protection credits."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure Route 53 Resolver Inbound/Outbound endpoints and DNS Firewall."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Set up AWS Direct Connect MACsec encryption and BGP BFD timers."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Create an AWS Transit Gateway with Network Firewall east-west inspection."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Debug a timing-out Lambda function in `ap-south-1`."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Use `asm-exec` to pass Secrets Manager dynamic references to `psql`."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Run an AWS Well-Architected Framework scorecard review."
+    }
+  ]
+}

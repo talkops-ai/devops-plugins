@@ -1,14 +1,11 @@
 ---
 name: triaging-cloud-security-posture
-description: >-
-  Aggregates, correlates, and remediates cloud security posture (CSPM) findings and runtime
-  threats across AWS Security Hub (CIS, FSBP), Amazon GuardDuty, Amazon Inspector (ECR, Lambda,
-  EC2 CVEs), and AWS Config, mapping live resource ARNs directly to local Terraform, CDK,
-  CloudFormation, and Dockerfile code. Use when the user asks to "check cloud security posture",
-  "triage GuardDuty or Security Hub findings", "fix Inspector CVEs", or runs `/posture`.
+description: "Aggregates, deduplicates, prioritizes (P0/P1/P2), and remediates cloud security posture (CSPM) findings and runtime threats across AWS Security Hub (CIS, FSBP), Amazon GuardDuty, Amazon Inspector (ECR, Lambda, EC2 CVEs), and AWS Config, mapping live resource ARNs to local Terraform, CDK, CloudFormation, and Dockerfile code. Do NOT use for offline IaC-only perimeter hardening without CSPM/GuardDuty/Inspector triage, uploading source code to AWS Security Agent scans, or pure CloudTrail event-timeline forensics. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # Cloud Security Posture (CSPM) & Runtime Threat Triage
+
+> **MCP-Only Live AWS Execution:** Execute ALL live AWS posture sweeps (`securityhub`, `guardduty`, `inspector2`, `config`) strictly via connected MCP tools (`aws-well-architected-security`, `aws-mcp` `aws___run_script` `call_boto3` / `aws___call_aws`, `aws-cloudtrail`, `aws-cloudwatch`) — **never invoke raw `aws ...` CLI commands or local `boto3` scripts in shell (`run_command`)**.
 
 ## When to Use
 Invoke this skill whenever a user asks for an account security posture review, wants to triage active GuardDuty threat alerts, needs to remediate Security Hub compliance failures (AWS Foundational Security Best Practices, CIS Benchmark, PCI-DSS), or wants to fix Amazon Inspector CVE vulnerabilities across ECR containers, Lambda functions, or EC2 instances.
@@ -19,9 +16,8 @@ Invoke this skill whenever a user asks for an account security posture review, w
 Use `aws-well-architected-security` (`CheckSecurityServices`, `GetSecurityFindings`) and `aws___run_script` in `aws-mcp` to sweep Security Hub, GuardDuty, Inspector2, and AWS Config in a single consolidated pass:
 
 ```python
-import boto3
-
-session = boto3.Session()
+# Inside aws-mcp `aws___run_script` (read-only sandboxed execution):
+region = "ap-south-1"
 summary = {"guardduty": [], "securityhub": [], "inspector": [], "config_noncompliant": []}
 
 # 1. GuardDuty active threats (Severity >= 4.0)

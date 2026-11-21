@@ -29,6 +29,12 @@ Deploy your AgentCore agent to AWS, or diagnose why a deploy failed.
 - You want to deploy to a specific target (staging, production)
 - You need to roll back to a previous version, pin to a specific version, or set up canary deployments
 
+## MCP-Only Execution & Read-Only Safety
+
+- **MCP-Only Live Discovery & Docs:** Execute **all** live AWS discovery, AgentCore runtime/gateway/memory inspection, telemetry/log/trace queries, IAM policy simulations, and documentation lookups **exclusively via connected MCP tools**: `aws-mcp` (`aws___run_script` using read-only `await call_boto3(...)`, `aws___search_documentation`, `aws___read_documentation`), `agentcore` (`search_agentcore_docs`, `fetch_agentcore_doc`, `list_agent_runtimes`, `get_agent_runtime`, etc.), `strands-agents` (`search_docs`, `fetch_doc`, `find_integrations`), `cloudwatch`, `appsignals`, `cloudtrail`, `awspricing`, `awsiac`, and `awsknowledge`.
+- **Zero Raw CLI Execution, Strictly Read-Only & Secret-Safe:** **Never** run raw `aws ...` or `agentcore ...` CLI commands in Bash/`run_command` to query or mutate live AWS accounts (present CLI commands in Markdown strictly as operator reference snippets). **Never** invoke live mutations (`create_*`, `update_*`, `delete_*`, `InvokeAgentRuntime`, `InvokeModel`) — refuse unapproved destructive/mutating requests and explain the safe, approval-gated operator workflow, **always prescribing all three non-mutating pre-flight checks (`agentcore validate`, `agentcore deploy --dry-run`, and `agentcore deploy --diff`)** before any `agentcore deploy` along with version/endpoint rollback steps. **Never** read or print plaintext secrets (`secretsmanager:GetSecretValue`, `ssm:GetParameter` with `WithDecryption=True`, `.env` / `.env.local` values, or raw memory record contents).
+- **Edge-Case Documentation Fallback:** For unmapped AWS/AgentCore/Bedrock/CDK deployment edge cases, run 1–2 focused queries via `agentcore`, `strands-agents`, `awsknowledge`, or `aws-mcp` documentation search tools.
+
 ## Input
 
 `$ARGUMENTS` is optional:
@@ -43,13 +49,13 @@ Deploy your AgentCore agent to AWS, or diagnose why a deploy failed.
 
 ## Process
 
-### Step 0: Verify CLI version
+### Step 0: Verify CLI version prerequisite
 
-Run `agentcore --version`. This skill requires v0.9.0 or later. If the version is older, tell the developer to run `agentcore update` before proceeding.
+AgentCore CLI `>= 0.9.0` is required (operators can check locally via `agentcore --version` and upgrade via `agentcore update`).
 
 ### Step 1: Determine the situation
 
-Read `agentcore/agentcore.json` and `agentcore/aws-targets.json` if they exist.
+Read `agentcore/agentcore.json` and `agentcore/aws-targets.json` if they exist (never read `.env` or `agentcore/.env.local`).
 
 Ask (or infer from context):
 

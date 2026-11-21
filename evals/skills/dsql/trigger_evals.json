@@ -1,0 +1,96 @@
+{
+  "skill_name": "dsql",
+  "companion_skills": [
+    "amazon-aurora-postgresql",
+    "rds-oss",
+    "amazon-dynamodb",
+    "aws-database",
+    "db-ha-dr-and-schema-evolution"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Migrate our PostgreSQL DDL to Amazon Aurora DSQL using CREATE INDEX ASYNC, JSONB arrays, and UUID primary keys."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Implement Optimistic Concurrency Control (OCC) SQLSTATE 40001 retry logic and AWS IAM GRANT custom roles on Aurora DSQL."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Configure an Amazon Aurora DSQL multi-region active-active cluster with two linked endpoints and a witness Region."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why did our distributed Postgres cluster on AWS reject synchronous CREATE INDEX, COLLATE \"C\", and TRUNCATE TABLE?"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Bulk-load 5 million CSV rows using aurora-dsql-loader without hitting the 3,000-row / 10 MiB per-transaction ceiling."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Set up aurora-dsql-python-connector with short-lived SigV4 tokens and scoped DbConnect role mapping."
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Check via MCP whether Aurora DSQL is available in ap-south-1 and list any DSQL clusters in us-east-1 and eu-west-1."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Design composite tenant-scoped foreign keys (tenant_id, project_id) on DSQL while avoiding parent-row OCC 40001 aborts."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Safely change an INTEGER column to NUMERIC(18,4) on a 500k-row DSQL table using shadow-table migration."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Set up pgvector HNSW embeddings and PL/pgSQL triggers on an Aurora PostgreSQL 16 Serverless v2 cluster."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure DynamoDB Global Tables Multi-Region Strong Consistency (MRSC) with PartitionKey and SortKey."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Set up RDS Proxy connection pooling in front of standalone RDS PostgreSQL 16."
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+diagram TB
+  subgraph VPC (ap-south-1)
+    cf[CloudFront<br/>Edge CDN] --> alb(Application Load Balancer (Public))
+    alb --> ecs[ECS Fargate Service]
+    ecs -->

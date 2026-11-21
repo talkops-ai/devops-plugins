@@ -1,0 +1,95 @@
+{
+  "skill_name": "aws-finops-and-cost",
+  "companion_skills": [
+    "iac-architecture-advisor",
+    "deploy",
+    "aws-networking-and-compute",
+    "aws-database"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Estimate the monthly AWS cost of our Terraform stack in `ap-south-1` (3 NAT Gateways, 4 `m7g.large` EC2s, ALB, and RDS `db.r7g.large`) before we run `terraform apply`."
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Audit our CDK infrastructure code for FinOps cost traps like `gp2` EBS volumes, per-AZ NAT Gateways in dev, x86 `m5` instances, and missing S3 lifecycle rules."
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Set up Infracost shift-left pull request cost breakdowns and FinOps budget guardrails for our OpenTofu repository."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Calculate the break-even point between Aurora Standard and Aurora I/O-Optimized (`aurora-iopt1`) plus rightsize our `c6i` EC2 fleet before buying Compute Savings Plans."
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Scan `ap-south-1` for unattached `available` EBS volumes, `gp2` volumes, unassociated Elastic IPs, and cross-AZ data transfer cost traps."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write an IAM Permissions Boundary and Service Control Policy blocking `iam:*` privilege escalation."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Diagnose a CloudFormation `UPDATE_ROLLBACK_COMPLETE` failure and roll back a broken ECS deployment."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Scaffold a React Vite SPA with AWS Blocks using `npx @aws-blocks/create-blocks-app my-app`."
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Write a Crossplane Composition for provisioning EKS namespaces with IRSA."
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure AWS Marketplace SaaS `BatchMeterUsage` idempotency keys and entitlement checks."
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Set up BGP BFD timers on a Direct Connect Private Virtual Interface."
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Debug a Quantum Hybrid Job `AlgorithmSpecification` container failure on Amazon Braket."
+    }
+  ]
+}

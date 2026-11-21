@@ -1,0 +1,91 @@
+{
+  "skill_name": "route53",
+  "evals": [
+    {
+      "id": "eval-01-public-dns-alias-vs-cname-zone-apex-record-creation",
+      "prompt": "Our developer tried creating a `CNAME` record at our zone apex `example.com` pointing to our Application Load Balancer `dualstack.prod-alb-123.ap-south-1.elb.amazonaws.com` and Route 53 rejected it! Explain RFC zone-apex rules, Route 53 **Alias** (`A` + `AAAA`) vs `CNAME`, `EvaluateTargetHealth`, and show the exact `change-resource-record-sets` JSON.",
+      "expectations": [
+        "Activates the route53 skill",
+        "Explains DNS RFC 1034 constraints prohibiting `CNAME` at the zone apex (`example.com` where `NS` and `SOA` records exist) and solves it with Route 53 **Alias** (`A` + `AAAA` for dual-stack) records (`AliasTarget` with ALB canonical `HostedZoneId` and `DNSName`, noting free query pricing to AWS ALB targets and `EvaluateTargetHealth: false` for a single standalone non-failover Alias record)"
+      ]
+    },
+    {
+      "id": "eval-02-active-passive-cross-region-failover-routing-with-health-checks",
+      "prompt": "Design an active-passive cross-region disaster recovery DNS setup in Route 53 failing over `api.example.com` from primary `ap-south-1` ALB to standby `ap-southeast-1` ALB using Route 53 Health Checks + Failover Routing Policy, including inverted/calculated health check and data-plane vs control-plane survival guidance.",
+      "expectations": [
+        "Activates the route53 skill",
+        "Configures a Route 53 HTTPS/Calculated Health Check (`FailureThreshold: 3` and `us-east-1` `HealthCheckStatus` CloudWatch alarm notifying a KMS-encrypted SNS topic) wired to `PRIMARY` (`Failover: \"PRIMARY\"`) and `SECONDARY` (`Failover: \"SECONDARY\"`) Alias record sets with unique `SetIdentifier`s",
+        "Recommends probing a deep application health endpoint (e.g., `/health`) and configuring `HealthCheckId` / `EvaluateTargetHealth` appropriately across the primary and secondary failover Alias records"
+      ]
+    },
+    {
+      "id": "eval-03-weighted-routing-blue-green-canary-traffic-splitting",
+      "prompt": "Show how to shift traffic gradually (`90%` Blue v1 -> `10%` Green v2 -> `0% / 100%`) across two endpoints on `app.example.com` using Route 53 **Weighted Routing**, including TTL pre-lowering, what `Weight: 0` on ALL records accidentally does, and health check behavior.",
+      "expectations": [
+        "Activates the route53 skill",
+        "Shows pre-lowering DNS TTL (e.g., `60s`) well before the window, creating two `WEIGHTED` records sharing the same name/type with distinct `SetIdentifier`s (`Weight: 90` and `Weight: 10`), and shifting cleanly to `Weight: 0` (stops serving Blue without deleting the record so rollback is instant!)",
+        "Calls out the classic Route 53 gotcha: if **every** weighted record in a group has `Weight: 0`, Route 53 routes traffic **equally** across all healthy records!"
+      ]
+    },
+    {
+      "id": "eval-04-hybrid-private-dns-bidirectional-vpc-resolver-inbound-and-outbound-endpoints",
+      "prompt": "Our hybrid network connects on-premises (`corp.internal`) and AWS VPCs (`aws.internal`) over Direct Connect / VPN. Design bidirectional private DNS resolution using **Route 53 Resolver (VPC Resolver) Inbound and Outbound Endpoints**, forwarding rules, RAM sharing across spoke VPCs, and port-53 security group rules.",
+      "expectations": [
+        "Activates the route53 skill",
+        "Distinguishes **Inbound Endpoints** (2+ ENI IPs across AZs targeted by on-premises DNS conditional forwarders for `aws.internal` Private Hosted Zones) from **Outbound Endpoints + Resolver Forwarding Rules** (forwarding `corp.internal` queries from AWS VPCs to on-premises DNS IPs, shared across spoke VPCs via **AWS RAM** or **Route 53 Profiles** without duplicating endpoints per VPC!)",
+        "Enforces strict Security Group rules allowing TCP+UDP port `53` ONLY from/to known on-premises DNS server CIDRs (never `0.0.0.0/0`), plus recommending DoH/DoT encrypted DNS transport where supported"
+      ]
+    },
+    {
+      "id": "eval-05-dns-firewall-authoring-fail-open-vs-fail-closed-and-effective-rule-diagnosis",
+      "prompt": "We associated 3 **Route 53 Resolver DNS Firewall** rule groups (`Priority 100`, `200`, `300`) with our production VPC, and now need to: (1) block known malware/C2 domains + CNAME cloaking (`DnsThreatProtection` / managed lists) while allowing our internal domains, and (2) diagnose which rule group actually wins when `api.partner.io` gets `NXDOMAIN` blocked! Walk through both.",
+      "expectations": [
+        "Activates the route53 skill",
+        "Explains DNS Firewall two-layer priority evaluation order: VPC rule group associations evaluate in ascending `Priority` order (`100` -> `200` -> `300`), and inside each group rules evaluate in ascending `Priority` order where **first match wins** (`ALLOW`, `ALERT`, and `BLOCK` all halt further inspection, so a higher-priority `ALLOW` or `ALERT` shadows a lower-priority `BLOCK`!)",
+        "Covers `BLOCK` response types (`NODATA`, `NXDOMAIN`, `OVERRIDE`), `Qtype` and `INSPECT_REDIRECTION_DOMAIN` CNAME chain inspection, fail-closed vs fail-open (`FirewallFailOpen`) behavior, and KMS-encrypted Resolver DNS Firewall query logging"
+      ]
+    },
+    {
+      "id": "eval-06-route53-profiles-centralizing-phzs-forwarding-rules-and-dns-firewall-org-wide",
+      "prompt": "Instead of manually associating 15 Private Hosted Zones, 8 Resolver Forwarding Rules, and 3 DNS Firewall Rule Groups across 60 VPCs in 20 AWS Organizations accounts, show how **Route 53 Profiles** centralizes this in one hub Network account.",
+      "expectations": [
+        "Activates the route53 skill",
+        "Walks through creating a **Route 53 Profile** in the central network account, associating PHZs + Outbound Resolver Rules + DNS Firewall Rule Groups to the Profile, sharing the Profile org-wide via **AWS Resource Access Manager (RAM)**, and associating 1 Profile per spoke VPC (noting conflicts/precedence and Firewall Manager alternatives for mandatory org-wide DNS Firewall enforcement)"
+      ]
+    },
+    {
+      "id": "eval-07-live-ap-south-1-route53-hosted-zones-and-resolver-read-only-audit",
+      "prompt": "Perform a read-only Route 53 & VPC Resolver audit on our live AWS account (`route53` global hosted zones/health checks + `route53resolver` endpoints, rules, DNS Firewall rule groups, and Profiles in `ap-south-1`), and summarize our DNS posture.",
+      "expectations": [
+        "Activates the route53 skill and queries `route53` (`ListHostedZones`, `ListHealthChecks`) and `route53resolver` (`ListResolverEndpoints`, `ListResolverRules`, `ListFirewallRuleGroups`, `route53profiles:ListProfiles`) in `ap-south-1` via connected AWS MCP tools with zero raw `aws` CLI shell commands",
+        "Accurately reports live findings without fabricating zones or endpoints, and highlights DNS query logging encryption and security posture",
+        "Makes zero mutating AWS calls"
+      ]
+    },
+    {
+      "id": "eval-08-route53-global-resolver-anycast-doh-dot-and-secret-token-safety",
+      "prompt": "Remote roaming laptops and branch offices without VPN tunnels need a single AWS-managed Anycast DNS endpoint supporting encrypted **DNS-over-HTTPS (DoH) / DNS-over-TLS (DoT)**, DNS Firewall filtering, and private hosted zone views. Explain how **Route 53 Global Resolver** works and its mandatory access-token secret handling rule.",
+      "expectations": [
+        "Activates the route53 skill",
+        "Architects **Route 53 Global Resolver** (anycast IPs across AWS edge regions, DNS views scoping which client IP/token populations resolve which PHZs and DNS Firewall rules, DoH/DoT encrypted transport over plaintext Do53)",
+        "Explicitly enforces the security rule: treat the Global Resolver client access-token `value` returned at creation time as a secret stored immediately in **AWS Secrets Manager** (never logged or stored in plaintext)"
+      ]
+    },
+    {
+      "id": "eval-09-route53-resolver-on-aws-outposts-local-survivability",
+      "prompt": "A manufacturing plant runs an **AWS Outposts** rack that occasionally loses WAN connectivity back to the parent AWS Region for 30 minutes, during which local EKS/EC2 workloads on the Outpost fail DNS lookups! How does **Route 53 Resolver on Outposts** solve local DNS survivability?",
+      "expectations": [
+        "Activates the route53 skill",
+        "Explains deploying **Route 53 Resolver on Outposts** (`create-outpost-resolver`) running locally on the Outposts rack hardware so local subnet DNS queries continue resolving cached/local records even during temporary service-link disconnects from the parent AWS Region (contrasting with regional VPC `.2` Resolver which requires parent-Region reachability)"
+      ]
+    },
+    {
+      "id": "eval-10-awsknowledge-route53-dnssec-signing-ksk-kms-us-east-1-requirements",
+      "prompt": "Query AWS documentation via connected AWS documentation tools to confirm the exact KMS customer-managed key requirements (region, key spec/type, and `dnssec-route53.amazonaws.com` key policy) when enabling **DNSSEC signing** (`enable-hosted-zone-dnssec` + DS record in parent registrar) on a Route 53 Public Hosted Zone.",
+      "expectations": [
+        "Activates the route53 skill and queries connected AWS documentation MCP tools (`awsknowledge`, `aws-mcp`, or `awsiac`)",
+        "Confirms that the KMS key backing a Route 53 Key-Signing Key (`create-key-signing-key`) **MUST be an asymmetric `ECC_NIST_P256` (`SIGN_VERIFY`) customer-managed key created in `us-east-1`**, with a key policy granting `dnssec-route53.amazonaws.com` (`kms:DescribeKey`, `kms:GetPublicKey`, `kms:Sign` with `aws:SourceAccount` confused-deputy conditions), followed by publishing the `DS` record at the domain registrar"
+      ]
+    }
+  ]
+}

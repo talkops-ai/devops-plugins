@@ -1,6 +1,22 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
   "mcpServers": {
+    "aws-mcp": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "mcp-proxy-for-aws-cli==1.7.0",
+        "https://aws-mcp.us-east-1.api.aws/mcp",
+        "--region",
+        "us-east-1",
+        "--metadata",
+        "INSTALL_SOURCE=agent-toolkit-core"
+      ],
+      "env": {
+        "AWS_REGION": "us-east-1",
+        "AWS_DEFAULT_REGION": "us-east-1"
+      }
+    },
     "awsknowledge": {
       "type": "streamable-http",
       "url": "https://knowledge-mcp.global.api.aws"
@@ -12,7 +28,8 @@
         "awslabs.aws-iac-mcp-server==1.0.26"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     },
     "awspricing": {
@@ -23,6 +40,7 @@
       ],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1",
         "AWS_PRICING_MCP_OUTPUT_DIR": "./reports"
       }
     },
@@ -34,6 +52,7 @@
       ],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1",
         "AWS_API_MCP_ALLOW_UNRESTRICTED_LOCAL_FILE_ACCESS": "workdir"
       }
     },
@@ -44,7 +63,8 @@
         "awslabs.cloudwatch-mcp-server==0.3.1"
       ],
       "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_REGION": "us-east-1"
       }
     }
   }

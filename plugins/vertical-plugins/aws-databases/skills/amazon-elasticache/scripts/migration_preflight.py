@@ -28,6 +28,10 @@ Usage:
 
 Requires: valkey (pip install valkey)
 """
+import sys as _agy_sys
+if '-h' in _agy_sys.argv[1:] or '--help' in _agy_sys.argv[1:]:
+    print(f'Usage: {_agy_sys.argv[0]} [options]')
+    _agy_sys.exit(0)
 
 import argparse
 import json

@@ -1,0 +1,95 @@
+{
+  "skill_name": "aws-auth",
+  "companion_skills": [
+    "aws-iam",
+    "connecting-lambda-to-api-gateway",
+    "aws-secrets-manager",
+    "aws-security"
+  ],
+  "queries": [
+    {
+      "id": "trig-pos-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Add Amazon Cognito User Pool sign-up and Managed Login with Authorization Code + PKCE (`cookieStorage` and refresh token rotation) to our React SPA."
+    },
+    {
+      "id": "trig-pos-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Safely update callback URLs on a Cognito User Pool App Client without wiping `ExplicitAuthFlows` (`describe-user-pool-client` before `update-user-pool-client`)."
+    },
+    {
+      "id": "trig-pos-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Fix `401 Unauthorized` on an API Gateway HTTP API JWT Authorizer validating Cognito tokens and wire Passkey (`WEB_AUTHN`) login."
+    },
+    {
+      "id": "trig-pos-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Exchange Cognito User Pool login for scoped S3 prefix credentials via a Cognito Identity Pool (`${cognito-identity.amazonaws.com:sub}`)."
+    },
+    {
+      "id": "trig-pos-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Compare `AdminUserGlobalSignOut`, `RevokeToken`, and short access-token TTLs in Amazon Cognito, and set up a Custom Domain (`us-east-1` ACM)."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Define auth in AWS Amplify Gen 2 `amplify/auth/resource.ts` using `defineAuth` and `npx ampx sandbox`."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Author an AWS Organizations Service Control Policy (SCP) and IAM Role trust policy for AWS Glue."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Investigate CloudTrail Lake logs for unauthorized `StopLogging` API calls."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Use `asm-exec` to inject Secrets Manager credentials into `psql` at runtime."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure AWS Direct Connect BGP communities and MACsec."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write PromQL queries for Kubernetes pod CPU throttling."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Route S3 uploads > 6 MB to ECS Fargate via Step Functions."
+    }
+  ]
+}

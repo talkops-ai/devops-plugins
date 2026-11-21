@@ -1,0 +1,99 @@
+{
+  "skill_name": "aws-routing",
+  "companion_skills": [
+    "transitgateway",
+    "directconnect",
+    "dx-vif-resilience",
+    "network-log-analyzer",
+    "aws-vpc-dns-investigation"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Explain the Cloud WAN Core Network Edge (CNE) route evaluation order and how inbound routing policies (`set-local-preference`) steer between multiple Direct Connect Gateways."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Why does Transit Gateway prefer our static Site-to-Site VPN route over our 10 Gbps Direct Connect BGP route for `10.10.0.0/16`?"
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Walk through how BGP local-preference communities `7224:7300`, `7224:7200`, and `7224:7100` vs AS-path prepending control AWS Direct Connect path selection."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We prepended our AS-path 6 times on our Mumbai Direct Connect VIF, yet `ap-south-1` traffic still refuses to shift to our Ireland Direct Connect VIF—why?"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Packets leave on-prem over our IPsec VPN tunnel and come back from AWS over Direct Connect, causing our stateful firewall to drop the TCP return traffic. Why is AWS picking a different return path?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We attached two Direct Connect Gateways (`amazonSideAsn` 64512 and 64513) to our Transit Gateway expecting active-active ECMP, but only one attachment is installed as a next hop."
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Our London Cloud WAN CNE is treating our 10G Equinix LD5 Slough Direct Connect circuit as a remote path instead of preferring it locally—check the evaluation rules and what `describe-connections` field explains this."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Given a VPC route table with `10.20.0.0/16 -> local`, `10.0.0.0/8 -> tgw-1`, `0.0.0.0/0 -> nat-1`, and `pl-68a54001 -> vpce-s3`, trace which next hop wins for `10.20.5.0/24 -> eni-fw` and cross-region S3."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Three data centers (ASNs 65010, 65011, 65012) each advertise `10.1.0.0/16` into Cloud WAN via separate DXGWs—how do we make path selection deterministic under policy version `2025.11`?"
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Read this `tshark` packet capture CSV showing `tcp.analysis.retransmission` on 8960-byte frames while 64-byte pings succeed, and diagnose the issue.",
+      "expected_alternative_skill": "network-log-analyzer"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Why does `auth.api.partner.io` return `NXDOMAIN` after we enabled `PrivateDnsEnabled=true` on a VPC Interface Endpoint for `api.partner.io`?",
+      "expected_alternative_skill": "aws-vpc-dns-investigation"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Compute the exact uncovered CIDR residual when `dxvif-bbb` advertises `10.10.0.0/22` and peer `dxvif-aaa` only advertises `10.10.1.0/24`.",
+      "expected_alternative_skill": "dx-vif-resilience"
+    }
+  ]
+}

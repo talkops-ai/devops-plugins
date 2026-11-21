@@ -184,3 +184,115 @@ LIMIT 20;
 SELECT COUNT(*) as pre_join FROM table_a;
 SELECT COUNT(*) as post_join FROM table_a a JOIN table_b b ON a.id = b.a_id;
 ```
+
+## Apache Iceberg Time-Travel, Metadata Tables, MERGE & Maintenance (Athena v3)
+
+```sql
+-- 1. Inspect Iceberg metadata tables ($snapshots, $history, $files, $manifests)
+SELECT snapshot_id, committed_at, operation, summary
+FROM "prod_lake"."orders_iceberg$snapshots"
+ORDER BY committed_at DESC;
+
+SELECT made_current_at, snapshot_id, is_current_ancestor
+FROM "prod_lake"."orders_iceberg$history"
+ORDER BY made_current_at DESC;
+
+-- 2. Time-travel query by timestamp or snapshot version
+SELECT *
+FROM prod_lake.orders_iceberg
+FOR TIMESTAMP AS OF TIMESTAMP '2026-03-01 00:00:00 UTC'
+WHERE order_date = DATE '2026-02-28'
+LIMIT 100;
+
+SELECT *
+FROM prod_lake.orders_iceberg
+FOR VERSION AS OF 8492019283746554321
+LIMIT 100;
+
+-- 3. Idempotent ACID Upsert / Deduplication via MERGE INTO
+MERGE INTO prod_lake.orders_iceberg AS target
+USING (
+    SELECT order_id, customer_id, order_status, amount, updated_at
+    FROM (
+        SELECT *,
+               ROW_NUMBER() OVER (PARTITION BY order_id ORDER BY updated_at DESC) AS rn
+        FROM staging_lake.orders_cdc_raw
+    )
+    WHERE rn = 1
+) AS source
+ON (target.order_id = source.order_id)
+WHEN MATCHED AND source.order_status = 'DELETED' THEN
+    DELETE
+WHEN MATCHED THEN
+    UPDATE SET
+        customer_id  = source.customer_id,
+        order_status = source.order_status,
+        amount       = source.amount,
+        updated_at   = source.updated_at
+WHEN NOT MATCHED THEN
+    INSERT (order_id, customer_id, order_status, amount, updated_at)
+    VALUES (source.order_id, source.customer_id, source.order_status, source.amount, source.updated_at);
+
+-- 4. Table compaction (bin-packing small files) and snapshot expiration (vacuum)
+OPTIMIZE prod_lake.orders_iceberg REWRITE DATA USING BIN_PACK
+WHERE order_date >= DATE '2026-02-01';
+
+VACUUM prod_lake.orders_iceberg;
+```
+
+
+## Apache Iceberg Time-Travel, Metadata Tables, MERGE & Maintenance (Athena v3)
+
+```sql
+-- 1. Inspect Iceberg metadata tables ($snapshots, $history, $files, $manifests)
+SELECT snapshot_id, committed_at, operation, summary
+FROM "prod_lake"."orders_iceberg$snapshots"
+ORDER BY committed_at DESC;
+
+SELECT made_current_at, snapshot_id, is_current_ancestor
+FROM "prod_lake"."orders_iceberg$history"
+ORDER BY made_current_at DESC;
+
+-- 2. Time-travel query by timestamp or snapshot version
+SELECT *
+FROM prod_lake.orders_iceberg
+FOR TIMESTAMP AS OF TIMESTAMP '2026-03-01 00:00:00 UTC'
+WHERE order_date = DATE '2026-02-28'
+LIMIT 100;
+
+SELECT *
+FROM prod_lake.orders_iceberg
+FOR VERSION AS OF 8492019283746554321
+LIMIT 100;
+
+-- 3. Idempotent ACID Upsert / Deduplication via MERGE INTO
+MERGE INTO prod_lake.orders_iceberg AS target
+USING (
+    SELECT order_id, customer_id, order_status, amount, updated_at
+    FROM (
+        SELECT *,
+               ROW_NUMBER() OVER (PARTITION BY order_id ORDER BY updated_at DESC) AS rn
+        FROM staging_lake.orders_cdc_raw
+    )
+    WHERE rn = 1
+) AS source
+ON (target.order_id = source.order_id)
+WHEN MATCHED AND source.order_status = 'DELETED' THEN
+    DELETE
+WHEN MATCHED THEN
+    UPDATE SET
+        customer_id  = source.customer_id,
+        order_status = source.order_status,
+        amount       = source.amount,
+        updated_at   = source.updated_at
+WHEN NOT MATCHED THEN
+    INSERT (order_id, customer_id, order_status, amount, updated_at)
+    VALUES (source.order_id, source.customer_id, source.order_status, source.amount, source.updated_at);
+
+-- 4. Table compaction (bin-packing small files) and snapshot expiration (vacuum)
+OPTIMIZE prod_lake.orders_iceberg REWRITE DATA USING BIN_PACK
+WHERE order_date >= DATE '2026-02-01';
+
+VACUUM prod_lake.orders_iceberg;
+```
+

@@ -1,0 +1,95 @@
+{
+  "skill_name": "aws-pulumi",
+  "companion_skills": [
+    "aws-cdk",
+    "aws-terraform",
+    "aws-brownfield-migration",
+    "aws-deployment"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Write a Pulumi TypeScript `ComponentResource` combining `@pulumi/aws` and `@pulumi/aws-native` with `protect: true` and CrossGuard policy checks."
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Configure Pulumi ESC dynamic AWS OIDC credentials (`fn::open::aws-login`) and fix `Calling toString on an Output<T>` in our IAM policy."
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Add `aliases` to a refactored Pulumi S3 bucket moved inside a `ComponentResource` so `pulumi preview` shows zero replacements."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Configure a self-managed Pulumi S3 state backend with `awskms://` secrets provider and write offline `pulumi.runtime.setMocks` unit tests."
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Wire `pulumi.StackReference` between our `networking` and `app-service` Pulumi stacks in `ap-south-1`."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write an AWS CDK v2 TypeScript stack using `aws-cdk-lib` L2 constructs and `cdk-nag`."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Refactor a Terraform module using `moved {}` blocks and `.tftest.hcl` mock providers."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Author a Crossplane Pipeline `Composition` and validate with `crossplane render`."
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Migrate our Express.js app to AWS App Runner using the `launch_with_aws.py` script."
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Troubleshoot high `DatabaseConnections` and lock waits on Aurora MySQL."
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Set up Prometheus remote-write and AMG Grafana dashboards for EKS."
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Analyze an incident postmortem timeline and action items using the 5 Whys framework."
+    }
+  ]
+}

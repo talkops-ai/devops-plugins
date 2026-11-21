@@ -1,0 +1,96 @@
+{
+  "skill_name": "timestream-influxdb",
+  "companion_skills": [
+    "amazon-dynamodb",
+    "amazon-keyspaces",
+    "aws-database",
+    "amazon-neptune",
+    "rds-oss"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Provision an Amazon Timestream for InfluxDB 3 Core cluster with InfluxDBV3Core on port 8181 and customer-managed KMS."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Migrate a 500M-record Amazon Timestream for LiveAnalytics table to Timestream for InfluxDB 3."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Configure Timestream for InfluxDB 3 Processing Engine plugins and DbBackup retention."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why does our InfluxDB 3 client on AWS return 401 when sending Authorization: Token to port 8086?"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Fix high series cardinality in our Line Protocol telemetry where trace_id and request_id were placed in tags."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Compare InfluxDB V2 Read Replica Clusters vs InfluxDB 3 Core and Enterprise on AWS for 20M IoT time series."
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Audit our ap-south-1 AWS account for timestream-influxdb instances and clusters via MCP."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Can we upgrade an InfluxDB 3 Core cluster on AWS to InfluxDB 3 Enterprise later without rebuilding from scratch?"
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Fetch the initial admin token secret ARN from GetDbCluster for our new managed InfluxDB 3 deployment."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Set up Prometheus remote_write to Amazon Managed Service for Prometheus (AMP) and Amazon Managed Grafana."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Design a multi-region active-active ledger on Amazon Aurora DSQL with OCC retry handling."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Model a time-bucketed wide-row CQL table on Amazon Keyspaces with LOCAL_QUORUM writes."
+    }
+  ]
+}

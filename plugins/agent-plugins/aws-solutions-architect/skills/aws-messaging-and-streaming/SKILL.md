@@ -30,7 +30,7 @@ This skill covers two fundamental patterns — **messaging** and **streaming** �
 It also marks the boundary with **customer communication** — messages delivered to people rather than to application components — and routes those questions to the skill or AWS documentation that owns each channel (see Customer Communications (Application-to-Person)).
 Use this skill to decide which pattern fits a workload, select the right service, and understand how services integrate with each other.
 
-For specific guidance on individual AWS services, see reference files or service-specific Skills.
+For specific guidance on individual AWS services, always read [references/messaging-service-selector.md](references/messaging-service-selector.md) for the Messaging & Streaming Pattern Selectors, Decision Matrix, and Multi-Service Integration Patterns (SNS -> SQS Fan-Out, EventBridge -> SQS -> Consumer, Kinesis/MSK -> Flink -> Firehose -> S3, DynamoDB Streams -> EventBridge Pipes -> Target, and Transactional Outbox Pattern), or route to the service-specific Skills.
 
 ## Streaming and Messaging
 
@@ -121,8 +121,16 @@ The two groups are not interchangeable.
 
 Answer two kinds of question directly from this section: which group a workload belongs to, and which service owns a channel.
 For every other customer communication question — setting up a channel, sending through it, or troubleshooting delivery — do not answer from this skill: load the skill named in the table and answer from that.
-To load it, use `aws___retrieve_skill(skill_name="<skill>")` with the exact name from the table when the AWS MCP server is available, or read the skill document from the Agent Toolkit at `skills/<skill>/SKILL.md`.
+To load it, invoke it with the Skill tool if it is installed locally (bundled with this plugin); otherwise, if the AWS MCP server is available, use `aws___retrieve_skill(skill_name="<skill>")` with the exact name from the table.
 Where the table says None, or the named skill cannot be loaded, say so, then answer using the documentation tools (`aws___search_documentation`, `aws___read_documentation`) if available, or the AWS documentation for the named service otherwise.
+
+## Live Account Discovery & Read-Only Audit Baseline
+
+When asked to evaluate, audit, or architect messaging, streaming, or customer communication topologies in a live AWS account/region (`--region <region>`), batch all read-only `aws` CLI discovery commands into a single shell execution (`&&` with `--region <region> --output json --no-cli-pager`) and read `references/messaging-service-selector.md` directly (do NOT make slow external `aws___read_documentation` or `aws___run_script` calls when local references and CLI are available):
+- **Application-to-Application (A2A) Messaging & Eventing:** `aws sqs list-queues --region <region>`, `aws sns list-topics --region <region>`, `aws events list-event-buses --region <region>`, `aws events list-rules --region <region>`, `aws pipes list-pipes --region <region>`, `aws scheduler list-schedules --region <region>`, `aws mq list-brokers --region <region>`
+- **Real-Time Streaming:** `aws kinesis list-streams --region <region>`, `aws kafka list-clusters-v2 --region <region>`, `aws firehose list-delivery-streams --region <region>`, `aws kinesisanalyticsv2 list-applications --region <region>`
+- **Application-to-Person (A2P) Customer Communications Baseline:** `aws sesv2 get-account --region <region>` (email), `aws pinpoint-sms-voice-v2 describe-account-attributes --region <region>` (SMS/MMS/RCS/Voice), `aws socialmessaging list-linked-whatsapp-business-accounts --region <region>` (WhatsApp)
+- **Resource Verification Guardrail:** If a user references a specific queue URL/name, stream name, event bus, MSK cluster, or MQ broker to migrate or integrate, verify its live existence first (e.g., `aws sqs get-queue-url --queue-name <name>`, `aws kinesis describe-stream-summary --stream-name <name>`, `aws events describe-event-bus --name <name>`). If the resource does not exist (`QueueDoesNotExist`, `ResourceNotFoundException`), report the live error clearly and never fabricate ARNs or metrics.
 
 ## Common Integration Gotchas
 

@@ -24,6 +24,8 @@ This is an **agent plugin**: every skill, command, hook, and MCP server below is
 |---|---|
 | `aws-iam` | Provides verified corrections for IAM behaviors that AI agents frequently get wrong — policy evaluation edge cases, trust policy gotchas, STS session limits, Organizations quirks, and SAML/MFA specifics. |
 | `aws-security` | Covers AWS security services and workflows — Security Hub V2 (OCSF) findings, connectors, aggregators, automation rules, and security posture summaries; Security Hub CSPM (V1/ASFF) controls and compliance standards; Gua… |
+| `cloudtrail-cost-optimization` | Identify and quantify AWS CloudTrail cost optimization opportunities. |
+| `guardduty-cost-optimization` | Identify and quantify Amazon GuardDuty cost optimization opportunities. |
 | `security-data-protection` | Audits and designs AWS data protection, cryptographic governance, forensic storage immutability, secret management, sensitive data discovery, and PKI/mTLS controls across AWS KMS, Amazon S3 (Block Public Access, Bucket… |
 | `security-identity-governance` | Audits and designs AWS IAM identities, 8-layer policy evaluation, 21 privilege-escalation paths, IAM Access Analyzer, Organizations SCPs and RCPs (Resource Control Policies), Data Perimeters, aws:CalledViaAWSMCP and aws… |
 | `security-incident-triage` | Performs AWS threat triage, incident response investigation, and forensic correlation across GuardDuty (including Attack Sequences and Runtime Monitoring), Security Hub V2 Exposure findings, Inspector, Macie, Detective,… |
@@ -31,6 +33,8 @@ This is an **agent plugin**: every skill, command, hook, and MCP server below is
 | `security-posture-audit` | Performs read-only AWS security posture, compliance, and multi-account governance audits across Security Hub CSPM, AWS Config, GuardDuty, Inspector, Macie, IAM Access Analyzer, Detective, Security Lake, CloudTrail, AWS… |
 | `security-remediation-governance` | Performs AWS Cloud Architectural Threat Modeling (STRIDE across trust boundaries and multi-service attack paths) and converts AWS security findings and audit gaps into safe, shift-left validated remediation proposals ac… |
 | `security-workload-containers` | Audits and hardens AWS compute, container, serverless, and Generative AI workloads across Amazon EKS, Amazon ECS/Fargate, Amazon ECR, AWS Lambda, Amazon EC2, and Amazon Bedrock. |
+| `sumo-logic-investigator` | Investigate incidents and answer operational questions using Sumo Logic logs, alerts, dashboards and SIEM insights. |
+| `wiz-security-context` | Automatically load this skill when investigating an operational anomaly on a cloud resource - CPU or memory spikes, latency, elevated error rates, unexpected network traffic, crashes, or cost spikes - to determine wheth… |
 
 ## MCP servers
 

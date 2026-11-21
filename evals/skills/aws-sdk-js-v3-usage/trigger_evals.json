@@ -1,0 +1,95 @@
+{
+  "skill_name": "aws-sdk-js-v3-usage",
+  "companion_skills": [
+    "aws-cdk",
+    "aws-blocks",
+    "aws-iam-and-security",
+    "aws-containers"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Migrate our Node.js AWS SDK v2 `AWS.S3` and `DocumentClient` `.promise()` code to modular AWS SDK for JavaScript v3 (`@aws-sdk/client-s3` and `@aws-sdk/lib-dynamodb`)."
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Stream a 5 GB multipart upload to S3 using `@aws-sdk/lib-storage` `Upload` and generate presigned URLs with `@aws-sdk/s3-request-presigner`."
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Tune `NodeHttpHandler` `maxSockets`, `retryMode: 'adaptive'`, and `AbortSignal.timeout` on our TypeScript `DynamoDBClient`."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Enable SigV4a (`@aws-sdk/signature-v4-multi-region`) for an S3 Multi-Region Access Point and fix `removeUndefinedValues` in `DynamoDBDocumentClient`."
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Replace manual `NextToken` loops with `paginateQuery` and catch typed `ServiceException` `$metadata.requestId` errors in AWS SDK JS v3."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a Python `boto3` S3 multipart upload script using `TransferConfig`."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Synthesize an AWS CDK v2 TypeScript stack provisioning an S3 bucket and DynamoDB table."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Design a single-table DynamoDB partition key and GSI access-pattern matrix for orders."
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure GitHub Actions OIDC credentials with `aws-actions/configure-aws-credentials@v4`."
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Troubleshoot BGP session flaps on an AWS Transit Gateway VPN attachment."
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure RDS for SQL Server Always On Availability Groups in Multi-AZ."
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Audit GuardDuty findings and CloudTrail events after an EC2 instance compromise."
+    }
+  ]
+}

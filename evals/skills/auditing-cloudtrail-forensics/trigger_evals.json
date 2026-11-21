@@ -1,0 +1,95 @@
+{
+  "skill_name": "auditing-cloudtrail-forensics",
+  "companion_skills": [
+    "setting-up-cloudtrail-multi-region",
+    "aws-security",
+    "aws-iam",
+    "live-site-incident-postmortem"
+  ],
+  "queries": [
+    {
+      "id": "trig-pos-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Investigate CloudTrail events in `ap-south-1` to find out who modified our security group or triggered `AccessDenied` spikes in the last 24 hours."
+    },
+    {
+      "id": "trig-pos-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Write CloudTrail Lake SQL queries to hunt for IAM privilege escalation (`PassRole`, `AttachRolePolicy`), `Root` logins, and `StopLogging` tampering."
+    },
+    {
+      "id": "trig-pos-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Trace exfiltrated EC2 `ASIA...` STS role credentials used from an external IP in CloudTrail and prepare an `aws:TokenIssueTime` revocation policy."
+    },
+    {
+      "id": "trig-pos-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Audit all AWS API calls made by AI agents via `aws:CalledViaAWSMCP` / `mcp-proxy-for-aws` in CloudTrail."
+    },
+    {
+      "id": "trig-pos-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Explain why `cloudtrail lookup-events` didn't show S3 `GetObject` downloads and verify CloudTrail SHA-256 digest log integrity."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Create a new multi-region CloudTrail trail with S3 storage and CloudWatch Logs integration from scratch."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Add Amazon Cognito PKCE sign-in and Google social login to our React SPA."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Use `asm-exec` with `{{resolve:secretsmanager:...}}` to pass a DB password to `psql`."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure AWS Direct Connect BGP peering and MACsec encryption."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Tune PromQL multi-window SLO burn-rate alerts in Amazon Managed Service for Prometheus."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Design a single-table DynamoDB schema with composite sort keys."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Convert COBOL `COMP-3` batch programs using AWS Blu Age."
+    }
+  ]
+}

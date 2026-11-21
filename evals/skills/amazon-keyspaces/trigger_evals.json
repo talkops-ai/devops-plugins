@@ -1,0 +1,96 @@
+{
+  "skill_name": "amazon-keyspaces",
+  "companion_skills": [
+    "amazon-dynamodb",
+    "amazon-documentdb",
+    "aws-database",
+    "dms-schema-conversion",
+    "timestream-influxdb"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Estimate monthly Amazon Keyspaces On-Demand vs Provisioned + 1yr Savings Plan cost for 2,000 reads/s and 800 writes/s."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Check our Apache Cassandra 3.11 CQL schema for unsupported materialized views, SASI indexes, and LWT batches on Amazon Keyspaces."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Enable Change Data Capture (CDC) and Application Auto Scaling on an Amazon Keyspaces table."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Our Java DataStax CQL driver fails on port 9042 with ConsistencyLevel.ONE against cassandra.ap-south-1.amazonaws.com."
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Parse nodetool tablestats and status output from our 8-node Cassandra ring to size a serverless AWS CQL migration."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Pre-warm our managed Cassandra table to 30,000 writes/sec ahead of tonight's migration cutover."
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Audit all non-system keyspaces and tables in ap-south-1 for PITR, KMS CMK encryption, and default TTL."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Translate our relational orders and order_items SQL tables into wide-row CQL tables with clustering keys."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Is adding a new AWS Region to an existing MULTI_REGION CQL keyspace reversible if we only want to test DR?"
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Design a single-table Amazon DynamoDB partition key and GSI projection strategy with DynamoDB Streams."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Migrate a MongoDB replica set to Amazon DocumentDB 8.0 Serverless using AWS DMS."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Design low-cardinality tags vs high-cardinality fields on Amazon Timestream for InfluxDB 3."
+    }
+  ]
+}

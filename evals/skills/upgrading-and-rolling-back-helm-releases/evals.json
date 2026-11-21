@@ -1,0 +1,225 @@
+{
+  "skill_name": "upgrading-and-rolling-back-helm-releases",
+  "evals": [
+    {
+      "id": "eval-01-explain-when-we-must-pass-values-strategy-reuse",
+      "prompt": "Explain when we must pass `values_strategy=\"reuse\"`, `\"reset_then_reuse\"`, or `\"reset\"` to `helm_upgrade_release` across three `OTEL-APP` scenarios in `otel-demo`: (1) scaling `replicaCount: 2` on `talkops/checkout` (`0.1.1` -> `0.1.1`) while preserving custom resource limits, (2) upgrading `open-telemetry/opentelemetry-collector` from chart `0.108.0` to `0.114.0` where upstream added new default keys, and (3) wiping ad-hoc `locust.users: \"500\"` chaos overrides on `talkops/load-generator` back to clean `0.1.1` chart defaults.",
+      "expected_output": "Maps scenario (1) on `talkops/checkout` (`0.1.1`) to `values_strategy=\"reuse\"` (retains all existing user overrides on the same chart version), scenario (2) on `open-telemetry/opentelemetry-collector` (`0.108.0` -> `0.114.0`) to `values_strategy=\"reset_then_reuse\"` (loads new upstream chart `values.yaml` defaults first so newly added template keys don't render `nil`, then layers prior user overrides and new `values` on top), and scenario (3) on `talkops/load-generator` to `values_strategy=\"reset\"` (discards drifted `locust.users: \"500\"` overrides and restores `0.1.1` chart defaults like `locust.users: \"10\"` plus any newly supplied `values`).",
+      "files": [],
+      "expectations": [
+        "Maps same-chart-version incremental patching on `talkops/checkout` (`0.1.1`) to `values_strategy=\"reuse\"`",
+        "Maps chart version upgrades (`open-telemetry/opentelemetry-collector` `0.108.0` -> `0.114.0`) to `values_strategy=\"reset_then_reuse\"` and explains how it prevents `nil` template errors while keeping user overrides",
+        "Maps wiping drifted `locust.users: \"500\"` overrides on `talkops/load-generator` back to clean chart defaults to `values_strategy=\"reset\"`"
+      ]
+    },
+    {
+      "id": "eval-02-should-we-set-atomic-true-or-atomic-false-on-hel",
+      "prompt": "Should we set `atomic=True` or `atomic=False` on `helm_upgrade_release` when upgrading our tier-1 `talkops/frontend-proxy` and `talkops/checkout` releases in `otel-demo-prod` vs debugging a failing Java OpenTelemetry agent `JAVA_TOOL_OPTIONS` flag on `talkops/ad` in `otel-demo-dev`?",
+      "expected_output": "Recommends `atomic=True` with explicit `wait_timeout` (e.g., `\"5m\"`) for tier-1 production `frontend-proxy` and `checkout` so Helm automatically rolls back to the previous working revision if pods fail readiness within `wait_timeout`, and `atomic=False` on `ad` in `otel-demo-dev` when engineers need failed pods/events left in place to inspect JVM `CrashLoopBackOff` logs.",
+      "files": [],
+      "expectations": [
+        "Recommends `atomic=True` with an explicit `wait_timeout` (such as `\"5m\"`) for tier-1 production `frontend-proxy` and `checkout` upgrades to guarantee automatic rollback on readiness failure",
+        "Recommends `atomic=False` in `otel-demo-dev` when failed `ad` pods must remain present for forensic log inspection",
+        "Requires `helm_plan_release` preview prior to `helm_upgrade_release` in both cases"
+      ]
+    },
+    {
+      "id": "eval-03-we-are-upgrading-open-telemetry-opentelemetry-op",
+      "prompt": "We are upgrading `open-telemetry/opentelemetry-operator` from `0.68.0` to `0.76.0` in `observability` to use newer `v1beta1` `OpenTelemetryCollector` fields for `OTEL-APP`. Will `helm_upgrade_release` automatically update the `opentelemetrycollectors.opentelemetry.io` and `instrumentations.opentelemetry.io` CRDs?",
+      "expected_output": "Explains clearly that Helm intentionally skips the `crds/` directory during `helm upgrade` and never auto-updates or deletes CRDs to prevent accidental cluster-wide data loss; instructs checking `helm://charts/open-telemetry/opentelemetry-operator/readme` for version-specific CRD upgrade steps, applying updated CRDs out-of-band, and verifying via `kubernetes_check_prerequisites(required_api_resources=[\"OpenTelemetryCollector\", \"Instrumentation\"])` before running `helm_plan_release` and `helm_upgrade_release`.",
+      "files": [],
+      "expectations": [
+        "Explains clearly that Helm skips the `crds/` directory during `helm upgrade` and never auto-updates or deletes CRDs",
+        "Checks `helm://charts/open-telemetry/opentelemetry-operator/readme` and `kubernetes_check_prerequisites` before upgrading",
+        "Requires applying upstream OpenTelemetry Operator CRD updates out-of-band prior to running `helm_plan_release` and `helm_upgrade_release`"
+      ]
+    },
+    {
+      "id": "eval-04-upgrade-our-checkout-helm-release-talkops-checko",
+      "prompt": "Upgrade our `checkout` Helm release (`talkops/checkout`) in `otel-demo` on `docker-desktop` to chart version `0.1.1`, scaling `replicaCount` to `2` and pointing `otel.exporterEndpoint` to `http://opentelemetry-otel-collector.otel-demo.svc.cluster.local:4317` while keeping our existing custom memory limits (`reset_then_reuse`). Run the full inspection, N-to-1 diff preview, gated atomic upgrade, and health verification flow (operator approval is pre-granted once `helm_plan_release` diff checks pass).",
+      "expected_output": "Reads `kubernetes://contexts`, `helm_get_release_status(release_name=\"checkout\", namespace=\"otel-demo\")`, `helm://releases/otel-demo/checkout/values`, `helm://releases/otel-demo/checkout/history`, and `helm://charts/talkops/checkout/readme` + `values`, runs `helm_plan_release(chart_ref=\"talkops/checkout\", release_name=\"checkout\", namespace=\"otel-demo\", values={\"replicaCount\": 2, \"otel\": {\"exporterEndpoint\": \"http://opentelemetry-otel-collector.otel-demo.svc.cluster.local:4317\"}}, version=\"0.1.1\")` to inspect `diff` (`added_resources`, `removed_resources`, `modified_resources`, `image_changes`, `replica_changes`), executes `helm_upgrade_release(..., version=\"0.1.1\", values_strategy=\"reset_then_reuse\", atomic=True)` after confirmation, and polls `helm_monitor_deployment(release_name=\"checkout\", namespace=\"otel-demo\", max_wait_seconds=120, check_interval=5)`.",
+      "files": [],
+      "expectations": [
+        "Inspects current `checkout` release status, live values (`helm://releases/otel-demo/checkout/values`), history, and target `talkops/checkout` README/values before planning",
+        "Calls `helm_plan_release` with `version=\"0.1.1\"` and presents `added_resources`, `removed_resources`, `modified_resources`, `image_changes`, and `replica_changes` before mutating",
+        "Calls `helm_upgrade_release` with `values_strategy=\"reset_then_reuse\"` and `atomic=True` and verifies rollout convergence via `helm_monitor_deployment(..., max_wait_seconds=120, check_interval=5)`"
+      ]
+    },
+    {
+      "id": "eval-05-on-our-local-docker-desktop-cluster-our-otel-app",
+      "prompt": "On our local `docker-desktop` cluster, our `OTEL-APP` load test filled up trace and log storage in `observability`, so we want to upgrade our `grafana/tempo` `StatefulSet` Helm release by changing `persistence.size` from `10Gi` to `100Gi` and `persistence.storageClassName` from `standard` to `hostpath` via `helm_upgrade_release`. Will this work?",
+      "expected_output": "Warns before running `helm_upgrade_release` that Kubernetes `StatefulSet` forbids mutating `spec.volumeClaimTemplates` (including `storageClassName` and template PVC size; only `replicas`, `template`, and `updateStrategy` are mutable on a `StatefulSet`), so `helm_upgrade_release` will fail with `Forbidden: updates to statefulset spec for fields other than 'replicas', 'template', 'updateStrategy' are forbidden`, notes `rancher.io/local-path` (`standard` / `hostpath` on `docker-desktop`) also has `allowVolumeExpansion: false`, and outlines `--cascade=orphan` StatefulSet re-creation or migrating `tempo` to object storage.",
+      "files": [],
+      "expectations": [
+        "Warns before upgrading that Kubernetes `StatefulSet` objects forbid in-place updates to `volumeClaimTemplates` (`storageClassName` and PVC size), permitting only `replicas`, `template`, and `updateStrategy`",
+        "Explains that `helm_upgrade_release` on `grafana/tempo` would fail with a `StatefulSet` `Forbidden` validation error",
+        "Outlines safe alternatives (`--cascade=orphan` StatefulSet re-creation / PVC expansion where `allowVolumeExpansion: true`, or migrating `tempo` trace blocks to object storage)"
+      ]
+    },
+    {
+      "id": "eval-06-revision-5-of-our-customized-postgresql-talkops",
+      "prompt": "Revision 5 of our customized `postgresql` (`talkops/postgresql`) Helm release in `otel-demo` ran a `pre-upgrade` Helm hook Job that renamed `price_usd` on the `products` table (seeded by `init.sql`), and now `product-catalog` is throwing SQL query errors. If we run `helm_rollback_release` to revision 4, will that restore our `otel` database schema and PVC contents?",
+      "expected_output": "Warns explicitly that `helm_rollback_release` only reverts Kubernetes resource manifests stored in the Helm release secret (Deployments, ConfigMaps, Services) and **never** reverts PersistentVolumeClaim disk state or SQL schema mutations executed by `pre-upgrade` hook Jobs against `postgresql`; advises coordinating a backward SQL migration, `init.sql` re-seed, or DB snapshot restore alongside `helm_rollback_release(..., dry_run=True)`.",
+      "files": [],
+      "expectations": [
+        "Warns explicitly that `helm_rollback_release` only restores Kubernetes resource manifests and does NOT revert PostgreSQL data, PVCs, or schema changes from `pre-upgrade` hook Jobs",
+        "Explains why rolling back revision 4 manifests alone leaves `product-catalog` broken against the mutated `products` table",
+        "Advises coordinating SQL schema remediation / `init.sql` restore alongside `helm_rollback_release(..., dry_run=True)`"
+      ]
+    },
+    {
+      "id": "eval-07-we-are-retiring-the-temporary-chaos-canary-relea",
+      "prompt": "We are retiring the temporary chaos canary release `load-generator-flood` (`talkops/load-generator`) in `otel-demo` on `docker-desktop`, but incident review compliance requires keeping its Helm release history ledger in `otel-demo` for 7 days before final purge. Uninstall it now with history retained (operator approval is pre-granted) and explain how to purge it next week.",
+      "expected_output": "Calls `helm_uninstall_release(release_name=\"load-generator-flood\", namespace=\"otel-demo\", keep_history=True)` now (after operator confirmation) so Locust workloads are deleted while `helm://releases/otel-demo/load-generator-flood/history` remains queryable (and roll-backable), and explains running `helm_uninstall_release(..., keep_history=False)` after 7 days to permanently purge the release secrets.",
+      "files": [],
+      "expectations": [
+        "Uses `helm_uninstall_release(release_name=\"load-generator-flood\", namespace=\"otel-demo\", keep_history=True)` after confirmation to delete Locust pods while retaining release history",
+        "Explains that `keep_history=True` preserves `helm://releases/otel-demo/load-generator-flood/history` for post-incident audit or rollback",
+        "Explains calling `helm_uninstall_release(..., keep_history=False)` after the 7-day retention window to purge release secrets"
+      ]
+    },
+    {
+      "id": "eval-08-revision-4-of-shipping-talkops-shipping-in-otel",
+      "prompt": "Revision 4 of `shipping` (`talkops/shipping`) in `otel-demo` on `docker-desktop` introduced quote-RPC regressions. Release history shows: rev 1 (`superseded`), rev 2 (`superseded`), rev 3 (`failed`), rev 4 (`deployed`). Roll `shipping` back to the right revision safely (operator approval is pre-granted once dry-run rollback succeeds).",
+      "expected_output": "Inspects `helm://releases/otel-demo/shipping/history`, skips revision 3 because its status is `failed` and selects revision 2 (`superseded`, highest known-good revision before rev 4), runs `helm_rollback_release(release_name=\"shipping\", namespace=\"otel-demo\", revision=2, dry_run=True)` first, executes `helm_rollback_release(..., revision=2, dry_run=False, wait_timeout=\"5m\")` after operator confirmation (noting Helm records this as revision 5), and verifies convergence via `helm_monitor_deployment(release_name=\"shipping\", namespace=\"otel-demo\", max_wait_seconds=120, check_interval=5)`.",
+      "files": [],
+      "expectations": [
+        "Selects revision `2` (`superseded`) from `helm://releases/otel-demo/shipping/history` and explicitly avoids rolling back to revision `3` (`failed`)",
+        "Executes `helm_rollback_release(release_name=\"shipping\", namespace=\"otel-demo\", revision=2, dry_run=True)` before `dry_run=False, wait_timeout=\"5m\"`",
+        "Notes that Helm creates new revision `5` (`Rollback to 2`) and verifies `shipping` pod health with `helm_monitor_deployment`"
+      ]
+    },
+    {
+      "id": "eval-09-immediately-roll-back-flagd-in-otel-demo-without",
+      "prompt": "Immediately roll back `flagd` in `otel-demo` without checking revision history—just pass `revision=1` and `dry_run=False` right now so all feature flags reset.",
+      "expected_output": "Refuses to blindly roll back `flagd` to `revision=1` with `dry_run=False` without inspecting `helm://releases/otel-demo/flagd/history` first (since revision 1 could be ancient, have broken `demo.flagd.json` overrides, or be `failed`), and enforces reading `flagd` release history + `helm_get_release_status` + `helm_rollback_release(release_name=\"flagd\", namespace=\"otel-demo\", revision=..., dry_run=True)` + operator confirmation first.",
+      "files": [],
+      "expectations": [
+        "Refuses to guess `revision=1` or execute `helm_rollback_release(..., dry_run=False)` on `flagd` without inspecting release history first",
+        "Reads `helm://releases/otel-demo/flagd/history` and `helm_get_release_status` to identify the actual last known-good revision",
+        "Enforces `helm_rollback_release(..., dry_run=True)` preview and explicit confirmation before live rollback"
+      ]
+    },
+    {
+      "id": "eval-10-when-we-ran-helm-plan-release-on-frontend-proxy",
+      "prompt": "When we ran `helm_plan_release` on `frontend-proxy` (`talkops/frontend-proxy`) in `otel-demo`, `diff.removed_resources` listed `HorizontalPodAutoscaler/frontend-proxy` and `PodDisruptionBudget/frontend-proxy` because a teammate planned to pass `values_strategy=\"reset\"` with only `{\"image\": {\"tag\": \"2.2.1-frontend-proxy\"}}`. Catch the mistake before upgrading.",
+      "expected_output": "Catches from `diff.removed_resources` that `values_strategy=\"reset\"` discards all previously applied `frontend-proxy` user overrides (`autoscaling.enabled: true` and `podDisruptionBudget.enabled: true`), which would delete live HPA and PDB objects in `otel-demo`; blocks the destructive upgrade and switches to `values_strategy=\"reuse\"` so only `image.tag` updates while HPA and PDB remain intact.",
+      "files": [],
+      "expectations": [
+        "Identifies from `diff.removed_resources` that `HorizontalPodAutoscaler/frontend-proxy` and `PodDisruptionBudget/frontend-proxy` would be deleted",
+        "Explains that `values_strategy=\"reset\"` caused the unintended deletion by wiping prior user values",
+        "Blocks the upgrade and prescribes `values_strategy=\"reuse\"` (re-verifying `diff.removed_resources == []` via `helm_plan_release`)"
+      ]
+    },
+    {
+      "id": "eval-11-which-helm-values-handling-mode-should-we-choose",
+      "prompt": "Which Helm values handling mode should we choose across each of these three `otel-demo` upgrades: (1) scaling `checkout` (`0.1.1`) to 2 replicas while keeping all of our existing custom resource limits, (2) upgrading `opentelemetry-collector` from chart `0.108.0` to `0.114.0` so we get newly added upstream chart defaults without losing our existing overrides, and (3) wiping ad-hoc `locust.users: \"500\"` chaos overrides off `load-generator` back to clean `0.1.1` chart defaults?",
+      "expected_output": "Maps scenario (1) to `values_strategy=\"reuse\"`, scenario (2) to `values_strategy=\"reset_then_reuse\"` (preventing `nil` errors on newly introduced chart keys while retaining user overrides), and scenario (3) to `values_strategy=\"reset\"`.",
+      "files": [],
+      "expectations": [
+        "Maps same-version incremental patching on `checkout` to `values_strategy=\"reuse\"`",
+        "Maps cross-version chart upgrades (`opentelemetry-collector` `0.108.0` -> `0.114.0`) to `values_strategy=\"reset_then_reuse\"` and explains how it merges new upstream defaults with existing user overrides",
+        "Maps wiping drifted `locust.users: \"500\"` overrides on `load-generator` back to clean chart defaults to `values_strategy=\"reset\"`"
+      ]
+    },
+    {
+      "id": "eval-12-when-upgrading-our-tier-1-frontend-proxy-and-che",
+      "prompt": "When upgrading our tier-1 `frontend-proxy` and `checkout` Helm releases in `otel-demo-prod` versus debugging a crashing `JAVA_TOOL_OPTIONS` flag on `ad` in `otel-demo-dev`, when should we enable automatic rollback-on-failure on the Helm upgrade and when should we leave failed pods running?",
+      "expected_output": "Recommends `atomic=True` with an explicit `wait_timeout` (such as `\"5m\"`) for tier-1 production `frontend-proxy` and `checkout` so Helm automatically reverts on readiness failure, `atomic=False` in `otel-demo-dev` so crashing `ad` pods remain inspectable for logs/events, and pre-flight `helm_plan_release` in both environments.",
+      "files": [],
+      "expectations": [
+        "Recommends `atomic=True` with an explicit `wait_timeout` for tier-1 production `frontend-proxy` and `checkout` upgrades",
+        "Recommends `atomic=False` in `otel-demo-dev` so failed `ad` pods remain available for log and event debugging",
+        "Requires running a `helm_plan_release` diff preview before upgrading in both cases"
+      ]
+    },
+    {
+      "id": "eval-13-please-upgrade-our-checkout-helm-release-in-otel",
+      "prompt": "Please upgrade our `checkout` Helm release in `otel-demo` to `talkops/checkout` version `0.1.1`, scale it to 2 replicas, and set `otel.exporterEndpoint` to `http://opentelemetry-otel-collector.otel-demo.svc.cluster.local:4317` while keeping our custom memory limits and picking up new chart defaults. Make sure Helm automatically rolls back if the rollout fails readiness—you have my approval once you've verified the diff.",
+      "expected_output": "Inspects `kubernetes://contexts`, `helm_get_release_status`, live `values`, and `history` for `checkout`, previews the diff via `helm_plan_release(..., version=\"0.1.1\")`, executes `helm_upgrade_release(..., version=\"0.1.1\", values_strategy=\"reset_then_reuse\", atomic=True)`, and verifies rollout readiness via `helm_monitor_deployment`.",
+      "files": [],
+      "expectations": [
+        "Inspects current `checkout` status, live values, and revision history via Helm MCP before planning",
+        "Runs `helm_plan_release` for `talkops/checkout` (`0.1.1`) and reviews the resource/image/replica diff before mutating",
+        "Executes `helm_upgrade_release` with `values_strategy=\"reset_then_reuse\"` and `atomic=True`, then confirms readiness via `helm_monitor_deployment`"
+      ]
+    },
+    {
+      "id": "eval-14-our-load-test-filled-up-trace-storage-in-observa",
+      "prompt": "Our load test filled up trace storage in `observability`, so we want to run a Helm upgrade on our `grafana/tempo` StatefulSet release to grow `persistence.size` from `10Gi` to `100Gi` and change `persistence.storageClassName` from `standard` to `hostpath`. Will that Helm upgrade work on Kubernetes, and what's the safe path?",
+      "expected_output": "Warns before upgrading that Kubernetes `StatefulSet` forbids mutating `spec.volumeClaimTemplates` (`storageClassName` and template PVC size; only `replicas`, `template`, and `updateStrategy` are mutable), explains why `helm_upgrade_release` will fail with a `Forbidden` error, and outlines `--cascade=orphan` StatefulSet re-creation, PVC expansion where supported, or object-storage backed Tempo.",
+      "files": [],
+      "expectations": [
+        "Warns that Kubernetes `StatefulSet` forbids in-place updates to `volumeClaimTemplates` (`storageClassName` and size), permitting only `replicas`, `template`, and `updateStrategy`",
+        "Explains that running a Helm upgrade with modified `volumeClaimTemplates` on `grafana/tempo` fails with a Kubernetes `Forbidden` validation error",
+        "Outlines safe alternatives (`--cascade=orphan` StatefulSet recreation, direct PVC expansion when `allowVolumeExpansion: true`, or migrating trace blocks to object storage)"
+      ]
+    },
+    {
+      "id": "eval-15-we-re-upgrading-open-telemetry-opentelemetry-ope",
+      "prompt": "We're upgrading `open-telemetry/opentelemetry-operator` from `0.68.0` to `0.76.0` in `observability` to use newer `OpenTelemetryCollector` fields. Does upgrading the Helm release automatically update the OpenTelemetry CRDs, or what exact sequence should we follow?",
+      "expected_output": "Explains that Helm skips the `crds/` directory during `helm upgrade` and never auto-updates or deletes CRDs, checks `helm://charts/open-telemetry/opentelemetry-operator/readme` and `kubernetes_check_prerequisites`, and instructs applying upstream CRD manifests out-of-band before running `helm_plan_release` and `helm_upgrade_release`.",
+      "files": [],
+      "expectations": [
+        "Explains clearly that Helm skips the `crds/` directory during `helm upgrade` and never automatically updates or deletes CRDs",
+        "Checks `open-telemetry/opentelemetry-operator` chart documentation/prerequisites via Helm MCP tools/resources",
+        "Prescribes applying updated OpenTelemetry Operator CRDs out-of-band before running `helm_plan_release` and `helm_upgrade_release`"
+      ]
+    },
+    {
+      "id": "eval-16-our-latest-helm-upgrade-of-postgresql-in-otel-de",
+      "prompt": "Our latest Helm upgrade of `postgresql` in `otel-demo` ran a pre-upgrade migration job that renamed `price_usd` on the `products` table, and now `product-catalog` is throwing SQL query errors. If we roll the `postgresql` Helm release back to the previous revision, will that restore our database schema and PVC data?",
+      "expected_output": "Warns explicitly that `helm_rollback_release` only reverts Kubernetes manifests stored in the Helm release secret and never reverts PVC disk contents or SQL schema changes applied by `pre-upgrade` jobs, advising backward SQL schema remediation or DB backup restore alongside a dry-run rollback check.",
+      "files": [],
+      "expectations": [
+        "Warns explicitly that rolling back a Helm release only reverts Kubernetes manifests and does NOT revert PostgreSQL PVC data or SQL schema changes",
+        "Explains why rolling back `postgresql` manifests alone leaves `product-catalog` failing against the renamed `products` column",
+        "Recommends coordinating a backward SQL migration, re-seed, or database backup restore alongside any Helm rollback"
+      ]
+    },
+    {
+      "id": "eval-17-the-latest-helm-upgrade-of-shipping-in-otel-demo",
+      "prompt": "The latest Helm upgrade of `shipping` in `otel-demo` introduced quote-RPC errors. Check `shipping`'s release history on the cluster, pick the right prior working revision (skipping any failed revisions), and roll it back safely—you have my approval once your dry-run check succeeds.",
+      "expected_output": "Inspects `helm_get_release_status` and `helm://releases/otel-demo/shipping/history`, sees rev 4 (`deployed`), rev 3 (`failed`), rev 2 (`superseded`), rev 1 (`superseded`), skips rev 3 (`failed`) and selects rev 2, runs `helm_rollback_release(..., revision=2, dry_run=True)`, executes `helm_rollback_release(..., revision=2, dry_run=False)`, and confirms readiness via `helm_monitor_deployment` and `helm_get_release_status` (rev 5 `deployed`).",
+      "files": [],
+      "expectations": [
+        "Reads `helm://releases/otel-demo/shipping/history` on the live cluster, skips failed revision `3`, and selects revision `2` (`superseded`)",
+        "Runs `helm_rollback_release(..., revision=2, dry_run=True)` before executing `dry_run=False`",
+        "Verifies `shipping` returns to `ready` via `helm_monitor_deployment` and reaches new `deployed` revision `5`"
+      ]
+    },
+    {
+      "id": "eval-18-we-re-retiring-our-temporary-load-generator-floo",
+      "prompt": "We're retiring our temporary `load-generator-flood` Helm release in `otel-demo`—go ahead and uninstall its workloads now, you have my approval—but incident audit rules require keeping its Helm release history queryable for 7 days before we purge it completely. Run the uninstall now and explain how to permanently purge the history next week.",
+      "expected_output": "Calls `helm_uninstall_release(release_name=\"load-generator-flood\", namespace=\"otel-demo\", keep_history=True)` so workloads are deleted while release history remains queryable, and explains calling `helm_uninstall_release(..., keep_history=False)` after the 7-day audit window to purge the release secrets.",
+      "files": [],
+      "expectations": [
+        "Uninstalls `load-generator-flood` with `keep_history=True` via `helm_uninstall_release`",
+        "Explains that `keep_history=True` deletes live Kubernetes workloads while preserving release history for audit or rollback",
+        "Explains running `helm_uninstall_release` with `keep_history=False` after 7 days to permanently remove the stored release ledger"
+      ]
+    },
+    {
+      "id": "eval-19-a-teammate-wants-to-upgrade-opentelemetry-otel-c",
+      "prompt": "A teammate wants to upgrade `opentelemetry-otel-collector` (`open-telemetry/opentelemetry-collector` `0.114.0`) in `otel-demo` by resetting all values back to chart defaults and passing only `{\"mode\": \"deployment\", \"image\": {\"repository\": \"otel/opentelemetry-collector-contrib\"}}`. Inspect the live release and preview that plan—do NOT apply it—and tell me what existing resources would get wiped out and how we should upgrade instead.",
+      "expected_output": "Inspects `helm://releases/otel-demo/opentelemetry-otel-collector/values` (`autoscaling.enabled: true`, `podDisruptionBudget.enabled: true`) and runs `helm_plan_release`, catching in `diff.removed_resources` that resetting values would delete the live `HorizontalPodAutoscaler` and `PodDisruptionBudget`, blocking the reset, and recommending `values_strategy=\"reuse\"`.",
+      "files": [],
+      "expectations": [
+        "Inspects live `opentelemetry-otel-collector` values and runs `helm_plan_release` without executing `helm_upgrade_release`",
+        "Catches that resetting user values would delete live `HorizontalPodAutoscaler` and `PodDisruptionBudget` resources (`autoscaling` and `podDisruptionBudget` overrides)",
+        "Blocks the destructive reset and recommends `values_strategy=\"reuse\"` so existing autoscaling and disruption-budget settings remain intact"
+      ]
+    },
+    {
+      "id": "eval-20-roll-flagd-in-otel-demo-straight-back-to-revisio",
+      "prompt": "Roll `flagd` in `otel-demo` straight back to revision 1 right now—skip checking release history and skip the dry-run preview, I just want feature flags reset immediately.",
+      "expected_output": "Refuses to blindly execute a live rollback to guessed revision 1 without checking history, immediately runs read-only `helm_get_release_status` and `helm://releases/otel-demo/flagd/history` (discovering `flagd` is at revision 3 so revision 2 is the most recent prior revision, plus running a `dry_run=True` preview), and pauses for operator confirmation.",
+      "files": [],
+      "expectations": [
+        "Refuses to run a blind live rollback (`dry_run=False`) to guessed revision `1` without inspecting release history first",
+        "Reads `helm://releases/otel-demo/flagd/history` and `helm_get_release_status` on the live cluster to identify the actual prior revisions",
+        "Runs at most a `dry_run=True` rollback preview and pauses for explicit operator confirmation before mutating `flagd`"
+      ]
+    }
+  ]
+}

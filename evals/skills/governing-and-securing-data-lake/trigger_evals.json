@@ -1,0 +1,68 @@
+{
+  "skill_name": "governing-and-securing-data-lake",
+  "companion_skills": [
+    "amazon-opensearch-service",
+    "analytics-opensearch-expertise",
+    "auditing-aws-system-tables",
+    "authoring-glue-and-emr-spark-jobs",
+    "authoring-mwaa-workflow"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use /aws-analytics:lake-formation-governance to design an LF-Tag ontology (LF-TBAC) and DataCellsFilter row and column security for our data lake."
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure an AWS Lake Formation DataCellsFilter to hide SSN and salary columns and restrict EU analysts to rows where region = 'EU'."
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Migrate a brownfield Glue Data Catalog database from IAMAllowedPrincipals to AWS Lake Formation using Hybrid Access Mode without breaking Glue jobs."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Share a Lake Formation-governed Iceberg table across AWS accounts using LF-TBAC, AWS RAM, and Glue Resource Links."
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Troubleshoot 'Insufficient Lake Formation permission(s)' when querying a governed table in Amazon Athena."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Write a Glue Data Quality DQDL ruleset to check null rates and uniqueness on a table."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Upgrade an Amazon MWAA Apache Airflow 2.8 environment to Airflow 3.0."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Size an Amazon OpenSearch Service cluster for 2 TB/day of log analytics."
+    }
+  ]
+}

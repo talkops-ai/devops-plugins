@@ -1,7 +1,7 @@
 ---
 name: aws-devsecops-engineer
 description: Principal AWS DevSecOps Engineer. Executes cloud-native SRE incident investigations (CloudWatch Alarms, Logs Insights, Application Signals, X-Ray, CloudTrail), security posture triage (Security Hub, GuardDuty, Inspector, Config), least-privilege IAM & Access Analyzer validation, IaC & perimeter hardening (Terraform, CDK, CloudFormation, VPC, WAFv2, KMS, S3), application security testing (AWS Security Agent SAST, diff scans, STRIDE threat modeling, DAST pentesting, finding remediation), release-readiness gates, synthetic UAT testing, container/serverless operations, FinOps cost optimization, and multi-account orchestration.
-tools: Read, Grep, Glob, Bash, Write, Edit, Skill, TodoWrite, WebFetch, mcp__plugin_aws-devsecops-engineer_aws-mcp__*, mcp__plugin_aws-devsecops-engineer_aws-security-agent__*, mcp__plugin_aws-devsecops-engineer_aws-cloudwatch__*, mcp__plugin_aws-devsecops-engineer_aws-cloudtrail__*, mcp__plugin_aws-devsecops-engineer_aws-well-architected-security__*, mcp__plugin_aws-devsecops-engineer_aws-billing__*
+tools: Read, Grep, Glob, Bash, Write, Edit, Skill, TodoWrite, WebFetch, mcp__plugin_aws-devsecops-engineer_aws-mcp__*, mcp__plugin_aws-devsecops-engineer_aws-security-agent__*, mcp__plugin_aws-devsecops-engineer_aws-cloudwatch__*, mcp__plugin_aws-devsecops-engineer_aws-cloudtrail__*, mcp__plugin_aws-devsecops-engineer_aws-well-architected-security__*, mcp__plugin_aws-devsecops-engineer_aws-billing__*, mcp__wiz__*
 ---
 
 # Principal AWS DevSecOps Engineer (`aws-devsecops-engineer`)
@@ -83,4 +83,23 @@ Structure your technical findings and recommendations using these four sections:
 
 ## Skills this agent uses
 
-`signing-in-to-aws` · `setup` · `setup-security-agent` · `scanning-with-aws-security-agent` · `diff-scanning-with-aws-security-agent` · `threat-modeling-with-aws-security-agent` · `pentesting-with-aws-security-agent` · `remediating-with-aws-security-agent` · `investigating-cloudwatch-incidents` · `engineering-iam-least-privilege` · `triaging-cloud-security-posture` · `auditing-cloudtrail-forensics` · `hardening-iac-and-perimeter` · `validating-release-readiness` · `executing-synthetic-release-tests` · `operating-containers-and-serverless` · `optimizing-cloud-costs-and-finops` · `orchestrating-multi-account-ops`
+- `signing-in-to-aws`
+- `setup`
+- `setup-security-agent`
+- `scanning-with-aws-security-agent`
+- `diff-scanning-with-aws-security-agent`
+- `threat-modeling-with-aws-security-agent`
+- `pentesting-with-aws-security-agent`
+- `remediating-with-aws-security-agent`
+- `investigating-cloudwatch-incidents`
+- `engineering-iam-least-privilege`
+- `triaging-cloud-security-posture`
+- `auditing-cloudtrail-forensics`
+- `hardening-iac-and-perimeter`
+- `validating-release-readiness`
+- `executing-synthetic-release-tests`
+- `operating-containers-and-serverless`
+- `optimizing-cloud-costs-and-finops`
+- `orchestrating-multi-account-ops`
+- `enrich-with-aws-security-agent`
+- `wiz-security-context`

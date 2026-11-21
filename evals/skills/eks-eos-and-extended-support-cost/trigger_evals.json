@@ -1,0 +1,95 @@
+{
+  "skill_name": "eks-eos-and-extended-support-cost",
+  "companion_skills": [
+    "eks-al2-to-al2023-migration",
+    "eks-karpenter-and-addon-upgrades",
+    "eks-post-upgrade-validation-and-rollback",
+    "aws-finops-and-cost"
+  ],
+  "queries": [
+    {
+      "id": "trig-pos-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Audit our EKS clusters for End of Support dates and calculate our monthly Extended Support surcharge using AWS Pricing."
+    },
+    {
+      "id": "trig-pos-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Build a prioritized multi-cluster EKS upgrade wave roadmap ranked by Extended Support cost exposure and EOS cutoffs."
+    },
+    {
+      "id": "trig-pos-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why did our Amazon EKS control-plane bill jump from $73/month to $438/month per cluster without adding any worker nodes?"
+    },
+    {
+      "id": "trig-pos-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Check the live EKS Kubernetes release calendar to see when EKS 1.30 and 1.31 enter Extended Support and End of Extended Support."
+    },
+    {
+      "id": "trig-pos-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Should we do 4 sequential minor hops or a Blue/Green cluster replacement to get 6 legacy EKS clusters out of Extended Support billing?"
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Convert our `/etc/eks/bootstrap.sh` Launch Template user data into AL2023 `nodeadm` `NodeConfig` YAML."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Check `eks:DescribeAddonVersions` `eksbuild` ordering for `vpc-cni` and upgrade Karpenter CRDs from `v0.37` to `v1.0`."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Triage a stuck EKS node-group rolling update failing with `PodEvictionFailure` and evaluate 7-day rollback readiness."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Correlate Security Hub, GuardDuty, and Inspector CVE findings in `ap-south-1` and patch our Terraform files."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Right-size Aurora PostgreSQL Reserved Instances vs Database Savings Plans."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure AWS WAF Account Takeover Prevention (`ATP`) on `/auth/login`."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a CloudWatch Logs Insights query for Lambda timeout `platform.report` events."
+    }
+  ]
+}

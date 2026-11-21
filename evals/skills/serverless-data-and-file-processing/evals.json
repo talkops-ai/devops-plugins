@@ -1,0 +1,91 @@
+{
+  "skill_name": "serverless-data-and-file-processing",
+  "evals": [
+    {
+      "id": "eval-01-s3-presigned-url-upload-bypassing-apigw-10mb-and-lambda-6mb-limits",
+      "prompt": "Our frontend team currently base64-encodes PDF and CSV uploads (up to 80 MB) and `POST`s them through API Gateway to AWS Lambda, which immediately fails with `413 Content Too Large`! Explain the exact API Gateway and Lambda payload limits and provide the production S3 Presigned POST / Multipart upload pattern with content-type and size guardrails.",
+      "expectations": [
+        "Activates the serverless-data-and-file-processing skill",
+        "States the exact limits violated (**API Gateway `10 MB` payload limit** and **AWS Lambda `6 MB` synchronous payload limit**, made ~33% worse by base64 encoding overhead!)",
+        "Provides a secure S3 Presigned POST (`generate_presigned_post` with strict `Content-Type` and `[\"content-length-range\", 1, ...]` conditions and short `ExpiresIn` TTL) or S3 Multipart Upload presigned URLs for large >100 MB files so clients upload directly to S3"
+      ]
+    },
+    {
+      "id": "eval-02-s3-recursive-invocation-loop-prevention-three-layer-defense",
+      "prompt": "An image-thumbnailing Lambda triggered on `s3:ObjectCreated:*` in `media-bucket` wrote `thumbnail_photo.jpg` back into `media-bucket`, triggering an infinite recursive loop that invoked Lambda 14 million times overnight! Provide all three mandatory architectural defenses so this can never happen again.",
+      "expectations": [
+        "Activates the serverless-data-and-file-processing skill",
+        "Enforces all 3 loop-prevention defenses: (1) **Separate Source and Destination S3 buckets** (strongly preferred), (2) if single-bucket is forced, strict EventBridge `prefix` inclusion + explicit `anything-but` output-prefix exclusion, and (3) **Reserved Concurrency (`ReservedConcurrentExecutions`)** / `MaxConcurrency` circuit breaker"
+      ]
+    },
+    {
+      "id": "eval-03-step-functions-distributed-map-for-20gb-csv-with-itembatcher-and-resultwriter",
+      "prompt": "We need to process a daily `20 GB` (`45 million` row) CSV file landed in S3 using AWS Step Functions and AWS Lambda without hitting Step Functions' `256 KB` state payload limit or paying for 45 million separate Lambda invocations + state transitions! Author the **Step Functions Distributed Map** ASL architecture.",
+      "expectations": [
+        "Activates the serverless-data-and-file-processing skill",
+        "Authors a valid ASL `Map` state with `ProcessorConfig: { Mode: \"DISTRIBUTED\", ExecutionType: \"EXPRESS\" }`, `ItemReader` (`arn:aws:states:::s3:getObject`, `InputType: \"CSV\"`, `CSVHeaderLocation: \"FIRST_ROW\"`), and **`ItemBatcher`** (`MaxItemsPerBatch` / `MaxInputBytesPerBatch` cutting invocations by ~99%)",
+        "Includes `MaxConcurrency` (protecting downstream systems), **`ResultWriter`** (`arn:aws:states:::s3:putObject` avoiding the `256 KB` parent output cap), `ToleratedFailurePercentage`, and exponential-backoff `Retry` with `JitterStrategy: \"FULL\"`"
+      ]
+    },
+    {
+      "id": "eval-04-inline-map-vs-distributed-map-standard-vs-express-child-cost-math",
+      "prompt": "Compare Step Functions **Inline `Map`** vs **Distributed `Map` (`STANDARD` child executions vs `EXPRESS` child executions)** for a batch job processing `2,000,000` S3 objects batched at `100` objects per child execution (`20,000` child runs, each taking 4 seconds).",
+      "expectations": [
+        "Activates the serverless-data-and-file-processing skill",
+        "Explains why Inline `Map` fails (`256 KB` input/output array limit and ~40 max concurrency)",
+        "Compares Distributed Map `STANDARD` child workflows (billed per state transition \u2014 costly at high volume, up to 1-year duration, exactly-once) against `EXPRESS` child workflows (billed by execution count + duration/memory \u2014 dramatically cheaper for short `< 5 min` idempotent batch workers like 4-second runs!)"
+      ]
+    },
+    {
+      "id": "eval-05-decoupled-s3-eventbridge-sqs-lambda-backpressure-pipeline",
+      "prompt": "When customers upload bursts of 15,000 PDFs in 10 seconds to S3, why is **S3 (`EventBridgeEnabled: true`) -> EventBridge Rule -> SQS Queue (+ DLQ) -> Lambda (`MaximumConcurrency: 25`)** superior to wiring **S3 Bucket Notification directly to Lambda** when downstream Textract/RDS has strict rate limits?",
+      "expectations": [
+        "Activates the serverless-data-and-file-processing skill",
+        "Explains direct S3 -> Lambda limitations (only 1 notification rule per overlapping prefix/suffix on S3, async retry bursts overwhelming downstream dependencies) vs S3 -> EventBridge (multiple decoupled subscribers + rich JSON `anything-but` filtering) -> SQS (durable buffer absorbing 15,000-file spikes, `ScalingConfig.MaximumConcurrency: 25` pacing Lambda steadily, `ReportBatchItemFailures` + SQS DLQ redrive)"
+      ]
+    },
+    {
+      "id": "eval-06-distributed-map-partial-failure-toleratedfailure-and-map-run-redrive",
+      "prompt": "Halfway through a 500,000-file Step Functions Distributed Map run, 1,200 files failed due to transient third-party API outage (`0.24%` failure rate), aborting the entire Map Run, and when we re-ran the state machine it re-processed all 498,800 already-succeeded files! Show how `ToleratedFailurePercentage` and **Map Run Redrive** solve both.",
+      "expectations": [
+        "Activates the serverless-data-and-file-processing skill",
+        "Configures `ToleratedFailurePercentage` / `ToleratedFailureCount` so tolerable failure rates complete the healthy items without aborting the entire Distributed Map run",
+        "Uses **Step Functions Map Run Redrive (`RedriveExecution`)** to re-execute **only** the `FAILED`/`ABORTED`/`TIMED_OUT`/`PENDING` child executions while skipping `SUCCEEDED` items"
+      ]
+    },
+    {
+      "id": "eval-07-large-50gb-browser-upload-s3-multipart-presigned-parts-and-abort-lifecycle",
+      "prompt": "A medical imaging portal needs resilient browser uploads of `10 GB \u2013 50 GB` DICOM archives over flaky hospital Wi-Fi. Why isn't a single `PutObject` presigned URL enough above `5 GB`, and how do S3 Multipart Upload presigned part URLs + bucket lifecycle cleanup work?",
+      "expectations": [
+        "Activates the serverless-data-and-file-processing skill",
+        "Explains S3's **`5 GB` maximum single `PUT` limit** (up to `5 TB` via Multipart Upload, max `10,000` parts) and parallel/retryable part uploads (`CreateMultipartUpload` -> presigned `UploadPart` URLs -> `CompleteMultipartUpload`)",
+        "Mandates configuring an S3 Lifecycle rule (`AbortIncompleteMultipartUpload` after e.g. 7 days) + strict bucket CORS (`ExposeHeaders: [\"ETag\"]`) so abandoned uploads don't accrue silent storage charges"
+      ]
+    },
+    {
+      "id": "eval-08-live-ap-south-1-s3-event-pipeline-read-only-check",
+      "prompt": "Perform a read-only inspection in `ap-south-1` on our live AWS account checking Step Functions state machines and EventBridge rules targeting S3 `Object Created` events, and summarize whether any recursive-loop hazards exist.",
+      "expectations": [
+        "Activates the serverless-data-and-file-processing skill and inspects Step Functions state machines and EventBridge rules in `ap-south-1` via connected AWS MCP tools with zero raw `aws` CLI shell commands",
+        "Accurately reports live `ap-south-1` findings without fabricating resources and checks event patterns for bucket/prefix separation (`anything-but` guardrails)",
+        "Makes zero mutating AWS calls"
+      ]
+    },
+    {
+      "id": "eval-09-s3-inventory-manifest-vs-s3-listobjects-itemreader-for-100m-objects",
+      "prompt": "We need to backfill metadata tags across `120 million` existing S3 objects in an archive bucket using Step Functions Distributed Map. Compare `ItemReader` using live `s3:listObjectsV2` versus feeding an **Amazon S3 Inventory Manifest (`MANIFEST`)** into `ItemReader`.",
+      "expectations": [
+        "Activates the serverless-data-and-file-processing skill",
+        "Compares `arn:aws:states:::s3:listObjectsV2` (convenient for thousands/low-millions of objects, but `120,000` sequential `LIST` API calls + no pre-filtering on storage class/encryption) against **`InputType: \"MANIFEST\"` reading an S3 Inventory report** (cheaper, faster startup at 100M+ scale, and lets you pre-filter out `GLACIER`/`DEEP_ARCHIVE` objects before launching child runs)"
+      ]
+    },
+    {
+      "id": "eval-10-awsknowledge-lambda-recursive-loop-detection-s3-sqs-sns",
+      "prompt": "Query AWS documentation via connected AWS documentation tools to verify how AWS Lambda's built-in **Recursive Loop Detection** works across supported services (S3, SQS, SNS), after approximately how many recursive hops Lambda stops the chain, and why you still need architectural prefix/bucket separation.",
+      "expectations": [
+        "Activates the serverless-data-and-file-processing skill and queries connected AWS documentation MCP tools (`awsknowledge`, `aws-mcp`, or `awsiac`)",
+        "Confirms AWS Lambda automatically tracks lineage metadata across supported triggers (S3, SQS, SNS) and terminates runaway recursive chains after **~16 recursive invocations** (sending notifications/DLQ events), while emphasizing it is a last-resort safety net (not a substitute for separate source/destination buckets and strict prefix filters)"
+      ]
+    }
+  ]
+}

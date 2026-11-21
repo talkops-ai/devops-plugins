@@ -1,0 +1,95 @@
+{
+  "skill_name": "setting-up-cloudtrail-multi-region",
+  "companion_skills": [
+    "auditing-cloudtrail-forensics",
+    "querying-aws-cloudwatch",
+    "setting-up-cloudwatch-alarm-notifications",
+    "aws-security"
+  ],
+  "queries": [
+    {
+      "id": "trig-pos-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Set up a centralized multi-region AWS CloudTrail trail with KMS-encrypted S3 storage, `--enable-log-file-validation`, and CloudWatch Logs integration."
+    },
+    {
+      "id": "trig-pos-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Fix `InsufficientS3BucketPolicyException` and `InsufficientEncryptionPolicyException` when creating a multi-region CloudTrail trail."
+    },
+    {
+      "id": "trig-pos-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure the CloudTrail-to-CloudWatch Logs IAM role (`CloudTrail/APILogs`) and CIS metric filters on a new multi-region trail."
+    },
+    {
+      "id": "trig-pos-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Scope S3 and Lambda Data Events safely with CloudTrail Advanced Event Selectors and explain why a trail isn't logging until `start-logging` runs."
+    },
+    {
+      "id": "trig-pos-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Create an AWS Organizations multi-region CloudTrail trail managed by a delegated Security Administrator account."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Forensically investigate who deleted our production RDS snapshot yesterday using CloudTrail Lake SQL."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Set up an encrypted SNS topic and email/webhook subscriptions for an existing CloudWatch CPU alarm."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Run Athena SQL queries against VPC Flow Logs in `s3tablescatalog/aws-cloudwatch`."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Add Amazon Cognito PKCE login to a React web app."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Use `asm-exec` to inject Secrets Manager credentials into `psql`."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure AWS Direct Connect BGP peering and SiteLink."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Debug a timing-out Python Lambda function in `ap-south-1`."
+    }
+  ]
+}

@@ -1,15 +1,12 @@
 ---
 name: dms-data-migration-execution
-description: >-
-  Architects, configures, optimizes, and troubleshoots AWS Database Migration Service (DMS) data
-  migration tasks (Full Load, Change Data Capture / CDC, and Full Load + CDC). Activate after or
-  alongside dms-schema-conversion whenever migrating data between operational databases, sizing DMS
-  replication instances, configuring Limited/Inline/Full LOB settings, tuning parallel table loads,
-  or debugging DMS swap exhaustion and CDC replication latency.
+description: "Architects, configures, optimizes, and troubleshoots AWS Database Migration Service (DMS) data migration tasks (Full Load, Change Data Capture / CDC, and Full Load + CDC). Activate after or alongside dms-schema-conversion whenever migrating data between operational databases, sizing DMS replication instances, configuring Limited/Inline/Full LOB settings, tuning parallel table loads, or debugging DMS swap exhaustion and CDC replication latency. Query live AWS state via MCP tools only (never raw aws CLI)."
 version: 1
 ---
 
 # AWS DMS Data Migration Execution & Tuning
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, account/region checks (`sts:GetCallerIdentity`), cluster/instance/table inspection, CloudWatch telemetry, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___run_script` `call_boto3`, `dynamodb`, `elasticache`, `postgres`, `mysql`, `cloudwatch`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**. Local offline helper scripts under `scripts/` may be run via `python3` or `node`.
 
 Use this skill to architect, right-size, execute, and troubleshoot **operational database migrations** using AWS Database Migration Service (DMS) across **Full Load**, **Change Data Capture (CDC)**, and **Full Load + CDC** modes. Pair with `dms-schema-conversion` when migrating across heterogeneous engines (such as Oracle or SQL Server to Aurora PostgreSQL/MySQL).
 

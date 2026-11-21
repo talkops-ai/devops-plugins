@@ -30,12 +30,15 @@ This is an **agent plugin**: every skill, command, hook, and MCP server below is
 | `amazon-keyspaces` | Provides authoritative compatibility checks, pricing estimates, connection troubleshooting, pre-warming guidance, and infrastructure mutations for Amazon Keyspaces (for Apache Cassandra). |
 | `amazon-neptune` | Provides authoritative guidance on Amazon Neptune Database and Neptune Analytics for graph, knowledge-graph, and relationship-heavy workloads — fraud detection / fraud rings, agentic memory / chatbot context across sess… |
 | `aws-database` | Principal Database Architect router and FinOps evaluator for AWS databases — choosing, comparing, estimating TCO, getting started with, or operating any AWS operational database. |
+| `database-migration-service-expertise` | AWS Database Migration Service (DMS) operational review and troubleshooting skill. |
+| `database-rds-devops` | Database-level data-plane diagnostics for Aurora MySQL and Aurora PostgreSQL. |
 | `db-ha-dr-and-schema-evolution` | Designs multi-AZ and cross-region HA/DR topologies mapped to RPO/RTO targets, backup and PITR validation, zero-copy Aurora Fast Database Cloning, RDS Blue/Green deployments, Amazon RDS Proxy connection multiplexing and… |
 | `db-observability-and-wait-triage` | Diagnoses AWS database performance bottlenecks, query latency, high CPU, I/O saturation, lock contention, connection exhaustion, autovacuum lag, and hot-partition throttling across RDS, Aurora, and DynamoDB using Perfor… |
 | `dms-data-migration-execution` | Architects, configures, optimizes, and troubleshoots AWS Database Migration Service (DMS) data migration tasks (Full Load, Change Data Capture / CDC, and Full Load + CDC). |
 | `dms-schema-conversion` | Handles the full DMS Schema Conversion lifecycle including creating migration projects, converting database schemas to a target engine, running compatibility assessments, navigating metadata trees, exporting converted D… |
 | `dsql` | Build with Aurora DSQL — manage schemas, execute queries, handle migrations, diagnose query plans, diagnose cluster performance, load data, and develop applications with a serverless, distributed SQL database. |
 | `rds-db2` | Provisions, connects, migrates, and operates Amazon RDS for Db2. |
+| `rds-operation-review` | Comprehensive Amazon RDS and Aurora operational review aligned with the AWS Well-Architected Framework and RDS/Aurora best practices. |
 | `rds-oracle` | Full-lifecycle management, administration, and connectivity troubleshooting for Amazon RDS for Oracle and RDS Custom for Oracle. |
 | `rds-oss` | Advises on Amazon RDS open-source engines (MySQL, MariaDB, PostgreSQL) for instance creation, upgrade planning, commitment pricing, proxy evaluation, and Blue/Green deployments. |
 | `rds-sqlserver` | Full-lifecycle management, administration, and connectivity troubleshooting for Amazon RDS for SQL Server and RDS Custom for SQL Server. |

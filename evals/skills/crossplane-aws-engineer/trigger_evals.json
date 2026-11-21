@@ -1,0 +1,55 @@
+{
+  "skill_name": "crossplane-aws-engineer",
+  "companion_skills": [],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use `crossplane-aws-engineer` to help me design, validate, and troubleshoot crossplane aws engineer."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Walk me through best practices and production guardrails for crossplane aws engineer (`crossplane-aws-engineer`)."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Design, generate, review, troubleshoot, and validate Crossplane platform APIs for AWS. Use for any AWS service Managed Resource, XRD, Claim, Pipeline Composition, Upbound provider"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating crossplane aws engineer?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "During our `ap-south-1` sprint readiness review, audit our crossplane aws engineer setup in read-only mode and highlight top risks."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Help me configure and troubleshoot unrelated CSS frontend animation styling exclusively without touching crossplane aws engineer."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+    }
+  ]
+}

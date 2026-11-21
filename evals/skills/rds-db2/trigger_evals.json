@@ -1,0 +1,96 @@
+{
+  "skill_name": "rds-db2",
+  "companion_skills": [
+    "rds-oracle",
+    "rds-sqlserver",
+    "rds-oss",
+    "dms-schema-conversion",
+    "dms-data-migration-execution"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Restore a multi-part IBM Db2 backup from S3 into Amazon RDS for Db2 using rdsadmin.restore_database and rollforward_database."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Create a cross-region DR standby replica for Amazon RDS for Db2 using --replica-mode mounted."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Plan a near-zero-downtime migration from mainframe IBM Db2 for z/OS to Amazon RDS for Db2."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Our Db2 client fails with SQL30082N reason 24 USERNAME AND/OR PASSWORD INVALID after Secrets Manager rotated the RDS master password."
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Can we lift and shift unfenced external C and COBOL stored procedures onto managed Db2 on AWS, or rewrite to SQL PL / sqlj.install_jar?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Fix GSKit SSL errors on TCP port 50443 and AD Kerberos domain-join RPC port issues for our Db2 RDS instance."
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Audit ap-south-1 for db2-ae and db2-se RDS instances and check BYOK KMS encryption and S3_INTEGRATION roles."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Configure Db2 audit log archival to S3 and compare BYOL vs AWS Marketplace licensing for db2-ae."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Why does AWS SCT reject Db2 for z/OS as a source and require ADB2GEN + Q Replication instead?"
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure Oracle Data Pump S3_INTEGRATION and CMAN connection pooling on RDS for Oracle."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Set up Always On Availability Groups and native .bak S3 restores on RDS for SQL Server."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Replatform legacy COBOL batch JCL jobs onto AWS Mainframe Modernization managed runtime."
+    }
+  ]
+}

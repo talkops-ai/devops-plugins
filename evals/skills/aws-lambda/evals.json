@@ -1,0 +1,93 @@
+{
+  "skill_name": "aws-lambda",
+  "evals": [
+    {
+      "id": "eval-01-default-typescript-cdk-lambda-with-powertools-and-idempotency",
+      "prompt": "Build a production-ready AWS Lambda payment webhook function that processes incoming order charges safely without duplicate billing if retried. Do not use a specific language or IaC override unless your defaults choose one \u2014 apply your default language, IaC framework, observability, and idempotency best practices.",
+      "expectations": [
+        "Activates the aws-lambda skill and defaults to TypeScript for handler code and AWS CDK for IaC when not overridden",
+        "Integrates AWS Lambda Powertools (structured logging, tracing, metrics, and DynamoDB-backed idempotency utility so duplicate deliveries do not double-charge)",
+        "Applies least-privilege IAM, Secrets Manager / Parameter Store secret handling (never plaintext env vars), and explicit timeout/memory settings"
+      ]
+    },
+    {
+      "id": "eval-02-lambda-web-adapter-fastapi-migration-with-response-streaming",
+      "prompt": "We have an existing Python FastAPI HTTP service returning streamed LLM responses up to 15 MB that we want to run on AWS Lambda (using Python and AWS SAM) without rewriting FastAPI routes into `event, context` handlers. Show how AWS Lambda Web Adapter enables this and note the relevant Lambda payload limits.",
+      "expectations": [
+        "Activates the aws-lambda skill and honors the Python + AWS SAM override",
+        "Configures AWS Lambda Web Adapter (layer / container extension, `AWS_LWA_INVOKE_MODE=response_stream` or port readiness config) running FastAPI (`uvicorn`) without handler code rewrites",
+        "Contrasts Lambda's `6 MB` standard synchronous response payload limit against the `200 MB` streamed response limit"
+      ]
+    },
+    {
+      "id": "eval-03-lambda-limits-audit-memory-vcpu-package-size-and-tmp",
+      "prompt": "Fact-check a developer's Lambda architecture assumptions: (1) `'A 512 MB Lambda gets 2 full vCPUs'`, (2) `'We can upload a 400 MB uncompressed .zip package directly to Lambda'`, (3) `'Async EventBridge/SNS invocations can pass 5 MB payloads'`, and (4) `'Lambda /tmp is capped at 512 MB forever'.`",
+      "expectations": [
+        "Activates the aws-lambda skill",
+        "Corrects all 4 limits accurately: `1,769 MB` memory = 1 vCPU equivalent (so 512 MB gets a fractional vCPU slice), `.zip` deployment packages cap at `250 MB` uncompressed (`50 MB` direct upload compressed; use container images up to `10 GB` for larger dependencies), async invocation payloads cap at `1 MB`, and `/tmp` ephemeral storage is configurable from `512 MB` up to `10,240 MB`"
+      ]
+    },
+    {
+      "id": "eval-04-security-review-module-global-user-leak-and-env-var-secrets",
+      "prompt": "Code-review a Lambda handler where the developer caches `let currentCustomerPII = event.customer;` in a top-level module global variable, puts `STRIPE_SECRET_KEY` in plaintext Lambda `Environment.Variables`, and attaches `AWSLambdaFullAccess` + `Resource: '*'`. Explain every vulnerability and provide the remediated pattern.",
+      "expectations": [
+        "Activates the aws-lambda skill",
+        "Flags warm execution-environment reuse leaking `currentCustomerPII` across subsequent callers when stored in module-level globals",
+        "Moves `STRIPE_SECRET_KEY` out of plaintext environment variables into AWS Secrets Manager / SSM Parameter Store and scopes IAM permissions to exact actions/ARNs without `*` wildcards"
+      ]
+    },
+    {
+      "id": "eval-05-live-ap-south-1-lambda-account-settings-and-function-inventory",
+      "prompt": "Check our live AWS account in `ap-south-1` (read-only) for Lambda account concurrency settings (`GetAccountSettings`) and list any deployed Lambda functions in `ap-south-1`, summarizing their runtime, architecture, memory, and timeout posture.",
+      "expectations": [
+        "Activates the aws-lambda skill and queries `lambda:GetAccountSettings` and `lambda:ListFunctions` in `ap-south-1` via connected AWS MCP tools with zero raw `aws` CLI shell commands",
+        "Reports the live `ap-south-1` concurrency quota/usage and function inventory accurately without fabricating functions",
+        "Remains strictly read-only with zero mutating calls"
+      ]
+    },
+    {
+      "id": "eval-06-routing-to-durable-functions-vs-lambda-managed-instances",
+      "prompt": "Compare two newly announced/specialized Lambda capabilities for our architecture review: (A) **Lambda Durable Functions** (checkpoint/replay workflows in code) vs Step Functions, and (B) **Lambda Managed Instances (LMI)** (capacity providers on EC2 with multi-concurrency) vs standard on-demand Lambda.",
+      "expectations": [
+        "Activates the aws-lambda skill",
+        "Explains Lambda Durable Functions (checkpoint-and-replay multi-step workflows/sagas in code, noting `lambda:CheckpointDurableExecution` and `lambda:GetDurableExecutionState` IAM permissions) vs Step Functions ASL visual state machines",
+        "Explains Lambda Managed Instances (EC2-backed capacity providers with multi-concurrency eliminating cold starts and unlocking EC2 Reserved Instance / Savings Plan economics for steady high-throughput workloads)"
+      ]
+    },
+    {
+      "id": "eval-07-cold-start-and-memory-tuning-cpu-vs-io-bound-lambda",
+      "prompt": "Our TypeScript API Lambda (`256 MB` RAM, bundled as a 45 MB unminified `node_modules` zip, inside a VPC using a NAT Gateway just to call DynamoDB) suffers 2.8-second cold starts. Give a prioritized optimization plan.",
+      "expectations": [
+        "Activates the aws-lambda skill",
+        "Shrinks bundle size with tree-shaken `esbuild` minification, right-sizes memory toward CPU/init sweet spots (`1,769 MB = 1 vCPU` boosts cold-start JS initialization CPU proportionally), and removes unnecessary VPC attachment (or uses a free DynamoDB Gateway VPC Endpoint instead of NAT Gateway)"
+      ]
+    },
+    {
+      "id": "eval-08-eventbridge-silent-drop-and-rollback-complete-troubleshooting",
+      "prompt": "Troubleshoot two issues hit by our serverless team today: (1) EventBridge rule matches events (`MatchedEvents > 0`) and `FailedInvocations > 0`, yet failed events vanish completely with zero retries or logs in Lambda; and (2) `sam deploy` fails immediately with `Stack is in ROLLBACK_COMPLETE state and can not be updated`.",
+      "expectations": [
+        "Activates the aws-lambda skill",
+        "Diagnoses (1): missing `lambda:InvokeFunction` resource-based permission for `events.amazonaws.com` (or throttled/broken target) combined with no `RetryPolicy` + `DeadLetterConfig` SQS DLQ on the EventBridge rule target",
+        "Diagnoses (2): an initial failed stack creation leaves CloudFormation in `ROLLBACK_COMPLETE`, requiring inspecting `CREATE_FAILED` root-cause events and deleting the dead stack (`sam delete` / `delete-stack`) before redeploying"
+      ]
+    },
+    {
+      "id": "eval-09-sam-local-testing-and-containerized-native-dependency-builds",
+      "prompt": "When building a Python Lambda on macOS Apple Silicon (`arm64`) with compiled C extensions (`psycopg` / `cryptography` / `numpy`), `sam deploy` succeeds but Lambda throws `Unable to import module: invalid ELF header` in the cloud! Explain why and show the exact SAM build & local invoke workflow.",
+      "expectations": [
+        "Activates the aws-lambda skill",
+        "Explains that macOS Darwin Mach-O wheels packaged locally fail on Amazon Linux (`Invalid ELF header`), fixed by building inside an Amazon Linux container image (`sam build --use-container` / `use_container: true`) matching the function's `Architectures` (`arm64` or `x86_64`)",
+        "Shows testing locally prior to cloud deploy via `sam local invoke` / `sam local start-api`"
+      ]
+    },
+    {
+      "id": "eval-10-awsknowledge-lambda-snapstart-runtimes-and-uniqueness-caveats",
+      "prompt": "Query AWS documentation via connected AWS documentation tools to confirm which Lambda runtimes currently support **AWS Lambda SnapStart**, how restore hooks (`afterRestore` / `@register_after_restore`) work, and why PRNG/UUID/TLS state initialized before snapshot capture requires care.",
+      "expectations": [
+        "Activates the aws-lambda skill and queries connected AWS documentation MCP tools (`awsknowledge`, `aws-mcp`, or `awsiac`)",
+        "Accurately lists SnapStart-supported runtimes (Java managed runtimes plus Python and .NET managed runtimes per current AWS docs, noting pricing/tier differences where applicable)",
+        "Explains Firecracker microVM snapshot restore behavior: state initialized in `INIT` is frozen into the snapshot, so uniqueness-sensitive values, stale network sockets, or secrets cached in `INIT` must be refreshed in `afterRestore` runtime hooks"
+      ]
+    }
+  ]
+}

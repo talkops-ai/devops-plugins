@@ -1,0 +1,115 @@
+{
+  "skill_name": "aws-ai-ml",
+  "evals": [
+    {
+      "id": "eval-01-live-ap-south-1-sagemaker-inventory-and-serverless-customization-region-gate",
+      "prompt": "Check our live `ap-south-1` AWS account in read-only mode for existing SageMaker endpoints, models, and recent training jobs, and help us fine-tune `Qwen-2.5-7B-Instruct` using SageMaker Serverless Model Customization (`SFT`) in `ap-south-1`.",
+      "expected_output": "Activates aws-ai-ml, inspects live `ap-south-1` SageMaker endpoints, models, and training jobs exclusively via connected MCP tools (`aws-mcp`, `sagemaker`) without running raw `aws` CLI shell commands, accurately reports actual inventory (`0` endpoints/jobs if empty) without fabricating ARNs, and immediately enforces the hard Serverless Model Customization region gate BEFORE offering the Evaluate-first vs Direct fine-tuning prompt — stating that Serverless model customization is not available in `ap-south-1` and is supported only in `us-west-2`, `us-east-1`, `ap-northeast-1`, and `eu-west-1`, then offering either deploying a base JumpStart model in `ap-south-1` or switching to one of the four supported regions.",
+      "files": [],
+      "expectations": [
+        "Activates the aws-ai-ml skill and queries live `ap-south-1` SageMaker endpoints, models, and training jobs exclusively via connected MCP tools without running raw `aws` CLI shell commands",
+        "Stops immediately on the hard region gate before asking `Evaluate-first` vs `Direct fine-tuning`, stating that Serverless model customization is not available in `ap-south-1` and listing the supported regions (`us-west-2`, `us-east-1`, `ap-northeast-1`, `eu-west-1`)",
+        "Offers concrete next paths: deploying a base JumpStart model in `ap-south-1` or switching to a supported customization region"
+      ]
+    },
+    {
+      "id": "eval-02-multi-step-planning-3-path-gate-evaluate-first-and-model-selection-ordering",
+      "prompt": "In `us-west-2`, we want to fine-tune an open-weights model for our internal billing ticket Q&A workflow and deploy it to an endpoint. Walk us through the recommended workflow plan and starting steps.",
+      "expected_output": "Activates the 3-path planning gate (`Deploy base model`, `Evaluate-first`, `Direct fine-tuning`), explicitly recommending/offering `Evaluate-first` (baseline benchmark before spending on fine-tuning) even though the user asked directly to fine-tune, and enforces strict stage ordering where `model-selection` executes BEFORE `sdk-getting-started`, `finetuning-technique`, `dataset-evaluation`, training, post-training evaluation, deployment, and inference optimization.",
+      "files": [],
+      "expectations": [
+        "Activates the aws-ai-ml skill",
+        "Presents the 3-path workflow gate (`Deploy base model`, `Evaluate-first`, `Direct fine-tuning`) and explicitly surfaces `Evaluate-first` even though the user asked to fine-tune",
+        "Enforces workflow stage ordering with `model-selection` preceding `sdk-getting-started`, `finetuning-technique`, and `dataset-evaluation`"
+      ]
+    },
+    {
+      "id": "eval-03-pysdk-v3-floor-ua-app-id-and-pip-install-failure-rules",
+      "prompt": "Which SageMaker Python SDK version and environment variables do we need for serverless model customization in `us-west-2`? Also, `pip install` hit a dependency conflict with an older `protobuf`/`boto3` pin in our virtualenv — should we bypass it with `pip install --no-deps sagemaker` or install `sagemaker[core]` / `sagemaker[train]` instead?",
+      "expected_output": "Requires `'sagemaker>=3.17.0,<4.0'` (SageMaker Python SDK v3.17+) in a clean Python virtual environment and sets `AWS_SDK_UA_APP_ID=AWSSkill-SageMaker`. Explicitly forbids working around a failed `pip install` using `--no-deps`, `sagemaker[core]`, or `sagemaker[train]`, instructing the user to resolve the conflicting environment pins or create a clean isolated virtual environment.",
+      "files": [],
+      "expectations": [
+        "Activates the aws-ai-ml skill",
+        "Specifies `'sagemaker>=3.17.0,<4.0'` and exporting `AWS_SDK_UA_APP_ID=AWSSkill-SageMaker`",
+        "Explicitly forbids working around pip dependency failures with `--no-deps`, `sagemaker[core]`, or `sagemaker[train]`, recommending a clean virtual environment instead"
+      ]
+    },
+    {
+      "id": "eval-04-model-selection-size-buckets-task-mapping-and-hosting-instance-fallback",
+      "prompt": "We need to shortlist 'medium-sized' JumpStart foundation models for both document summarization and Python code generation, and pick a GPU instance when a model card lacks default JumpStart hosting instance labels. How should size buckets, task tags, catalog ordering, and unlabeled GPU instance tiers be handled?",
+      "expected_output": "Maps size buckets consistently (`small` -> `size:<=10b`, `medium` -> `size:11b-70b`, `large` -> `size:71b-100b`, `very large` -> `size:>100b`), maps BOTH summarization and coding requests to `task:text generation` / `task:generation-text` (avoiding legacy narrow tags like `text summarization` that miss modern instruct LLMs), preserves deterministic newest-first catalog ordering without arbitrary re-sorting, and uses the GPU instance progression `g4dn < g5 ≈ g6 < g6e < p4d < p5` when hosting metadata is unlabeled.",
+      "files": [],
+      "expectations": [
+        "Activates the aws-ai-ml skill",
+        "Maps `medium` to `11B-70B` (`small` `<=10B`, `large` `71B-100B`, `very large` `>100B`) and maps both summarization and coding to `text generation` / `generation-text` rather than legacy `text summarization`",
+        "Preserves newest-first catalog ordering and specifies the unlabeled GPU hosting progression (`g4dn < g5 ≈ g6 < g6e < p4d < p5`)"
+      ]
+    },
+    {
+      "id": "eval-05-finetuning-technique-decision-matrix-sft-dpo-rlvr-rlaif",
+      "prompt": "Match the right SageMaker Serverless Model Customization technique (`SFT`, `DPO`, `RLVR`, or `RLAIF`) to each of our 4 workloads in `us-east-1`: (1) teaching strict internal JSON schema output from 5,000 `(prompt, completion)` examples, (2) aligning tone using `(prompt, chosen, rejected)` human preference pairs, (3) improving SQL query generation where an automated test harness verifies execution accuracy, and (4) aligning helpfulness/safety using a written rubric without human preference labels.",
+      "expected_output": "Maps (1) `(prompt, completion)` supervised adaptation -> `SFT` (`SFTTrainer`), (2) `(prompt, chosen, rejected)` preference pairs -> `DPO` (`DPOTrainer`), (3) verifiable SQL/math/code tasks with deterministic/programmatic reward verification -> `RLVR` (`RLVRTrainer`), and (4) rubric/judge-guided alignment without human preference labels -> `RLAIF` (`RLAIFTrainer`), noting model-family recipe compatibility checks in SageMaker Hub before training.",
+      "files": [],
+      "expectations": [
+        "Activates the aws-ai-ml skill",
+        "Correctly maps workload (1) to `SFT`, (2) to `DPO`, (3) to `RLVR`, and (4) to `RLAIF`",
+        "Explains the data/reward prerequisites and model-family Hub recipe support check for each trainer"
+      ]
+    },
+    {
+      "id": "eval-06-dataset-jsonl-schema-detection-nova-gpt-oss-open-weights-and-verl",
+      "prompt": "Our engineer prepared a single JSONL dataset with `{\"prompt\": \"...\", \"completion\": \"...\"}` rows and plans to reuse it unchanged for (a) Amazon Nova Micro SFT, (b) Qwen / Llama open-weights SFT, and (c) an `RLVR` training job. Audit the dataset format compatibility across all three targets.",
+      "expected_output": "Explains that `{\"prompt\", \"completion\"}` (`open_weights_sft` / `gpt_oss_sft`) works for supported open-weights SFT (alongside `messages` conversational `open_weights_sft_conv`), but FAILS for Amazon Nova SFT (`nova_sft` requires Converse-style `schemaVersion` / `system` / `messages` with `role` and `content` blocks) and FAILS for `RLVR` (`verl` format requires `data_source`, `prompt` message list, `ability`, and `reward_model` with `ground_truth`/`style` or `nova_rlvr` schema). Recommends running local schema validation before uploading to S3.",
+      "files": [],
+      "expectations": [
+        "Activates the aws-ai-ml skill",
+        "Identifies that `{\"prompt\", \"completion\"}` is valid for open-weights SFT (`open_weights_sft`) but invalid for Amazon Nova SFT (`nova_sft` Converse `messages` format) and invalid for `RLVR` (`verl` / `nova_rlvr` reward schema)",
+        "Describes the required fields for Nova SFT (`system`/`messages` content blocks) and RLVR (`prompt`, `reward_model` / `ground_truth`) and recommends validating JSONL locally prior to S3 upload"
+      ]
+    },
+    {
+      "id": "eval-07-custom-metrics-llm-as-judge-validation-and-nova-evaluation-restriction",
+      "prompt": "Review this serverless model evaluation plan in `us-west-2`: we are evaluating a fine-tuned `Amazon Nova Pro` checkpoint using LLM-as-Judge with 12 custom metrics; metric #1 has `instructions: \"Score clinical accuracy from 1 to 3\"` (no template variables), a 145-character `ratingScale[0].definition`, and mixes `{\"floatValue\": 1.0}` with `{\"stringValue\": \"Pass\"}` in the same `ratingScale`. Identify every blocker.",
+      "expected_output": "Flags all five blockers: (1) **Amazon Nova models do NOT support LLM-as-Judge or built-in scorers** in SageMaker serverless `model-evaluation` (must use deterministic/offline evaluation or a supported non-Nova target); (2) maximum **`10` `CustomMetric` entries** per evaluation (`12` exceeds the `1..10` limit); (3) `instructions` (`<= 5,000` chars) MUST include **`{{prompt}}` or `{{prediction}}`** template placeholders; (4) `ratingScale[].definition` must be **`<= 100` characters** (`145` exceeds limit); and (5) `ratingScale` values must be strictly **XOR `floatValue` OR `stringValue`** across all entries in a metric (never mix float and string scales).",
+      "files": [],
+      "expectations": [
+        "Activates the aws-ai-ml skill",
+        "Flags that Amazon Nova models do NOT support LLM-as-Judge / built-in scorers in serverless `model-evaluation`",
+        "Catches all four custom metric schema violations: max `10` metrics (`1..10`), required `{{prompt}}` or `{{prediction}}` placeholder in `instructions` (`<= 5000` chars), `ratingScale[].definition <= 100` chars, and no mixing of `floatValue` and `stringValue`"
+      ]
+    },
+    {
+      "id": "eval-08-inference-optimization-region-gate-and-speculative-decoding-compilation",
+      "prompt": "After deploying a Llama 3.1 70B SageMaker endpoint, we want to run SageMaker Inference Optimization (`start_benchmark` + compilation and speculative decoding recommendations) in `ap-south-1` to cut TTFT by 40%. Can we run this in `ap-south-1`, and how should compilation + speculative decoding benchmarking be structured?",
+      "expected_output": "Enforces the Inference Optimization region gate: SageMaker Inference Optimization (`start_benchmark` / automated optimization jobs) is **NOT supported in `ap-south-1`** — it is restricted to supported regions (`us-west-2`, `us-east-1`, `ap-northeast-1`, `eu-west-1`). Advises running optimization/benchmarking in a supported region, explains combining TensorRT-LLM/LMI compilation with speculative decoding (draft-model acceptance rate vs memory overhead), and requires comparing latency (TTFT/TPOT), throughput, and accuracy against the unoptimized baseline before cutting production traffic over.",
+      "files": [],
+      "expectations": [
+        "Activates the aws-ai-ml skill",
+        "Flags that SageMaker Inference Optimization / `start_benchmark` is not available in `ap-south-1` and identifies the supported regions (`us-west-2`, `us-east-1`, `ap-northeast-1`, `eu-west-1`)",
+        "Explains compilation + speculative decoding trade-offs (TTFT/TPOT vs memory/acceptance rate) and baseline benchmark comparison before production promotion"
+      ]
+    },
+    {
+      "id": "eval-09-scope-boundaries-ground-truth-feature-store-and-bedrock-routing",
+      "prompt": "Can this SageMaker customization workflow also configure a SageMaker Ground Truth human-labeling workforce, provision SageMaker Feature Store online/offline feature groups, and build an Amazon Bedrock Managed Knowledge Base?",
+      "expected_output": "Clearly enforces `aws-ai-ml` scope boundaries: SageMaker Ground Truth labeling workforces, SageMaker Feature Store, and general non-SageMaker infrastructure are out of scope for the SageMaker foundation-model customization/deployment lifecycle workflow (which covers planning, JumpStart model selection, SFT/DPO/RLVR/RLAIF customization, dataset/model evaluation, endpoint deployment, and inference optimization), and routes Managed Knowledge Base work to `amazon-bedrock`.",
+      "files": [],
+      "expectations": [
+        "Activates the aws-ai-ml skill",
+        "Explicitly states that SageMaker Ground Truth and SageMaker Feature Store are outside the scope of this foundation-model customization and deployment lifecycle skill",
+        "Clarifies what `aws-ai-ml` covers (model selection, SFT/DPO/RLVR/RLAIF customization, evaluation, JumpStart deployment, inference optimization) and routes Bedrock Knowledge Bases to `amazon-bedrock`"
+      ]
+    },
+    {
+      "id": "eval-10-awsknowledge-verification-jumpstart-eula-and-gated-model-deployment",
+      "prompt": "Verify via AWS documentation how gated JumpStart foundation models handle EULA acceptance (`accept_eula` / `ModelAccessConfig`), IAM execution role permissions, and endpoint readiness checks when deploying via SageMaker Python SDK v3 without running any mutating deployment calls.",
+      "expected_output": "Uses `awsknowledge` MCP tools (without raw CLI commands or live mutations) to confirm gated JumpStart deployment rules: never silently set `accept_eula=True` (`ModelAccessConfig(accept_eula=True)`) without explicit user review and consent to the model's license terms, ensure the SageMaker execution role has least-privilege S3/ECR/CloudWatchLogs permissions, validate `InService` endpoint status and cleanup/teardown reminders (`delete_endpoint`) to avoid idle GPU charges.",
+      "files": [],
+      "expectations": [
+        "Activates the aws-ai-ml skill and consults `awsknowledge` MCP tools without invoking raw `aws` CLI commands or mutating live resources",
+        "Requires explicit user consent before setting `accept_eula=True` / `ModelAccessConfig` on gated JumpStart models",
+        "Covers IAM execution role prerequisites, `InService` readiness verification, and endpoint cleanup reminders to prevent idle GPU billing"
+      ]
+    }
+  ]
+}

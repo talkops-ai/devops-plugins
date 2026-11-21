@@ -1,0 +1,17 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "honeycomb",
+  "version": "0.2.0",
+  "description": "Official Honeycomb high-cardinality production investigation, wide-event/BubbleUp query patterns, OpenTelemetry metrics, SLO burn-rate & trigger triage, trace verification, and board creation skills with bundled remote MCP configuration (`HONEYCOMB_API_KEY`, `HONEYCOMB_MCP_URL`).",
+  "author": {
+    "name": "Honeycomb.io",
+    "url": "https://www.honeycomb.io"
+  },
+  "license": "Apache-2.0",
+  "keywords": [
+    "honeycomb",
+    "mcp",
+    "devops",
+    "observability"
+  ]
+}

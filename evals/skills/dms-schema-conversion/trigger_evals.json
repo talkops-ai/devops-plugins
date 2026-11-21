@@ -1,0 +1,96 @@
+{
+  "skill_name": "dms-schema-conversion",
+  "companion_skills": [
+    "dms-data-migration-execution",
+    "rds-oracle",
+    "rds-sqlserver",
+    "rds-db2",
+    "amazon-aurora-postgresql"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Run AWS DMS Schema Conversion on our Oracle FINANCE schema and export the PDF and CSV assessment reports."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Resolve DMS Schema Conversion Action Items for Oracle CONNECT BY PRIOR, AUTONOMOUS_TRANSACTION, and T-SQL @@TRANCOUNT."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Set up a DMS Schema Conversion MigrationProject with InstanceProfile, DataProviders, and Secrets Manager."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why did export-metadata-model-assessment fail when our selection rules used rule-action include instead of explicit?"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Export converted PostgreSQL DDL scripts to S3 using a virtual target before our Aurora cluster is provisioned."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "What does the aws_oracle_ext extension pack install in Aurora PostgreSQL during heterogeneous schema conversion?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Audit ap-south-1 for DMS MigrationProjects, InstanceProfiles, and DataProviders via MCP."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Safely tear down our PoC DMS MigrationProject, DataProviders, and InstanceProfile in reverse dependency order."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Use DMS generative AI to convert remaining complex PL/SQL packages to PL/pgSQL and review flagged items."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Tune DMS Replication Instance InlineLobMaxSize, BatchApplyEnabled, and CDCLatencyTarget during Full Load + CDC."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Run CREATE INDEX CONCURRENTLY and NOT VALID foreign key evolution on an existing native PostgreSQL database."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Migrate a self-managed Redis 7 cluster to ElastiCache for Valkey using Online Migration."
+    }
+  ]
+}

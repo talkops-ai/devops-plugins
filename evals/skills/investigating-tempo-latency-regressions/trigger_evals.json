@@ -1,0 +1,111 @@
+{
+  "skill_name": "investigating-tempo-latency-regressions",
+  "companion_skills": [
+    "triaging-tempo-service-errors",
+    "authoring-traceql-and-metrics-queries",
+    "mapping-tempo-topology-and-alerts",
+    "tuning-sampling-and-trace-derived-metrics"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Compare baseline `PlaceOrder` trace `1111aaaa` and slow `checkout-service` trace `2222bbbb` in Grafana Tempo to find the latency regression.",
+      "notes": "Direct two-trace diff"
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Analyze critical-path and exclusive self-time hotspots for slow `ad` (`GetAds` under `adManualGc`) traces in Tempo.",
+      "notes": "Critical path & self-time latency analysis"
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Investigate why `frontend` p99 latency in `otel-demo` spiked from `180ms` to `5.4s` (`imageSlowLoad`) in Tempo over the last 30 minutes.",
+      "notes": "Service p99 latency spike investigation"
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Did turning on `recommendationCacheFailure` introduce an N+1 `GetProduct` / `catalog.products` query fan-out in `recommendation`? Check the traces.",
+      "notes": "N+1 query fan-out trace diff"
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "`PlaceOrder` finishes fast in `checkout-service`, but async `kafka` order processing takes 18 seconds during `kafkaQueueProblems`—trace the linked consumer spans in Tempo.",
+      "notes": "Async span-link latency correlation"
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Compute overlapping `GetProduct` and `GetAds` child span intervals and exclusive self-time from this exported `otel-demo` OTLP trace JSON.",
+      "notes": "Offline OTLP trace self-time analyzer"
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Only 2% of `frontend` storefront requests take > 5s while median latency is 120ms—isolate what makes the tail cohort slow in Tempo.",
+      "notes": "Bimodal tail cohort + trace diff"
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Determine whether `frontend-proxy` Envoy is slow due to local proxy overhead or waiting on `image-provider` (`:8081`) in Tempo.",
+      "notes": "Self-time vs downstream wait"
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "`payment` is failing 50% of `Charge` gRPC calls (`paymentFailure=\"50%\"`)—pivot from error logs to Tempo traces and identify the deepest failing service.",
+      "expected_alternative_skill": "triaging-tempo-service-errors",
+      "notes": "Error triage vs latency regression"
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Teach me how to write a TraceQL query for `otel-demo` using sibling `~` and negated descendant `!>>` operators.",
+      "expected_alternative_skill": "authoring-traceql-and-metrics-queries",
+      "notes": "Pure TraceQL syntax authoring"
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Map all upstream callers of `product-catalog-service` in Tempo and generate `traces_spanmetrics_*` `PrometheusRule` YAML.",
+      "expected_alternative_skill": "mapping-tempo-topology-and-alerts",
+      "notes": "Service graph topology & spanmetrics alerts"
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure an `opentelemetry-otel-collector` `tail_sampling` policy in `otel-demo` retaining `PlaceOrder` traces slower than `500ms`.",
+      "expected_alternative_skill": "tuning-sampling-and-trace-derived-metrics",
+      "notes": "OTel Collector tail sampling configuration"
+    }
+  ]
+}

@@ -1,6 +1,8 @@
 # Managing WhatsApp Message Templates
 
 > **Security:** Template parameters appear in CloudTrail logs — avoid embedding sensitive data. See [SKILL.md — Security Considerations](../SKILL.md#security-considerations).
+>
+> **Live Discovery Prerequisite:** Every template command (`list-whatsapp-message-templates`, `list-whatsapp-template-library`, `create-whatsapp-message-template`, `get-whatsapp-message-template`, `update-whatsapp-message-template`, `delete-whatsapp-message-template`) requires `--id <waba-id>` (an active Linked WhatsApp Business Account ID). Always run `aws socialmessaging list-linked-whatsapp-business-accounts --region <region>` first to verify whether a linked WABA exists in the target region (and note that template CLI subcommands require a recent AWS CLI v2 release; if `linkedAccounts` is empty or the local CLI returns `Invalid choice`, report the live WABA inventory first alongside the template specification below).
 
 ## Contents
 

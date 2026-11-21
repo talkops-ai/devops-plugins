@@ -1,0 +1,112 @@
+{
+  "skill_name": "operating-tempo-deployments-and-tenants",
+  "companion_skills": [
+    "diagnosing-tempo-ingestion-and-health",
+    "operating-loki-deployments-and-ingestion",
+    "provisioning-opentelemetry-collectors",
+    "mapping-tempo-topology-and-alerts",
+    "deploying-helm-charts"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Deploy a `small-prod` `TempoStack` Operator CR `tempo-otel-prod` in namespace `observability` backed by S3 for `otel-demo` traces.",
+      "notes": "TempoStack provisioning"
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Update Grafana Tempo `/api/overrides` for tenant `otel-demo` to raise `ingestion_rate_limit_bytes` to 50 MiB/s safely before a `load-generator` flood test.",
+      "notes": "Tenant overrides patching"
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Size a `large-prod` `TempoStack` vs `TempoMonolithic` in `observability` for 35,000 spans/sec across `otel-demo` with 30-day retention.",
+      "notes": "Tempo Operator sizing profiles"
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Run a pre-launch production readiness audit on `tempo-otel` storage, replication factor, and retention before enabling `otel.enabled=true` on all 18 `OTEL-APP` charts.",
+      "notes": "Tempo production readiness checklist"
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Enable `service-graphs`, `span-metrics`, and `local-blocks` in Tempo per-tenant runtime overrides for `otel-demo` without restarting pods.",
+      "notes": "Runtime overrides for metrics-generator"
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Updating `/api/overrides` for `otel-demo` on Tempo failed with HTTP `412 Precondition Failed` because another operator edited overrides concurrently—resolve the ETag conflict safely.",
+      "notes": "Optimistic concurrency 412 handling"
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Extend trace `block_retention` from 7 days to 14 days for tenant `otel-demo` in Tempo.",
+      "notes": "Per-tenant block retention update"
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Render a single-pod `TempoMonolithic` CR in `observability` on our local `docker-desktop` cluster for `otel-staging` traces.",
+      "notes": "Dev TempoMonolithic rendering on local docker-desktop"
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Tempo ingester ring members in `observability` are unhealthy and Kafka partition lag is spiking while ingesting `otel-demo` traces—diagnose the outage.",
+      "expected_alternative_skill": "diagnosing-tempo-ingestion-and-health",
+      "notes": "Live Tempo health/ring incident diagnosis"
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Render a `1x.small` `LokiStack` CR `loki-otel` with TSDB `v13` and S3 object storage in namespace `observability`.",
+      "expected_alternative_skill": "operating-loki-deployments-and-ingestion",
+      "notes": "LokiStack belongs to Loki ops"
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Provision `opentelemetry-otel-collector` in `otel-demo` exporting traces from all 14 microservices to Tempo in `observability`.",
+      "expected_alternative_skill": "provisioning-opentelemetry-collectors",
+      "notes": "OTel Collector provisioning"
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Install the `checkout` and `product-catalog` Helm charts from `charts/` into namespace `otel-demo`.",
+      "expected_alternative_skill": "deploying-helm-charts",
+      "notes": "Helm chart installation"
+    }
+  ]
+}

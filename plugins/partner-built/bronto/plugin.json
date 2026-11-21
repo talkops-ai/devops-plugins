@@ -1,0 +1,17 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "bronto",
+  "version": "0.2.0",
+  "description": "Official Bronto dataset/collection discovery, SQL-style log search and time-series aggregation, and production error spike investigation skills with bundled remote MCP configuration (`BRONTO_API_KEY`, `BRONTO_REGION`).",
+  "author": {
+    "name": "Bronto",
+    "url": "https://bronto.io"
+  },
+  "license": "Apache-2.0",
+  "keywords": [
+    "bronto",
+    "mcp",
+    "devops",
+    "observability"
+  ]
+}

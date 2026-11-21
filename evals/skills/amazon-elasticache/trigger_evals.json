@@ -1,0 +1,96 @@
+{
+  "skill_name": "amazon-elasticache",
+  "companion_skills": [
+    "amazon-dynamodb",
+    "amazon-aurora-postgresql",
+    "rds-db2",
+    "database-and-cache-reliability",
+    "aws-database"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Compare ElastiCache for Valkey vs Redis OSS pricing for a Serverless cache and a 3-shard r7g cluster in us-east-1."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Set up server-side vector similarity search on Amazon ElastiCache for our Strands RAG agent."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Validate our self-managed EC2 Redis 7 cluster for zero-downtime ElastiCache Online Migration."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Our VPC Lambda times out on reader queries to our Serverless Valkey cache\u2014check ports 6379/6380 and IAM auth."
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Fix CROSSSLOT multi-key pipeline errors and single-shard hot-key CPU skew on our 6-shard Valkey cluster."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Should we use Memcached or Valkey on AWS for gaming leaderboards, pub/sub match alerts, and IAM auth?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Audit all ElastiCache Serverless caches and replication groups in ap-south-1 for TLS, KMS encryption, and Valkey upgrade savings."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Design a cross-region active-passive Global Datastore cache across us-east-1 and eu-west-1 with regional KMS keys."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Add semantic LLM response caching in front of Amazon Bedrock to cut repeated prompt latency and token spend."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure CloudFront Origin Access Control (OAC) cache behaviors and Cache-Control headers for an S3 static SPA."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Size an Aurora PostgreSQL Serverless v2 cluster and enable pgvector HNSW indexing."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Migrate an IBM Db2 LUW database onto Amazon RDS for Db2 BYOL with HADR standby."
+    }
+  ]
+}

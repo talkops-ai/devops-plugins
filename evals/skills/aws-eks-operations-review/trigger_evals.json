@@ -1,0 +1,110 @@
+{
+  "skill_name": "aws-eks-operations-review",
+  "companion_skills": [
+    "arc-region-switch",
+    "aws-billing-and-cost-management",
+    "aws-cloudformation",
+    "aws-compute",
+    "aws-deployment"
+  ],
+  "queries": [
+    {
+      "id": "trig-pos-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Which skill would help me run an EKS operations review? Just name it; do not run it."
+    },
+    {
+      "id": "trig-pos-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Is there a skill available for auditing EKS clusters against best practices across pillars? Answer yes or no with the skill name; do not execute it."
+    },
+    {
+      "id": "trig-pos-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Name the skill that covers an EKS security, resilience, and cost review with read-only kubectl. Do not run any audit."
+    },
+    {
+      "id": "trig-pos-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Name the skill for a pre-upgrade / pre-migration EKS readiness check. Do not run it."
+    },
+    {
+      "id": "trig-pos-05",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Which skill shows which EKS add-ons or container images have known CVEs during an operations review? Just name it."
+    },
+    {
+      "id": "trig-pos-06",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Which skill compares EKS clusters across dev and prod accounts for configuration drift? Just name it."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Write a Python script that sorts a list of numbers"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "What's the weather forecast for Sydney this weekend?"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Create a CloudFormation template for an S3 bucket"
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Is my EKS cluster healthy right now? Just a quick check."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Check EKS etcd pressure and APF throttling — just the health status, not a full review."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Show me a quick EKS node health dashboard."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Map my EKS cluster to CIS EKS Benchmark and PCI DSS controls for an audit."
+    },
+    {
+      "id": "trig-neg-08",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Explain the difference between SOC 2 Type I and Type II reports."
+    }
+  ]
+}

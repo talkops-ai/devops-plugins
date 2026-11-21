@@ -1,0 +1,12 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "coralogix": {
+      "type": "streamable-http",
+      "url": "https://api.${CORALOGIX_REGION:-us2}.coralogix.com/mgmt/api/v1/mcp",
+      "headers": {
+        "Authorization": "Bearer ${CORALOGIX_API_KEY:-}"
+      }
+    }
+  }
+}

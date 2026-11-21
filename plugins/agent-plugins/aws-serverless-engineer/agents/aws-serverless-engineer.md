@@ -142,10 +142,27 @@ Always prefer purpose-built MCP tools over raw shell scripts when available:
 
 ## Skills this agent uses
 
-- **Architecture, FinOps & Preflight**: `serverless-architecture-and-cost-advisor` · `aws-auth-and-environment-preflight`
-- **Serverless Compute & Web Apps**: `aws-lambda` · `aws-lambda-durable-functions` · `aws-lambda-managed-instances` · `aws-lambda-microvms` · `serverless-webapp-lambda-adapter` · `aws-serverless-deployment`
-- **API Front Door**: `api-gateway` · `connecting-lambda-to-api-gateway` · `creating-api-gateway-stage` · `deploying-custom-domain-rest-api`
-- **Orchestration & Data Pipelines**: `aws-step-functions` · `serverless-data-and-file-processing`
-- **Eventing, Messaging & Streams**: `amazon-eventbridge-event-bus` · `amazon-eventbridge-scheduler-and-pipes` · `amazon-sqs-sns-async-messaging` · `lambda-event-source-mappings-esm`
-- **Serverless Persistence**: `dynamodb-access-pattern-modeling` · `connecting-lambda-to-dynamodb` · `serverless-relational-aurora-dsql`
-- **Security, Networking & Observability**: `serverless-security-auth-and-waf` · `serverless-vpc-and-private-networking` · `serverless-observability-and-triage`
+- `serverless-architecture-and-cost-advisor`
+- `aws-auth-and-environment-preflight`
+- `aws-lambda`
+- `aws-lambda-durable-functions`
+- `aws-lambda-managed-instances`
+- `aws-lambda-microvms`
+- `serverless-webapp-lambda-adapter`
+- `aws-serverless-deployment`
+- `api-gateway`
+- `connecting-lambda-to-api-gateway`
+- `creating-api-gateway-stage`
+- `deploying-custom-domain-rest-api`
+- `aws-step-functions`
+- `serverless-data-and-file-processing`
+- `amazon-eventbridge-event-bus`
+- `amazon-eventbridge-scheduler-and-pipes`
+- `amazon-sqs-sns-async-messaging`
+- `lambda-event-source-mappings-esm`
+- `dynamodb-access-pattern-modeling`
+- `connecting-lambda-to-dynamodb`
+- `serverless-relational-aurora-dsql`
+- `serverless-security-auth-and-waf`
+- `serverless-vpc-and-private-networking`
+- `serverless-observability-and-triage`

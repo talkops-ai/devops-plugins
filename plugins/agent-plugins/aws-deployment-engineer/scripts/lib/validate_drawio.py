@@ -13,7 +13,10 @@ import json
 import os
 import re
 import sys
-import defusedxml.ElementTree as ET
+try:
+    import defusedxml.ElementTree as ET
+except ImportError:
+    import xml.etree.ElementTree as ET
 from pathlib import Path
 
 MAX_FILE_SIZE = 2 * 1024 * 1024  # 2 MB

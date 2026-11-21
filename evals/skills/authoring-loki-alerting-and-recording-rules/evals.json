@@ -1,0 +1,137 @@
+{
+  "skill_name": "authoring-loki-alerting-and-recording-rules",
+  "evals": [
+    {
+      "id": "eval-01-backtest-validate-and-upsert-ruler-http-error-ratio-alert",
+      "prompt": "Backtest, validate, preview, and deploy a Loki Ruler alerting rule group `otel-checkout-log-alerts` in namespace `otel-demo` for tenant `otel-demo` that pages Alertmanager (`OtelCheckoutLogErrorRatioHigh`, `severity: critical`) when `checkout-service` JSON `PlaceOrder` error logs (`status >= 500` during `paymentFailure`) exceed `5%` of total logs over `[5m]` for `5m` (firing only when at least `25` error/log events occur in `5m`).",
+      "expected_output": "Reads `loki://rules/groups`, backtests the LogQL expression via `loki_query_instant` and `loki_query_range` (`1h–6h`), validates rule structure via `scripts/validate_loki_rules.py` (`for: 5m`, `(denominator > 0)` divide-by-zero guard + `>= 25` event floor, `severity: critical`, `service_name: checkout-service`, `summary`/`description`/`runbook_url` annotations), calls `loki_upsert_rule_group(namespace=\"otel-demo\", group_name=\"otel-checkout-log-alerts\", rules_yaml=..., dry_run=True, org_id=\"otel-demo\")` to inspect the unified diff, and applies with `dry_run=False, confirm=True`.",
+      "files": [],
+      "expectations": [
+        "Backtests the `checkout-service` LogQL alerting expression via `loki_query_instant` and `loki_query_range` and validates locally via `validate_loki_rules.py` before deployment",
+        "Protects the error ratio against divide-by-zero (`> 0` denominator guard) and includes a `>= 25` minimum event floor plus `for: 5m`",
+        "Calls `loki_upsert_rule_group` chronologically with `dry_run=True` first, followed by `dry_run=False, confirm=True` scoped to `org_id=\"otel-demo\"`"
+      ]
+    },
+    {
+      "id": "eval-02-author-and-apply-loki-operator-alertingrule-crd",
+      "prompt": "Author a Kubernetes Loki Operator `loki.grafana.com/v1` `AlertingRule` custom resource named `otel-catalog-panic-alerts` in namespace `observability` (`spec.tenantID: \"otel-demo\"`) alerting on Go `panic:` or fatal `L9ECAV7KIM` `productCatalogFailure` log lines in `product-catalog-service` (`for: 2m`). Validate it locally, preview the server-side diff first, and apply it live.",
+      "expected_output": "Reads `loki://operator/crs/observability`, renders `apiVersion: loki.grafana.com/v1`, `kind: AlertingRule` (`metadata.name: otel-catalog-panic-alerts`, `spec.tenantID: otel-demo`, `spec.groups` with `interval: 1m`, `for: 2m`, `sum by (service_name, namespace) (count_over_time({service_name=\"product-catalog-service\", namespace=\"otel-demo\"} |= \"panic:\" [5m])) > 0`), validates YAML via `scripts/validate_loki_rules.py`, runs `loki_apply_operator_cr(manifest_yaml=..., namespace=\"observability\", dry_run=True)`, and applies with `dry_run=False, confirm=True`.",
+      "files": [],
+      "expectations": [
+        "Inspects `loki://operator/crs/observability` and renders `apiVersion: loki.grafana.com/v1`, `kind: AlertingRule` in `observability` with `spec.tenantID: \"otel-demo\"`",
+        "Validates via `validate_loki_rules.py` with `for: 2m`, bounded `{service_name=\"product-catalog-service\", namespace=\"otel-demo\"}`, and `summary`/`description` annotations",
+        "Executes `loki_apply_operator_cr` with `dry_run=True` first before `dry_run=False, confirm=True`"
+      ]
+    },
+    {
+      "id": "eval-03-recording-rule-crd-with-level-metric-operation-naming",
+      "prompt": "Draft and preview (without applying live yet) a Loki Operator `RecordingRule` CR named `otel-proxy-latency-recordings` in namespace `observability` (`tenantID: \"otel-demo\"`) pre-computing 5-minute HTTP error rate and p99 `duration_ms` by `(namespace, service_name, route)` for `frontend-proxy` (Envoy `:8090`) so Grafana dashboards stop scanning raw chunks during `loadGeneratorFloodHomepage` runs.",
+      "expected_output": "Authors `loki.grafana.com/v1` `RecordingRule` using strict `level:metric:operations` colon naming (`namespace_service_route:loki_http_errors:rate5m` and `namespace_service_route:loki_http_duration_ms:p99_5m`), includes `|= \"duration_ms\"` before `| json` and `| __error__=\"\"` after `| unwrap duration_ms`, validates via `scripts/validate_loki_rules.py`, backtests with `loki_query_instant`, and previews via `loki_apply_operator_cr(..., dry_run=True)` without calling `dry_run=False`.",
+      "files": [],
+      "expectations": [
+        "Enforces `level:metric:operations` colon naming (`^[a-zA-Z_:][a-zA-Z0-9_]*:[a-zA-Z0-9_:]+$`) on `record` names and validates via `validate_loki_rules.py`",
+        "Appends `| __error__=\"\"` after `| unwrap duration_ms` and keeps `by (namespace, service_name, route)` bounded on `frontend-proxy`",
+        "Backtests via `loki_query_instant` and stops after `loki_apply_operator_cr(..., dry_run=True)` preview without mutating live"
+      ]
+    },
+    {
+      "id": "eval-04-delete-obsolete-ruler-rule-group-dry-run-then-confirm",
+      "prompt": "Remove the deprecated Loki Ruler rule group `legacy-jaeger-log-alerts` in namespace `otel-staging` for tenant `otel-staging` now that `OTEL-APP` migrated from Jaeger to Grafana Tempo. Preview what will be removed first, then delete it live.",
+      "expected_output": "Inspects `loki://rules/groups` (and/or previews directly on `otel-staging`), calls `loki_delete_rule_group(namespace=\"otel-staging\", group_name=\"legacy-jaeger-log-alerts\", dry_run=True, org_id=\"otel-staging\")` to preview what rules will be removed, and executes `loki_delete_rule_group(..., dry_run=False, confirm=True, org_id=\"otel-staging\")`.",
+      "files": [],
+      "expectations": [
+        "Checks `loki://rules/groups` before deleting `legacy-jaeger-log-alerts`",
+        "Calls `loki_delete_rule_group` with `dry_run=True` first to preview the existing `legacy-jaeger-log-alerts` rules",
+        "Executes `loki_delete_rule_group` with `dry_run=False, confirm=True` scoped to `org_id=\"otel-staging\"`"
+      ]
+    },
+    {
+      "id": "eval-05-reject-high-cardinality-by-trace-id-and-session-id-in-rule",
+      "prompt": "Review and deploy this `otel-demo` Loki recording rule to Ruler:\n```yaml\nname: otel-session-errors\ninterval: 1m\nrules:\n  - record: loki_errors_total\n    expr: sum by (session_id, trace_id, pod_ip) (rate({namespace=\"otel-demo\"} |= \"error\" | json [5m]))\n```",
+      "expected_output": "Runs `scripts/validate_loki_rules.py` and refuses to deploy the broken rule: (1) `by (session_id, trace_id, pod_ip)` aggregates by high-cardinality dimensions emitted by `load-generator` / `frontend-proxy` that will explode `observability` Prometheus remote-write TSDB series, and (2) `record: loki_errors_total` violates `level:metric:operations` colon naming. Rewrites to `namespace_service:loki_errors:rate5m` aggregated `by (namespace, service_name)` and validates the safe replacement.",
+      "files": [],
+      "expectations": [
+        "Runs `validate_loki_rules.py` and refuses deploying `by (session_id, trace_id, pod_ip)` due to remote-write Prometheus TSDB cardinality explosion",
+        "Flags `loki_errors_total` for violating `level:metric:operations` recording rule naming",
+        "Provides a validated `by (namespace, service_name)` replacement rule without pushing the unsafe rule to Ruler"
+      ]
+    },
+    {
+      "id": "eval-06-silent-log-source-absent-over-time-heartbeat-alert",
+      "prompt": "Author and validate (preview only, do not deploy yet) a Loki alerting rule for `flagd` in namespace `otel-demo` that fires (`OtelFlagdLogsAbsent`) if zero logs have arrived for `15m`—for example if `otel.enabled` was accidentally flipped back to `false` during a `helm upgrade`—without flapping during brief 1-minute rolling restarts.",
+      "expected_output": "Authors `absent_over_time({service_name=\"flagd\", namespace=\"otel-demo\"}[15m]) == 1` with `for: 5m` (preventing Helm rollout flapping), `severity: critical`, and `summary`/`description`/`runbook_url` annotations, validating via `scripts/validate_loki_rules.py` and backtesting via `loki_query_instant`.",
+      "files": [],
+      "expectations": [
+        "Uses `absent_over_time({service_name=\"flagd\", namespace=\"otel-demo\"}[15m]) == 1` and backtests via `loki_query_instant`",
+        "Includes `for: 5m` (`>= 2m`) to prevent false pages during `helm upgrade` rolling restarts",
+        "Validates via `validate_loki_rules.py` with `severity` label and `summary`/`description` annotations without deploying live"
+      ]
+    },
+    {
+      "id": "eval-07-catch-rule-defining-both-alert-and-record-plus-missing-for",
+      "prompt": "Audit this `otel-demo` `email` memory-leak Loki rule YAML drafted by a junior engineer and report every defect:\n```yaml\nname: broken-email-group\nrules:\n  - alert: OtelEmailMemoryLeakLogs\n    record: otel_email:memory_errors:rate5m\n    expr: count_over_time(\n```",
+      "expected_output": "Runs `scripts/validate_loki_rules.py` and flags every structural defect: a single rule cannot define both `alert` and `record` simultaneously, `expr` is malformed and missing a valid `{service_name=\"email\", namespace=\"otel-demo\"}` stream selector, `for:` duration is missing on `OtelEmailMemoryLeakLogs`, and `annotations.summary` is missing; splits it into separate valid recording and alerting rules and validates the fixed YAML.",
+      "files": [],
+      "expectations": [
+        "Runs `validate_loki_rules.py` and flags defining both `alert` and `record` on the same rule as invalid",
+        "Detects the malformed `expr` missing a valid `{service_name=\"email\", namespace=\"otel-demo\"}` stream selector",
+        "Flags missing `for:` duration and missing `annotations.summary`, providing and validating corrected separate rules"
+      ]
+    },
+    {
+      "id": "eval-08-inspect-existing-operator-manifest-before-updating-rule",
+      "prompt": "Inspect our existing `AlertingRule` custom resource `otel-frontend-proxy-5xx-alerts` in namespace `observability` and preview raising its Envoy 5xx error ratio threshold from `0.02` to `0.05` (do not apply live yet) so transient `paymentFailure=\"10%\"` chaos tests stop paging critical on-call.",
+      "expected_output": "Reads `loki://operator/manifests/AlertingRule/observability/otel-frontend-proxy-5xx-alerts` via MCP resources first to preserve `spec.tenantID` (`otel-demo`), `metadata.labels`, and sibling rules in `spec.groups`, backtests `> 0.05` over the last `6h` with `loki_query_range`, validates with `validate_loki_rules.py`, and previews the diff via `loki_apply_operator_cr(..., dry_run=True)` without mutating live.",
+      "files": [],
+      "expectations": [
+        "Reads `loki://operator/manifests/AlertingRule/observability/otel-frontend-proxy-5xx-alerts` via MCP resources rather than raw `kubectl`",
+        "Backtests the `0.05` threshold over historical `frontend-proxy` traffic via `loki_query_range`",
+        "Previews changes with `loki_apply_operator_cr(..., dry_run=True)` preserving `spec.tenantID` and labels without calling `dry_run=False`"
+      ]
+    },
+    {
+      "id": "eval-09-ruler-group-limit-and-evaluation-interval-tuning",
+      "prompt": "Our Loki Ruler rule group `otel-kafka-lag-alerts` in namespace `otel-demo` (scanning `kafka` logs during `kafkaQueueProblems`) evaluates every `15s` across `[30m]` windows and keeps failing with `maximum of series (500) reached for a single query`. Tune the rule group and preview the diff in Ruler without applying it live yet.",
+      "expected_output": "Reads `loki://rules/groups`, explains why evaluating a `[30m]` LogQL range every `15s` overloads `observability` Loki queriers and grouping by ephemeral consumer IDs exceeds per-group series caps; sets `interval: 1m` (or `2m`), narrows `by (...)` dimensions to `(namespace, service_name)`, validates with `validate_loki_rules.py`, and previews via `loki_upsert_rule_group(..., dry_run=True)`.",
+      "files": [],
+      "expectations": [
+        "Increases group `interval` from `15s` to `1m`+ so `[30m]` range scans on `kafka` don't hammer Loki queriers",
+        "Reduces `by (...)` grouping labels to bounded `(namespace, service_name)` to stay well under Ruler series limits",
+        "Validates via `validate_loki_rules.py` and previews the tuned `otel-kafka-lag-alerts` group with `loki_upsert_rule_group(..., dry_run=True)` without applying live"
+      ]
+    },
+    {
+      "id": "eval-10-multi-tenant-org-id-isolation-on-ruler-writes",
+      "prompt": "Deploy a Loki Ruler rule group `otel-payment-charge-alerts` (alerting on `oteldemo.PaymentService/Charge` card-charge errors in `payment`) exclusively into Loki tenant `otel-demo` (`namespace=\"otel-demo\"`), making sure tenant `otel-staging`'s chaos rules remain untouched. Preview first, then apply live.",
+      "expected_output": "Passes `org_id=\"otel-demo\"` explicitly on `loki_query_instant` backtests, validates via `validate_loki_rules.py`, runs `loki_upsert_rule_group(namespace=\"otel-demo\", group_name=\"otel-payment-charge-alerts\", rules_yaml=..., dry_run=True, org_id=\"otel-demo\")` to verify tenant-isolated diff, and applies with `dry_run=False, confirm=True, org_id=\"otel-demo\"`.",
+      "files": [],
+      "expectations": [
+        "Passes `org_id=\"otel-demo\"` (`X-Scope-OrgID`) to both backtest queries and `loki_upsert_rule_group`",
+        "Validates via `validate_loki_rules.py` and runs `dry_run=True` first to verify tenant-isolated diff",
+        "Executes `loki_upsert_rule_group` with `dry_run=False, confirm=True` for tenant `otel-demo`"
+      ]
+    },
+    {
+      "id": "eval-11-read-only-mode-validate-backtest-and-emit-gitops-manifest",
+      "prompt": "Write permissions are disabled on this workstation—check our current Loki MCP write access, backtest and validate a `CartValkeyTimeoutSpike` log alert (`cart-service` `valkey-cart:6379` timeout error ratio `> 5%` over `[5m]` for `5m` in `otel-demo`), and output a ready-to-commit `loki.grafana.com/v1` `AlertingRule` YAML manifest for `observability`.",
+      "expected_output": "Reads `loki://server/capabilities` (observing `allow_write: false`), backtests the LogQL expression over historical `cart-service` logs via `loki_query_instant` / `loki_query_range`, validates the `AlertingRule` manifest locally via `scripts/validate_loki_rules.py`, and outputs a copy-pasteable GitOps `AlertingRule` YAML with zero write tool attempts.",
+      "files": [],
+      "expectations": [
+        "Reads `loki://server/capabilities` and detects that write operations are disabled (`allow_write: false`)",
+        "Backtests via `loki_query_instant` / `loki_query_range` and validates the `AlertingRule` YAML via `validate_loki_rules.py` (divide-by-zero `> 0` guard, `for: 5m`, `severity`, `summary`)",
+        "Does not invoke mutating tools and outputs a complete GitOps-ready `loki.grafana.com/v1` `AlertingRule` manifest"
+      ]
+    },
+    {
+      "id": "eval-12-slash-command-setup-monitoring-log-alerts-workflow",
+      "prompt": "/setup-monitoring shipping-service in otel-demo --slo 99.9 --signals logs",
+      "expected_output": "Reads `commands/setup-monitoring.md`, inspects active Loki schema and Ruler groups (`loki://schema/labels`, `loki://rules/groups`), authors and validates starter `shipping-service` log SLO error-ratio and `absent_over_time` heartbeat rules via `scripts/validate_loki_rules.py`, backtests against live Loki data (`loki_query_instant`), and previews via `loki_upsert_rule_group(..., dry_run=True)`.",
+      "files": [],
+      "expectations": [
+        "Reads `commands/setup-monitoring.md` and inspects existing Loki labels/rules for `shipping-service` in `otel-demo`",
+        "Authors and validates `shipping-service` log error-ratio (`> 0` denominator guard, `for`) and `absent_over_time` rules via `validate_loki_rules.py`",
+        "Backtests the expressions via `loki_query_instant` / `loki_query_range` and previews deployment with `dry_run=True`"
+      ]
+    }
+  ]
+}

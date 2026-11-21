@@ -5,7 +5,7 @@
 Verify these tools before proceeding:
 
 ```bash
-aws --version                  # AWS CLI
+MCP `call_aws` availability                  # AWS CLI
 aws sts get-caller-identity    # Credentials configured
 sam --version                  # SAM CLI
 ```

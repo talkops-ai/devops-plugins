@@ -1,0 +1,95 @@
+{
+  "skill_name": "aws-deployment",
+  "companion_skills": [
+    "deploy",
+    "verify-and-rollback",
+    "aws-cdk",
+    "aws-terraform"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Set up a GitHub Actions workflow with AWS IAM OIDC federation separating read-only Terraform PR plans from gated `main` deployments."
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Configure AWS CodePipeline V2 with CodeConnections, CodeBuild, and CodeDeploy ECS blue/green canary traffic shifting."
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure AWS CodeArtifact upstream PyPI/npm origin controls to prevent dependency confusion in our CodeBuild pipelines."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Why does our AWS CodeBuild job placed in a public VPC subnet time out connecting to ECR and npmjs?"
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Compare Atlantis PR-level locking vs HCP Terraform and configure GitLab CI `id_tokens` AWS OIDC trust policies."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Import an unmanaged ClickOps RDS cluster into OpenTofu 1.8 using `import {}` blocks."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Calculate the monthly AWS cost of 3 NAT Gateways vs S3 Gateway Endpoints in `ap-south-1`."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write an AWS SDK for JavaScript v3 S3 multipart upload helper using `@aws-sdk/lib-storage`."
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Run preflight VPC subnet and service quota checks in `us-east-1` before generating infrastructure code."
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Tune OpenCypher queries and Serverless NCU scaling on Amazon Neptune."
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Investigate high `IteratorAge` on a Lambda Kafka Event Source Mapping."
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Conduct an AWS Well-Architected Framework review across all 6 pillars for our healthcare workload."
+    }
+  ]
+}

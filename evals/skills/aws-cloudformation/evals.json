@@ -1,0 +1,84 @@
+{
+  "skill_name": "aws-cloudformation",
+  "evals": [
+    {
+      "id": "eval-01-we-want-to-remove-the-export-name-sub-aws-stackn",
+      "prompt": "We want to remove the `Export: Name: !Sub '${AWS::StackName}-AppSubnetId'` output from our `core-network` CloudFormation stack in `ap-south-1` and replace the subnet CIDR. Check our active CloudFormation exports in `ap-south-1` in read-only mode and explain the Cross-Stack Reference Safety procedure we must follow before modifying or deleting an exported output.",
+      "expected_output": "Read-only check of live exports via `aws-mcp` (`cloudformation list-exports`), explanation of the CloudFormation export lock (`list-imports`), and the multi-step decoupling workflow.",
+      "files": [],
+      "expectations": [
+        "Calls `aws-mcp` (`aws___call_aws` with `cloudformation list-exports` in `ap-south-1`) to inspect existing exports in read-only mode without invoking raw `aws` CLI via `Bash`.",
+        "Explains that CloudFormation blocks modifying or deleting any `Export` while it is imported by another stack via `Fn::ImportValue`, and requires calling `aws cloudformation list-imports --export-name <name>` first to enumerate all importing stacks.",
+        "Outlines the safe multi-deploy decoupling sequence: (1) update all consuming stacks to replace `Fn::ImportValue` with literal values/parameters first, (2) verify `list-imports` returns zero consumers, and (3) only then modify or remove the `Export` in the producer stack."
+      ]
+    },
+    {
+      "id": "eval-02-explain-what-this-cloudformation-template-does-w",
+      "prompt": "Explain what this CloudFormation template does, why each resource is configured the way it is, and what constraints must be respected before anyone edits it:\n```yaml\nAWSTemplateFormatVersion: '2010-09-09'\nDescription: 'Ledger settlement storage stack for PCI-scoped transaction records.'\nParameters:\n  EnvironmentName:\n    Type: String\n    AllowedValues: [stage, prod]\nConditions:\n  IsProd: !Equals [!Ref EnvironmentName, prod]\nResources:\n  LedgerKmsKey:\n    Type: AWS::KMS::Key\n    DeletionPolicy: Retain\n    UpdateReplacePolicy: Retain\n    Metadata:\n      com.aws.cloudformation.Context:\n        why: 'Dedicated CMK required for PCI-DSS key rotation audit trail.'\n        must:\n          - 'Keep EnableKeyRotation set to true'\n          - 'Never remove DeletionPolicy: Retain'\n        mutability: immutable\n    Properties:\n      EnableKeyRotation: true\n      KeyPolicy:\n        Version: '2012-10-17'\n        Statement:\n          - Effect: Allow\n            Principal:\n              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'\n            Action: 'kms:*'\n            Resource: '*'\n  SettlementTable:\n    Type: AWS::DynamoDB::Table\n    DeletionPolicy: Retain\n    UpdateReplacePolicy: Retain\n    Metadata:\n      com.aws.cloudformation.Context:\n        why: 'Stores immutable settlement ledger entries keyed by TransactionId.'\n        must:\n          - 'AttributeDefinitions and KeySchema must not be modified (causes table replacement)'\n          - 'PointInTimeRecoveryEnabled must stay enabled in prod'\n    Properties:\n      BillingMode: PAY_PER_REQUEST\n      KeySchema:\n        - AttributeName: TransactionId\n          KeyType: HASH\n      AttributeDefinitions:\n        - AttributeName: TransactionId\n          AttributeType: S\n      SSESpecification:\n        SSEEnabled: true\n        SSEType: KMS\n        KMSMasterKeyId: !Ref LedgerKmsKey\n      PointInTimeRecoverySpecification:\n        PointInTimeRecoveryEnabled: !If [IsProd, true, false]\n```",
+      "expected_output": "Read-only architectural explanation extracting the top-level `Description` and resource-level `Metadata.com.aws.cloudformation.Context` (`why`, `must`, and `mutability: immutable`), plus the `IsProd` conditional PITR behavior.",
+      "files": [],
+      "expectations": [
+        "Activates the `aws-cloudformation` skill and extracts the embedded design intent from top-level `Description` and each resource's `Metadata.com.aws.cloudformation.Context` (`why`, `must`, and `mutability`).",
+        "Identifies that `LedgerKmsKey` is marked `mutability: immutable` for PCI-DSS key rotation compliance and must keep `EnableKeyRotation: true` and `DeletionPolicy: Retain`.",
+        "Identifies that `SettlementTable` uses `PAY_PER_REQUEST`, encrypts data with `LedgerKmsKey`, enables Point-in-Time Recovery conditionally when `EnvironmentName == prod` (`IsProd`), and cannot have its `KeySchema` modified without triggering replacement."
+      ]
+    },
+    {
+      "id": "eval-03-modify-the-settlement-cloudformation-template-be",
+      "prompt": "Modify the settlement CloudFormation template below to add an encrypted `AWS::SQS::Queue` dead-letter queue (`SettlementDLQ`) that consumes the existing `EnvironmentName` parameter for naming (`!Sub '${EnvironmentName}-settlement-dlq'`), encrypts messages with `LedgerKmsKey`, and sets `DeletionPolicy: Retain` and `UpdateReplacePolicy: Retain`. Preserve the existing `IaC_Generator` key under `Metadata.AWSToolsMetrics` while ensuring the `AWSAgentToolkit` attribution marker is present, and record `com.aws.cloudformation.Context` on the new queue:\n```yaml\nAWSTemplateFormatVersion: '2010-09-09'\nDescription: 'Settlement ledger core stack.'\nMetadata:\n  AWSToolsMetrics:\n    IaC_Generator: 'arn:aws:cloudformation:ap-south-1:123456789012:generatedTemplate/abc'\nParameters:\n  EnvironmentName:\n    Type: String\n    Default: prod\nResources:\n  LedgerKmsKey:\n    Type: AWS::KMS::Key\n    DeletionPolicy: Retain\n    UpdateReplacePolicy: Retain\n    Metadata:\n      com.aws.cloudformation.Context:\n        why: 'Customer-managed KMS key for settlement encryption.'\n        must:\n          - 'Keep key rotation enabled'\n    Properties:\n      EnableKeyRotation: true\n      KeyPolicy:\n        Version: '2012-10-17'\n        Statement:\n          - Effect: Allow\n            Principal:\n              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'\n            Action: 'kms:*'\n            Resource: '*'\n```",
+      "expected_output": "Updated CloudFormation YAML template preserving `Metadata.AWSToolsMetrics.IaC_Generator`, adding `AWSAgentToolkit: aws-cloudformation@3`, adding `SettlementDLQ` parameterized with `EnvironmentName`, KMS encryption, `DeletionPolicy: Retain`, `UpdateReplacePolicy: Retain`, and `com.aws.cloudformation.Context`, validated via `awsiac`.",
+      "files": [],
+      "expectations": [
+        "Preserves the existing `Metadata.AWSToolsMetrics.IaC_Generator` entry while adding `AWSAgentToolkit: aws-cloudformation@3` under `Metadata.AWSToolsMetrics`.",
+        "Propagates the existing `EnvironmentName` parameter into `SettlementDLQ` (avoiding hardcoded environment strings) and configures `KmsMasterKeyId: !Ref LedgerKmsKey` (or `!GetAtt LedgerKmsKey.Arn`), `DeletionPolicy: Retain`, and `UpdateReplacePolicy: Retain`.",
+        "Adds `Metadata.com.aws.cloudformation.Context` with `why` and `must` fields on `SettlementDLQ` while preserving the existing context on `LedgerKmsKey`.",
+        "Validates the updated template using `awsiac` (`validate_cloudformation_template`) and prints the complete updated YAML template in the final response."
+      ]
+    },
+    {
+      "id": "eval-04-check-our-existing-cloudformation-stacks-in-ap-s",
+      "prompt": "Check our existing CloudFormation stacks in `ap-south-1` in read-only mode, and explain how to run CloudFormation service-side pre-deployment validation on a Change Set before execution, including why `describe-events` should be used instead of legacy `describe-stack-events`.",
+      "expected_output": "Read-only inspection of live CloudFormation stacks in `ap-south-1` via `aws-mcp` (`aws___call_aws`) and `awsiac` (`get_cloudformation_pre_deploy_validation_instructions`), plus the exact Change Set `--validation-mode` workflow and `describe-events` explanation.",
+      "files": [],
+      "expectations": [
+        "Uses `aws-mcp` (`aws___call_aws` with `cloudformation list-stacks` or `describe-stacks` in `ap-south-1`) to inspect live stacks in read-only mode without running raw `aws` CLI commands in `Bash`.",
+        "Calls `awsiac` (`get_cloudformation_pre_deploy_validation_instructions`) or explains the account-aware CloudFormation pre-deployment Change Set validation workflow (`create-change-set` with `--validation-mode` / `ValidationMode`).",
+        "Explains why `aws cloudformation describe-events` (with `--change-set-name` or `--stack-name` and `--filters FailedEvents=true`) is preferred over legacy `describe-stack-events` (which does not support `FailedEvents` filters or return pre-deployment validation events)."
+      ]
+    },
+    {
+      "id": "eval-05-our-developers-complain-that-iterating-on-our-de",
+      "prompt": "Our developers complain that iterating on our dev CloudFormation stack takes too long, and someone suggested using CloudFormation Express mode or `cdk deploy --hotswap`. Explain how to run a CloudFormation deployment in Express mode, how rollback works in Express mode, why `aws cloudformation deploy` cannot be used, why Express mode must not be used in production, and how Express mode differs from `cdk deploy --hotswap`.",
+      "expected_output": "Detailed comparison and operational guide covering `--deployment-config '{\"mode\": \"EXPRESS\"}'`, `disableRollback: false`, `create-stack`/`update-stack` vs `aws cloudformation deploy`, production prohibition, and Express mode vs CDK hotswap.",
+      "files": [],
+      "expectations": [
+        "Shows how to activate CloudFormation Express mode using `--deployment-config '{\"mode\": \"EXPRESS\"}'` on `create-stack`, `update-stack`, or `delete-stack` (or `cdk deploy --express`) and notes that `aws cloudformation deploy` does NOT support Express mode.",
+        "Explains that Express mode disables rollback by default and can re-enable it via `\"disableRollback\": false` (or `cdk deploy --express --rollback`), and explains that Express mode completes stack status as soon as configuration is applied while resources continue stabilizing in the background (making it unsafe for production).",
+        "Explicitly contrasts CloudFormation Express mode with `cdk deploy --hotswap`: Express mode deploys full infrastructure through CloudFormation with zero drift, whereas `--hotswap` patches code-only changes directly via service APIs and intentionally introduces CloudFormation drift."
+      ]
+    },
+    {
+      "id": "eval-06-author-a-production-ready-aws-cloudformation-yam",
+      "prompt": "Author a production-ready AWS CloudFormation YAML template using `/aws-infrastructure-as-code:generate-iac cfn` for an encrypted S3 document archive bucket and an encrypted Amazon SQS queue in `ap-south-1`. Apply secure defaults (all four PublicAccessBlock flags, KMS encryption, Versioning, HTTPS-only bucket policy using `aws:SecureTransport`, `DeletionPolicy: Retain`, and `UpdateReplacePolicy: Retain`), include the CloudFormation toolkit attribution marker in `Metadata`, persist resource design rationale (`why` and `must`) in resource `Metadata`, and validate the template with your IaC validation and compliance tools.",
+      "expected_output": "Complete CloudFormation YAML template with secure S3 and SQS defaults, `Metadata.AWSToolsMetrics.AWSAgentToolkit: aws-cloudformation@3`, resource-level `Metadata.com.aws.cloudformation.Context` (`why` and `must`), and validation results from `awsiac` (`validate_cloudformation_template` and `check_cloudformation_template_compliance`).",
+      "files": [],
+      "expectations": [
+        "Activates the `aws-cloudformation` skill and calls `awsiac` MCP validation tools (`validate_cloudformation_template` and/or `check_cloudformation_template_compliance`) on the authored template.",
+        "Includes the top-level `Metadata.AWSToolsMetrics.AWSAgentToolkit: aws-cloudformation@3` attribution marker and resource-level `com.aws.cloudformation.Context` metadata with `why` and `must` fields.",
+        "Configures the S3 bucket with all four `PublicAccessBlockConfiguration` booleans set to `true`, `BucketEncryption`, `VersioningConfiguration`, `DeletionPolicy: Retain`, `UpdateReplacePolicy: Retain`, and an HTTPS-only bucket policy condition (`aws:SecureTransport: false`).",
+        "Outputs the complete, valid CloudFormation YAML template directly in the final response without hardcoding static physical resource names."
+      ]
+    },
+    {
+      "id": "eval-07-run-aws-infrastructure-as-code-validate-stack-on",
+      "prompt": "Run `/aws-infrastructure-as-code:validate-stack` on this CloudFormation template, identify every syntax/schema (`cfn-lint`) and security compliance (`cfn-guard`) issue using your IaC MCP tools, and provide a corrected, compliant YAML template:\n```yaml\nAWSTemplateFormatVersion: '2010-09-09'\nDescription: 'Order processing worker stack'\nResources:\n  OrdersBucket:\n    Type: AWS::S3::Bucket\n    Properties:\n      BucketName: hardcoded-global-orders-bucket\n  WorkerSG:\n    Type: AWS::EC2::SecurityGroup\n    Properties:\n      GroupDescription: Worker SG\n      SecurityGroupIngress:\n        - IpProtocol: tcp\n          FromPort: 22\n          ToPort: 22\n          CidrIp: 0.0.0.0/0\n  WorkerRole:\n    Type: AWS::IAM::Role\n    Properties:\n      AssumeRolePolicyDocument:\n        Version: '2012-10-17'\n        Statement:\n          - Effect: Allow\n            Principal:\n              Service: ec2.amazonaws.com\n            Action: sts:AssumeRole\n      Policies:\n        - PolicyName: RootAccess\n          PolicyDocument:\n            Version: '2012-10-17'\n            Statement:\n              - Effect: Allow\n                Action: '*'\n                Resource: '*'\n```",
+      "expected_output": "Two-stage `awsiac` validation report (`validate_cloudformation_template` + `check_cloudformation_template_compliance`) flagging the unencrypted S3 bucket without public access block/versioning/retention, unrestricted `0.0.0.0/0` SSH ingress, and wildcard `*` IAM policy, followed by a remediated CloudFormation template.",
+      "files": [],
+      "expectations": [
+        "Calls `awsiac` (`validate_cloudformation_template` and `check_cloudformation_template_compliance`) to evaluate the template against `cfn-lint` and `cfn-guard` rules.",
+        "Flags the missing S3 `PublicAccessBlockConfiguration`, `BucketEncryption`, `VersioningConfiguration`, and hardcoded `BucketName`, the `0.0.0.0/0` port 22 ingress on `WorkerSG`, and the wildcard `Action: '*'` / `Resource: '*'` policy on `WorkerRole`.",
+        "Produces a remediated CloudFormation YAML template that removes `0.0.0.0/0` SSH ingress, scopes IAM permissions to least privilege on `OrdersBucket`, enables S3 encryption/versioning/public-access-block/retention, and includes `Metadata.AWSToolsMetrics.AWSAgentToolkit`."
+      ]
+    }
+  ]
+}

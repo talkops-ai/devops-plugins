@@ -1,0 +1,99 @@
+{
+  "skill_name": "sagemaker-training-architect",
+  "companion_skills": [
+    "finetuning",
+    "sagemaker-solution-architect",
+    "sagemaker-mlops-pipelines",
+    "sagemaker-cost-estimator",
+    "sagemaker-inference-architect"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Write a custom PyTorch FSDP Managed Spot Training Job (`EnableManagedSpotTraining=True`) in `ap-south-1` with `/opt/ml/checkpoint` resume logic and `FastFile` `ShardedByS3Key`."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Configure a SageMaker Autopilot `CreateAutoMLJobV2` time-series forecasting job with `p10`/`p50`/`p90` quantiles and Indian (`IN`) holiday calendars."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Fine-tune `facebook/sam-vit-base` on defect masks by freezing `vision_encoder` and `prompt_encoder` and training `mask_decoder` with `DiceFocalLoss` on `ml.g5.2xlarge`."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Our Managed Spot training job got interrupted at hour 3 and restarted from epoch 0 instead of resuming — fix our `CheckpointConfig` and `train.py`."
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Migrate our multi-node PyTorch training script to AWS Trainium (`ml.trn1.32xlarge`) using `neuron_parallel_compile` and Warm Pools (`KeepAlivePeriodInSeconds`)."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Serverless Model Customization isn't available in Mumbai (`ap-south-1`), so write a custom QLoRA `CreateTrainingJob` / `@remote` training setup for `ap-south-1`."
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "All 4 nodes in our DDP job download the full 600 GB dataset before epoch 1, and stdout `val_f1=0.91` isn't appearing in CloudWatch — fix `S3DataDistributionType` and `MetricDefinitions`."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "FP16 training on `ml.g4dn` produced `NaN` losses without `GradScaler` — compare `bfloat16` on `ml.g6e` and calculate `gradient_accumulation_steps` for batch size 128."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Run local GPU container validation (`local_gpu`) and keep containers warm for 20 minutes between hyperparameter tuning trials on SageMaker."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Generate a SageMaker Serverless Model Customization `RLVRTrainer` job with a `<100ms` Lambda reward function on `nova-lite` in `us-west-2`.",
+      "expected_alternative_skill": "finetuning"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Architect a SageMaker Real-Time Endpoint with `InferenceComponent` GPU bin-packing and two-policy Scale-to-Zero (`NoCapacityInvocationFailures`).",
+      "expected_alternative_skill": "sagemaker-inference-architect"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Author a parameterized `sagemaker.workflow.pipeline.Pipeline` DAG with `ConditionStep`, `FailStep`, and an `InMemory` + `Iceberg` Feature Store.",
+      "expected_alternative_skill": "sagemaker-mlops-pipelines"
+    }
+  ]
+}

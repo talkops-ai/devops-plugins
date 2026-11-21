@@ -1,11 +1,13 @@
 ---
 name: aws-cdk
-description: Authors, deploys, and troubleshoots AWS infrastructure using CDK with TypeScript or Python. Covers best practices, stack architecture, and construct patterns. Applies when writing CDK constructs, bootstrapping environments, running cdk deploy/synth/diff, fixing CDK or CloudFormation errors, planning stack structure, importing existing resources, resolving drift, or refactoring stacks without resource replacement.
+description: "Authors, deploys, and troubleshoots AWS infrastructure using AWS CDK (TypeScript or Python), construct patterns, cdk-nag, bootstrapping, cdk synth/diff/deploy/import/refactor, and CloudFormation stack error recovery. Do NOT use for Terraform, Pulumi, Crossplane, AWS Blocks scaffolding, standalone CodeDeploy/ECS release pipelines without CDK, or non-CDK service setup (CloudTrail, Route 53, RDS SQL tuning). Query live AWS state via MCP tools only (never raw aws CLI)."
 metadata:
   version: "2"
 ---
 
 # AWS CDK
+
+> **MCP-Only Live AWS Execution:** Execute ALL live AWS API discovery, account/region preflight checks (`sts:GetCallerIdentity`), stack/cluster/resource inspection, pricing (`awspricing`/`billing`), IaC validation (`awsiac`), and documentation lookups (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___run_script` `call_boto3`, `awsknowledge`, `awsiac`, `awspricing`, `eks`, `ecs`, `cloudwatch`) — **never invoke raw `aws ...` CLI commands in shell (`run_command`)**. Offline local linters/synthesizers (`cdk synth`, `terraform validate`, `python3`) may run locally without mutating live AWS.
 
 ## Overview
 

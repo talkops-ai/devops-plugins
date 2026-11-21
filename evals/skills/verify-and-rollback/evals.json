@@ -1,0 +1,93 @@
+{
+  "skill_name": "verify-and-rollback",
+  "evals": [
+    {
+      "id": "eval-01-live-ap-south-1-post-deployment-stack-and-alarm-verification",
+      "prompt": "Run a read-only post-deployment verification check in `ap-south-1` on our live AWS account: inspect any CloudFormation stacks in failed/rollback states, check CloudWatch Alarms currently in `ALARM` state in `ap-south-1`, and summarize overall environment health.",
+      "expectations": [
+        "Activates the verify-and-rollback skill and queries CloudFormation stacks + CloudWatch `describe-alarms` (`StateValue=ALARM`) in `ap-south-1` via connected AWS MCP tools with zero raw `aws` CLI shell commands",
+        "Produces a clear post-deployment health summary distinguishing healthy vs failed/alarming resources in `ap-south-1`",
+        "Makes zero mutating AWS calls (does not trigger rollbacks or delete stacks without user approval)"
+      ]
+    },
+    {
+      "id": "eval-02-diagnose-cloudformation-update-rollback-failed-and-continue-update-rollback",
+      "prompt": "Our CDK deployment left stack `ProdCheckoutStack` wedged in `UPDATE_ROLLBACK_FAILED` because a custom IAM role was manually deleted out-of-band while rolling back an ECS service update, and now all `cdk deploy` runs are blocked! Walk through the root-cause diagnosis and safe recovery procedure.",
+      "expectations": [
+        "Activates the verify-and-rollback skill",
+        "Shows querying `describe-stack-events` to isolate the chronologically earliest `UPDATE_FAILED` / `CREATE_FAILED` root-cause event (ignoring cascading cancellations)",
+        "Explains recovering `UPDATE_ROLLBACK_FAILED` via `ContinueUpdateRollback` (recreating/fixing the missing out-of-band dependency first, or using `ResourcesToSkip` cautiously as an approval-gated last resort without skipping critical stateful data, followed by drift reconciliation)"
+      ]
+    },
+    {
+      "id": "eval-03-ecs-fargate-circuit-breaker-essential-container-exited-triage",
+      "prompt": "After deploying task revision `:48` to ECS service `orders-api`, new tasks crash after 12 seconds with `EssentialContainerExited (exit code 1)` and ALB target group shows `unhealthy` (`Health checks failed with these codes: [502]`). Give the exact read-only diagnostic sequence and approval-gated rollback steps.",
+      "expectations": [
+        "Activates the verify-and-rollback skill",
+        "Provides the read-only triage sequence: (1) `ecs:DescribeServices` events + `ecs:ListTasks` (`desiredStatus=STOPPED`) -> `ecs:DescribeTasks` (`stoppedReason`, container `exitCode`, `reason`), (2) CloudWatch Logs Insights query on the task's `awslogs` log stream for startup stack traces/missing env/DB errors, and (3) `elbv2:DescribeTargetHealth`",
+        "Shows the approval-gated rollback (`ecs:UpdateService` pinning back to last-known-good task definition `:47` or verifying ECS deployment circuit breaker rollback) without executing unapproved mutations"
+      ]
+    },
+    {
+      "id": "eval-04-cloudwatch-logs-insights-post-deploy-5xx-and-latency-triage-queries",
+      "prompt": "Write ready-to-run CloudWatch Logs Insights queries for Step 2 post-deployment verification to: (1) surface top fatal/exception startup errors across ECS/Lambda log groups in the last 15 minutes, and (2) compute 1-minute p50/p95/p99 latency + HTTP 5xx error rates after a canary release.",
+      "expectations": [
+        "Activates the verify-and-rollback skill",
+        "Provides syntactically valid CloudWatch Logs Insights queries (`fields @timestamp, @message`, `filter` on `ERROR`/`Exception`/`5xx`, and `stats count() ... pct(..., 50), pct(..., 95), pct(..., 99) by bin(1m)` for 1-minute latency percentiles and 5xx error rates)"
+      ]
+    },
+    {
+      "id": "eval-05-lambda-alias-and-codedeploy-canary-rollback-procedure",
+      "prompt": "Our serverless payment Lambda just shifted 10% canary traffic from version `14` to version `15` on alias `live`, and `Errors` spiked to 8%. Compare what happens if CodeDeploy auto-rollback is configured vs how an operator performs an immediate approval-gated alias rollback and verifies recovery.",
+      "expectations": [
+        "Activates the verify-and-rollback skill",
+        "Explains `codedeploy:StopDeployment` (`autoRollbackEnabled=true`) when managed by CodeDeploy vs `lambda:UpdateAlias` resetting `--function-version 14` and clearing `RoutingConfig` (`AdditionalVersionWeights={}`) for direct alias traffic shifting",
+        "Requires explicit human approval before executing mutating rollback commands and outlines post-rollback verification (`Errors` returning to 0, latency/alarms healthy)"
+      ]
+    },
+    {
+      "id": "eval-06-stateful-schema-migration-rollback-expand-contract-hazard",
+      "prompt": "A bad release ran Flyway migration `V42` (adding a new nullable column `discount_code` AND backfilling rows) alongside app `v2.4.0`, and app `v2.4.0` has a memory leak! An engineer wants to immediately run `DROP COLUMN discount_code` and restore yesterday's RDS snapshot in production! Stop them and give the safe rollback plan.",
+      "expectations": [
+        "Activates the verify-and-rollback skill and immediately warns against restoring yesterday's RDS snapshot (which destroys hours of committed production transactions/RPO data loss!) and against destructive `DROP COLUMN` DDL under load",
+        "Explains the Expand/Contract forward-compatible rule: since adding a nullable column is backward-compatible with `v2.3.9`, roll back **application compute (`v2.4.0` -> `v2.3.9`) ONLY** while leaving the additive database column intact"
+      ]
+    },
+    {
+      "id": "eval-07-terraform-partial-apply-failure-state-and-rollback-triage",
+      "prompt": "`terraform apply` failed halfway through updating an AWS ALB Listener Rule and ECS Task Definition (`4 added, 2 changed, 1 errored`), leaving production in a half-applied state! Why doesn't Terraform automatically roll back like CloudFormation, and what is the safe recovery workflow?",
+      "expectations": [
+        "Activates the verify-and-rollback skill",
+        "Explains that Terraform/OpenTofu is NOT an atomic transactional rollback engine \u2014 resources created/updated before the error remain live and recorded in `.tfstate`",
+        "Provides the safe recovery workflow: inspect read-only `terraform plan` (never running `terraform destroy`!), and compare fixing forward vs controlled Git rollback (`terraform plan` verifying zero stateful data deletions + gated `terraform apply`)"
+      ]
+    },
+    {
+      "id": "eval-08-create-failed-rollback-complete-stack-unable-to-redeploy-cleanup",
+      "prompt": "A brand-new greenfield CDK stack `DevPreviewStack` failed on its very first deployment (`AWS::S3::Bucket` name already existed globally) and is now stuck in `ROLLBACK_COMPLETE` with 0 live resources. Why does re-running `cdk deploy` or `create-stack` fail on `ROLLBACK_COMPLETE`, and how should we verify it holds zero retained stateful resources before cleaning it up?",
+      "expectations": [
+        "Activates the verify-and-rollback skill",
+        "Explains that a stack in `ROLLBACK_COMPLETE` (from a failed initial `CreateStack`) cannot be updated \u2014 CloudFormation requires deleting the dead `ROLLBACK_COMPLETE` stack shell before recreating it (note modern CDK CLI/CloudFormation flags can replace `ROLLBACK_COMPLETE` shells after verification)",
+        "Mandates running `list-stack-resources` first to verify 0 `DELETE_SKIPPED` / retained stateful resources exist, and requesting explicit user approval before calling `delete-stack`"
+      ]
+    },
+    {
+      "id": "eval-09-eks-bad-deployment-rollout-undo-and-pdb-stuck-readiness-triage",
+      "prompt": "An EKS `Deployment` rollout (`checkout-web`) is stuck at `1/4` updated pods (`ProgressDeadlineExceeded`) because the new image fails its `/readyz` HTTP probe on port `8080` while the app actually listens on `3000`. Show the read-only verification confirmers and safe `kubectl rollout undo` recovery.",
+      "expectations": [
+        "Activates the verify-and-rollback skill",
+        "Shows how Kubernetes kept the existing `maxUnavailable`-protected `v1` pods serving live traffic while blocking bad `v2` pods via `readinessProbe` (`kubectl rollout status`, `kubectl describe pod`, `kubectl logs`)",
+        "Provides the approval-gated `kubectl rollout undo deployment/checkout-web -n <ns>` (or GitOps revert commit if managed by ArgoCD/Flux so GitOps doesn't immediately re-apply the broken manifest!)"
+      ]
+    },
+    {
+      "id": "eval-10-awsknowledge-cloudformation-drift-detection-and-import-recovery",
+      "prompt": "Query AWS documentation via connected AWS documentation tools to explain how CloudFormation stack drift detection (`detect-stack-drift` -> `describe-stack-resource-drifts`) works and what the drift statuses `MODIFIED`, `DELETED`, and `IN_SYNC` mean before attempting a stack recovery.",
+      "expectations": [
+        "Activates the verify-and-rollback skill and queries connected AWS documentation MCP tools (`awsknowledge`, `aws-mcp`, or `awsiac`)",
+        "Details the asynchronous drift workflow (`detect-stack-drift` returning `StackDriftDetectionId`, polling `describe-stack-drift-detection-status`, and inspecting `PropertyDifferences` via `describe-stack-resource-drifts`)",
+        "Accurately defines `IN_SYNC`, `MODIFIED` (`ADD`/`REMOVE`/`NOT_EQUAL` property diffs), and `DELETED` (out-of-band resource deletion, which often causes `UPDATE_FAILED` / `UPDATE_ROLLBACK_FAILED`)"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "skill_name": "aws-sms-voice",
+  "companion_skills": [
+    "amazon-eventbridge-event-bus",
+    "amazon-eventbridge-scheduler-and-pipes",
+    "amazon-ses",
+    "amazon-sqs-sns-async-messaging",
+    "aws-messaging-and-streaming"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Audit our AWS End User Messaging SMS and Voice account in ap-south-1 (account tier, monthly spend limits, phone numbers, sender IDs, and registrations) and give me a Sandbox-to-Production checklist."
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "How do I send SMS OTP verification codes using AWS End User Messaging Notify (send-notify-text-message and NOTIFY_OTP_SMS) without waiting for carrier sender ID registration?"
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Walk me through setting up an RCS Business Messaging test agent with TEST_RCS_LAUNCH_REGISTRATION and verifying a test device in pinpoint-sms-voice-v2."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "What are the required registration fields in pinpoint-sms-voice-v2 for India DLT Sender ID registration (IN_SENDER_ID_REGISTRATION) versus US 10DLC Brand and Campaign registration?"
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure an AWS End User Messaging Protect Configuration country rule set and Configuration Set event destination to block SMS pumping fraud and track delivery receipts."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "How do I configure Amazon SES DKIM, SPF, DMARC, and Custom MAIL FROM records in Route 53 for our transactional email domain?"
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Help me create a WhatsApp Business Account message template and send an interactive list message using aws socialmessaging."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Our Amazon SQS FIFO queue has a growing dead-letter queue backlog and high ApproximateAgeOfOldestMessage—help me tune visibility timeout and Lambda concurrency."
+    }
+  ]
+}

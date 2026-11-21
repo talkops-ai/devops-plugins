@@ -1,0 +1,99 @@
+{
+  "skill_name": "agents-optimize",
+  "companion_skills": [
+    "agents-debug",
+    "agents-harden",
+    "agentcore-observability-setup",
+    "agents-deploy",
+    "arize-incident-investigation"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Add `Builtin.Faithfulness` and a `@custom_code_based_evaluator` quality gate with 2% production `online-eval` sampling to our AgentCore project."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "How much does our AgentCore agent cost per month across Runtime vCPU/GB-hours, Memory, Gateway, and Evaluators, and how do we cut the bill?"
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Run `agentcore run eval` against traces emitted from my local `agentcore dev` session without deploying to AWS."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Our AgentCore agent gives accurate answers with zero errors, but p95 latency is 17 seconds — help us make it faster and cheaper."
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Design a Two-Tier CI/CD evaluation gate combining deterministic trajectory matching (`== 1.0`) and a 50-scenario LLM-as-a-Judge benchmark."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Configure multi-account CloudWatch Observability (`oam`) in the right account order and export OTLP traces to Langfuse without hardcoding headers."
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We ran `agentcore add evaluator --name tool-checker` with `{assistant_turn}` at `TOOL_CALL` level and got a validation failure — fix our evaluator config."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Our AgentCore bill spiked because idle sessions sit for 15 minutes, we judge Sonnet with Opus, and we load all 124 MCP tools — optimize our setup."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why does our CI script still `sleep 300` before querying `agentcore dev` traces for `agentcore run eval`, and how do we keep custom judge prompts inside `ap-south-1`?"
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "My AgentCore agent is broken — invocations return HTTP `424 Failed Dependency` and `ServiceQuotaExceededException: maxVms limit exceeded`.",
+      "expected_alternative_skill": "agents-debug"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Lock down inbound `CUSTOM_JWT` `allowedAudience` authentication, KMS CMK encryption, and `PutAgentRuntimeResourcePolicy` before production go-live.",
+      "expected_alternative_skill": "agents-harden"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Investigate a triggered Arize AX hallucination monitor using `list_spans` (`attributes.openinference.span.kind`) and Arize Prompt Hub labels.",
+      "expected_alternative_skill": "arize-incident-investigation"
+    }
+  ]
+}

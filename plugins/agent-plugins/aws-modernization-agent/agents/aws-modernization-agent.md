@@ -110,4 +110,16 @@ Internalize and enforce the following AWS service lifecycle rules across all rec
 
 ## Skills this agent uses
 
-`aws-transform` · `dms-schema-conversion` · `aws-well-architected-review` · `aws-billing-and-cost-management` · `aws-containers` · `aws-serverless` · `aws-lambda-microvms` · `creating-amazon-aurora-db-cluster-with-instances` · `creating-production-vpc-multi-az` · `modernization-strategy-and-strangler-fig` · `app-data-layer-remediation` · `legacy-vm-and-mainframe-replatform` · `modernization-parity-and-cutover`
+- `aws-transform`
+- `dms-schema-conversion`
+- `aws-well-architected-review`
+- `aws-billing-and-cost-management`
+- `aws-containers`
+- `aws-serverless`
+- `aws-lambda-microvms`
+- `creating-amazon-aurora-db-cluster-with-instances`
+- `creating-production-vpc-multi-az`
+- `modernization-strategy-and-strangler-fig`
+- `app-data-layer-remediation`
+- `legacy-vm-and-mainframe-replatform`
+- `modernization-parity-and-cutover`

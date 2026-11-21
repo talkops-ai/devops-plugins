@@ -1,0 +1,99 @@
+{
+  "skill_name": "finetuning",
+  "companion_skills": [
+    "sagemaker-training-architect",
+    "model-deployment",
+    "sagemaker-mlops-pipelines",
+    "sagemaker-cost-estimator",
+    "endpoint-diagnostics"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Generate PySDK v3 `SFTTrainer` (`TrainingType.LORA`) code to start a SageMaker Serverless Model Customization job on `meta-textgeneration-llama-3-1-8b-instruct` in `us-east-1`."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Write a deterministic Lambda reward function (`Evaluator.create(type='RewardFunction')`) and `RLVRTrainer` script to fine-tune Amazon Nova Lite in `us-west-2`."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure `RLAIFTrainer` with `Builtin.Faithfulness` and a Round 2 `DPOTrainer` continuous customization script on SageMaker Hub models."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We finished dataset evaluation and have our `use_case_spec.md` and S3 JSONL path ready in `eu-west-1` — generate the serverless LoRA fine-tuning script."
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Why does our Nova RLVR Lambda reward function fail when returning `{'statusCode': 200, 'body': ...}`, and why were `max_epochs` and `lr_warmup_steps_ratio` rejected on `nova-micro`?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Can we run SageMaker Serverless Model Customization (`SFTTrainer`) in `ap-south-1`, and how do we chain Round 2 DPO onto `output_model_package_arn`?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Our SQL generation model is picked (`qwen2.5-7b-instruct`) and we want verifiable SQL AST execution rewards (<100ms, anti-gaming) using `RLVRTrainer`."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Generate `04_sft_finetuning.py` registering our S3 dataset in `sagemaker.ai_registry` (`DataSet.create`) and wiring our Managed MLflow ARN."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Set up a custom `.jinja` judge rubric (`{{ prompt }}`, `{{ response }}`) with `Evaluator.create` for serverless `RLAIFTrainer` alignment."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Run a SageMaker Autopilot `CreateAutoMLJobV2` time-series forecasting job with India (`IN`) holiday calendars and Managed Spot checkpointing.",
+      "expected_alternative_skill": "sagemaker-training-architect"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Deploy our completed LoRA checkpoint (`checkpoints/hf_merged/`) to Amazon Bedrock using `BedrockModelBuilder`.",
+      "expected_alternative_skill": "model-deployment"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Build a parameterized `sagemaker.workflow.pipeline.Pipeline` DAG with `@step`, `ConditionStep`, `FailStep`, and Iceberg `FeatureStore` offline tables.",
+      "expected_alternative_skill": "sagemaker-mlops-pipelines"
+    }
+  ]
+}

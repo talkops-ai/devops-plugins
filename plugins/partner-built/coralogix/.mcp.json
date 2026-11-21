@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "coralogix": {
+      "type": "http",
+      "url": "https://api.${CORALOGIX_REGION:-us2}.coralogix.com/mgmt/api/v1/mcp",
+      "headers": {
+        "Authorization": "Bearer ${CORALOGIX_API_KEY:-}"
+      }
+    }
+  }
+}

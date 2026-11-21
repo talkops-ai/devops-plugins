@@ -1,0 +1,62 @@
+{
+  "skill_name": "live-streaming-event-readiness-review",
+  "companion_skills": [
+    "arc-region-switch",
+    "aws-billing-and-cost-management",
+    "aws-cloudformation",
+    "aws-compute",
+    "aws-deployment"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use `live-streaming-event-readiness-review` to design, validate, and troubleshoot live streaming event readiness review."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Walk me through production best practices and operational guardrails for live streaming event readiness review (`live-streaming-event-readiness-review`)."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We need an operational review and step-by-step runbook covering: Use this skill for a read-only readiness review of a streaming / OTT platform before a large-scale live event (match, final, concert, launch). Trigger whenever someone asks whether"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "What are the critical failure modes, configuration checks, and verification commands for live streaming event readiness review?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our live streaming event readiness review setup in read-only mode."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure and troubleshoot arc region switch exclusively without touching live streaming event readiness review.",
+      "expected_alternative_skill": "arc-region-switch"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+    }
+  ]
+}

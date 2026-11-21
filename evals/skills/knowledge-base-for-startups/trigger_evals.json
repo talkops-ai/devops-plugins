@@ -1,0 +1,98 @@
+{
+  "skill_name": "knowledge-base-for-startups",
+  "companion_skills": [
+    "prompt-library-for-startups",
+    "architect-for-startups",
+    "start-building-for-startups",
+    "contextual-offers-for-startups"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "What are the eligibility requirements, credit tiers, and application steps for AWS Activate Founders versus AWS Activate Portfolio?"
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Look up the AWS Activate partner offer for Auth0 or Datadog in the AWS Startups knowledge base and share its value, eligibility, and link."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Find an AWS Startups learn article or case study on startup fundraising and cloud cost optimization and cite its `source_url`."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Do AWS Activate credits expire, which AWS services do they cover, and how does our VC fund register as an AWS Activate Provider?"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Where can I find upcoming AWS Startups Loft events and browse featured companies on the AWS Startup Showcase?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Show me a vetted sample solution guide from the AWS Startups Build catalog for serverless or generative AI workloads."
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "What AWS Startups accelerator programs are currently listed, and how do I reach the Ask AWS Startups support channels?"
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Why do I need an AWS Builder ID when joining AWS Startups and applying for Activate perks?"
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Search the AWS Startups article library for a startup case study on scaling generative AI on Amazon Bedrock."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Give me a copy-paste AI coding System Prompt to request a GPU instance quota increase or download the AWS Bill Shock Preventer agent.",
+      "expected_alternative_skill": "prompt-library-for-startups"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Run the read-only `validate-terraform-policy.py` policy gate against our generated `./terraform` directory and output the JSON verdict.",
+      "expected_alternative_skill": "tf-best-practices"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Our live production Lambda API in `us-east-1` is throwing 5xx timeouts right now — investigate the root cause with AWS DevOps Agent.",
+      "expected_alternative_skill": "operate-on-aws"
+    }
+  ]
+}

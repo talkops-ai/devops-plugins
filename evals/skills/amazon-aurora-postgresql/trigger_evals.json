@@ -1,0 +1,147 @@
+{
+  "skill_name": "amazon-aurora-postgresql",
+  "companion_skills": [
+    "amazon-aurora-mysql",
+    "rds-oracle",
+    "rds-oss",
+    "amazon-dynamodb",
+    "aws-database",
+    "db-ha-dr-and-schema-evolution",
+    "db-observability-and-wait-triage"
+  ],
+  "queries": [
+    {
+      "id": "trig-explicit-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use the amazon-aurora-postgresql skill to estimate ACU sizing for a db.r6g.xlarge instance with CPU P95 of 35%, CPU max of 72%, and 500 GiB storage.",
+      "notes": "Direct invocation of amazon-aurora-postgresql for offline ACU sizing."
+    },
+    {
+      "id": "trig-explicit-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Using $amazon-aurora-postgresql, check whether I/O-Optimized storage is cheaper for a 2-instance db.r6g.2xlarge cluster with 800 GiB storage and 1200 million monthly I/Os.",
+      "notes": "Direct invocation for offline I/O-Optimized analysis."
+    },
+    {
+      "id": "trig-implicit-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "What are the constraints for Aurora PostgreSQL Serverless v2 scale-to-zero if we are using RDS Proxy and logical replication?",
+      "notes": "Implicit serverless-advisory intent without naming the skill identifier."
+    },
+    {
+      "id": "trig-implicit-02",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We are running Aurora PostgreSQL 14.9 right now—which LTS version should we plan to upgrade to and why?",
+      "notes": "Implicit upgrade-planning Mode A advisory query."
+    },
+    {
+      "id": "trig-implicit-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "How does Aurora PostgreSQL express configuration handle authentication if there is no customer VPC or master password?",
+      "notes": "Implicit express-create IAM token authentication question."
+    },
+    {
+      "id": "trig-implicit-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Can we buy a 3-year Database Savings Plan to cover our db.r6g.2xlarge Aurora Postgres instances, or is RI our only option?",
+      "notes": "Implicit commitment-pricing coverage question."
+    },
+    {
+      "id": "trig-contextual-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "In our billing repo (us-east-1), our 2-node db.r6g.2xlarge Aurora PostgreSQL cluster has 2,000 GiB storage and 2,500 million monthly I/O requests. Can you run an offline cost check on whether switching to aurora-iopt1 saves money?",
+      "notes": "Contextual I/O-Optimized breakeven request with concrete metrics."
+    },
+    {
+      "id": "trig-contextual-02",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "My manager asked me to figure out how many ACUs we need if we migrate our single db.r6g.xlarge Aurora PG writer (P95 CPU 35%, max CPU 72%, 500 GiB storage, us-east-1) to Aurora Serverless v2.",
+      "notes": "Contextual ACU sizing query with realistic backstory."
+    },
+    {
+      "id": "trig-contextual-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Our security team blocked our PR because someone tried to pass --publicly-accessible on our Aurora Postgres dev instance so laptops could connect. What are the approved ways to connect without making the instance public?",
+      "notes": "Contextual security guardrail & connectivity alternatives query."
+    },
+    {
+      "id": "trig-contextual-04",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "We have an Aurora Postgres Serverless v2 cluster averaging 8 ACUs baseline overnight and spiking to 24 ACUs at noon in us-east-1. How should we size a Database Savings Plan so we don't overpay during idle hours?",
+      "notes": "Contextual serverless DSP baseline sizing query."
+    },
+    {
+      "id": "trig-nearmiss-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Run an offline I/O-Optimized cost comparison for our 2-instance db.r6g.2xlarge Aurora MySQL 3.07 cluster with 800 GiB storage and 1200 million monthly I/Os.",
+      "expected_alternative_skill": "amazon-aurora-mysql",
+      "notes": "Near-miss: identical metrics and I/O-Optimized topic, but engine is Aurora MySQL."
+    },
+    {
+      "id": "trig-nearmiss-02",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "We are on Aurora MySQL 2.11 (MySQL 5.7 compatible) and need a pre-upgrade checklist for moving to Aurora MySQL 3.x LTS.",
+      "expected_alternative_skill": "amazon-aurora-mysql",
+      "notes": "Near-miss: Aurora LTS upgrade planning, but for Aurora MySQL."
+    },
+    {
+      "id": "trig-nearmiss-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Compare provisioned RCU/WCU vs on-demand pricing for our DynamoDB table handling 500M reads and 100M writes per month with 800 GiB storage.",
+      "expected_alternative_skill": "amazon-dynamodb",
+      "notes": "Near-miss: AWS database capacity & pricing calculation, but for DynamoDB."
+    },
+    {
+      "id": "trig-nearmiss-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "We are designing a new microservice that needs sub-millisecond key-value lookups and a graph traversal layer for fraud detection—which AWS database services should we pick?",
+      "expected_alternative_skill": "aws-database",
+      "notes": "Near-miss: greenfield database selection across non-Aurora engines."
+    },
+    {
+      "id": "trig-nearmiss-05",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "How do I configure Oracle Data Guard replica lag monitoring on an Amazon RDS for Oracle Multi-AZ instance?",
+      "expected_alternative_skill": "rds-oracle",
+      "notes": "Near-miss: RDS instance question for Oracle engine, not Aurora PostgreSQL."
+    },
+    {
+      "id": "trig-nearmiss-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a Python function using psycopg3 that parses a local CSV file and formats rows as SQL INSERT tuples in memory without connecting to a database.",
+      "notes": "Near-miss: mentions psycopg3/SQL, but is a pure local Python coding task."
+    }
+  ]
+}

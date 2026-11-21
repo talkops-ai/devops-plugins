@@ -1,9 +1,11 @@
 ---
 name: dynamodb-access-pattern-modeling
-description: Design, validate, cost-estimate, and generate code for Amazon DynamoDB data models and relational-to-DynamoDB migrations using aws-dynamodb-mcp (dynamodb_data_modeling, source_db_analyzer, compute_performances_and_costs, dynamodb_data_model_validation, dynamodb_data_model_schema_converter, generate_data_access_layer, generate_resources). Enforces access-pattern-first design, zero production Scans, hot-partition prevention, and CVE-2026-85654 schema sanitization.
+description: "Design, validate, cost-estimate, and generate code for Amazon DynamoDB data models and relational-to-DynamoDB migrations using aws-dynamodb-mcp (dynamodb_data_modeling, source_db_analyzer, compute_performances_and_costs, dynamodb_data_model_validation, dynamodb_data_model_schema_converter, generate_data_access_layer, generate_resources). Enforces access-pattern-first design, zero production Scans, hot-partition prevention, and CVE-2026-85654 schema sanitization. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # Amazon DynamoDB Access-Pattern Modeling, Validation & Migration
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, caller/account verification (`sts:GetCallerIdentity`), resource inspection, logs/metrics queries, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___call_aws` / `aws___run_script`, `cloudwatch`, `cloudtrail`, `prometheus`, `dynamodb`, `serverless`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**.
 
 Architect single-table and multi-table Amazon DynamoDB schemas from application access patterns or existing relational databases (PostgreSQL, MySQL, SQL Server, Oracle) using the `aws-dynamodb-mcp` server (`awslabs.dynamodb-mcp-server>=2.1.6`).
 

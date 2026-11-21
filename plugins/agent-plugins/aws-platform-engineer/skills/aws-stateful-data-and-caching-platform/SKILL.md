@@ -11,6 +11,11 @@ metadata:
 
 Platform engineers own the reliability, network isolation, connection pooling, encryption, backup durability, and IaC lifecycle of the stateful data and caching tiers that back containerized and serverless workloads. This skill provides production-ready platform patterns for **Amazon DynamoDB**, **Amazon ElastiCache / MemoryDB (Valkey & Memcached)**, and **Amazon Aurora / RDS (PostgreSQL & MySQL)**, and integrates with the optional stateful data MCP profile (`mcp.data-extensions.json`: `dynamodb`, `elasticache`, and `postgres` with `--privilege_check enforce`).
 
+## MCP-Only Execution & Edge-Case Fallback Rules (Mandatory)
+
+1. **MCP-Only Execution (Zero Raw Shell CLI):** Execute **all** live AWS stateful data inspections, pricing comparisons, alarm lookups, and IaC validations **exclusively via connected MCP servers**: `aws-mcp` (`aws___run_script` using read-only `call_boto3` for `dynamodb`, `elasticache`, `memorydb`, `rds`, `ec2`), `pricing` (`get_pricing` for `AmazonDynamoDB`, `AmazonElastiCache`, `AmazonRDS`), `cloudwatch` (`get_metric_data`, `get_recommended_metric_alarms`, `get_active_alarms`), and `aws-iac` (`validate_cloudformation_template`, `check_cloudformation_template_compliance`). **Never** run raw `aws ...` CLI or `python3 -c` commands in Bash/`run_command`, and **never** fetch plaintext database/cache secrets (`GetSecretValue`) or execute mutating AWS calls.
+2. **`awsknowledge` Fallback:** For niche stateful platform features outside this file (e.g., DynamoDB warm throughput pre-warming, Aurora Zero-ETL to Redshift/S3, ElastiCache Valkey vector search / Global Datastore), immediately query `awsknowledge` / `aws-mcp` (`aws___search_documentation` / `aws___read_documentation` — 1–2 focused searches) and answer directly.
+
 ---
 
 ## 1. Platform Data & Caching Selection Matrix
@@ -58,12 +63,11 @@ Platform engineers own the reliability, network isolation, connection pooling, e
 ## 4. Amazon Aurora & RDS Platform Engineering Guardrails
 
 1. **Zero-Plaintext Credentials & RDS Proxy Connection Pooling**:
-   - Set `ManageMasterUserPassword: true` (with `MasterUserSecret.KmsKeyId`) on `AWS::RDS::DBCluster` / `AWS::RDS::DBInstance` so AWS Secrets Manager automatically generates and rotates the master password without the secret ever entering CloudFormation state or git.
-   - When serverless functions (Lambda) or high-replica container fleets (ECS/EKS) connect to Aurora/RDS, provision **Amazon RDS Proxy** (`RequireTLS: true`, `IAMAuth: REQUIRED` or Secrets Manager pool) to multiplex connections, prevent `FATAL: remaining connection slots are reserved for non-replication superuser connections`, and reduce Multi-AZ failover times by up to 66%.
+   - Set `ManageMasterUserPassword: true` (with `MasterUserSecret.KmsKeyId`), `StorageEncrypted: true`, `DeletionProtection: true`, and `DeletionPolicy: Snapshot` (or `Retain`) on `AWS::RDS::DBCluster` / `AWS::RDS::DBInstance` so AWS Secrets Manager automatically generates and rotates the master password without plaintext ever entering CloudFormation state or git.
+   - When serverless functions (Lambda) or high-replica container fleets (ECS/EKS) connect to Aurora/RDS, provision **Amazon RDS Proxy** (`AWS::RDS::DBProxy`) with `RequireTLS: true` and an explicit `Auth` block setting `IAMAuth: REQUIRED` (`AuthScheme: SECRETS`, `SecretArn: !GetAtt <Cluster>.MasterUserSecret.SecretArn`, `IAMAuth: REQUIRED`) to multiplex connections, prevent `FATAL: remaining connection slots are reserved for non-replication superuser connections`, and reduce Multi-AZ failover times by up to 66%.
 2. **Non-Superuser Runtime & MCP Guardrails (`--privilege_check enforce`)**:
    - Application workloads and the optional `postgres` MCP server (`awslabs.postgres-mcp-server`) must **never** connect as `postgres` / `rds_superuser` or a role with `SUPERUSER` or `BYPASSRLS` attributes.
    - Configure the `postgres` MCP server with `--privilege_check enforce` and `--readonly True`, and create a dedicated least-privilege database role (`GRANT pg_read_all_data TO app_readonly; GRANT rds_iam TO app_readonly;`).
-3. **Zero-Downtime Maintenance & Disaster Recovery**:
-   - Use **RDS/Aurora Blue/Green Deployments** for major engine version upgrades and schema changes with sub-minute switchover.
-   - Configure `BackupRetentionPeriod: 14–35` days, `CopyTagsToSnapshot: true`, `DeletionPolicy: Snapshot` / `Retain`, and **Performance Insights** (`EnablePerformanceInsights: true`) for wait-event bottleneck triage.
+3. **Zero-Downtime Maintenance, Baseline Properties & Specialist Handoff**:
+   - Always pair **RDS/Aurora Blue/Green Deployments** (for zero-downtime major engine version upgrades **and** DDL/schema changes with sub-minute switchover) with the mandatory cluster baseline controls: `BackupRetentionPeriod: 14–35` days, `CopyTagsToSnapshot: true`, `DeletionPolicy: Snapshot` / `Retain`, `DeletionProtection: true`, and **Performance Insights** (`EnablePerformanceInsights: true`) for wait-event bottleneck triage.
    - Hand off deep SQL query plan tuning, heterogeneous Oracle/SQL Server DMS migrations, or specialized engines (Neptune, DocumentDB, Keyspaces) to `aws-database-engineer`.

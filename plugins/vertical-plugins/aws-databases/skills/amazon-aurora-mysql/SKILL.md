@@ -1,16 +1,12 @@
 ---
 name: amazon-aurora-mysql
-description: >-
-  Amazon Aurora MySQL — creates, modifies, and advises on Aurora MySQL clusters specifically
-  (MySQL-compatible engine, Aurora serverless, parallel query). Trigger for Aurora
-  MySQL cluster operations, ACU sizing, I/O-Optimized storage, commitment pricing,
-  or MySQL upgrade planning. Aurora MySQL uses full (VPC-based) configuration — express
-  configuration is PostgreSQL-only. For Aurora PostgreSQL, use amazon-aurora-postgresql
-  instead. Contains safety guardrails and response templates that override defaults.
+description: "Amazon Aurora MySQL — creates, modifies, and advises on Aurora MySQL clusters specifically (MySQL-compatible engine, Aurora serverless, parallel query). Trigger for Aurora MySQL cluster operations, ACU sizing, I/O-Optimized storage, commitment pricing, or MySQL upgrade planning. Aurora MySQL uses full (VPC-based) configuration — express configuration is PostgreSQL-only. For Aurora PostgreSQL, use amazon-aurora-postgresql instead. Contains safety guardrails and response templates that override defaults. Query live AWS state via MCP tools only (never raw aws CLI)."
 version: 1
 ---
 
 # Amazon Aurora MySQL
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, account/region checks (`sts:GetCallerIdentity`), cluster/instance/table inspection, CloudWatch telemetry, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___run_script` `call_boto3`, `dynamodb`, `elasticache`, `postgres`, `mysql`, `cloudwatch`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**. Local offline helper scripts under `scripts/` may be run via `python3` or `node`.
 
 A modular toolkit for **Aurora MySQL** organized as a registry of sub-skills. Each sub-skill handles one domain of Aurora MySQL work. The router matches user intent to the right sub-skill, then loads only the references needed. (For Aurora PostgreSQL — and its express-configuration quick-start — use the `amazon-aurora-postgresql` skill.)
 
@@ -30,7 +26,7 @@ Edge cases: if the request spans multiple sub-skills, run them in sequence (load
 
 | ID | Name | When to route here | Trigger phrases | Reached from | Next steps |
 |----|------|--------|---------------------|----------|------------|
-| `create` | Create Cluster | Routes Aurora MySQL cluster creation requests. Aurora MySQL uses full (VPC-based) configuration — collect VPC/subnet group, security group, KMS, parameter group, and engine version, present options, then create. (Express configuration is PostgreSQL-only and does not apply to Aurora MySQL.) | create a cluster, new database, set up Aurora MySQL, get started, need a MySQL database, provision | — | `serverless-advisory`, `io-optimized` |
+| `create` | Create Cluster | Routes Aurora MySQL cluster creation requests. Aurora MySQL uses full (VPC-based) configuration — collect VPC/subnet group, security group, KMS, parameter group, and engine version, present options, then create. (Express configuration `--with-express-configuration` is PostgreSQL-only and does not apply to Aurora MySQL; for a lightweight Aurora MySQL setup, recommend Aurora Serverless v2 with scale-to-zero `MinCapacity=0` in a VPC subnet group plus Secrets Manager `--manage-master-user-password`.) | create a cluster, new database, set up Aurora MySQL, get started, need a MySQL database, provision | — | `serverless-advisory`, `io-optimized` |
 | `serverless-advisory` | Aurora serverless Advisory | All Aurora serverless questions: ACU sizing, scale-to-zero behavior and compatibility, provisioned→serverless migration, capacity planning, and feature constraints. | ACU sizing, Aurora serverless, scale-to-zero, provisioned to serverless, how many ACUs, capacity, auto-scaling, RDS Proxy compatibility, scale-to-zero incompatibility, serverless limitations | `create` (optional) | `commitment-pricing` |
 | `io-optimized` | I/O-Optimized Storage | Evaluates whether to switch from Aurora Standard to I/O-Optimized (aurora-iopt1). Uses the 25% I/O cost threshold rule. | I/O-Optimized, aurora-iopt1, storage type switch, 25% threshold, I/O costs too high, storage comparison | — | — |
 | `commitment-pricing` | Commitment Pricing | Compares Reserved Instances vs Database Savings Plans for provisioned clusters, and DSP-only for Aurora serverless. 1yr vs 3yr analysis. | Reserved Instance, RI, Savings Plan, DSP, 1yr vs 3yr, commitment, cost optimization, overpaying | `serverless-advisory` (optional) | — |
@@ -125,7 +121,7 @@ Bundled scripts in `scripts/` for offline analysis. MUST use these when the user
 ## Troubleshooting
 
 - **AccessDenied**: Attach `AmazonRDSReadOnlyAccess` + `CloudWatchReadOnlyAccess` for reads. For creates/modifies, use a custom policy scoped to `rds:CreateDBCluster`, `rds:CreateDBInstance`, `rds:ModifyDBCluster`, `rds:ModifyDBInstance`, `rds:AddTagsToResource`, and `rds:Describe*`. See [Identity and access management for Amazon Aurora](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/UsingWithRDS.IAM.html).
-- **ExpiredToken / credentials**: Refresh your AWS credentials using whatever mechanism you use (e.g. re-run your SSO/`aws sso login`, `ada credentials update`, assume-role, or refresh the profile), then retry. Do not assume a specific credential tool.
+- **ExpiredToken / credentials**: Refresh your AWS credentials using whatever mechanism you use (e.g. re-run your SSO/`aws sso login`, assume-role, or refresh the profile), then retry. Do not assume a specific credential tool.
 - **DBClusterNotFoundFault**: Verify region and cluster ID.
 - **Throttling**: Retry once, then narrow scope.
 

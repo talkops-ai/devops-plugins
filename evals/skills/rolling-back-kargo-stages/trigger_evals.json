@@ -1,0 +1,61 @@
+{
+  "skill_name": "rolling-back-kargo-stages",
+  "companion_skills": [
+    "adopting-traefik-nginx-ingress-provider",
+    "auditing-traefik-security-posture",
+    "configuring-traefik-middlewares",
+    "deploying-argocd-applications",
+    "deploying-helm-charts"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use `rolling-back-kargo-stages` to help me design, validate, and troubleshoot rolling back kargo stages."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Walk me through best practices and production guardrails for rolling back kargo stages (`rolling-back-kargo-stages`)."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Executes emergency rollbacks of Kargo stages by promoting a previously verified Freight from stage freightHistory and manages Kargo v1.11+ auto-promotion holds. Use when a stage de"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating rolling back kargo stages?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "During our `ap-south-1` sprint readiness review, audit our rolling back kargo stages setup in read-only mode and highlight top risks."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Help me configure and troubleshoot adopting traefik nginx ingress provider exclusively without touching rolling back kargo stages."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+    }
+  ]
+}

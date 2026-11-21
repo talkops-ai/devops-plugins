@@ -1,0 +1,98 @@
+{
+  "skill_name": "prompt-library-for-startups",
+  "companion_skills": [
+    "knowledge-base-for-startups",
+    "start-building-for-startups",
+    "architect-for-startups",
+    "contextual-offers-for-startups"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Give me the copy-paste System Prompt from the AWS Startups Prompt Library for building a RAG chatbot with Claude on Bedrock."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Share the download link and details for the installable AWS Bill Shock Preventer and AWS Multi-Account Transition Advisor agents."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Pull the AWS Startups reference prompt for requesting EC2 and SageMaker GPU instance quota increases."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Is there an installable AWS Startups agent I can clone into my AI coding tool to help pick and operate the right AWS database (`AWS DB Advisor`)?"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Show me the curated AWS Startups prompt for converting an OpenAPI REST spec into an AgentCore Gateway MCP server."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Give me a starter AWS prompt for Day 1 AWS Foundation Setup or an MVSP-compliant security baseline."
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Find the AWS Bedrock Quota Manager (TPM/RPM/CRIS navigator) prompt and the Bedrock Model Availability downloadable agent."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "List the Karpenter + KEDA Spot EKS and Cost Anomaly Detection prompts available in the AWS Startups Prompt Library."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Give me the AWSome MVP Builder System Prompt so I can copy or adapt it for Kiro CLI."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Do AWS Activate credits expire, what is the difference between Activate Founders and Activate Portfolio, and how do VCs become Activate Providers?",
+      "expected_alternative_skill": "knowledge-base-for-startups"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Run the read-only `validate-terraform-policy.py` policy checker against `./migration/terraform` and output the JSON verdict.",
+      "expected_alternative_skill": "tf-best-practices"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Our live production ECS service in `us-east-1` just started throwing 502 errors after a deploy — help us investigate the root cause.",
+      "expected_alternative_skill": "operate-on-aws"
+    }
+  ]
+}

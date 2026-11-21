@@ -1,0 +1,95 @@
+{
+  "skill_name": "aws-serverless",
+  "companion_skills": [
+    "aws-lambda",
+    "serverless-data-and-file-processing",
+    "lambda-event-source-mappings-esm",
+    "debugging-lambda-timeouts"
+  ],
+  "queries": [
+    {
+      "id": "trig-pos-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Should we orchestrate our new order-fulfillment saga with AWS Step Functions or AWS Lambda Durable Functions?"
+    },
+    {
+      "id": "trig-pos-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Fix CORS errors on API Gateway `401`/`504` responses and explain why `ReservedConcurrentExecutions: 5` pushed healthy SQS messages into our DLQ."
+    },
+    {
+      "id": "trig-pos-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Compare EventBridge Scheduler, EventBridge Pipes, and EventBridge Event Buses for our event-driven architecture."
+    },
+    {
+      "id": "trig-pos-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Secure a public AWS Lambda Function URL behind CloudFront Origin Access Control (OAC) with `AuthType: AWS_IAM`."
+    },
+    {
+      "id": "trig-pos-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Compare API Gateway HTTP API v2 vs REST API v1 for WAF support, usage plans, and native JWT authorizers."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure BGP communities and Link Aggregation Groups (LAG) on AWS Direct Connect."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Migrate a COBOL mainframe batch workload using Rocket Software Enterprise Server."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Query VPC Flow Logs exported to S3 Tables Iceberg format (`s3tablescatalog/aws-cloudwatch`) in Athena."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Set up Db2 pureScale or HADR on Amazon RDS for Db2."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Create a multi-region AWS Transit Gateway peering attachment with Network Firewall east-west inspection."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Audit Security Hub V2 OCSF Exposure findings and GuardDuty `AttackSequence:` alerts."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure Route 53 DNS Firewall domain blocklists across accounts with Route 53 Profiles."
+    }
+  ]
+}

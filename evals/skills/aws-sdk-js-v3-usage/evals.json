@@ -1,0 +1,93 @@
+{
+  "skill_name": "aws-sdk-js-v3-usage",
+  "evals": [
+    {
+      "id": "eval-01-migrate-aws-sdk-v2-s3-and-dynamodb-to-modular-v3",
+      "prompt": "Migrate this legacy AWS SDK v2 Node.js TypeScript handler to idiomatic AWS SDK for JavaScript v3 (`Node.js 22`): `import AWS from 'aws-sdk'; const s3 = new AWS.S3(); const body = (await s3.getObject({ Bucket, Key }).promise()).Body.toString('utf-8'); const doc = new AWS.DynamoDB.DocumentClient(); await doc.put({ TableName, Item }).promise();`.",
+      "expectations": [
+        "Activates the aws-sdk-js-v3-usage skill",
+        "Uses modular `@aws-sdk/client-s3` (`S3Client` + `GetObjectCommand`) and `@aws-sdk/client-dynamodb` + `@aws-sdk/lib-dynamodb` (`DynamoDBDocumentClient.from(ddbClient)` + `PutCommand`) instead of monolithic `aws-sdk` v2",
+        "Uses v3 stream transformation (`await response.Body?.transformToString()` or `transformToByteArray()`) rather than v2 `Buffer.toString()` assumptions",
+        "Instantiates clients outside the Lambda/request handler scope for connection reuse"
+      ]
+    },
+    {
+      "id": "eval-02-s3-presigned-urls-and-lib-storage-multipart-upload",
+      "prompt": "Show how to (1) generate a 15-minute presigned `PUT` and `GET` URL in AWS SDK JS v3 (`@aws-sdk/s3-request-presigner`), and (2) stream a 4 GB file upload to S3 with concurrency and part-size control using `@aws-sdk/lib-storage` (`Upload`) plus an `AbortController` timeout.",
+      "expectations": [
+        "Activates the aws-sdk-js-v3-usage skill",
+        "Demonstrates `getSignedUrl(s3Client, new PutObjectCommand(...), { expiresIn: 900 })` and `GetObjectCommand` via `@aws-sdk/s3-request-presigner`",
+        "Uses `Upload` from `@aws-sdk/lib-storage` (`queueSize`, `partSize`, `leavePartsOnError: false`) wired with a standard `AbortController` (`abortController`) for streaming multipart uploads"
+      ]
+    },
+    {
+      "id": "eval-03-paginators-and-waiters-vs-manual-nexttoken-loops",
+      "prompt": "An engineer wrote a buggy `while (NextContinuationToken)` loop calling `ListObjectsV2Command` and a `setInterval` sleep loop polling `DescribeDBInstancesCommand` until an RDS instance becomes `available`. Rewrite both using built-in AWS SDK JS v3 Paginators (`for await...of`) and Waiters (`waitUntilDBInstanceAvailable`).",
+      "expectations": [
+        "Activates the aws-sdk-js-v3-usage skill",
+        "Replaces manual token loops with `paginateListObjectsV2({ client: s3Client, pageSize: ... }, { Bucket })` consumed via `for await (const page of paginator)`",
+        "Replaces `setInterval` polling with `waitUntilDBInstanceAvailable({ client: rdsClient, maxWaitTime: ... }, { DBInstanceIdentifier })`"
+      ]
+    },
+    {
+      "id": "eval-04-typed-service-exception-error-handling-and-request-id-logging",
+      "prompt": "In AWS SDK JS v3 TypeScript, `catch (err)` used to check `if (err.code === 'ConditionalCheckFailedException')` in v2, which broke in v3! Show idiomatic v3 typed error handling (`instanceof`, `ServiceException`, `$metadata.httpStatusCode`, `$metadata.requestId`, `$fault`) for DynamoDB and S3.",
+      "expectations": [
+        "Activates the aws-sdk-js-v3-usage skill",
+        "Explains that v3 throws `err.name` (not v2 `err.code`) and provides typed exception classes (`err instanceof ConditionalCheckFailedException`, `err instanceof NoSuchKey`, and base `DynamoDBServiceException` / `S3ServiceException`)",
+        "Logs structured `$metadata` (`err.$metadata?.requestId`, `err.$metadata?.extendedRequestId`, `err.$metadata?.httpStatusCode`) for AWS Support/troubleshooting"
+      ]
+    },
+    {
+      "id": "eval-05-high-concurrency-nodejs-http-agent-maxsockets-and-adaptive-retries",
+      "prompt": "Under a 500 concurrent request spike, our ECS Node.js service calling DynamoDB and S3 with AWS SDK JS v3 sees client-side socket queueing delays (`socketUsage` hitting 50) and `ProvisionedThroughputExceededException`. Show how to tune `NodeHttpHandler` (`maxSockets`, `connectionTimeout`, `requestTimeout`, `keepAlive`) and `retryMode: 'adaptive'`.",
+      "expectations": [
+        "Activates the aws-sdk-js-v3-usage skill",
+        "Explains NodeHttpHandler's default `maxSockets: 50` bottleneck per origin and configures `@smithy/node-http-handler` `NodeHttpHandler` with tuned `httpsAgent` (`keepAlive: true`, increased `maxSockets`), `connectionTimeout`, and `requestTimeout`",
+        "Configures `retryMode: 'adaptive'` (client-side token-bucket rate limiting + exponential backoff with jitter) and `maxAttempts` on the v3 client"
+      ]
+    },
+    {
+      "id": "eval-06-dynamodb-documentclient-marshall-unmarshall-options-bigint-undefined",
+      "prompt": "`DynamoDBDocumentClient` in our TypeScript billing service just crashed with `Pass options.removeUndefinedValues=true to remove undefined values from map/array/set` AND lost precision on 64-bit integer ledger IDs! Show the exact `TranslateConfig` (`marshallOptions` + `unmarshallOptions`) fix.",
+      "expectations": [
+        "Activates the aws-sdk-js-v3-usage skill",
+        "Configures `DynamoDBDocumentClient.from(client, { marshallOptions: { removeUndefinedValues: true, convertClassInstanceToMap: true }, unmarshallOptions: { wrapNumbers: true } })` (or `BigInt` / `NumberValue` handling so >53-bit integers never silently lose IEEE-754 precision)"
+      ]
+    },
+    {
+      "id": "eval-07-sigv4a-s3-multi-region-access-point-signing-setup",
+      "prompt": "We configured an S3 Multi-Region Access Point (`arn:aws:s3::111122223333:accesspoint/mfzwi23gnjvgw.mrap`) and AWS SDK JS v3 threw an error saying SigV4a asymmetric signing is missing. Show the exact optional package installation and import needed to enable SigV4a in AWS SDK JS v3.",
+      "expectations": [
+        "Activates the aws-sdk-js-v3-usage skill",
+        "Identifies installing and importing `@aws-sdk/signature-v4a` (pure JS) or `@aws-sdk/signature-v4-crt` to register SigV4a asymmetric signing before calling S3 Multi-Region Access Points (`*.mrap`)"
+      ]
+    },
+    {
+      "id": "eval-08-credentials-provider-chain-and-ban-hardcoded-keys",
+      "prompt": "Code-review a developer's PR that wrote `new S3Client({ region: 'ap-south-1', credentials: { accessKeyId: 'AKIA...', secretAccessKey: '...' } })` and also installed `@aws-sdk/credential-provider-ini` inside an AWS Lambda production bundle. Explain the default credential provider chain and clean up both.",
+      "expectations": [
+        "Activates the aws-sdk-js-v3-usage skill and rejects hardcoded `accessKeyId`/`secretAccessKey` literals",
+        "Explains omitting `credentials` and removing `@aws-sdk/credential-provider-ini` in AWS Lambda so the default credential provider chain resolves the Lambda execution role credentials automatically (instantiating the client outside the handler)"
+      ]
+    },
+    {
+      "id": "eval-09-smithy-middleware-stack-custom-correlation-header-and-abort-signal",
+      "prompt": "How do we add custom middleware to an AWS SDK JS v3 client's `middlewareStack` (`build` step) to inject an `x-correlation-id` HTTP header on outgoing requests, and pass a 3-second per-request `AbortSignal.timeout(3000)` to `client.send(...)`?",
+      "expectations": [
+        "Activates the aws-sdk-js-v3-usage skill",
+        "Demonstrates `client.middlewareStack.add((next, context) => async (args) => { ... }, { step: 'build', name: '...' })` inspecting `HttpRequest.isInstance(args.request)` to set headers cleanly",
+        "Shows passing `{ abortSignal: AbortSignal.timeout(3000) }` as the second argument (`HttpHandlerOptions`) to `await client.send(command, { abortSignal })`"
+      ]
+    },
+    {
+      "id": "eval-10-awsknowledge-nodejs-minimum-version-and-client-styles-command-vs-aggregated",
+      "prompt": "Using AWS documentation via connected AWS documentation tools, verify the two client styles in AWS SDK for JavaScript v3 (`S3Client` + `Send(Command)` vs aggregated `S3` class), why tree-shaking favors `Client` + `Command`, and the current Node.js runtime support lifecycle policy for AWS SDK JS v3.",
+      "expectations": [
+        "Activates the aws-sdk-js-v3-usage skill and queries connected AWS documentation MCP tools (`awsknowledge`, `aws-mcp`, or `awsiac`)",
+        "Contrasts `S3Client` + `GetObjectCommand` (modular tree-shakeable style bundling only imported operations) against the aggregated `S3` convenience class (`new S3()` bundling all service operations, higher bundle size)",
+        "Accurately summarizes AWS SDK JS v3's Node.js LTS support lifecycle (tracking active/maintenance Node.js LTS versions such as Node.js 20.x / 22.x+ after Node 18 EOL)"
+      ]
+    }
+  ]
+}

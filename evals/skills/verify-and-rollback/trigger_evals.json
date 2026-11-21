@@ -1,0 +1,95 @@
+{
+  "skill_name": "verify-and-rollback",
+  "companion_skills": [
+    "deploy",
+    "aws-deployment",
+    "preflight-discovery",
+    "aws-cdk"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Our CloudFormation stack is stuck in `UPDATE_ROLLBACK_FAILED` after a failed CDK deploy \u2014 find the first root-cause failed event and walk through recovery."
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Verify post-deployment health in `ap-south-1`: check CloudWatch `ALARM` states, ALB target health, and startup logs after our release."
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "New ECS Fargate tasks keep crashing with `EssentialContainerExited` and ALB 502s right after deployment \u2014 triage the logs and prepare a safe rollback."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "`terraform apply` failed halfway through updating our ALB and ECS service \u2014 explain why Terraform didn't roll back and how to recover safely."
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Roll back a broken Lambda canary release without dropping additive Flyway database columns."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Run preflight VPC subnet and Service Quota checks in `ap-south-1` before writing new Terraform code."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Scaffold a new Vite React + Cognito project using `npx @aws-blocks/create-blocks-app my-app`."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Choose between AWS CDK, Pulumi, and Crossplane for our platform engineering roadmap."
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Estimate the monthly AWS cost of `gp3` EBS volumes and Graviton RDS instances in `ap-south-1`."
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Model single-table DynamoDB GSI overloading for a hierarchical chat application."
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure Cassandra consistency levels (`LOCAL_QUORUM`) on Amazon Keyspaces."
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Set up Amazon WorkSpaces Pools autoscaling for 200 shift workers."
+    }
+  ]
+}

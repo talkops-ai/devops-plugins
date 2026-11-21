@@ -1,0 +1,61 @@
+{
+  "skill_name": "triaging-prometheus-incidents-and-slos",
+  "companion_skills": [
+    "auditing-alertmanager-governance",
+    "auditing-observability-security-posture",
+    "authoring-and-testing-prometheus-rules",
+    "authoring-logql-and-analyzing-logs",
+    "authoring-loki-alerting-and-recording-rules"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use `triaging-prometheus-incidents-and-slos` to help me design, validate, and troubleshoot triaging prometheus incidents and slos."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Walk me through best practices and production guardrails for triaging prometheus incidents and slos (`triaging-prometheus-incidents-and-slos`)."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Triages Kubernetes service incidents, latency regressions, USE saturation, firing Prometheus alerts, and Google SRE multi-window SLO error-budget burn rates using RED golden signal"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating triaging prometheus incidents and slos?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "During our `ap-south-1` sprint readiness review, audit our triaging prometheus incidents and slos setup in read-only mode and highlight top risks."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Help me configure and troubleshoot auditing alertmanager governance exclusively without touching triaging prometheus incidents and slos."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+    }
+  ]
+}

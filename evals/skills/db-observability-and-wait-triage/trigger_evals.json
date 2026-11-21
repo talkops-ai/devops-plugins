@@ -1,0 +1,96 @@
+{
+  "skill_name": "db-observability-and-wait-triage",
+  "companion_skills": [
+    "db-ha-dr-and-schema-evolution",
+    "database-and-cache-reliability",
+    "amazon-aurora-postgresql",
+    "amazon-aurora-mysql",
+    "amazon-dynamodb"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Triage Aurora PostgreSQL Performance Insights DBLoad = 28 where IO:XactSync dominates and CPUUtilization is 18%."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Diagnose Aurora MySQL SYNCH mutex wait events using 1-second Enhanced Monitoring and innodb_sync_array_size."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Investigate PostgreSQL XID wraparound age(datfrozenxid) > 1.3B and tune autovacuum on a bloated table."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Sessions are piling up on Lock:transactionid while 40 backends sit in Client:ClientRead idle in transaction."
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why is LWLock:lock_manager spiking to 90 AAS when 1,200 Lambda connections query a 600-partition Postgres table?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Inspect IO:DataFileRead cache misses safely using EXPLAIN (ANALYZE, BUFFERS) with a read-only database role."
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Check ap-south-1 CloudWatch AWS/RDS and AWS/DynamoDB alarms and DBLoad metrics via MCP."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Compare CloudWatch Database Insights Standard vs Advanced mode retention and SQL execution-plan capture."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Our 20,000 WCU table is consuming 2,400 WCU but firing OnlineIndexThrottleEvents\u2014triage the wait/throttle metrics."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Create an Aurora Fast Database Clone using copy-on-write and configure Global Database switchover."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Convert Oracle PL/SQL packages to PostgreSQL using AWS DMS Schema Conversion."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Restore an IBM Db2 multi-part S3 backup using rdsadmin.restore_database."
+    }
+  ]
+}

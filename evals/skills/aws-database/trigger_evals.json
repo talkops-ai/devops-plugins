@@ -1,0 +1,96 @@
+{
+  "skill_name": "aws-database",
+  "companion_skills": [
+    "amazon-aurora-postgresql",
+    "amazon-dynamodb",
+    "amazon-neptune",
+    "dsql",
+    "db-observability-and-wait-triage"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Help us choose the right AWS operational database across Aurora, DSQL, DynamoDB, DocumentDB, and Neptune and estimate TCO."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Compare monthly AWS pricing across DynamoDB On-Demand, Aurora Serverless v2, and RDS Multi-AZ for a new SaaS backend."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Generate a database selection requirements.json handoff artifact for our multi-region payments workload."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Match four microservices (cart key-value, fraud graph, IoT metrics, multi-region ledger) to purpose-built AWS databases."
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Which AWS database options let us store vector embeddings alongside operational data vs adding an in-memory semantic cache?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Assess our portfolio of Oracle EE and SQL Server databases for RDS vs RDS Custom vs Aurora Babelfish modernization."
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Audit our ap-south-1 AWS account across RDS, Aurora, DynamoDB, and ElastiCache to inventory our operational databases."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "What is the ownership boundary between operational AWS databases and an Apache Iceberg + Redshift analytical lakehouse, including Zero-ETL?"
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Route three database tickets covering IO:XactSync wait spikes, online DDL, and Oracle-to-Postgres DMS migration."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Write an AWS Glue PySpark job to compact small Parquet files into Apache Iceberg S3 Tables."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure an Amazon CloudFront distribution with WAFv2 rate-based rules in front of an ALB."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Set up EKS Karpenter NodePools for spot and on-demand Graviton worker nodes."
+    }
+  ]
+}

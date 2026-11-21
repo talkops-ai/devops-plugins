@@ -1,0 +1,13 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "neo4j": {
+      "type": "streamable-http",
+      "url": "https://${NEO4J_MCP_HOST:-localhost}:${NEO4J_MCP_PORT:-8443}/db/${NEO4J_DATABASE:-neo4j}/mcp",
+      "headers": {
+        "Authorization": "Basic ${NEO4J_MCP_AUTH:-}",
+        "X-Neo4j-MCP-URI": "${NEO4J_URI:-bolt://localhost:7687}"
+      }
+    }
+  }
+}

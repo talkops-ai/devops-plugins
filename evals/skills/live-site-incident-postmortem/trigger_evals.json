@@ -1,0 +1,95 @@
+{
+  "skill_name": "live-site-incident-postmortem",
+  "companion_skills": [
+    "troubleshooting-application-failures",
+    "prometheus-and-grafana-sre",
+    "auditing-cloudtrail-forensics",
+    "verify-and-rollback"
+  ],
+  "queries": [
+    {
+      "id": "trig-pos-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Author a blameless Amazon-style Correction of Errors (COE) postmortem with UTC timeline (`TTD`, `TTM`, `MTTR`), 5-Whys, and P0/P1/P2 action items."
+    },
+    {
+      "id": "trig-pos-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Run Sev-1 live-site incident command for a single-AZ outage in `ap-south-1b` using Route 53 ARC Zonal Shift while preserving forensic logs."
+    },
+    {
+      "id": "trig-pos-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Rewrite a blame-heavy RCA ('engineer forgot to check the wiki') into a systemic 5-Whys postmortem with CI/CD guardrails."
+    },
+    {
+      "id": "trig-pos-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Calculate monthly `99.95%` SLO error-budget burn percentage for a 27-minute partial outage in our COE report."
+    },
+    {
+      "id": "trig-pos-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Coordinate war-room triage and timeline reconstruction (`T_trigger`, `T_onset`, `T_detect`, `T_recover`) after a production ECS outage."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Write PromQL queries for `histogram_quantile` p99 latency in Amazon Managed Service for Prometheus."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Run SQL queries on VPC Flow Logs in S3 Tables (`s3tablescatalog/aws-cloudwatch`)."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Create a multi-region CloudTrail trail with S3 storage."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure an encrypted SNS topic for CloudWatch alarm email notifications."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Add Amazon Cognito PKCE login to a React web app."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Use `asm-exec` to pass Secrets Manager dynamic references to `psql`."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure AWS Direct Connect BGP peering and MACsec."
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "skill_name": "aws-well-architected-review",
+  "companion_skills": [
+    "aws-threat-modeling",
+    "aws-finops-and-cost",
+    "aws-security",
+    "iac-architecture-advisor"
+  ],
+  "queries": [
+    {
+      "id": "trig-pos-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Perform an AWS Well-Architected Framework maturity scorecard (`score` mode) across all 6 pillars for our ECS + RDS workload."
+    },
+    {
+      "id": "trig-pos-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Run a quick question-level AWS Well-Architected review (WAR) on our payment architecture with Eisenhower-prioritized remediation."
+    },
+    {
+      "id": "trig-pos-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Execute a Security and Reliability pillar-scoped AWS Well-Architected review against our Terraform codebase citing canonical `SEC` and `REL` BP IDs."
+    },
+    {
+      "id": "trig-pos-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Assess our API Gateway + Lambda + DynamoDB service against the AWS Well-Architected Serverless Applications Lens."
+    },
+    {
+      "id": "trig-pos-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Evaluate our cloud readiness and cross-pillar trade-offs across Operational Excellence, Security, Reliability, Performance, Cost, and Sustainability."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Run the 41-check `wa_review.py` script specifically for our Amazon DocumentDB 8.0 cluster."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Execute a STRIDE threat model with `.threatmodel/` DFD export and OWASP LLM controls."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Write PromQL multi-window SLO burn-rate alerts in Amazon Managed Service for Prometheus."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Run Athena SQL queries on VPC Flow Logs in `s3tablescatalog/aws-cloudwatch`."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Set up a multi-region AWS CloudTrail trail with S3 storage."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure AWS Direct Connect BGP peering and SiteLink."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Use `asm-exec` to inject Secrets Manager credentials into `psql`."
+    }
+  ]
+}

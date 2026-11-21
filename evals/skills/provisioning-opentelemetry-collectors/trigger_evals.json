@@ -1,0 +1,146 @@
+{
+  "skill_name": "provisioning-opentelemetry-collectors",
+  "companion_skills": [
+    "instrumenting-kubernetes-workloads",
+    "upgrading-opentelemetry-components",
+    "troubleshooting-telemetry-pipelines",
+    "tuning-sampling-and-trace-derived-metrics",
+    "controlling-telemetry-cardinality-and-noise",
+    "configuring-prometheus-scraping-and-discovery"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Provision a 2-tier OpenTelemetry Collector setup with a node DaemonSet `otel-agent` in `observability` forwarding to a gateway `opentelemetry-otel-collector` Deployment in `otel-demo`.",
+      "notes": "2-tier Collector provisioning"
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Enable `filelog`, `kubeletstats`, and `hostmetrics` receivers on our `otel-agent` DaemonSet collector in `observability` to collect container logs and node metrics for `otel-demo`.",
+      "notes": "Configure K8s node receivers"
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Set up a 3-replica `StatefulSet` `opentelemetry-otel-collector` with Target Allocator in `otel-demo` so `frontend-proxy` and `postgresql` `ServiceMonitor` targets are sharded without duplicate scrapes.",
+      "notes": "TargetAllocator provisioning"
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Safely decommission and delete the retired `OpenTelemetryCollector` `otel-demo-canary-old` and its standalone `TargetAllocator` in the `otel-demo` namespace.",
+      "notes": "Collector deletion"
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We are scaling our `otel-demo` e-commerce platform to a 120-node Kubernetes cluster and want our microservices to ship traces to Tempo, metrics to Prometheus, and logs to Loki—design and size the right collector architecture.",
+      "notes": "Cluster-scale topology planning"
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Every Kubernetes `OOMKilling` Event from `email` in `otel-demo` is showing up 40 times in Loki—one copy per cluster node because `k8sobjects` was added to our node DaemonSet! Redesign the collector placement.",
+      "notes": "DaemonSet vs single-replica Deployment receiver placement"
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Route `payment` and `checkout-service` traces to our dedicated PCI Tempo cluster while sending general `frontend` and `product-catalog-service` traces to shared Tempo inside `opentelemetry-otel-collector`.",
+      "notes": "Routing connector multi-destination fanout"
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Lint this draft `OpenTelemetryCollector` YAML for `otel-demo` to catch undeclared pipeline components, wrong `memory_limiter` processor order, and DaemonSet tail-sampling mistakes before we commit it.",
+      "notes": "Collector config static linting"
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Configure a persistent disk-backed `file_storage` exporter queue on an edge `otel-demo` `opentelemetry-otel-collector` StatefulSet so 10-minute WAN blackouts don't lose order traces.",
+      "notes": "Persistent exporter queue setup"
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Generate a standalone `v1beta1` `OpenTelemetryCollector` manifest and least-privilege `ClusterRole` YAML for GitOps that exports `otel-demo` logs to Loki's native `/otlp` endpoint.",
+      "notes": "Render Collector CR + RBAC"
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Eliminate the 20-second trace visibility delay caused by running heavy `10s` `batch` processors on both Tier 1 `otel-agent` and Tier 2 `opentelemetry-otel-collector`.",
+      "notes": "Agent vs gateway batch tuning"
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Inject Java, Node.js, and Python OpenTelemetry SDK agents into the `ad`, `payment`, and `recommendation` Deployments in `otel-demo` using an `Instrumentation` CR.",
+      "expected_alternative_skill": "instrumenting-kubernetes-workloads",
+      "notes": "Application workload auto-instrumentation"
+    },
+    {
+      "id": "trig-13",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Migrate `opentelemetry-otel-collector` in `otel-demo` from `v1alpha1` to `v1beta1` and upgrade its collector image from `0.98.0` to `0.152.1`.",
+      "expected_alternative_skill": "upgrading-opentelemetry-components",
+      "notes": "Collector version upgrade & CRD migration"
+    },
+    {
+      "id": "trig-14",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "`opentelemetry-otel-collector` in `otel-demo` is stuck in `CrashLoopBackOff` right after a config edit—diagnose what failed and roll back to the previous working config.",
+      "expected_alternative_skill": "troubleshooting-telemetry-pipelines",
+      "notes": "Live failure triage & config revert"
+    },
+    {
+      "id": "trig-15",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write OTTL `replace_pattern` and `delete_key` rules on `opentelemetry-otel-collector` to mask `payment` credit card numbers and normalize high-cardinality UUIDs in `url.path`.",
+      "expected_alternative_skill": "controlling-telemetry-cardinality-and-noise",
+      "notes": "OTTL processing rules"
+    },
+    {
+      "id": "trig-16",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Create a `monitoring.coreos.com/v1` `ServiceMonitor` for `frontend-proxy` (`:10000/stats/prometheus`) in `otel-demo` so Prometheus scrapes Envoy metrics directly.",
+      "expected_alternative_skill": "configuring-prometheus-scraping-and-discovery",
+      "notes": "Prometheus Operator ServiceMonitor authoring"
+    }
+  ]
+}

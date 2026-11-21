@@ -1,0 +1,92 @@
+{
+  "skill_name": "debugging-lambda-timeouts",
+  "evals": [
+    {
+      "id": "eval-01-missing-parameters-upfront-request",
+      "prompt": "My AWS Lambda function keeps timing out in production \u2014 investigate it right now!",
+      "expectations": [
+        "Activates the debugging-lambda-timeouts skill",
+        "Prompts the user in a single message for all required parameters (`function_name` and `region`) along with optional parameters and defaults (`time_window_hours`, default `1`, and optional `lambda_code`)",
+        "Does not fabricate function names or execute blind queries before obtaining `function_name` and `region`"
+      ]
+    },
+    {
+      "id": "eval-02-live-ap-south-1-nonexistent-function-read-only-triage",
+      "prompt": "Debug timeout issues for `function_name = 'checkout-payment-authorizer'`, `region = 'ap-south-1'`, `time_window_hours = 4` (read-only). If the function does not exist in `ap-south-1`, list any available functions in `ap-south-1` and outline the systematic timeout investigation steps you would run once given the exact name.",
+      "expectations": [
+        "Activates the debugging-lambda-timeouts skill and calls `lambda:GetFunctionConfiguration` / `ListFunctions` in `ap-south-1` via connected AWS MCP tools with zero raw `aws` CLI shell commands",
+        "Reports accurately that `checkout-payment-authorizer` was not found in `ap-south-1` (showing the live function list in `ap-south-1` cleanly) without inventing metrics or logs",
+        "Summarizes the structured debugging phases (configuration check, CloudWatch `Duration`/`Errors` metrics, CloudWatch Logs `Task timed out after`, VPC/NAT/SG network path, cold starts/memory, and downstream dependency timeouts)"
+      ]
+    },
+    {
+      "id": "eval-03-vpc-attached-lambda-missing-nat-or-s3-endpoint-blackhole-timeout",
+      "prompt": "Analyze this timeout case (`function_name='invoice-pdf-uploader'`, `region='ap-south-1'`): `Timeout = 30s`, `MemorySize = 1024 MB`, recently attached to private VPC subnets `subnet-priv-1a` and `subnet-priv-1b` (`0.0.0.0/0` has NO NAT Gateway and NO VPC Endpoints) so it could query private RDS. Now `rds` queries finish in `15ms`, yet `await s3Client.send(new PutObjectCommand(...))` hangs for the entire 30 seconds until `Task timed out after 30.00 seconds`! Diagnose and fix.",
+      "expectations": [
+        "Activates the debugging-lambda-timeouts skill",
+        "Pinpoints the exact root cause: VPC-attached Lambda ENIs never get public IPs, so calling the public regional S3 endpoint (`s3.ap-south-1.amazonaws.com`) from isolated subnets without a NAT Gateway or **S3 Gateway VPC Endpoint** blackholes TCP `443` SYN packets until the 30s Lambda timeout!",
+        "Prescribes adding a free **S3 Gateway VPC Endpoint** to the private subnet route tables (plus setting explicit SDK `connectionTimeout`/`requestTimeout` shorter than the Lambda timeout so network blackholes fail fast with clear errors)"
+      ]
+    },
+    {
+      "id": "eval-04-code-review-db-connection-inside-handler-and-unbounded-http-call",
+      "prompt": "Review this timing-out Node.js Lambda (`Timeout: 10s`, `MemorySize: 128 MB`): `export const handler = async (event) => { const pool = new pg.Pool({ host: process.env.DB_HOST, max: 10 }); for (const item of event.items) { await fetch('https://partner.example.com/enrich/' + item.id); await pool.query('INSERT INTO items VALUES ($1)', [item.id]); } };` Identify every timeout-inducing anti-pattern and rewrite it.",
+      "expectations": [
+        "Activates the debugging-lambda-timeouts skill",
+        "Identifies all four timeout anti-patterns: (1) creating `new pg.Pool({ max: 10 })` *inside* the handler on every invocation without closing/reusing (`max: 1` at module scope), (2) `fetch(...)` with **no `AbortSignal.timeout(...)`** allowing a slow external API to hang the entire 10s budget, (3) sequential `for ... await` N+1 HTTP + SQL calls instead of bounded `Promise.all` / multi-row batch `INSERT`, and (4) CPU-starved `128 MB` memory slowing TLS handshakes",
+        "Provides a clean, refactored handler fixing connection reuse, per-call HTTP/SQL timeouts, concurrency/batching, and memory sizing"
+      ]
+    },
+    {
+      "id": "eval-05-distinguishing-cpu-memory-starvation-vs-downstream-network-wait-in-logs",
+      "prompt": "How do you tell from CloudWatch `REPORT RequestId:` lines (`Duration`, `Billed Duration`, `Memory Size`, `Max Memory Used`, `Init Duration`) and X-Ray traces whether a Lambda hitting `Task timed out after 15.03 seconds` is CPU/memory-bound versus blocked waiting on a hung downstream socket?",
+      "expectations": [
+        "Activates the debugging-lambda-timeouts skill",
+        "Contrasts CPU/memory starvation (`Max Memory Used` near `Memory Size`, high `Init Duration`, steady CPU progress that speeds up linearly when raising `MemorySize` toward `1,769 MB = 1 vCPU`) against hung I/O socket waits (`Max Memory Used` flat/low while `Duration` pins right at `15,000 ms` regardless of memory increases, isolated via X-Ray subsegments or per-call client timeouts)"
+      ]
+    },
+    {
+      "id": "eval-06-cloudwatch-logs-insights-queries-for-lambda-timeouts-and-cold-starts",
+      "prompt": "Write exact CloudWatch Logs Insights queries against `/aws/lambda/order-processor` to: (1) find all timed-out invocations (`Task timed out` or `Status == timeout` in platform `REPORT` events), and (2) correlate p50/p95/p99 ` @duration`, `@initDuration` cold-start rates, and `@maxMemoryUsed / @memorySize` saturation.",
+      "expectations": [
+        "Activates the debugging-lambda-timeouts skill",
+        "Provides valid CloudWatch Logs Insights queries filtering `Task timed out after` / `REPORT` records and computing `pct(@duration, 50/95/99)`, cold-start `count(@initDuration)`, and memory utilization percentage (`@maxMemoryUsed / @memorySize * 100`)"
+      ]
+    },
+    {
+      "id": "eval-07-rds-security-group-and-connection-pool-exhaustion-timeout",
+      "prompt": "Our VPC Lambda (`Timeout: 15s`) works fine at 5 RPS (`Duration = 45ms`), but during a 300-concurrent burst half the invocations time out at `15,000ms` on `psycopg.connect(...)` while the other half fail or hang waiting for RDS PostgreSQL (`db.t4g.medium`) connections! Diagnose why and provide the short-term and architectural fixes.",
+      "expectations": [
+        "Activates the debugging-lambda-timeouts skill",
+        "Diagnoses connection pool exhaustion on RDS when high Lambda concurrency opens more connections than `max_connections` (or security group / subnet reachability blocks the connection)",
+        "Recommends **Amazon RDS Proxy** for connection multiplexing, initializing a single module-scope DB connection per Lambda execution environment with a short `connect_timeout`, and capping concurrency bursts via SQS ESM `MaximumConcurrency` or `ReservedConcurrentExecutions`"
+      ]
+    },
+    {
+      "id": "eval-08-lambda-900s-hard-limit-architectural-offload-when-workload-exceeds-15m",
+      "prompt": "A data team set their Lambda `Timeout` to `900` seconds (15 minutes) to parse and transcode a 12 GB video file from S3, and it STILL times out at 15 minutes! Can we raise Lambda's timeout to 45 minutes, or how should we re-architect this?",
+      "expectations": [
+        "Activates the debugging-lambda-timeouts skill",
+        "States clearly that **`900 seconds` (15 minutes) is a hard AWS Lambda service limit** that cannot be increased via Service Quotas",
+        "Recommends architectural alternatives: chunking/fan-out with **Step Functions Distributed Map** / S3 byte-range parallel Lambdas if parallelizable, or offloading long single-file jobs (>15 min) to **AWS Fargate (ECS RunTask via Step Functions)**, **AWS Batch**, or **Lambda MicroVMs** where appropriate"
+      ]
+    },
+    {
+      "id": "eval-09-nodejs-event-loop-callbackwaitsforemptyeventloop-timeout-trap",
+      "prompt": "A legacy Node.js Lambda handler using `(event, context, callback)` calls `callback(null, { statusCode: 200, body: 'ok' })` in `30ms` after querying Redis (`ioredis` open TCP socket at global scope), yet Lambda STILL hangs for 60 seconds and times out! Explain the exact Node.js runtime cause and modern fix.",
+      "expectations": [
+        "Activates the debugging-lambda-timeouts skill",
+        "Explains that callback-based Node.js handlers wait for the Node.js event loop to drain (`context.callbackWaitsForEmptyEventLoop === true` by default), so an open keep-alive Redis/DB TCP socket keeps the invocation frozen until `Timeout`!",
+        "Recommends converting to an `async (event, context) => { return ... }` handler (which resolves immediately on Promise resolution regardless of open sockets) or setting `context.callbackWaitsForEmptyEventLoop = false`"
+      ]
+    },
+    {
+      "id": "eval-10-awsknowledge-lambda-platform-log-json-timeout-detection-2025-2026",
+      "prompt": "Query AWS documentation via connected AWS documentation tools to confirm how AWS Lambda emits timeout events when **JSON structured logging (`LoggingConfig.LogFormat = JSON`)** with `SystemLogLevel` is enabled (`platform.report` `status: 'timeout'`), versus classic plaintext `Task timed out after X.XX seconds`.",
+      "expectations": [
+        "Activates the debugging-lambda-timeouts skill and queries connected AWS documentation MCP tools (`awsknowledge`, `aws-mcp`, or `awsiac`)",
+        "Contrasts plaintext CloudWatch logs (`Task timed out after X.XX seconds`) against JSON `LoggingConfig` (`type: \"platform.report\"` / `platform.fault` with `record.status == \"timeout\"`), noting that setting `SystemLogLevel = WARN` suppresses `INFO`-level `platform.report` records unless `INFO`/`DEBUG` is retained!"
+      ]
+    }
+  ]
+}

@@ -6,145 +6,123 @@ metadata:
 ---
 ## Overview
 
-This skill provides domain expertise for choosing among AWS storage services, selecting storage classes, optimizing cost, and routing to resources for operating storage services. It covers object storage (S3 General Purpose buckets and their storage classes, S3 Express One Zone on directory buckets, S3 Tables, S3 Vectors), file storage (Amazon EFS, S3 Files, FSx for Lustre, FSx for NetApp ONTAP, FSx for OpenZFS, and FSx for Windows File Server), block storage (EBS volume types and EC2 instance store), and the data-movement and protection services that connect them (DataSync, Storage Gateway, Transfer Family, and AWS Backup). It does not advise on databases or analytics query engines. It works with or without the AWS MCP server; when available, the [AWS MCP server](https://docs.aws.amazon.com/agent-toolkit/) is recommended for verifying current specifications and pricing, and all guidance also works with the standard AWS CLI. For deep single-service tasks, route to the specialized skills listed in the Routing section below.
+Domain expertise for choosing among AWS storage services, selecting storage classes, optimizing cost, and operating storage workloads:
+- **Object storage**: S3 General Purpose buckets and storage classes, S3 Express One Zone (directory buckets), S3 Tables (managed Apache Iceberg), S3 Vectors, and S3 Metadata.
+- **File storage**: Amazon EFS, S3 Files, FSx for Lustre, FSx for NetApp ONTAP, FSx for OpenZFS, and FSx for Windows File Server.
+- **Block storage**: Amazon EBS (`gp3`, `io2` Block Express, `st1`, `sc1`) and EC2 Instance Store.
+- **Data movement & protection**: AWS DataSync, AWS Storage Gateway, AWS Transfer Family, and AWS Backup.
 
 ## How to Handle User Queries
 
-When this skill is triggered, classify the user's request and follow the appropriate path.
+### Rules (Apply to All Responses)
 
-### Rules
-
-These apply to all responses regardless of path:
-
-1. You MUST verify current numbers. When the AWS MCP server is available, use search_documentation and read_documentation to cross-check before citing specifics. When quoting costs, you MUST include a link to the relevant pricing page. When quoting performance metrics, you MUST include a link to the relevant product page. Otherwise, verify against linked AWS documentation pages or use the AWS CLI to confirm current values. Where a reference file directs you to documentation for a current value, you MUST retrieve that value from the linked page before answering. Do not substitute a remembered figure, and do not offer an approximation or a range in place of a retrieved value. If retrieval is not possible in the current environment, name the value you could not verify rather than citing one from memory.
-2. You MUST retrieve the relevant service reference file from the Routing section below before answering questions about that service. AWS storage specifications, limits, and service capabilities change frequently. You MUST NOT answer from memory alone. You MUST surface relevant troubleshooting guidance and 'gotchas' from reference files in your response. Justify recommendations by workload fit, not by mentioning that a reference file 'explicitly' mentions a workload for a given service.
-3. You MUST include cost implications when recommending services or approaches. Do not wait for the user to ask. Do not compare services on storage charges alone; per-object fees such as metadata charges can materially change TCO. For deep cost analysis, monitoring, or optimization beyond storage selection, route to the [`billing-and-cost-management`](https://github.com/aws/agent-toolkit-for-aws/tree/e2588f4b494416e68c5a991e51b21c2d99038de3/skills/core-skills/aws-billing-and-cost-management) skill.
-4. You MUST have clarity on the user's need when making a recommendation. Match the specificity of your response to the specificity of the request. When the query determines the storage category and the relevant services, retrieve information and recommend directly. When the query is not fully specified, YOU MUST mention the assumptions and limitations of your recommendation and include the additional questions that would confirm or change it. Ask follow up questions in place of a recommendation only when the query does not let you determine the storage category at all. Recommend the best-fit service for the workload even when it falls outside this skill's scope; add relevant in-scope options as alternatives.
+1. **MCP-Only Execution & Live Verification (Zero Raw AWS CLI or Shell Directory Searches)**: Execute all live AWS discovery, telemetry, S3 Tables, IaC validation, and pricing lookups via connected MCP tools (`aws-mcp` `aws___call_aws` / `aws___run_script`, `s3tables`, `awspricing` `get_pricing`, `cloudwatch` `get_metric_data`, `awsiac`, `awsknowledge` `aws___search_documentation` / `aws___read_documentation`) in strictly read-only mode. **NEVER execute raw `aws` CLI or `ls`/`find` commands via `run_command` / `Bash`.** When handling a `/aws-storage:<command>` slash command (e.g., `/aws-storage:backup-and-replication-plan` or `/aws-storage:optimize-storage-tiers`), read `.agents/plugins/aws-storage/commands/<command>.md` directly, read only the directly relevant `references/*.md` files in `aws-storage` (do not activate extra secondary skills), batch all live AWS discovery into **1 consolidated `aws___run_script` call**, and skip `awspricing` calls unless the user explicitly asks for pricing/cost figures. Never fabricate resource ARNs, performance limits, or pricing figures; if `0` matching EBS volumes, EFS/FSx file systems, S3 Table buckets, or Backup vaults exist in the target region, report `0` honestly.
+2. **Mandatory Reference Retrieval & `awsknowledge` Fallback**: Read the relevant local `references/*.md` file(s) from the **Routing** section below before answering questions about that service, and surface its operational gotchas (`< 128 KB` S3 Intelligent-Tiering/Glacier minimum size & 30/90/180-day duration traps, EBS Multi-Attach `xfs`/`ext4` corruption, EFS `50 KiB/s/GiB` burst credit exhaustion, Multi-AZ FSx ONTAP floating IP Transit Gateway requirement, S3 Tables `s3tables:*` & `maintenance.s3tables.amazonaws.com` KMS policy, Backup Vault Lock Compliance mode 3-day cooling-off window). If **no** local reference covers a niche edge case (e.g., S3 Metadata tables, Mountpoint for S3, or EBS Fast Snapshot Restore), immediately query the connected `awsknowledge` MCP server (`aws___search_documentation` / `aws___read_documentation` — 1–2 focused searches) and answer directly.
+3. **Comprehensive Cost Analysis**: Always include TCO implications (storage capacity, per-request/IOPS fees, minimum storage duration charges, `128 KB` minimum billable object size padding, metadata/monitoring fees, retrieval fees, and cross-AZ/data-transfer costs). When querying `awspricing`, keep calls focused (1–3 targeted `get_pricing` lookups).
+4. **Calibrated Specificity, Vague-Workload Guard & Read-Only/Secret Safety**: Match response specificity to the request. When key sizing metrics (capacity GiB/TiB, object size distribution, IOPS/throughput, access frequency, RPO/RTO) are missing, refuse to fabricate or guess specific monthly dollar totals or volume sizes and list the clarifying questions/CloudWatch metrics required. Never execute mutating storage commands (`s3 rb`, `s3 rm`, `ec2 delete-volume`, `efs delete-file-system`, `fsx delete-file-system`, `backup delete-recovery-point`) or fetch plaintext secrets (`secretsmanager get-secret-value`); whenever refusing `secretsmanager get-secret-value`, always explicitly recommend `aws secretsmanager describe-secret --secret-id <id>` for safe metadata verification.
 
 ---
 
 ### Step 1: Classify Intent
 
-Determine what the user needs:
-
-| Intent | Example Triggers | What this means |
+| Intent | Example Triggers | Action |
 | --- | --- | --- |
-| SELECT | "What should I use?", "Which service?", "Compare Service A vs Service B", "Help me choose", "I want to migrate X to AWS" (workload description without a named service) | User needs help choosing a storage service or approach |
-| INVESTIGATE | "How do I configure Service X?", "Why is Service Y failing?", "What are the limits of Service Z?", "How do I get started with Service X?" (names a specific service and asks an operational question) | User knows what they are using and needs getting started, troubleshooting, or operational help |
-
-You MUST follow the interaction logic in the corresponding path instructions below.
-
-Ambiguous cases: If the user's primary ask is a recommendation, it is SELECT regardless of context. If they need help executing a known plan, it is INVESTIGATE.
+| **SELECT** | "What should I use?", "Which service?", "Compare Service A vs Service B", "Help me choose", "Migrate X to AWS" | Follow **Step 2a: SELECT Path** |
+| **INVESTIGATE** | "How do I configure Service X?", "Why is Service Y failing?", "What are the limits of Service Z?", "Reduce my storage bill" | Follow **Step 2b: INVESTIGATE Path** |
 
 ---
 
 ### Step 2a: SELECT Path
 
-The user needs help choosing. You MUST use the following decision factors to inform your recommendation, asking questions to fill gaps that would change the choice.
+Evaluate these 5 decision factors, retrieve the candidate reference files from **Routing**, and recommend the best-fit service(s) with clear trade-off rationale:
 
-Decision Factors:
-
-| # | Decision Factor | What to understand |
+| # | Decision Factor | Key Questions to Evaluate |
 | --- | --- | --- |
-| 1 | Workload Context | Is this a new workload or a migration of an existing workload? If migrating, what is the source system (e.g., NetApp, ZFS, Windows File Server, Lustre, GPFS, etc.)? What application or workload will access this storage? How does it access data (API, file protocol, block device)? What OS or platform are clients running? What is the data model (structured/tabular, vector embeddings, unstructured objects, file system)? |
-| 2 | Capacity and Access Patterns | How much data, how many files or objects, what are the typical sizes? Sequential or random access pattern? Read-heavy, write-heavy, or mixed? |
-| 3 | Performance Requirements | Are there specific latency, throughput, or IOPS requirements? What is the expected concurrency (number of clients or compute nodes accessing simultaneously)? |
-| 4 | Durability and Data Protection | What is the recovery time objective (RTO)? Recovery point objective (RPO)? Compliance retention mandates? Cross-region resilience? Immutability needs? |
-| 5 | Availability | Multi-AZ or Single-AZ acceptable? Co-located with specific compute? |
-
-Use the Storage Options table to identify candidate services, not to cut services; keyword matches against the Common Workloads column are not the only answers. You MUST retrieve the reference files for each of the candidate services using the Routing section below.
-
-Considering these factors, recommend specific AWS storage service(s) and:
-
-1. You MUST include clear rationale tied to the user's stated requirements.
-2. You MUST present alternatives where the choice is close or dependent on unspecified information, explaining the tradeoff.
+| 1 | **Workload Context** | New build or migration (NetApp, ZFS, Windows File Server, Lustre, GPFS)? Access interface (REST/S3 API, NFS, SMB, iSCSI/NVMe-oF, POSIX block)? Client platform (EC2, EKS, ECS/Fargate, Lambda, on-prem) and data model (objects, Iceberg tables, vector embeddings, shared files, block)? |
+| 2 | **Capacity & Access Patterns** | Total volume, object/file count, and average object/file size (e.g., `< 128 KB` small-object overhead in S3 Intelligent-Tiering/Glacier)? Sequential vs. random I/O? Read/write ratio? |
+| 3 | **Performance Requirements** | Target latency (sub-ms, single-digit ms, or archive), IOPS, aggregate throughput (MiB/s or GB/s), and client concurrency? |
+| 4 | **Durability & Data Protection** | Required RPO/RTO, cross-region replication (CRR/SnapMirror), WORM immutability (S3 Object Lock, SnapLock, Backup Vault Lock), and compliance mandates? |
+| 5 | **Availability** | Multi-AZ Regional vs. Single-AZ / One Zone (S3 Express One Zone, EFS One Zone, Single-AZ FSx) co-located with compute? |
 
 ---
 
 ### Step 2b: INVESTIGATE Path
 
-The user knows their service or approach and needs operational help.
+1. Classify the question domain, retrieve the relevant reference file(s) from **Routing**, and provide actionable guidance, CLI/MCP checks, gotchas, and observability recommendations (S3 Server Access Logs, CloudTrail Data Events, CloudWatch Metrics, Storage Lens):
 
-1. Classify the Question Domain based on the table below to identify which context matters.
-
-| Question Domain | Example Triggers | What to clarify |
+| Question Domain | Example Triggers | What to Clarify / Verify |
 | --- | --- | --- |
-| Migration and Data Transfer | "How do I move my data to AWS?", "Set up DataSync", "Sync from on-premises NFS to EFS", source-to-destination questions | Source system and protocol, destination service, data volume, network path to AWS (Direct Connect, VPN, internet) |
-| Data Protection and Resiliency | "Set up backup", "Cross-region replication", "What's my DR strategy?", "RTO under 1 hour", failover, immutability | Failure scenario (deletion, corruption, AZ/region loss, compliance hold), RTO and RPO targets, replication scope (same-region, cross-region, cross-account) |
-| Cost and Lifecycle | "Reduce my storage bill", "Right-size my volumes", "Cost optimize", lifecycle rules, tiering decisions, storage class selection | Current service and configuration, access frequency (daily, weekly, rarely), data volume and growth trajectory |
-| Performance | "My reads are slow", "Throughput bottleneck", "Need more IOPS", sizing | Observed vs. required (latency, IOPS, or throughput), access pattern (random/sequential, read/write mix), whether storage or compute/network is the suspected bottleneck |
-| Security and Compliance | "Encrypt at rest", "Restrict bucket access", "Meet HIPAA", access control, compliance frameworks | Security objective (restrict access, audit access, encrypt, isolate network, meet compliance mandate), compliance framework if any |
-| Configuration and Guidance | "Mount EFS on EKS", "Set up replication", "Does Service X support Y?", deployment steps, best practices | Client environment (OS, compute type, VPC/on-premises), target operation or feature |
-| Troubleshooting | "Getting AccessDenied errors", "Mount is hanging", "Unexpected latency spike", "Why is my lifecycle rule not transitioning?" | Error message or symptom, what changed recently, what they have attempted |
+| **Migration & Data Transfer** | "Move data to AWS", "Set up DataSync", "Sync on-prem NFS to EFS/S3" | Source system/protocol, destination service, data volume/file count, network link (Direct Connect, VPN, internet) |
+| **Data Protection & Resiliency** | "Set up backup", "Cross-region replication", "RTO under 1 hour", WORM | Failure scenario, RPO/RTO targets, replication scope (same-region, cross-region, cross-account) |
+| **Cost & Lifecycle** | "Reduce storage bill", "Right-size volumes", "gp2 to gp3", tiering rules | Current service/class, object size distribution (`>= 128 KB` check), access frequency, minimum duration rules (30/90/180 days) |
+| **Performance** | "Reads are slow", "Throughput bottleneck", "Need more IOPS" | Observed vs. required latency/IOPS/throughput, sequential vs. random I/O, burst credits / throughput mode |
+| **Security & Compliance** | "Encrypt at rest", "Restrict bucket access", "Block Public Access", HIPAA | Access control boundary, KMS CMK vs. SSE-S3, Bucket Keys, TLS enforcement, VPC endpoints |
+| **Configuration & Guidance** | "Mount EFS on EKS/Lambda", "Set up S3 Tables", deployment best practices | Client compute environment, VPC/subnet topology, IAM/mount options |
+| **Troubleshooting** | "403 AccessDenied", "EFS mount hanging", "503 SlowDown", lifecycle stuck | Exact error code, recent IAM/network/KMS changes, target region (`AWS_REGION`) |
 
-<!-- markdownlint-disable MD029 -->
-2. Ask scoping questions per the "What to clarify" column for information not already in the query. Where the missing detail would not change the guidance, answer under a stated assumption instead of waiting to ask more questions.
-3. You MUST retrieve the reference files from the Routing section below for all candidate services.
-4. Provide the answer with specific, actionable guidance, gotchas, and documentation links.
-5. When answering Configuration or Security questions, you MUST recommend enabling access logging, CloudTrail data events, and CloudWatch metrics for observability.
-<!-- markdownlint-enable MD029 -->
+---
 
 ## Storage Options
 
-AWS storage services covered by this skill, grouped by storage category. For more information on storage categories, see [Block, file, and object storage compared](https://aws.amazon.com/compare/the-difference-between-block-file-object-storage/).
+See [Block, file, and object storage compared](https://aws.amazon.com/compare/the-difference-between-block-file-object-storage/).
 
 ### Object Storage
 
 | Service | Key Characteristics | Common Workloads |
 | --- | --- | --- |
-| S3 General Purpose | Virtually unlimited-scale object storage with multiple storage classes spanning frequent-access to low-cost archive; lifecycle rules move data to lower-cost storage classes optimized for less-frequently accessed data. Regional availability. Accessed over a REST/HTTP API from anywhere. | Data lakes and analytics, backup and archive targets, ML training data, media storage and content distribution, log and event data, static website and application assets, regulatory and compliance archives |
-| S3 Express One Zone | Single-AZ directory buckets optimized for single-digit millisecond latency on frequently accessed, latency-sensitive data. | large-scale ML training and inference, Spark and EMR shuffle, ML checkpoints, scratch, and model loading, ETL intermediate data, interactive analytics on hot partitions, observability and log analytics (hot tier), Kafka tiered storage, media and video editing, high-frequency transactional access, caching for machine learning inference |
-| S3 Tables | Managed Apache Iceberg tables on S3 with automatic compaction and query optimization. Regional availability. Built for structured, tabular data queried with SQL engines. | Data lake tables, structured analytics data, ETL pipeline outputs, streaming into tables for SQL analysis, migration of open table format data outside of S3 or self-managed Iceberg on S3 |
-| S3 Vectors | Vector storage and similarity search on S3 with native support to cost-effectively store and query vector embeddings. Provides the same elasticity, durability and availability as S3 General Purpose buckets. Regional availability. | RAG pipelines, semantic search, recommendation systems, vector deduplication and matching, anomaly and fraud detection, AI agent memory, cost-effective storage of large vector datasets |
-| S3 Metadata | Queryable object metadata in fully managed, read-only Apache Iceberg tables including system-defined details, user-defined metadata, object tags, and annotations | Business analytics, content cataloging, data governance and compliance, storage optimization, real-time inference applications, AI agents |
+| **S3 General Purpose** | Elastic regional object storage across Standard, Intelligent-Tiering, Standard-IA, One Zone-IA, Glacier Instant/Flexible/Deep Archive; lifecycle transitions and replication. | Data lakes, backups/archives, ML training datasets, media/CDN origin, logs, static assets, compliance WORM archives |
+| **S3 Express One Zone** | Single-AZ directory buckets (`--x-s3`) delivering consistent single-digit millisecond latency and high request rates with session-based (`CreateSession`) auth. | Latency-sensitive ML training/inference, Spark/EMR shuffle, checkpoints, interactive hot analytics, high-TPS transactional objects |
+| **S3 Tables** | Managed Apache Iceberg tables (`s3tables` MCP) with automatic compaction, snapshot expiration, and unreferenced file cleanup for SQL engines. | Lakehouse tabular datasets, streaming/ETL Iceberg outputs, Athena/EMR/Redshift Spectrum/DuckDB analytics |
+| **S3 Vectors** | Native cost-effective vector storage and similarity search with S3 durability and elasticity. | RAG pipelines, semantic search, recommendation engines, large-scale embedding storage |
+| **S3 Metadata** | Managed read-only Apache Iceberg tables automatically indexing S3 object system/user metadata and tags. | Content cataloging, storage governance, compliance auditing, AI agent discovery |
 
 ### File Storage
 
-When naming a service, you MUST always specify the full name (FSx for Lustre, FSx for Windows File Server, FSx for NetApp ONTAP, or FSx for OpenZFS). EFS and S3 Files can be mounted by Lambda and Fargate. Verify additional services mountable from serverless compute with the latest AWS documentation. FSx for NetApp ONTAP and FSx for OpenZFS data is accessible from serverless compute and S3-based pipelines via S3 Access Points for FSx (exposes file data through the S3 API without copying; surface this when a user needs to read FSx-resident data from S3-native consumers or analytics services).
+Always specify the full service name (**FSx for Lustre**, **FSx for Windows File Server**, **FSx for NetApp ONTAP**, **FSx for OpenZFS**). Both **Amazon EFS** and **S3 Files** can be mounted by Lambda and Fargate; **FSx for NetApp ONTAP** and **FSx for OpenZFS** expose file data to S3/serverless consumers via **S3 Access Points for FSx**.
 
 | Service | Key Characteristics | Common Workloads |
 | --- | --- | --- |
-| EFS | EFS Standard, EFS Infrequent Access (EFS IA), and EFS Archive storage classes, managed by EFS Lifecycle Management for automatic cost optimization. Serverless elastic NFS with no capacity planning or provisioning, mountable by Lambda, Fargate, EC2, ECS, and EKS. Multi-AZ by default (Regional) or One Zone. Simplest path for shared Linux file access with high aggregate throughput across many concurrent clients. | Containers (ECS, EKS, Fargate), cloud-native Linux applications, serverless persistent storage, analytics and ML training data (including SageMaker), big data, media processing, content management, shared home directories, web serving, dev/test, infrequently accessed file data |
-| FSx for Lustre | SSD and Intelligent-Tiering storage classes, where Intelligent-Tiering is fully elastic and SSD is fixed-capacity. Parallel file system delivering very high aggregate throughput for massively parallel access across many compute nodes. | ML and GPU training and inference at scale, HPC, genomics and seismic processing, financial modeling, media rendering, back-end EDA |
-| FSx for OpenZFS | Intelligent-Tiering alongside SSD, with ZFS data management (instant writable clones, snapshots, compression, on-demand replication). Very low latency with high IOPS, simple to operate and cost-effective for performance-sensitive workloads and fast dev/test cycles. Single-AZ and Multi-AZ deployment model. S3-API access via S3 Access Points for FSx. | Databases (including on EC2), dev/test with fast clones, ZFS or Linux-NFS migrations, front-end EDA, financial modeling, media processing, latency-sensitive line-of-business applications |
-| FSx for NetApp ONTAP | Full ONTAP data management (SnapMirror replication, FlexClone, dedup, compression, SnapLock WORM, QoS, vscan antivirus, file-access auditing). Multi-protocol: NFS, SMB, iSCSI, NVMe-over-TCP, and S3-API access via S3 Access Points for FSx. Scales to high aggregate throughput and IOPS. Single-AZ and Multi-AZ deployment model. | Enterprise network-attached storage (NAS) migrations, multi-protocol environments, general-purpose file shares and home directories, business-critical databases including on EC2 (SAP HANA, Oracle, SQL Server), VMware datastores, line-of-business applications (medical imaging, product lifecycle management), front-end EDA (chip design and verification), hybrid and DR |
-| FSx for Windows File Server | Fully managed SMB file storage built on Windows Server with Active Directory identity (Kerberos, NTFS ACLs), DFS namespaces, shadow copies, and FSRM quotas; shares are also accessible from Linux and macOS clients. Single-AZ and Multi-AZ deployment model. | Windows file, home, and department shares, .NET applications, Microsoft SQL Server, Windows Server migrations |
+| **Amazon EFS** | Serverless elastic POSIX/NFSv4.1 file storage (Standard, IA, Archive classes; Elastic, Provisioned, or Bursting throughput; Regional Multi-AZ or One Zone). | Shared container/serverless storage (EKS, ECS, Fargate, Lambda), Linux web/CMS apps, ML home directories |
+| **FSx for Lustre** | High-throughput parallel POSIX file system (SSD and elastic Intelligent-Tiering classes) with native S3 data repository integration. | Distributed ML/GPU training, HPC, genomics, seismic/financial modeling, EDA |
+| **FSx for OpenZFS** | Managed ZFS file system (SSD and Intelligent-Tiering; Single-AZ/Multi-AZ) with sub-ms latency, instant copy-on-write clones, snapshots, compression, and S3 Access Points. | Low-latency Linux/ZFS migrations, EC2 databases, fast dev/test cloning, front-end EDA, financial trading |
+| **FSx for NetApp ONTAP** | Managed enterprise ONTAP NAS/SAN (NFS, SMB, iSCSI, NVMe-oF, plus S3 Access Points; Single-AZ/Multi-AZ) with SnapMirror, FlexClone, inline dedup/compression, and SnapLock WORM. | Enterprise NAS migrations, multi-protocol (NFS+SMB) shares, SAP HANA/Oracle/SQL Server on EC2, VMware, hybrid DR |
+| **FSx for Windows File Server** | Managed native Windows SMB file storage (Single-AZ/Multi-AZ) with Active Directory/Kerberos, NTFS ACLs, DFS Namespaces, Shadow Copies, and FSRM quotas. | Windows shared folders, .NET enterprise apps, SQL Server Failover Cluster Instances (FCI) |
 
 ### Block Storage
 
 | Service | Key Characteristics | Common Workloads |
 | --- | --- | --- |
-| EBS | High-performance virtual disk that attaches to an EC2 instance over the network. Durable, resizable SSD or HDD that persists independently of the instance, supports snapshots for backup, time-based snapshot copy, and provisions performance independently of capacity on gp3 (confirm latest volume limits). Supports instant volume clones. AZ-scoped. | Databases, transactional applications and file systems, boot volumes, dev/test environments, sequential batch processing, log and data warehouse scans |
-| EC2 Instance Store | Physically local SSD storage built into the host server, delivering the lowest latency and highest throughput. Ephemeral: data is lost if the instance stops or the hardware fails. | Temporary scratch data, caches, and buffers you can afford to lose |
+| **Amazon EBS** | Network-attached AZ-scoped block volumes (`gp3` baseline 3,000 IOPS / 125 MiB/s with independent scaling; `io2` Block Express up to 256,000 IOPS and 99.999% durability; `st1`/`sc1` HDD), snapshots, Fast Snapshot Restore (FSR). | Self-managed relational/NoSQL databases on EC2, boot volumes, low-latency transactional workloads |
+| **EC2 Instance Store** | Host-local ephemeral NVMe SSD delivering extreme IOPS and lowest latency; data does not survive instance stop/termination. | Ephemeral scratch space, distributed caches, shuffle buffers, replicated node storage |
 
 ---
 
-## Cross-Service Overlap
+## Cross-Service Protocol Bridges
 
-Some storage features cross category boundaries, giving a service from one storage category an interface normally associated with another. Surface these when a workload needs access to shared data from multiple protocols or interfaces.
-
-| Feature | What it enables | What it is | Additional sources |
-| --- | --- | --- | --- |
-| S3 Files | Makes S3 data accessible to file-based applications | Fully managed NFS file access over an S3 bucket, built on EFS infrastructure. Data stays in S3 as the system of record. File locking, POSIX permissions, and full read-write. Choose over EFS when data already lives in S3 and needs file-path access alongside object access. | `references/s3-files-knowledge.md`, `references/efs-knowledge.md` |
-| S3 Access Points for FSx | Makes FSx-resident data accessible to S3-based applications and services | Exposes FSx for NetApp ONTAP or FSx for OpenZFS data through the S3 API without copying it to a bucket. Surface when file data must reach S3-native consumers, or when serverless or S3-based applications need to access data that lives on FSx for NetApp ONTAP or FSx for OpenZFS. | `references/fsx-ontap-knowledge.md`, `references/fsx-openzfs-knowledge.md` |
+| Feature | What It Enables | Reference |
+| --- | --- | --- |
+| **S3 Files** | Managed POSIX/NFSv4 file access directly over an S3 bucket (built on EFS infrastructure; S3 remains system of record with file locking and POSIX permissions). | `references/s3-files-knowledge.md`, `references/efs-knowledge.md` |
+| **S3 Access Points for FSx** | Exposes FSx for NetApp ONTAP or FSx for OpenZFS file data directly through the S3 REST API without data duplication. | `references/fsx-ontap-knowledge.md`, `references/fsx-openzfs-knowledge.md` |
 
 ---
 
-## Security
+## Security Baseline
 
-Cloud security at AWS is the highest priority and is a shared responsibility between AWS and the customer. You MUST include security guidance when recommending or configuring storage resources. You MUST always recommend enabling encryption at rest and encryption in transit. Where encryption at rest is optional or not the default, explicitly advise enabling it at creation time, because it is often immutable after creation. You MUST recommend scoping IAM policies to the authorized principals with least-privileged permissions. You MUST recommend adding condition keys (e.g., aws:SourceArn, aws:SourceAccount, aws:SourceVpc) to resource policies to prevent cross-service confused deputy attacks. You MUST recommend encrypting log destinations: AWS KMS for CloudTrail trails and CloudWatch Logs groups, server-side encryption for server access log buckets, and AWS KMS for SNS topics. Prefer short-lived credentials or IAM-based authentication (e.g., via custom IdP with temporary tokens) over long-lived SSH keys. Where SSH keys are required, enforce rotation policies and store private keys in AWS Secrets Manager for supported services. You MUST recommend restricting security group inbound rules to the narrowest applicable source (specific client security group or minimal CIDR). Service-specific security controls, encryption models, and documentation links are in the Security row of each reference's Service Information table; you MUST read it before advising on that service.
+Always enforce these controls when recommending or auditing storage:
+- **Encryption**: Enable encryption at rest (KMS CMK or SSE-S3; enable S3 Bucket Keys to cut KMS costs by up to 99%; note EFS/EBS/FSx encryption at rest must be enabled at creation) and in transit (`aws:SecureTransport: true` on S3, TLS mount options on EFS/FSx).
+- **Access & Perimeter**: Enforce S3 Block Public Access (all 4 settings `true`) and `BucketOwnerEnforced` (disable ACLs). Scope IAM policies to least privilege, add confused-deputy conditions (`aws:SourceArn`, `aws:SourceAccount`, `aws:PrincipalOrgID`), and restrict EFS/FSx security groups to specific client security groups on port `2049` (NFS) or `445` (SMB).
+- **Audit Logging**: Encrypt CloudTrail Data Events, CloudWatch Logs, and S3 Server Access Logs with KMS.
+
+---
 
 ## Routing
 
-When loaded through the AWS MCP server's retrieve_skill tool: the skill is not installed on the local filesystem. You MUST retrieve each reference via retrieve_skill with the file parameter (e.g. file="references/s3-general-purpose-knowledge.md"). Do NOT file_read these paths locally. When loaded outside the AWS MCP server (for example from the local filesystem in the Agent Toolkit), read the reference files directly from their relative paths in the skill directory.
-
-### Reference files
+### Local Reference Files (Read Before Answering)
 
 | Topic | Reference |
 | --- | --- |
-| S3 (General Purpose) | `references/s3-general-purpose-knowledge.md` |
-| S3 Metadata | `references/s3-general-purpose-knowledge.md` |
-| S3 Tables | `references/s3-tables-knowledge.md` |
+| S3 General Purpose & S3 Metadata | `references/s3-general-purpose-knowledge.md` |
+| S3 Tables (Managed Iceberg) | `references/s3-tables-knowledge.md` |
 | S3 Vectors | `references/s3-vectors-knowledge.md` |
 | S3 Express One Zone | `references/s3-express-knowledge.md` |
 | S3 Files | `references/s3-files-knowledge.md` |
@@ -153,19 +131,15 @@ When loaded through the AWS MCP server's retrieve_skill tool: the skill is not i
 | FSx for NetApp ONTAP | `references/fsx-ontap-knowledge.md` |
 | FSx for OpenZFS | `references/fsx-openzfs-knowledge.md` |
 | FSx for Windows File Server | `references/fsx-windows-knowledge.md` |
-| Amazon EBS | `references/ebs-knowledge.md` |
-| Data Movement and Protection (DataSync, Transfer Family, Storage Gateway, AWS Backup) | `references/data-movement-and-protection-knowledge.md` |
+| Amazon EBS & Instance Store | `references/ebs-knowledge.md` |
+| Data Movement & Protection (DataSync, Transfer Family, Storage Gateway, AWS Backup) | `references/data-movement-and-protection-knowledge.md` |
 
-### Specialized skills
+### Companion Specialized Skills
 
-| Topic | Reference |
+| Topic | Skill Name |
 | --- | --- |
-| Security on S3 | [`securing-s3-buckets`](https://github.com/aws/agent-toolkit-for-aws/tree/main/skills/specialized-skills/storage-skills/securing-s3-buckets) |
-| Using S3 Tables | [`creating-data-lake-table`](https://github.com/aws/agent-toolkit-for-aws/tree/main/skills/specialized-skills/storage-skills/creating-data-lake-table) |
-| Using S3 Vectors | [`storing-and-querying-vectors`](https://github.com/aws/agent-toolkit-for-aws/tree/main/skills/specialized-skills/storage-skills/storing-and-querying-vectors) |
-| Troubleshooting S3 Files | [`troubleshooting-s3-files`](https://github.com/aws/agent-toolkit-for-aws/tree/main/skills/specialized-skills/storage-skills/troubleshooting-s3-files) |
-| Troubleshooting EFS | [`troubleshooting-efs`](https://github.com/aws/agent-toolkit-for-aws/tree/main/skills/specialized-skills/storage-skills/troubleshooting-efs) |
-| Querying S3 System Tables | [`querying-aws-s3`](https://github.com/aws/agent-toolkit-for-aws/tree/main/skills/specialized-skills/system-table-skills/querying-aws-s3) |
-| Ingesting data into a data lake | [`ingesting-into-data-lake`](https://github.com/aws/agent-toolkit-for-aws/tree/main/skills/specialized-skills/analytics-skills/ingesting-into-data-lake) |
-| Finding data lake assets | [`finding-data-lake-assets`](https://github.com/aws/agent-toolkit-for-aws/tree/main/skills/specialized-skills/analytics-skills/finding-data-lake-assets) |
-| Querying data lakes | [`querying-data-lake`](https://github.com/aws/agent-toolkit-for-aws/tree/main/skills/specialized-skills/analytics-skills/querying-data-lake) |
+| S3 Security Hardening & Audits | `securing-s3-buckets` |
+| Troubleshooting S3 & S3 Files (`403`/`503`/`404`) | `troubleshooting-s3-files` |
+| Troubleshooting Amazon EFS Mounts & Throughput | `troubleshooting-efs` |
+| Multi-Region DR & Backup Architecture | `aws-resilience-dr-and-migration-architecture` |
+| KMS, Object Lock & Macie Data Protection | `security-data-protection` |

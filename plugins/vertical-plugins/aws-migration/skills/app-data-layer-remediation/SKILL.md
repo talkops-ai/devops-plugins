@@ -1,9 +1,11 @@
 ---
 name: app-data-layer-remediation
-description: "Synchronizes application-layer SQL queries, stored procedure calls, and ORM persistence frameworks (JPA/Hibernate, MyBatis, EF Core) across Java, .NET, Node.js, and Python with DMS Schema Conversion when migrating Oracle and SQL Server to Aurora PostgreSQL/DSQL. Packages DDL into versioned Flyway/Liquibase CI/CD pipelines and validates queries via read-only postgres MCP."
+description: "Synchronizes application-layer SQL queries, stored procedure calls, and ORM persistence frameworks (JPA/Hibernate, MyBatis, EF Core) across Java, .NET, Node.js, and Python with DMS Schema Conversion when migrating Oracle and SQL Server to Aurora PostgreSQL/DSQL. Packages DDL into versioned Flyway/Liquibase CI/CD pipelines and validates queries via read-only postgres MCP. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # Application Data Layer Remediation
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, caller/account verification (`sts:GetCallerIdentity`), resource inspection, logs/metrics queries, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___call_aws` / `aws___run_script`, `cloudwatch`, `cloudtrail`, `prometheus`, `dynamodb`, `serverless`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**.
 
 ## Overview
 

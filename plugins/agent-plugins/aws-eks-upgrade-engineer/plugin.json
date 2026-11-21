@@ -1,0 +1,20 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "aws-eks-upgrade-engineer",
+  "version": "0.2.0",
+  "description": "Principal Amazon EKS Upgrade, Readiness & Lifecycle Engineer: runs strictly read-only, evidence-backed EKS Kubernetes version upgrade assessments combining 0-100% Readiness Scoring (8 areas, hard-blocker caps, HTML/Markdown reports) with 60+-gate AWS EKS Best Practices validation, Karpenter v1 migrations, AL2-to-AL2023 nodeadm migrations, VPC CNI surge capacity sizing, 7-day rollback checks, and Extended Support EOS cost analysis.",
+  "author": {
+    "name": "TalkOps AI",
+    "url": "https://talkops.ai"
+  },
+  "license": "Apache-2.0",
+  "keywords": [
+    "aws",
+    "eks",
+    "kubernetes",
+    "upgrade",
+    "karpenter",
+    "al2023",
+    "finops"
+  ]
+}

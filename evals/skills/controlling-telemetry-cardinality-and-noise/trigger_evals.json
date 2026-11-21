@@ -1,0 +1,111 @@
+{
+  "skill_name": "controlling-telemetry-cardinality-and-noise",
+  "companion_skills": [
+    "tuning-sampling-and-trace-derived-metrics",
+    "auditing-observability-security-posture",
+    "optimizing-tsdb-cardinality-and-finops",
+    "optimizing-loki-cardinality-and-finops"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure collector processing rules on `opentelemetry-otel-collector` in `otel-demo` to drop `/healthz` spans, delete high-cardinality `session.id`, and mask `payment` PII in flight.",
+      "notes": "Direct OTTL processing configuration"
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Write OTTL `replace_pattern` statements on `opentelemetry-otel-collector` to normalize dynamic order UUIDs and numeric IDs inside `url.path` (`/api/orders/98412` -> `/api/orders/{id}`).",
+      "notes": "OTTL URL cardinality normalization"
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure OTTL `ParseJSON(body.string)` on `otel-agent` to extract `severity_text` and `trace_id` from `recommendation` and `checkout-service` JSON container logs.",
+      "notes": "OTTL JSON log parsing"
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "`flagd` `/readyz` and `/healthz` (`:8014`) probes make up 70% of our `otel-demo` OTLP traces—filter out healthy `200 OK` probes inside `opentelemetry-otel-collector` while keeping `5xx` failures.",
+      "notes": "Noise probe filtering in OTel Collector"
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Scrub customer emails from `email`, credit card PANs from `payment`, and `Authorization` headers from `frontend-proxy` inside `opentelemetry-otel-collector` before telemetry leaves the cluster.",
+      "notes": "In-flight Collector PII scrubbing"
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Strip ephemeral Locust `client.address`, `client.port`, and `user_agent.original` attributes from `otel-demo` metric datapoints in the collector metrics pipeline.",
+      "notes": "OTTL datapoint attribute deletion"
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Why did setting `error_mode: propagate` on `opentelemetry-otel-collector`'s OTTL `transform` processor drop entire batches of `email` and `frontend-proxy` logs?",
+      "notes": "OTTL error_mode troubleshooting"
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Drop `DEBUG` (`severity_number < 9`) logs only on the `logs/storefront-app` pipeline in `opentelemetry-otel-collector` without touching `logs/payment-audit`.",
+      "notes": "Targeted OTTL log severity filtering"
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure `tail_sampling` (`10%` baseline, `100%` `paymentFailure` errors) and a pre-sampling `spanmetrics` connector on `otel-tail-sampler` for `otel-demo`.",
+      "expected_alternative_skill": "tuning-sampling-and-trace-derived-metrics",
+      "notes": "Tail sampling & connectors"
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Analyze Prometheus TSDB series cardinality and generate `metricRelabelings` drop rules on `ServiceMonitor/frontend-proxy-envoy-monitor`.",
+      "expected_alternative_skill": "optimizing-tsdb-cardinality-and-finops",
+      "notes": "Prometheus scrape-time relabeling FinOps"
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Demote high-cardinality Loki indexed stream labels (`k8s_pod_uid`) to `structured_metadata` in Grafana Alloy and enable Loki 3.x Bloom filters.",
+      "expected_alternative_skill": "optimizing-loki-cardinality-and-finops",
+      "notes": "Loki/Alloy label governance"
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Audit `ClusterRole/opentelemetry-otel-collector` wildcard permissions and pod `securityContext` settings across `otel-demo` collectors for CIS and Pod Security Standards compliance.",
+      "expected_alternative_skill": "auditing-observability-security-posture",
+      "notes": "RBAC & container security posture audit"
+    }
+  ]
+}

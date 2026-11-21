@@ -134,8 +134,8 @@ billable once preview ends. Point it at the repository that matters first.
 
 - **Automatic on PR/MR** — when a PR is opened or updated. Findings land as inline comments. Can be made a
   required status check that blocks merges, or left advisory.
-- **On demand in chat** — *"Review branch feature/payments on repo payment-service for release risks"*
-- **From the IDE during code generation** — the coding agent can invoke a review on in-progress changes
+- **On demand in chat / MCP** — *"Review branch feature/payments on repo payment-service for release risks"* (under the hood via MCP: `create_release_readiness_review` -> poll `get_task` -> `get_release_readiness_report`).
+- **From the IDE during code generation** — the coding agent can invoke a review (`create_release_readiness_review` -> `get_release_readiness_report`) on in-progress changes
   before anything is committed, and act on findings immediately.
 
 **Public repositories do not auto-trigger.** Anyone can open a PR against a public repo, so automatic

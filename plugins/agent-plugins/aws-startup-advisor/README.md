@@ -62,6 +62,7 @@ Declared in [`.mcp.json`](./.mcp.json) (Claude Code) and [`mcp.json`](./mcp.json
 | Server | Transport | Launch | Claude Code tool pattern | Notes |
 |---|---|---|---|---|
 | `aws-mcp` | stdio | `uvx mcp-proxy-for-aws-cli==1.7.0` `--metadata` | `mcp__plugin_aws-startup-advisor_aws-mcp__*` |  |
+| `awsknowledge` | http | `https://knowledge-mcp.global.api.aws` | `mcp__plugin_aws-startup-advisor_awsknowledge__*` |  |
 | `aws-pricing` | stdio | `uvx awslabs.aws-pricing-mcp-server@latest` | `mcp__plugin_aws-startup-advisor_aws-pricing__*` |  |
 | `aws-billing` | stdio | `uvx awslabs.billing-cost-management-mcp-server@latest` | `mcp__plugin_aws-startup-advisor_aws-billing__*` |  |
 

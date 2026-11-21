@@ -1,0 +1,95 @@
+{
+  "skill_name": "eks-al2-to-al2023-migration",
+  "companion_skills": [
+    "eks-eos-and-extended-support-cost",
+    "eks-karpenter-and-addon-upgrades",
+    "eks-post-upgrade-validation-and-rollback",
+    "eks-operations-and-troubleshooting"
+  ],
+  "queries": [
+    {
+      "id": "trig-pos-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Translate our EKS `/etc/eks/bootstrap.sh` Launch Template user data into AL2023 `nodeadm` `NodeConfig` MIME multipart format."
+    },
+    {
+      "id": "trig-pos-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Audit our EKS Managed Node Groups and Karpenter `EC2NodeClass` manifests for Amazon Linux 2 to AL2023 migration blockers ahead of EKS 1.33."
+    },
+    {
+      "id": "trig-pos-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why are Java 8 pods getting OOMKilled under cgroup v2 and Python pods failing IMDSv2 hop-limit checks after moving EKS nodes to Amazon Linux 2023?"
+    },
+    {
+      "id": "trig-pos-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Generate a blue/green Terraform cutover plan from `AL2_x86_64` to `AL2023_x86_64_STANDARD` Managed Node Groups without in-place replacement."
+    },
+    {
+      "id": "trig-pos-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "How do `--use-max-pods false` and `--dns-cluster-ip` map to `node.eks.aws/v1alpha1` when using a custom AL2023 AMI on EKS?"
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Calculate our monthly EKS Extended Support surcharge across 12 EKS 1.29 clusters and build a quarterly EOS roadmap."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Upgrade Karpenter from v0.37 to v1.1 using the two-step `karpenter-crd` Helm flow and check `vpc-cni` `eksbuild` versions."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Our EKS node group update is stuck in `PodEvictionFailure` \u2014 triage the blocking PDB and check 7-day `ROLLBACK_READINESS` insights."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Triage active GuardDuty, Security Hub, and Inspector CVE findings in `ap-south-1` and map them to Terraform."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure Aurora PostgreSQL Serverless v2 ACU scaling and RDS Proxy connection pooling."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Set up Route 53 DNS Firewall rule group priorities and active-passive health checks."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Author an AWS Step Functions Distributed Map workflow processing S3 CSV uploads."
+    }
+  ]
+}

@@ -93,4 +93,9 @@ Load the appropriate bundled skill before implementing or troubleshooting:
 
 ## Skills this agent uses
 
-`amazon-location-service` · `location-v2-maps-places-routes` · `location-tracking-geofencing-iot` · `location-security-iac-and-finops` · `location-migration-specialist` · `signing-in-to-aws`
+- `amazon-location-service`
+- `location-v2-maps-places-routes`
+- `location-tracking-geofencing-iot`
+- `location-security-iac-and-finops`
+- `location-migration-specialist`
+- `signing-in-to-aws`

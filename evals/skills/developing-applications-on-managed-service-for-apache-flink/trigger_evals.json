@@ -1,0 +1,110 @@
+{
+  "skill_name": "developing-applications-on-managed-service-for-apache-flink",
+  "companion_skills": [
+    "amazon-opensearch-service",
+    "analytics-opensearch-expertise",
+    "auditing-aws-system-tables",
+    "authoring-glue-and-emr-spark-jobs",
+    "authoring-mwaa-workflow"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Build an Amazon Managed Service for Apache Flink 1.20 application in Java that consumes from Kinesis Data Streams with EFO and writes to Apache Iceberg on S3 Tables."
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Troubleshoot why our Managed Service for Apache Flink job has rising millisBehindLatest, 3-minute RocksDB checkpoint durations, and high backpressure."
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure maven-shade-plugin and KinesisAnalyticsRuntime.getApplicationProperties() for deploying a Flink DataStream uber-JAR to AWS Managed Flink."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Size KPUs, Parallelism, and ParallelismPerKPU for an Amazon Managed Service for Apache Flink application consuming from a 24-partition MSK topic."
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Migrate our Managed Service for Apache Flink application from deprecated SourceFunction/FlinkKafkaConsumer APIs to Flink 1.20 / 2.x KafkaSource and unified Sink APIs."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Set up a Flink CDC pipeline on Amazon Managed Service for Apache Flink to stream PostgreSQL changes into an Iceberg data lake table."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Tune RocksDB state TTL and incremental checkpointing on Managed Service for Apache Flink to stop lastCheckpointSize from growing unboundedly."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Fix ClassNotFoundException and Kryo serialization errors when restoring our AWS Managed Service for Apache Flink application from a snapshot."
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Author an AWS Glue 5.0 PySpark batch ETL job to join two Parquet datasets in S3 and write to a Glue Data Catalog table."
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Create an Amazon Data Firehose delivery stream to buffer JSON records directly into an S3 bucket without custom stream processing code."
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Upgrade an Amazon MWAA Apache Airflow 2.7.2 environment to Airflow 2.10.3."
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Optimize an Amazon Redshift Serverless workgroup query that is spilling to disk due to a cross-join and missing sort keys."
+    },
+    {
+      "id": "trig-13",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure an Amazon OpenSearch Service domain with UltraWarm storage tiers and Index State Management rollover policies."
+    },
+    {
+      "id": "trig-14",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Create an AWS Clean Rooms collaboration with aggregation analysis rules and differential privacy."
+    }
+  ]
+}

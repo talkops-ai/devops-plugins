@@ -1,0 +1,134 @@
+{
+  "skill_name": "onboarding-kargo-pipelines",
+  "evals": [
+    {
+      "id": "eval-01-stand-up-a-brand-new-kargo-v1-12-delivery-pipeli",
+      "prompt": "Stand up a brand-new Kargo v1.12 delivery pipeline for `OTEL-APP`'s `checkout` microservice in a new Kargo project named `otel-greenfield`: create the project, add a `checkout-wh` Warehouse watching `gitops.otel-gitops.svc.cluster.local/open-telemetry/demo` (skipping TLS verification for our internal cluster registry and selecting `-checkout` tags such as `2.2.0-checkout` / `2.3.0-checkout`), create a reusable `promote-checkout` PromotionTask that updates `image.tag` in `charts/checkout/values.yaml` on `http://gitops.otel-gitops.svc.cluster.local/talkops-ai/OTEL-APP.git` (`stage/${{ ctx.stage }}` branch) and syncs ArgoCD app `otel-checkout-${{ ctx.stage }}`, wire Stages `dev` -> `staging` -> `prod-us`, enable automatic promotion on `dev` and `staging` only (keeping `prod-us` manual), and trigger immediate Warehouse discovery so we confirm Freight is assembled.",
+      "expected_output": "Checks `kargo://server/capabilities` and `kargo://projects`, previews and applies in strict Kargo v1.12 dependency order (`dry_run=True -> False`): metadata-only `Project` `otel-greenfield`, `Warehouse` `checkout-wh` (using `Lexical` or `>=2.2.0-0` with `allowTagsRegexes: [\"^[0-9]+\\\\.[0-9]+\\\\.[0-9]+-checkout$\"]` and `insecureSkipTLSVerify: true`), `PromotionTask` `promote-checkout` (`yaml-update` wrapping `imageFrom(...).tag` in `quote(...)` + `argocd-update`), `Stage`s `dev` -> `staging` -> `prod-us`, and `ProjectConfig` storing `promotionPolicies` (`autoPromotionEnabled: true` on `dev` and `staging` only), then refreshes `checkout-wh` and verifies discovered Freight via `kargo_query_freight`.",
+      "files": [],
+      "expectations": [
+        "Creates metadata-only `Project` `otel-greenfield` (`kargo_manage_project`) and configures `promotionPolicies` in `ProjectConfig` (`kargo_apply_project_config`) rather than `Project.spec`",
+        "Applies `checkout-wh` (`kargo_apply_warehouse`), `promote-checkout` (`kargo_apply_promotion_task` with `yaml-update` + `quote(...)` + `argocd-update`), and `dev -> staging -> prod-us` (`kargo_apply_stage`) using `dry_run=True` before `dry_run=False`",
+        "Triggers immediate Warehouse discovery via `kargo_refresh` and confirms real Freight was discovered via `kargo_query_freight`"
+      ]
+    },
+    {
+      "id": "eval-02-help-us-clean-up-retired-kargo-test-environments",
+      "prompt": "Help us clean up retired Kargo test environments: first check the pipeline in `otel-demo` to make sure nothing downstream depends on Stage `loadgen-flood-sandbox`, then delete both Stage `loadgen-flood-sandbox` and Warehouse `legacy-loadgen-wh` from `otel-demo`. After that, completely decommission our temporary Kargo project `otel-demo-ephemeral` (including its underlying Kubernetes namespace) while briefly explaining when someone would choose to retain the namespace instead.",
+      "expected_output": "Reads `kargo://projects/otel-demo/pipeline` to verify `loadgen-flood-sandbox` has no downstream dependents, deletes `Stage/loadgen-flood-sandbox` and `Warehouse/legacy-loadgen-wh` via `kargo_delete_resource(..., confirm=True)`, and deletes `otel-demo-ephemeral` via `kargo_manage_project(action=\"delete\", name=\"otel-demo-ephemeral\", keep_namespace=False, dry_run=True -> False, confirm=True)` while contrasting `keep_namespace=False` vs `keep_namespace=True`.",
+      "files": [],
+      "expectations": [
+        "Inspects `kargo://projects/otel-demo/pipeline` before deleting `Stage` `loadgen-flood-sandbox` and `Warehouse` `legacy-loadgen-wh` via `kargo_delete_resource`",
+        "Decommissions `otel-demo-ephemeral` via `kargo_manage_project(action=\"delete\", name=\"otel-demo-ephemeral\", keep_namespace=False, confirm=True)`",
+        "Clearly explains full namespace deletion vs retaining the underlying Kubernetes namespace"
+      ]
+    },
+    {
+      "id": "eval-03-generate-a-kargo-v1-12-pull-request-gated-promot",
+      "prompt": "Generate a Kargo v1.12 pull-request-gated promotion step sequence for `frontend-proxy` that updates `image.tag` in `charts/frontend-proxy/values.yaml` inside `https://github.com/talkops-ai/OTEL-APP.git` from `ghcr.io/open-telemetry/demo`, opens a PR against `stage/${{ ctx.stage }}`, waits for a human reviewer to merge the PR, and only then syncs ArgoCD application `otel-frontend-proxy-${{ ctx.stage }}` to the merged commit.",
+      "expected_output": "Runs `scripts/render_promotion_steps.py --pattern gitops-pull-request` and outputs valid Kargo v1.12 steps: `git-clone` -> `yaml-update` on `charts/frontend-proxy/values.yaml` (wrapping tag in `quote(imageFrom('ghcr.io/open-telemetry/demo').tag)`) -> `git-commit` -> `git-push` (`generateTargetBranch: true`) -> `git-open-pr` (without invalid `createTargetBranch`) -> `git-wait-for-pr` (`as: wait-pr`) -> `argocd-update` (`desiredRevision: ${{ outputs['wait-pr'].commit }}`).",
+      "files": [],
+      "expectations": [
+        "Uses `scripts/render_promotion_steps.py` and Kargo v1.12 step names `yaml-update`, `git-open-pr`, `git-wait-for-pr`, and `argocd-update` (never removed `helm-update-image`, `open-pr`, `wait-for-pr`, or `argocd-sync`)",
+        "Wraps `imageFrom('ghcr.io/open-telemetry/demo').tag` in `quote(...)` on `charts/frontend-proxy/values.yaml`",
+        "Wires `argocd-update` `desiredRevision` to `${{ outputs['wait-pr'].commit }}` so ArgoCD syncs the merged PR commit"
+      ]
+    },
+    {
+      "id": "eval-04-we-have-an-older-multi-document-kargo-manifest-b",
+      "prompt": "We have an older multi-document Kargo manifest bundle in `./legacy-otel-pipeline.yaml` from an earlier Kargo release that we're preparing to migrate to Kargo v1.12. Validate `./legacy-otel-pipeline.yaml` offline and list every schema error, deprecation warning, and Stage DAG topology issue you find, along with the v1.12 fixes.",
+      "expected_output": "Executes `scripts/validate_pipeline_manifests.py legacy-otel-pipeline.yaml` and identifies: (1) Error: non-empty `Project.spec` (`promotionPolicies` must move to `ProjectConfig`); (2) Error: `Warehouse` `allowTags` removed -> `allowTagsRegexes` list, plus Warning: `image.semverConstraint` deprecated -> `image.constraint`; (3) Error: removed step `helm-update-image` -> `yaml-update` and removed `config.fromOrigin` -> `warehouse('frontend-wh')` in `imageFrom(...)`; (4) Error: circular Stage dependency cycle `prod-us -> prod-eu -> prod-us`.",
+      "files": [],
+      "expectations": [
+        "Runs `scripts/validate_pipeline_manifests.py` against `legacy-otel-pipeline.yaml`",
+        "Flags non-empty `Project.spec` (`ProjectConfig` migration), `allowTags` removal + `image.semverConstraint` deprecation, and removed `helm-update-image` / `config.fromOrigin`",
+        "Detects the circular Stage dependency cycle between `prod-us` and `prod-eu`"
+      ]
+    },
+    {
+      "id": "eval-05-before-we-wire-kargo-stage-prod-eu-in-project-ot",
+      "prompt": "Before we wire Kargo Stage `prod-eu` in project `otel-demo` to sync ArgoCD Application `otel-checkout-prod-eu` in the `argocd` namespace (deploying `charts/checkout`), what exact annotation do we need on the ArgoCD Application manifest so Kargo is permitted to mutate and sync it, and what happens during promotion if that annotation is missing?",
+      "expected_output": "Reads `references/argocd-integration.md` (or explains Kargo-ArgoCD RBAC) and specifies exact annotation `kargo.akuity.io/authorized-stage: \"otel-demo:prod-eu\"` on `Application/otel-checkout-prod-eu` in `argocd`, explaining that without `<project>:<stage>` authorization the `argocd-update` step fails immediately (`not authorized for stage`).",
+      "files": [],
+      "expectations": [
+        "Specifies exact annotation `kargo.akuity.io/authorized-stage: \"otel-demo:prod-eu\"` on the ArgoCD `Application` metadata",
+        "Explains that omitting or mismatching `<project>:<stage>` causes `argocd-update` to fail authorization during promotion",
+        "Provides the ArgoCD `Application` metadata snippet for `otel-checkout-prod-eu` in namespace `argocd`"
+      ]
+    },
+    {
+      "id": "eval-06-create-a-multi-subscription-warehouse-named-stor",
+      "prompt": "Create a multi-subscription Warehouse named `storefront-edge-wh` in Kargo project `otel-demo` combining three artifact sources: (1) container image `gitops.otel-gitops.svc.cluster.local/open-telemetry/demo` (skipping TLS verification and matching `-frontend-proxy` tags like `2.3.0-frontend-proxy`), (2) Helm chart `frontend-proxy` (`^0.1.0`) from `https://talkops-ai.github.io/OTEL-APP`, and (3) Git commits on `main` from `http://gitops.otel-gitops.svc.cluster.local/talkops-ai/OTEL-APP.git` scoped to paths `charts/frontend-proxy/**` and `charts/flagd/**`. Apply and refresh it, and also explain how the Helm chart `name` field rule changes if we move the chart from HTTPS GitHub Pages to an `oci://` registry.",
+      "expected_output": "Previews and applies `kargo_apply_warehouse` (`storefront-edge-wh` in `otel-demo`, `dry_run=True -> False`) with `image`, `chart` (`name: \"frontend-proxy\"`, `semverConstraint: \"^0.1.0\"`), and `git` (`includePaths: [\"charts/frontend-proxy/**\", \"charts/flagd/**\"]`), refreshes `storefront-edge-wh`, and explains that `chart.name` is required for classic HTTP/S Helm repos (`https://talkops-ai.github.io/OTEL-APP`) whereas it MUST be omitted for `oci://` chart URLs because the chart path is already embedded in the `oci://` URL.",
+      "files": [],
+      "expectations": [
+        "Previews and applies `storefront-edge-wh` in `otel-demo` via `kargo_apply_warehouse` with `image`, `chart`, and `git` (`includePaths`) subscriptions and refreshes it",
+        "Explains the HTTPS vs `oci://` Helm chart rule: `chart.name` is required for classic HTTPS repos and must be omitted for `oci://` URLs"
+      ]
+    },
+    {
+      "id": "eval-07-for-stateful-backing-services-in-kargo-project-o",
+      "prompt": "For stateful backing services in Kargo project `otel-demo`, create a Warehouse named `otel-infra-wh` watching `gitops.otel-gitops.svc.cluster.local/open-feature/flagd` (`^0.12.0`), `gitops.otel-gitops.svc.cluster.local/valkey/valkey` (matching `9.0.1-alpine3.23`), and `gitops.otel-gitops.svc.cluster.local/postgres` (`^17.0`)—with TLS verification skipped on our internal registry—configured for manual Freight assembly so upstream tags never create bundles automatically. Refresh discovery, then manually assemble a Freight bundle aliased `otel-infra-2026-11` from the discovered versions.",
+      "expected_output": "Previews and applies `kargo_apply_warehouse` (`otel-infra-wh` with `freight_creation_policy=\"Manual\"`), refreshes discovery via `kargo_refresh(..., wait=True)`, inspects discovered artifacts via `kargo://projects/otel-demo/warehouses/otel-infra-wh`, manually assembles Freight `otel-infra-2026-11` via `kargo_manage_freight(action=\"create\", ...)`, and verifies via `kargo_query_freight`.",
+      "files": [],
+      "expectations": [
+        "Configures `otel-infra-wh` with manual Freight creation policy (`freightCreationPolicy: Manual`) via `kargo_apply_warehouse` (`dry_run=True` -> `False`) and refreshes discovery",
+        "Manually creates Freight bundle `otel-infra-2026-11` via `kargo_manage_freight(action=\"create\", ...)` and verifies the created Freight via `kargo_query_freight` or `kargo://projects/otel-demo/freight/{id}`"
+      ]
+    },
+    {
+      "id": "eval-08-create-a-cluster-wide-reusable-promotion-task-na",
+      "prompt": "Create a cluster-wide reusable promotion task named `talkops-otel-chart-rollout` so every Kargo project can promote any of the 18 `OTEL-APP` charts (`charts/${{ vars.chart }}/values.yaml`) on `http://gitops.otel-gitops.svc.cluster.local/talkops-ai/OTEL-APP.git` with a custom Git commit author (`TalkOps Kargo Bot <kargo@talkops.io>`), push to `stage/${{ ctx.stage }}`, and update ArgoCD. Apply it, inspect the stored cluster promotion task manifest, and show how a Stage references it.",
+      "expected_output": "Previews and applies `kargo_apply_promotion_task(..., name=\"talkops-otel-chart-rollout\", scope=\"cluster\", dry_run=True -> False)` placing Git `author` inside `git-clone.config.author` (NOT removed `git-commit.config.author`), reads `kargo://cluster-promotion-tasks/talkops-otel-chart-rollout` to verify the stored CRD, and shows `Stage.spec.promotionTemplate.spec.steps` referencing `kind: ClusterPromotionTask`.",
+      "files": [],
+      "expectations": [
+        "Creates `ClusterPromotionTask` `talkops-otel-chart-rollout` via `kargo_apply_promotion_task(..., scope=\"cluster\")` (`dry_run=True` -> `False`) and reads `kargo://cluster-promotion-tasks/talkops-otel-chart-rollout`",
+        "Configures Git author on `git-clone.config.author` rather than removed `git-commit.config.author`",
+        "Shows how a `Stage` references `kind: ClusterPromotionTask` with per-service `vars`"
+      ]
+    },
+    {
+      "id": "eval-09-in-kargo-project-otel-demo-suppose-our-staging-s",
+      "prompt": "In Kargo project `otel-demo`, suppose our `staging` Stage pulls from TWO separate Warehouses—`frontend-wh` (tracking `-frontend` tags) and `checkout-wh` (tracking `-checkout` tags)—that both watch the exact same image repository `ghcr.io/open-telemetry/demo`! How do we write the `yaml-update` expressions for `charts/frontend/values.yaml` and `charts/checkout/values.yaml` and the Stage's `requestedFreight` list in Kargo v1.12 so the two image tags don't collide?",
+      "expected_output": "Shows Kargo v1.12 two-argument `imageFrom` disambiguation: `${{ quote(imageFrom('ghcr.io/open-telemetry/demo', warehouse('frontend-wh')).tag) }}` for `charts/frontend/values.yaml` and `${{ quote(imageFrom('ghcr.io/open-telemetry/demo', warehouse('checkout-wh')).tag) }}` for `charts/checkout/values.yaml` (never removed `config.fromOrigin`), paired with two `requestedFreight` entries on `Stage/staging`.",
+      "files": [],
+      "expectations": [
+        "Uses `warehouse('frontend-wh')` and `warehouse('checkout-wh')` as the second argument to `imageFrom('ghcr.io/open-telemetry/demo', ...)` rather than removed `config.fromOrigin`",
+        "Wraps both tag expressions in `quote(...)` inside `yaml-update`",
+        "Shows two separate `requestedFreight` origin entries (`frontend-wh` and `checkout-wh`) on the `Stage` spec"
+      ]
+    },
+    {
+      "id": "eval-10-for-otel-app-s-payment-chart-in-http-gitops-otel",
+      "prompt": "For `OTEL-APP`'s `payment` chart in `http://gitops.otel-gitops.svc.cluster.local/talkops-ai/OTEL-APP.git`, our security team wants raw Kubernetes manifests rendered onto branch `stage/${{ ctx.stage }}` instead of letting ArgoCD run Helm directly, and we also need to make sure any Kubernetes resource removed from `charts/payment` gets deleted from the branch rather than lingering as an orphaned YAML file. Generate the exact Kargo v1.12 promotion step sequence for this pattern.",
+      "expected_output": "Uses `scripts/render_promotion_steps.py --pattern gitops-helm-template` to produce: `git-clone` (checking out `main` into `./src` and `stage/${{ ctx.stage }}` into `./out`) -> `git-clear` on `./out` (removing stale rendered manifests before rendering) -> `helm-template` -> `git-commit` -> `git-push` -> `argocd-update`.",
+      "files": [],
+      "expectations": [
+        "Includes `git-clear` on the target `./out` worktree BEFORE `helm-template` so deleted chart templates do not linger on `stage/${{ ctx.stage }}`",
+        "Chains `git-clone` -> `git-clear` -> `helm-template` -> `git-commit` -> `git-push` -> `argocd-update`",
+        "Wires `argocd-update` `desiredRevision` to the commit step output (`${{ outputs.commit.commit }}`)"
+      ]
+    },
+    {
+      "id": "eval-11-create-a-warehouse-named-flagd-bundle-wh-in-karg",
+      "prompt": "Create a Warehouse named `flagd-bundle-wh` in Kargo project `otel-demo` subscribing to `gitops.otel-gitops.svc.cluster.local/open-feature/flagd` (`^0.12.0`) and `gitops.otel-gitops.svc.cluster.local/open-telemetry/demo` (matching `-flagd-ui` tags like `2.2.0-flagd-ui`), skipping TLS verification on our internal registry, and gate Freight creation with a Kargo v1.12 expression criterion so a Freight bundle is ONLY assembled when the `open-telemetry/demo` tag starts with `2.2.` and `open-feature/flagd` has a non-empty tag. Apply and refresh it.",
+      "expected_output": "Previews and applies `kargo_apply_warehouse` (`flagd-bundle-wh` in `otel-demo`) with `freight_creation_criteria` (`expression: \"imageFrom('gitops.otel-gitops.svc.cluster.local/open-telemetry/demo').tag startsWith '2.2.' && imageFrom('gitops.otel-gitops.svc.cluster.local/open-feature/flagd').tag != ''\"`), refreshes discovery, and explains what happens when discovered artifacts do not satisfy the expression.",
+      "files": [],
+      "expectations": [
+        "Configures `freightCreationCriteria` (`freight_creation_criteria`) expression checking `imageFrom(...).tag startsWith '2.2.'` and non-empty `flagd` tag via `kargo_apply_warehouse` (`dry_run=True` -> `False`)",
+        "Refreshes `flagd-bundle-wh` via `kargo_refresh` and confirms Warehouse status and discovered Freight"
+      ]
+    },
+    {
+      "id": "eval-12-give-me-a-preview-of-a-projectconfig-for-otel-de",
+      "prompt": "Give me a preview of a `ProjectConfig` for `otel-demo` where `dev`, `staging`, `prod-us`, and `prod-eu` all have automatic promotion turned on with zero soak time and zero verification checks so every commit to `charts/payment` goes straight to live production unattended—don't apply it yet, tell me whether we should ship this!",
+      "expected_output": "Warns strongly against enabling unattended auto-promotion on `prod-us` and `prod-eu` with zero verification and zero soak time for `payment` in `otel-demo`, previews safe vs requested configuration via `dry_run=True` without mutating live `ProjectConfig`, and recommends keeping auto-promotion on `dev`/`staging` only while gating `prod-us`/`prod-eu` with manual approval/promotion, `AnalysisTemplate` SLO verification, and `requiredSoakTime`.",
+      "files": [],
+      "expectations": [
+        "Flags the severe production blast-radius risk of unattended auto-promotion on `prod-us` and `prod-eu` without verification or soak gates",
+        "Recommends restricting auto-promotion to `dev`/`staging` while gating `prod-us`/`prod-eu` with manual promotion, `AnalysisTemplate` SLO checks, or PR review",
+        "Does not mutate live `ProjectConfig` (`dry_run=False` is NOT executed)"
+      ]
+    }
+  ]
+}

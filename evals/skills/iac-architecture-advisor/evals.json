@@ -1,0 +1,93 @@
+{
+  "skill_name": "iac-architecture-advisor",
+  "evals": [
+    {
+      "id": "eval-01-engine-selection-decision-matrix-across-5-iac-engines",
+      "prompt": "Our CTO wants a clear comparison matrix across **AWS CDK**, **Terraform / OpenTofu**, **AWS CloudFormation**, **Pulumi**, and **Crossplane** to standardize our AWS IaC strategy across two teams: (Team A) 15 TypeScript full-stack product engineers building serverless/container apps exclusively on AWS, and (Team B) a 5-person Kubernetes platform team running EKS + multi-cloud DNS/GitHub/Datadog providers. Recommend the best engine(s) with explicit trade-offs.",
+      "expectations": [
+        "Activates the iac-architecture-advisor skill",
+        "Compares all 5 engines across language/abstraction model, state backend, drift/reconciliation model, policy-as-code ecosystem, and multi-cloud scope",
+        "Recommends **AWS CDK v2** (TypeScript L2 constructs + CloudFormation state) for Team A and **Terraform/OpenTofu** (for multi-provider AWS + DNS/GitHub/Datadog foundations) and/or **Crossplane** (if exposing Kubernetes-native self-service CRDs/Claims on EKS) for Team B"
+      ]
+    },
+    {
+      "id": "eval-02-greenfield-rapid-prototyping-aws-blocks-vs-raw-cdk-vs-amplify",
+      "prompt": "A 2-person startup wants to prototype a greenfield Next.js SaaS MVP on AWS this week with reusable UI components + editable CDK backend constructs in their repo rather than writing low-level CloudFormation or locked-in wrappers. Which rapid-prototyping path should they pick (`aws-blocks` vs `launch-with-aws` vs raw Terraform), and why?",
+      "expectations": [
+        "Activates the iac-architecture-advisor skill",
+        "Recommends **AWS Blocks** (`@aws-blocks/create-blocks-app` / `aws-blocks`) for greenfield full-stack Next.js/React rapid prototyping",
+        "Clearly distinguishes why `launch-with-aws` is NOT the primary fit here (`launch-with-aws` migrates existing non-AWS/PaaS apps like Heroku/Render/Vercel/Docker repos onto AWS) and why raw Terraform slows down full-stack UI+backend MVP velocity"
+      ]
+    },
+    {
+      "id": "eval-03-paas-migration-routing-heroku-express-postgres-to-launch-with-aws",
+      "prompt": "We have an existing production Express.js + PostgreSQL + Redis repository currently hosted on Render/Heroku (`render.yaml` / `Procfile`) and want an automated code + IaC migration plan onto AWS. Should we use `aws-blocks`, `launch-with-aws`, `aws-brownfield-migration`, or `Crossplane`?",
+      "expectations": [
+        "Activates the iac-architecture-advisor skill",
+        "Evaluates `launch-with-aws` (for automated app/PaaS migration onto AWS) alongside production IaC engines (`aws-cdk` / `aws-terraform`) and explains why `aws-blocks`, `aws-brownfield-migration` (for unmanaged resources already in AWS), and `Crossplane` serve different roles"
+      ]
+    },
+    {
+      "id": "eval-04-strict-regulated-bank-zero-third-party-state-cloudformation-vs-cdk",
+      "prompt": "A regulated financial institution mandates: (1) zero external SaaS state backends and zero S3 state files managed outside AWS control planes, (2) declarative YAML/JSON auditable templates with StackSets across 80 AWS Organizations accounts, and (3) no Node.js/Python runtime in air-gapped deploy runners. Recommend the right IaC engine and governance stack.",
+      "expectations": [
+        "Activates the iac-architecture-advisor skill",
+        "Recommends native **AWS CloudFormation** (with **CloudFormation StackSets** for multi-account AWS Organizations rollout, **CloudFormation Guard (`cfn-guard`)** + CloudFormation Hooks, and AWS-managed stack state)",
+        "Explains why CDK/Pulumi require Node.js/Python runtimes (violating constraint 3) and why Terraform/OpenTofu requires self-managing S3 `.tfstate` buckets or external SaaS state"
+      ]
+    },
+    {
+      "id": "eval-05-kubernetes-idp-self-service-crossplane-vs-terraform-modules",
+      "prompt": "Our platform engineering group runs ArgoCD on Amazon EKS and wants product teams to provision RDS databases, S3 buckets, and SQS queues simply by committing Kubernetes YAML manifests alongside their `Deployment` manifests \u2014 with continuous drift reconciliation. Evaluate Crossplane vs Terraform vs ACK (AWS Controllers for Kubernetes).",
+      "expectations": [
+        "Activates the iac-architecture-advisor skill",
+        "Recommends **Crossplane** (with Upbound `provider-family-aws`, XRDs, and Pipeline Compositions) for multi-resource platform abstractions (`XDatabase` bundling RDS + SubnetGroup + SecurityGroup + Secrets) reconciled continuously via ArgoCD",
+        "Contrasts Crossplane against Terraform (CLI/CI run-based, no continuous control loop by default unless paired with paid drift runners) and ACK (1:1 low-level AWS API CRDs without built-in XRD composition pipelines)"
+      ]
+    },
+    {
+      "id": "eval-06-typescript-team-needing-multi-cloud-aws-cloudflare-gcp-pulumi-vs-cdk",
+      "prompt": "Our engineering org writes 100% TypeScript and loves real programming constructs, loops, and Vitest unit tests \u2014 and our stack spans AWS (ECS, Aurora, S3) PLUS Cloudflare DNS/WAF, Auth0, and GCP BigQuery in one unified IaC workflow. Compare AWS CDK vs CDKTF vs Pulumi TypeScript.",
+      "expectations": [
+        "Activates the iac-architecture-advisor skill",
+        "Recommends **Pulumi (TypeScript)** (`@pulumi/aws` + `@pulumi/aws-native` + `@pulumi/cloudflare` + `@pulumi/gcp` + CrossGuard + Pulumi ESC) as the first-class multi-cloud TypeScript IaC engine",
+        "Explains why AWS CDK is AWS/CloudFormation-centric (requiring custom resources/extensions for non-AWS providers) and notes CDKTF ecosystem/maintenance trade-offs compared to native Pulumi or Terraform HCL"
+      ]
+    },
+    {
+      "id": "eval-07-hybrid-layered-iac-foundation-terraform-plus-app-cdk-or-sam",
+      "prompt": "Half our company (Cloud Ops) manages landing zones, Transit Gateways, VPCs, and IAM in Terraform, while 8 serverless product squads want to use AWS CDK or AWS SAM for their Lambda + Step Functions + DynamoDB microservices. Should we force everyone onto one tool, or run a layered hybrid model? Show how the boundary contract works cleanly.",
+      "expectations": [
+        "Activates the iac-architecture-advisor skill",
+        "Endorses a clean **layered two-tier boundary** (Platform/Network/Landing-Zone foundation in Terraform; Product microservice stacks in AWS CDK / SAM) when each resource has a **single owning IaC engine**",
+        "Defines the loose-coupling contract via SSM Parameter Store (`/platform/vpc/private-subnet-ids`, `/platform/kms/arn`) or tag-based `data`/lookup queries \u2014 never dual-managing the same AWS resource across two engines"
+      ]
+    },
+    {
+      "id": "eval-08-live-ap-south-1-existing-iac-footprint-discovery",
+      "prompt": "Inspect `ap-south-1` in our live AWS account (read-only) to detect what IaC footprint already exists (e.g., CloudFormation stacks, `CDKToolkit`, `aws:cloudformation:stack-name` or `ManagedBy=Terraform`/`Pulumi` resource tags, S3 state buckets) and advise which IaC engine aligns best with the account's current state.",
+      "expectations": [
+        "Activates the iac-architecture-advisor skill and performs read-only discovery in `ap-south-1` (`cloudformation list-stacks`/`describe-stacks`, tag/bucket inspection) via connected AWS MCP tools with zero raw `aws` CLI shell commands",
+        "Accurately summarizes the live `ap-south-1` IaC footprint and gives a grounded engine recommendation rather than guessing",
+        "Makes zero mutating AWS calls"
+      ]
+    },
+    {
+      "id": "eval-09-vague-which-iac-tool-is-best-discovery-questions",
+      "prompt": "Which IaC tool is the best for AWS in 2026? Just pick one for us.",
+      "expectations": [
+        "Activates the iac-architecture-advisor skill",
+        "Explains briefly why there is no single universal winner without knowing team context, asks 3-4 crisp decision questions (team language skills HCL vs TypeScript/Python, AWS-only vs multi-cloud, greenfield vs brownfield/PaaS migration, Kubernetes GitOps requirement), and gives a concise quick-pick cheat sheet"
+      ]
+    },
+    {
+      "id": "eval-10-awsknowledge-aws-sam-vs-aws-cdk-serverless-coexistence",
+      "prompt": "Query AWS documentation via connected AWS documentation tools to compare **AWS SAM** vs **AWS CDK** for serverless applications, including how `sam local` / `cdk synth` (`sam local invoke -t cdk.out/...template.json`) let teams combine both.",
+      "expectations": [
+        "Activates the iac-architecture-advisor skill and queries connected AWS documentation MCP tools (`awsknowledge`, `aws-mcp`, or `awsiac`)",
+        "Contrasts declarative `AWS::Serverless-2016-10-31` YAML templates (`AWS SAM`, concise serverless shorthand) against programmatic `aws-cdk-lib` L2 constructs (`AWS CDK`, richer multi-service composition and type safety)",
+        "Confirms AWS SAM CLI natively supports CDK apps (`sam local invoke` / `sam local start-api` against synthesized `cdk.out/*.template.json`)"
+      ]
+    }
+  ]
+}

@@ -1,10 +1,12 @@
 ---
 name: timestream-influxdb
 version: 2
-description: Retrieves authoritative guidance on Amazon Timestream for InfluxDB across its supported engine variants. Applicable to any InfluxDB-on-AWS request including engine variant and licensing selection, provisioning and IAM, encryption at rest (AWS-owned and customer-managed KMS keys, key policies, and key lifecycle), schema design (tags vs fields, cardinality, HTTP/sensor/metric data modeling), migration from LiveAnalytics, Processing Engine plugins, connectivity (database endpoints and private or public access), and write/query errors.
+description: "Retrieves authoritative guidance on Amazon Timestream for InfluxDB across its supported engine variants. Applicable to any InfluxDB-on-AWS request including engine variant and licensing selection, provisioning and IAM, encryption at rest (AWS-owned and customer-managed KMS keys, key policies, and key lifecycle), schema design (tags vs fields, cardinality, HTTP/sensor/metric data modeling), migration from LiveAnalytics, Processing Engine plugins, connectivity (database endpoints and private or public access), and write/query errors. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # Amazon Timestream for InfluxDB
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, account/region checks (`sts:GetCallerIdentity`), cluster/instance/table inspection, CloudWatch telemetry, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___run_script` `call_boto3`, `dynamodb`, `elasticache`, `postgres`, `mysql`, `cloudwatch`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**. Local offline helper scripts under `scripts/` may be run via `python3` or `node`.
 
 ## Overview
 
@@ -71,7 +73,7 @@ For V3 encryption choices, customer-managed KMS key policy, migration, or key li
 - **Before asserting S3 log-delivery availability or configuration paths, verify the create and update API request parameters and the Timestream for InfluxDB log-delivery documentation.** Use only the operations, service principal, and bucket-policy requirements those sources document.
 - **Do NOT invent CloudWatch metric names.** Load [monitoring operations](references/monitoring-operations.md) and [metric discovery](references/monitoring-metrics.md), then verify availability for the selected engine variant and deployment type. If unsure whether a metric exists, say so explicitly.
 - **Before asserting backup or restore availability, verify the Timestream for InfluxDB CLI or SDK API model and the [customer-managed backup and restore documentation](https://docs.aws.amazon.com/timestream/latest/developerguide/influxdb3-customer-managed-backup-restore.html).** Confirm support by engine variant and Region for on-demand, scheduled, continuous, point-in-time, and self-service restore capabilities. Use `DbBackup` terminology for `DbBackup` resources, never "snapshot," and separately verify the accessibility and recovery path for service-managed snapshots.
-- **`--publicly-accessible`** is a supported option at instance/cluster creation time. Do NOT say the service is exclusively VPC-only — public access is an opt-in feature.
+- **`--publicly-accessible`** is a supported option at instance/cluster creation time. Do NOT say the service is exclusively VPC-only — public access is an opt-in feature (while private VPC networking without `0.0.0.0/0` remains recommended for security).
 
 ### 3. Design the schema (tags vs fields)
 
@@ -126,10 +128,10 @@ You MUST load and follow [security best practices](references/security-best-prac
 
 ## Handoff from aws-database-selection
 
-This skill can be invoked directly, or it can be entered from the `aws-database-selection` parent skill after that skill has run a requirements interview and produced a `requirements.json` artifact. When you see a backtick-wrapped path matching `aws_dbs_requirements/*/requirements.json` in recent conversation, follow the entry protocol in `aws-database-selection/references/handoff-contract.md`:
+This skill can be invoked directly, or it can be entered from the `aws-database-selection` parent skill after that skill has run a requirements interview and produced a `requirements.json` artifact. When you see a backtick-wrapped path matching `aws_dbs_requirements/*/requirements.json` in recent conversation, follow the entry protocol in `aws-database-selection/handoff-contract.md`:
 
 1. Read the artifact using `file_read`.
-2. Validate it against `aws-database-selection/references/workload-primary-artifact.schema.json`. If malformed or unreadable, tell the user and proceed without it.
+2. Validate it against `aws-database-selection/workload-primary-artifact.schema.json`. If malformed or unreadable, tell the user and proceed without it.
 3. Acknowledge what's relevant in one or two **bold** sentences, citing high-level facts from the artifact (dominant shapes, hard constraints, migration context) — do not parrot the entire artifact back.
 4. Scope-check: this skill is scoped to Amazon Timestream for InfluxDB (V2, V2 Read Replica, V3) — engine variant selection, schema design, migration from LiveAnalytics, Processing Engine plugins. If the artifact's `workload_primaries.dominant_shapes` or `migration_context` don't match that scope, emit weak backpressure per the handoff contract: suggest `dynamodb-skill` for non-InfluxDB time-series on DynamoDB, or go back to `aws-database-selection` if the dominant shape isn't time-series, then ask the user whether to go back or proceed anyway. Do not silently misuse the artifact.
 5. Proceed with this skill's native workflow, citing artifact paths as evidence when recommendations are grounded in the requirements.

@@ -70,8 +70,24 @@ Engines that require a fixed endpoint or credentials at startup are **connectors
 
 ## Skills this agent uses
 
-- Architecture, Routing & FinOps: `aws-database`
-- Cross-Engine Lifecycle & Operations: `db-observability-and-wait-triage` · `dms-schema-conversion` · `dms-data-migration-execution` · `db-ha-dr-and-schema-evolution`
-- Aurora & Distributed SQL: `amazon-aurora-postgresql` · `amazon-aurora-mysql` · `dsql`
-- RDS Open Source & Commercial: `rds-oss` · `rds-oracle` · `rds-sqlserver` · `rds-db2`
-- NoSQL, In-Memory & Purpose-Built: `amazon-dynamodb` · `amazon-documentdb` · `amazon-elasticache` · `amazon-keyspaces` · `amazon-neptune` · `timestream-influxdb`
+- `aws-database`
+- `db-observability-and-wait-triage`
+- `dms-schema-conversion`
+- `dms-data-migration-execution`
+- `db-ha-dr-and-schema-evolution`
+- `amazon-aurora-postgresql`
+- `amazon-aurora-mysql`
+- `dsql`
+- `rds-oss`
+- `rds-oracle`
+- `rds-sqlserver`
+- `rds-db2`
+- `amazon-dynamodb`
+- `amazon-documentdb`
+- `amazon-elasticache`
+- `amazon-keyspaces`
+- `amazon-neptune`
+- `timestream-influxdb`
+- `database-migration-service-expertise`
+- `database-rds-devops`
+- `rds-operation-review`

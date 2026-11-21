@@ -1,0 +1,99 @@
+{
+  "skill_name": "agents-debug",
+  "companion_skills": [
+    "agents-deploy",
+    "agents-optimize",
+    "agents-harden",
+    "agents-build",
+    "arize-incident-investigation"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Debug why my AgentCore agent in ap-south-1 is returning HTTP `424 Failed Dependency` and tool call errors by checking traces and logs."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "My AgentCore Runtime is stuck in `DELETING` for 3 hours with `ConflictException` — how do I unblock this?"
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why are we hitting `ServiceQuotaExceededException: maxVms limit exceeded` when active concurrency is tiny, and why did `agentcore dev` fail with exit code 7?"
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Streaming responses from our AgentCore agent drop mid-answer with `RemoteProtocolError` whenever a tool takes longer than 60 seconds."
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Concurrent invocations of our AgentCore agent have merged X-Ray traces, and passing the `/runtime-endpoint/DEFAULT` ARN made all child spans disappear!"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Our deployed AgentCore agent drops SSE streaming mid-response with `RemoteProtocolError` during long tool calls, and our old runtime has been stuck in `DELETING` for an hour."
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Production incident: `SystemErrorRate` jumped above 2% and token usage spiked 5x in `ap-south-1` ten minutes ago — run a read-only trace and log root-cause check."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "`agentcore: command not found` on a new engineer's laptop, and on staging the agent returns wrong answers with `AccessDeniedException` on Bedrock model invoke."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Diagnose from traces why our deployed AgentCore cold start took 18 seconds on the last failed invocation."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "`agentcore deploy` failed during CloudFormation synthesis because the `CDKToolkit` bootstrap stack is missing in `ap-south-1`.",
+      "expected_alternative_skill": "agents-deploy"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Our agent works without any errors, but we want to set up `Builtin.Helpfulness` evaluators, 2% online eval sampling, and reduce monthly vCPU-hour costs.",
+      "expected_alternative_skill": "agents-optimize"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Proactively optimize our container image size below 100 MB, initialize module-scope `BedrockModel` warm-pool singletons, and lock down inbound JWT auth for go-live.",
+      "expected_alternative_skill": "agents-harden"
+    }
+  ]
+}

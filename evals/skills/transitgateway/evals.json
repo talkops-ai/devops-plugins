@@ -1,0 +1,89 @@
+{
+  "skill_name": "transitgateway",
+  "evals": [
+    {
+      "id": "eval-01-segmented-hub-disable-default-association-and-propagation-upfront",
+      "prompt": "We are creating a new AWS Transit Gateway in `ap-south-1` to connect `Prod` VPCs, `NonProd` VPCs, and a `SharedServices` VPC (`NonProd` and `Prod` must NEVER talk to each other, while both can reach `SharedServices`). Explain why leaving TGW defaults enabled breaks isolation and provide the exact route-table association + propagation matrix.",
+      "expectations": [
+        "Activates the transitgateway skill",
+        "Mandates disabling **`DefaultRouteTableAssociation=disable`** and **`DefaultRouteTablePropagation=disable`** at Transit Gateway creation time so attachments do not auto-mesh into one open flat network",
+        "Designs 3 dedicated TGW Route Tables (`Prod-RT`, `NonProd-RT`, `SharedServices-RT`): `Prod` VPCs associate with `Prod-RT` (propagating only `SharedServices` \u2014 or `Prod`+`SharedServices` if intra-prod allowed, NEVER `NonProd`), `NonProd` associates with `NonProd-RT` (propagating only `SharedServices`), and `SharedServices` associates with `SharedServices-RT` (propagating both `Prod` and `NonProd`), plus KMS-encrypted **Transit Gateway Flow Logs**"
+      ]
+    },
+    {
+      "id": "eval-02-east-west-vpc-inspection-with-aws-network-firewall-and-appliance-mode",
+      "prompt": "Force all east-west traffic between Spoke VPC A (`10.1.0.0/16`) and Spoke VPC B (`10.2.0.0/16`) through a central **Inspection VPC** running **AWS Network Firewall** (`Gateway Load Balancer` / Firewall endpoints across 3 AZs). Detail the Spoke TGW Route Table vs Firewall TGW Route Table vs Inspection VPC subnet route tables AND why **`ApplianceModeSupport=enable`** is mandatory!",
+      "expectations": [
+        "Activates the transitgateway skill",
+        "Routes Spoke TGW Route Table `0.0.0.0/0` / `10.0.0.0/8` statically to the **Inspection VPC TGW Attachment** (never propagating Spoke A directly to Spoke B!), places Firewall endpoints in a middle subnet tier between TGW attachment subnets (`0.0.0.0/0 -> Firewall Endpoint` in the **same AZ**) and return route (`10.0.0.0/8 -> TGW`), and propagates Spoke CIDRs into the **Inspection TGW Route Table**",
+        "Mandates **`ApplianceModeSupport=enable`** on the Inspection VPC TGW attachment so cross-AZ flows (`Spoke A AZ1 -> Spoke B AZ2`) hash symmetrically through the **same AZ's** stateful firewall rather than dropping asymmetric return SYN-ACK packets (noting the AZ-failover health trade-off)"
+      ]
+    },
+    {
+      "id": "eval-03-centralized-north-south-internet-egress-vpc-design",
+      "prompt": "Instead of deploying 3 NAT Gateways in each of our 20 spoke VPCs (`60 NAT Gateways`!), design a centralized **North-South Internet Egress VPC** behind AWS Transit Gateway in `ap-south-1`, showing the exact subnet route tables inside the Egress VPC (`TGW attachment subnets` vs `Public NAT subnets` return `10.0.0.0/8` route!).",
+      "expectations": [
+        "Activates the transitgateway skill",
+        "Maps Spoke VPC private subnets `0.0.0.0/0 -> tgw-*` -> Spoke TGW Route Table `0.0.0.0/0 -> Egress VPC attachment`",
+        "Inside the Egress VPC, separates **Private TGW Attachment Subnets** (`0.0.0.0/0 -> NAT Gateway` in same AZ) from **Public NAT Subnets** (`0.0.0.0/0 -> igw-*` AND critical return route **`10.0.0.0/8 -> tgw-*`** so inbound return internet packets from NAT Gateway route back to the spoke VPCs!)"
+      ]
+    },
+    {
+      "id": "eval-04-migrating-from-vpc-peering-mesh-to-transit-gateway-zero-downtime",
+      "prompt": "We have 10 production VPCs interconnected via 45 `pcx-*` VPC Peering links (`/16` routes on every VPC route table) and want to migrate onto AWS Transit Gateway without dropping active TCP traffic! How does AWS VPC longest-prefix-match routing let us cut over cleanly without deleting `pcx-*` routes first?",
+      "expectations": [
+        "Activates the transitgateway skill",
+        "Uses VPC Route Table **Longest Prefix Match (LPM)** for zero-downtime cutover (e.g., inserting more-specific `/17` or `/24` routes pointing to `tgw-*` to override `/16 -> pcx-*` with instant rollback, or LPM summary/specific staging after TGW attachments, propagations, and SGs/NACLs are verified) before deleting `pcx-*` connections"
+      ]
+    },
+    {
+      "id": "eval-05-on-premises-site-to-site-vpn-attachment-with-ecmp-bandwidth-scaling",
+      "prompt": "A single AWS Site-to-Site VPN tunnel caps out around `1.25 Gbps`, and our data center needs `5 Gbps` of encrypted IPsec throughput into our AWS Transit Gateway! Show every condition required on BOTH the Transit Gateway and BGP configuration for **Equal-Cost Multi-Path (ECMP)** across multiple VPN attachments.",
+      "expectations": [
+        "Activates the transitgateway skill",
+        "Lists all mandatory ECMP requirements: `VpnEcmpSupport = enable` on the Transit Gateway, **dynamic BGP routing** (`StaticRoutesOnly=false` \u2014 static VPN routes do NOT support ECMP), identical BGP attributes across all parallel tunnels (**same prefix length, same neighbor ASN and `AS_PATH` length, same `MED`**, and TGW route table association/propagation)"
+      ]
+    },
+    {
+      "id": "eval-06-inter-region-transit-gateway-peering-static-routing-requirement",
+      "prompt": "We created a Transit Gateway in `ap-south-1` (`ASN 64512`) and a second Transit Gateway in `eu-west-1` (`ASN 64513`) and peered them (`create-transit-gateway-peering-attachment`), then tried calling `enable-transit-gateway-route-table-propagation` on the peering attachment \u2014 which AWS rejected! Explain why and show how inter-Region TGW peering routes work.",
+      "expectations": [
+        "Activates the transitgateway skill",
+        "Explains that classic **Transit Gateway Peering Attachments only support STATIC routes** (`create-transit-gateway-route` on both regions' TGW route tables pointing remote regional summary CIDRs to the `tgw-attach-*` peering ID; dynamic BGP route propagation is not supported on standard TGW peering unless using Cloud WAN / Connect peers), and notes unique ASNs + non-overlapping CIDRs across both regions"
+      ]
+    },
+    {
+      "id": "eval-07-live-ap-south-1-transit-gateway-inventory-and-security-audit",
+      "prompt": "Run a read-only AWS Transit Gateway audit in `ap-south-1` on our live AWS account (`describe-transit-gateways`, `describe-transit-gateway-attachments`, `describe-transit-gateway-route-tables`, and TGW Flow Logs), and summarize security controls required on any production TGW.",
+      "expectations": [
+        "Activates the transitgateway skill and queries `ec2` Transit Gateway APIs (`DescribeTransitGateways`, `DescribeTransitGatewayAttachments`, `DescribeTransitGatewayRouteTables`, `DescribeFlowLogs`) in `ap-south-1` via connected AWS MCP tools with zero raw `aws` CLI shell commands",
+        "Accurately reports live `ap-south-1` TGW findings (cleanly reporting 0 TGWs if none exist) and checks `DefaultRouteTableAssociation`/`Propagation`, **TGW Flow Logs encrypted with SSE-KMS** (`aws:SourceArn`/`aws:SourceAccount`/`kms:ViaService` KMS key policy), CloudTrail, and least-privilege IAM",
+        "Makes zero mutating AWS calls"
+      ]
+    },
+    {
+      "id": "eval-08-tgw-attachment-dedicated-tiny-28-subnets-best-practice",
+      "prompt": "Should we place our AWS Transit Gateway VPC Attachment ENIs inside our existing `/20` workload application subnets, OR create dedicated `/28` TGW attachment subnets (1 per Availability Zone) in each spoke VPC? Explain why dedicated `/28` TGW subnets matter.",
+      "expectations": [
+        "Activates the transitgateway skill",
+        "Strongly recommends **dedicated `/28` TGW attachment subnets (1 per AZ where workloads run)**: TGW deploys just 1 ENI per enabled AZ, and dedicated TGW subnets give clean independent **Route Table** control (critical for inspection/egress VPC hair-pinning!) and independent NACL boundaries without affecting workload subnet routing"
+      ]
+    },
+    {
+      "id": "eval-09-ip-multicast-routing-across-vpcs-with-tgw-multicast-domains",
+      "prompt": "A financial market-data feed needs to distribute UDP **IP Multicast** (`IGMPv2`) packets from 1 publisher EC2 instance in `FeedVPC` to 30 subscriber EC2 instances across 3 spoke VPCs on AWS. Show how **Transit Gateway Multicast** (`MulticastSupport=enable` + Multicast Domains) is configured.",
+      "expectations": [
+        "Activates the transitgateway skill",
+        "Notes `MulticastSupport=enable` **must be set at Transit Gateway creation time** (cannot be enabled on an existing TGW!), creates a `TransitGatewayMulticastDomain` (`Igmpv2Support=enable`), associates participating VPC attachments/subnets, and registers multicast group sources (or dynamic IGMPv2 group membership on Nitro instances)"
+      ]
+    },
+    {
+      "id": "eval-10-awsknowledge-tgw-blackhole-routes-preventing-supernet-summary-leaks",
+      "prompt": "Query AWS documentation via connected AWS documentation tools to explain why a **Transit Gateway Blackhole Route** (`--blackhole` on `10.0.0.0/8` or `172.16.0.0/12` RFC 1918 summaries) is critical in an isolated Spoke TGW Route Table that also has a `0.0.0.0/0 -> Egress VPC` default route!",
+      "expectations": [
+        "Activates the transitgateway skill and queries connected AWS documentation MCP tools (`awsknowledge`, `aws-mcp`, or `awsiac`)",
+        "Explains the classic leak: if `NonProd-RT` has `0.0.0.0/0 -> Egress/Shared VPC` without RFC 1918 blackhole routes, packets from `NonProd` (`10.20.0.0/16`) destined for `Prod` (`10.10.0.0/16`) match `0.0.0.0/0`, enter the Egress VPC, and can bounce back to `Prod` via the Egress VPC's `10.0.0.0/8 -> TGW` return route! Adding `10.0.0.0/8 -> blackhole` (alongside explicit allowed `/16` routes) drops unauthorized east-west RFC 1918 traffic immediately at TGW"
+      ]
+    }
+  ]
+}

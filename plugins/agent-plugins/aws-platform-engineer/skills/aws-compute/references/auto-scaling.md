@@ -43,17 +43,24 @@ aws autoscaling put-scaling-policy --auto-scaling-group-name my-asg \
 ```
 
 ## Instance refresh (rolling updates)
-Roll out a launch-template change (new AMI, user data) by replacing instances in batches:
+Roll out a launch-template change (new AMI, user data) by replacing instances in batches with zero downtime (`MinHealthyPercentage: 100`, `MaxHealthyPercentage: 120`–`200`), staged `CheckpointPercentages` + `CheckpointDelay`, and `AutoRollback: true`:
 
 ```bash
 aws autoscaling start-instance-refresh --auto-scaling-group-name my-asg \
-  --preferences '{"MinHealthyPercentage":90,"InstanceWarmup":300}'
+  --preferences '{
+    "MinHealthyPercentage": 100,
+    "MaxHealthyPercentage": 125,
+    "InstanceWarmup": 300,
+    "SkipMatching": false,
+    "AutoRollback": true,
+    "CheckpointPercentages": [25, 50, 100],
+    "CheckpointDelay": 600
+  }'
 ```
 
-- **Skip matching is enabled by default in the console** — the refresh skips instances already matching the target config. If nothing gets replaced, the ASG probably isn't pointing at a new, specific launch-template version (e.g., it uses `$Latest`/`$Default` or an SSM-parameter AMI that resolved unchanged). Point the ASG at the new numeric version or disable skip matching.
-- `MinHealthyPercentage` default 90; `MaxHealthyPercentage` 100–200 (requires Min set, spread ≤100). Setting `MinHealthyPercentage=100` (with `MaxHealthyPercentage>100`) launches replacements before terminating old ones (faster, extra cost).
-- Checkpoints replace in stages (ascending %, last = 100). Monitor with `describe-instance-refreshes`; cancel with `cancel-instance-refresh`; mid-flight `rollback-instance-refresh`.
-- **Auto-rollback is unsupported** when the launch template version is `$Latest`/`$Default` or the AMI is an SSM parameter — pin a numeric version to enable it.
+- **Skip matching is enabled by default in the console** — the refresh skips instances already matching the target config. If nothing gets replaced, the ASG probably isn't pointing at a new, specific launch-template version (e.g., it uses `$Latest`/`$Default` or an SSM-parameter AMI that resolved unchanged). Point the ASG at the new numeric version or set `"SkipMatching": false`.
+- `MinHealthyPercentage` default 90; `MaxHealthyPercentage` 100–200 (requires Min set, spread ≤100). Always include both `MinHealthyPercentage: 100` and `MaxHealthyPercentage` (100–200) for zero-downtime surge replacement (launches replacements before terminating old ones), plus staged `CheckpointPercentages` (e.g. `[25, 50, 100]`) and `CheckpointDelay` for progressive canary verification. Monitor with `describe-instance-refreshes`; cancel with `cancel-instance-refresh`; mid-flight `rollback-instance-refresh`.
+- **Auto-rollback is unsupported** when the launch template version is `$Latest`/`$Default` or the AMI is an SSM parameter — pin an explicit numeric Launch Template version (e.g. `Version='2'`) to enable `AutoRollback: true`.
 
 ## Mixed instances and Spot
 A mixed instances policy combines a launch template with instance-type overrides and an on-demand/Spot distribution for cost and resilience.
@@ -63,7 +70,7 @@ A mixed instances policy combines a launch template with instance-type overrides
 - Diversify across many instance types and AZs. `OnDemandBaseCapacity` guarantees a floor of On-Demand; `OnDemandPercentageAboveBaseCapacity` splits the rest.
 
 ## Warm pools
-A warm pool keeps pre-initialized (Stopped by default, or Running/Hibernated) instances ready, cutting scale-out latency for long-booting apps (e.g., 30s vs 4min). Default size = max − desired; cap with `MaxGroupPreparedCapacity`. Warm-pool instances don't contribute to scaling metrics until they enter service.
+A warm pool (`put-warm-pool`) keeps pre-initialized (`PoolState`: `Stopped` by default, or `Running`/`Hibernated`) instances ready, cutting scale-out latency for long-booting apps (e.g., 30s vs 4min). Default size = `MaxSize − DesiredCapacity`; cap total prepared instances with `MaxGroupPreparedCapacity` and set minimum pre-warmed count with `MinSize`. **Important scaling metric behavior**: Warm-pool instances (and instances currently in `DefaultInstanceWarmup`) **do not contribute to ASG scaling metrics** (`ASGAverageCPUUtilization`, etc.) until they transition to `InService` and finish their warmup period.
 
 ## Lifecycle hooks
 Hooks pause instances at `Pending:Wait` (launch) or `Terminating:Wait` (terminate) so you can run setup/teardown.

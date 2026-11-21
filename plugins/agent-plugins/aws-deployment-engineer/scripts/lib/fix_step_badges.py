@@ -20,7 +20,10 @@ Improved algorithm (v2):
 import argparse
 import math
 import re
-import defusedxml.ElementTree as ET
+try:
+    import defusedxml.ElementTree as ET
+except ImportError:
+    import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 
 

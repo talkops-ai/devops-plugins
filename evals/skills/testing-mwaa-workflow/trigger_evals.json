@@ -1,0 +1,68 @@
+{
+  "skill_name": "testing-mwaa-workflow",
+  "companion_skills": [
+    "amazon-opensearch-service",
+    "analytics-opensearch-expertise",
+    "auditing-aws-system-tables",
+    "authoring-glue-and-emr-spark-jobs",
+    "authoring-mwaa-workflow"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Trigger a test run of our deployed daily_orders_etl DAG on Amazon MWAA Provisioned, monitor it to completion, and restore its paused state."
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Start a test workflow run on MWAA Serverless (`arn:aws:airflow-serverless:...`) using StartWorkflowRun and verify all task instances succeed."
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Smoke-test our newly deployed Airflow DAG on MWAA by unpausing it, triggering a single manual dagRun, and checking task instance results."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Execute a validation run for a batch of upgraded MWAA DAGs during Phase 7 of our Airflow upgrade to confirm VERIFIED status."
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Run my MWAA workflow end-to-end and report whether each task succeeded or failed."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Write a brand-new Python Airflow DAG with deferrable GlueJobOperator and AthenaOperator tasks."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Upgrade our Amazon MWAA environment from Apache Airflow 2.7.2 to Airflow 3.0."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure an Amazon S3 Tables Iceberg table with monthly partitioning."
+    }
+  ]
+}

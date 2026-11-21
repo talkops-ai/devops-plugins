@@ -1,0 +1,95 @@
+{
+  "skill_name": "app-data-layer-remediation",
+  "companion_skills": [
+    "dms-schema-conversion",
+    "modernization-parity-and-cutover",
+    "legacy-vm-and-mainframe-replatform",
+    "amazon-aurora-postgresql"
+  ],
+  "queries": [
+    {
+      "id": "trig-pos-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Rewrite our Java Hibernate JPA entities and Oracle `ROWNUM`, `DECODE`, `NVL`, and `CONNECT BY PRIOR` queries to match our DMS Schema Conversion Aurora PostgreSQL target."
+    },
+    {
+      "id": "trig-pos-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Remediate our .NET EF Core and Dapper T-SQL (`TOP`, `ISNULL`, `@@ROWCOUNT`, error `2627`) codebase for Aurora PostgreSQL and package DDL into Flyway."
+    },
+    {
+      "id": "trig-pos-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Fix Hibernate `@SequenceGenerator` `allocationSize = 50` ID collisions and Oracle `'' == NULL` semantics after migrating to PostgreSQL."
+    },
+    {
+      "id": "trig-pos-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Map Oracle `ORA-00001`/`ORA-00054` and SQL Server `2627`/`1205` error handlers to PostgreSQL 5-character `SQLSTATE` codes."
+    },
+    {
+      "id": "trig-pos-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Synchronize our MyBatis XML mappers with DMS Schema Conversion column type changes (`NUMBER(1)` to `BOOLEAN`)."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Containerize a legacy Windows IIS .NET VM using AWS App2Container (`app2container init`)."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Run Gatling and k6 cutover parity load tests and mainframe `COMP-3` record-replay checks."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure AWS Direct Connect MACsec encryption and BGP BFD failover."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Set up AWS WAF Bot Control Targeted rules on CloudFront."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Create a multi-region CloudTrail trail with S3 KMS encryption."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Debug a timing-out Python Lambda function in `ap-south-1`."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Run SQL queries against VPC Flow Logs in S3 Tables (`s3tablescatalog/aws-cloudwatch`)."
+    }
+  ]
+}

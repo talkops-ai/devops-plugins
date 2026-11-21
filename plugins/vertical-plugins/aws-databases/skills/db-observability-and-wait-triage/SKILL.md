@@ -11,6 +11,8 @@ version: 1
 
 # Database Observability and Wait-Event Triage
 
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, account/region checks (`sts:GetCallerIdentity`), cluster/instance/table inspection, CloudWatch telemetry, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___run_script` `call_boto3`, `dynamodb`, `elasticache`, `postgres`, `mysql`, `cloudwatch`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**. Local offline helper scripts under `scripts/` may be run via `python3` or `node`.
+
 Use this skill whenever an engineer reports **slow database queries, high CPU or `DBLoad`, application API timeouts, lock contention, connection exhaustion, replication lag, or DynamoDB throttling**. Never advise scaling up an instance class as a first resort without correlating control-plane metrics, Performance Insights wait events, and in-engine query plans.
 
 ## Reference Library (Load On-Demand)

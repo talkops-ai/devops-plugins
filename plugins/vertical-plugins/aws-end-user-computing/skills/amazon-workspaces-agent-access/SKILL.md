@@ -1,6 +1,6 @@
 ---
 name: amazon-workspaces-agent-access
-description: Connects AI agents to remote Windows desktop applications on Amazon WorkSpaces Applications (AppStream 2.0) through the managed Agent Access MCP server, and guides reliable desktop automation. Covers connecting an agent to the MCP endpoint (SigV4, streaming URL, and Active Directory SAML/Domain Join), BLOCKING vs POLLING connect modes, the computer-use tools (screenshot, click, type, key, scroll), screenshot-budget and action-batching discipline, MCP tool forwarding (forwarded___ tools), session lifecycle and expire-on-delete, and troubleshooting connection errors. Use when building or debugging an agent that drives a remote Windows desktop or GUI application via WorkSpaces Applications / AppStream — including "dcv session not ready", "client_disconnected", 400 signing-region, POLLING/connection_status, SAML assertion, or forwarded tool questions. Not for Amazon WorkSpaces Personal/Core virtual desktops or general AppStream fleet administration unrelated to agent access.
+description: Connects AI agents to remote Windows desktop apps on Amazon WorkSpaces Applications (AppStream 2.0) via the managed Agent Access MCP server. Covers endpoint/SigV4/streaming-URL and AD SAML/Domain Join setup, BLOCKING vs POLLING connect modes (`connection_status`), computer-use tools (`screenshot`, click, `type_text`, `key`, `scroll`), screenshot-budget & action-batching, MCP tool forwarding (`forwarded___`), session lifecycle & expire-on-delete, and troubleshooting (`dcv session not ready`, `client_disconnected`, 400 signing-region). Not for WorkSpaces Personal/Core or general AppStream fleet admin. Query live AWS state via MCP tools only (never raw aws CLI).
 version: 1
 ---
 
@@ -10,7 +10,7 @@ Domain expertise for connecting AI agents to remote Windows desktops on Amazon W
 
 **How it works:** Agent Access is **MCP-only** — there is no AWS CLI/SDK command that calls the desktop tools. Agents connect to `https://agentaccess-mcp.{region}.api.aws/mcp` over Streamable HTTP, SigV4-signed with service name `agentaccess-mcp`, and call MCP tools (`screenshot`, `left_click`, `type_text`, ...) to drive the desktop. The AWS CLI/SDK is used only for *setup* — `appstream create-streaming-url`, fleet/stack configuration. `mcp-proxy-for-aws` handles the SigV4 signing.
 
-**Recommended setup:** use `mcp-proxy-for-aws` (Python) as the transport; it signs each request and manages the DELETE lifecycle. Any MCP client that supports Streamable HTTP + SigV4 works. When running the AWS CLI/SDK *setup* steps (create-streaming-url, stack/fleet configuration), the AWS MCP server is recommended for sandboxed execution and audit logging.
+**Recommended setup:** use `mcp-proxy-for-aws` (Python) as the transport; it signs each request locally and manages the DELETE lifecycle (or connect via **AgentCore Gateway**, which signs SigV4 on your behalf and can **auto-provision streaming sessions** without manual `CreateStreamingURL` management). Any MCP client that supports Streamable HTTP + SigV4 works. When running the AWS CLI/SDK *setup* steps (create-streaming-url, stack/fleet configuration), use connected MCP tools for sandboxed execution and audit logging.
 
 ## Guardrail — where this skill's own files live (MCP vs local install)
 

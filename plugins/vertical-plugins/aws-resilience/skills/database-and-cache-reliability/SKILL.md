@@ -1,9 +1,11 @@
 ---
 name: database-and-cache-reliability
-description: Diagnose and remediate production stateful data-plane and queue reliability incidents across Amazon RDS/Aurora (DBLoad wait events, max_connections exhaustion, RDS Proxy pinning, replica lag, failover stalls), Amazon DynamoDB (hot partitions, GSI write throttling, Contributor Insights), Amazon ElastiCache for Valkey/Redis (Evictions, EngineCPUUtilization saturation), and Amazon SQS/Kafka backpressure (ApproximateAgeOfOldestMessage, DLQ spikes). Use when the user reports database latency, connection pool exhaustion, DynamoDB throttling, cache evictions, or consumer queue lag.
+description: "Diagnose and remediate production stateful data-plane and queue reliability incidents across Amazon RDS/Aurora (DBLoad wait events, max_connections exhaustion, RDS Proxy pinning, replica lag, failover stalls), Amazon DynamoDB (hot partitions, GSI write throttling, Contributor Insights), Amazon ElastiCache for Valkey/Redis (Evictions, EngineCPUUtilization saturation), and Amazon SQS/Kafka backpressure (ApproximateAgeOfOldestMessage, DLQ spikes). Use when the user reports database latency, connection pool exhaustion, DynamoDB throttling, cache evictions, or consumer queue lag. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # AWS Database, Cache & Queue Production Reliability Guide
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, account/region checks (`sts:GetCallerIdentity`), cluster/instance/table inspection, CloudWatch telemetry, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___run_script` `call_boto3`, `dynamodb`, `elasticache`, `postgres`, `mysql`, `cloudwatch`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**. Local offline helper scripts under `scripts/` may be run via `python3` or `node`.
 
 Use this skill when triaging production outages or tail-latency spikes rooted in **Amazon RDS / Aurora**, **Amazon DynamoDB**, **Amazon ElastiCache (Valkey / Redis)**, **Amazon OpenSearch**, or **Amazon SQS / MSK** queues.
 

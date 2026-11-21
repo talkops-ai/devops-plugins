@@ -1,0 +1,95 @@
+{
+  "skill_name": "aws-security",
+  "companion_skills": [
+    "auditing-cloudtrail-forensics",
+    "aws-iam",
+    "aws-threat-modeling",
+    "waf"
+  ],
+  "queries": [
+    {
+      "id": "trig-pos-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Check whether Amazon GuardDuty, Amazon Inspector, and Security Hub V2 (OCSF) are configured in `ap-south-1` and summarize any `AttackSequence:` or Exposure findings."
+    },
+    {
+      "id": "trig-pos-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Summarize our Security Hub CSPM (`FSBP` and `CIS`) compliance posture and Inspector CVE vulnerability findings in read-only mode."
+    },
+    {
+      "id": "trig-pos-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Review Amazon Macie sensitive data classification status, Amazon Detective behavior graphs, and Amazon Security Lake OCSF log source health."
+    },
+    {
+      "id": "trig-pos-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Audit `AWS Organizations` `SECURITYHUB_POLICY` and `INSPECTOR_POLICY` targets alongside AWS Config drift in `ap-south-1`."
+    },
+    {
+      "id": "trig-pos-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Compare Security Hub V2 (OCSF Exposure findings and `list-automation-rules-v2`) against Security Hub CSPM (ASFF controls)."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Create an AWS WAFv2 WebACL with Bot Control Targeted rules and rate-based rules."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Add Amazon Cognito PKCE login to our React application."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Use `asm-exec` to resolve `{{resolve:secretsmanager:...}}` references in `psql`."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure AWS Direct Connect BGP peering and SiteLink."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Connect an existing Lambda function to an API Gateway REST API."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write PromQL queries for Kubernetes pod restarts in AMP."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Migrate a legacy Java Tomcat VM to ECS using AWS App2Container."
+    }
+  ]
+}

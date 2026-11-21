@@ -1,0 +1,145 @@
+{
+  "skill_name": "instrumenting-kubernetes-workloads",
+  "companion_skills": [
+    "provisioning-opentelemetry-collectors",
+    "onboarding-exporters-and-instrumentation",
+    "troubleshooting-telemetry-pipelines",
+    "auditing-observability-security-posture",
+    "tuning-sampling-and-trace-derived-metrics"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Create an OpenTelemetry `Instrumentation` CR in `otel-demo` pointing to `opentelemetry-otel-collector.otel-demo.svc.cluster.local` and enable Java auto-instrumentation on the `ad` Deployment.",
+      "notes": "Instrumentation CR + Java injection on ad"
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Deploy an OpenTelemetry eBPF Instrumentation (`OBI`) DaemonSet for zero-code distributed tracing of Rust `shipping` and C++ `currency` services in `otel-demo`.",
+      "notes": "OBI eBPF zero-code instrumentation"
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Check why our `load-generator` and `recommendation` pods in `otel-demo` didn't get the OpenTelemetry Python auto-instrumentation initContainer injected even though the pod annotations are set.",
+      "notes": "Verify workload auto-instrumentation"
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Remove accidental Python OpenTelemetry auto-instrumentation annotations from our Ruby `email` Deployment in `otel-demo` and verify the pods roll out cleanly without the initContainer.",
+      "notes": "Disable workload instrumentation"
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We want distributed traces out of `payment` (Node.js), `recommendation` (Python), `ad` (Java), and `cart` (.NET) in `otel-demo` without touching any application source code—onboard them!",
+      "notes": "Zero-code K8s auto-instrumentation"
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Our Alpine `.NET 8` `cart` container in `otel-demo` crashes immediately at startup with `Error loading shared library ld-linux-x86-64.so.2` right after adding `instrumentation.opentelemetry.io/inject-dotnet: \"true\"`.",
+      "notes": "Alpine musl .NET auto-instrumentation"
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "How do I pass `service.namespace=otel-demo`, `k8s.pod.name`, and `k8s.namespace.name` via the Kubernetes Downward API into `currency`'s manual C++ OpenTelemetry SDK?",
+      "notes": "Manual OTel SDK K8s resource attributes"
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Inventory all uninstrumented Deployments in the `otel-demo` namespace (like `quote` and `flagd`) and generate an interactive A2UI instrumentation coverage view.",
+      "notes": "Workload discovery + A2UI"
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Configure the Go binary target path annotation on `Deployment/flagd` in `otel-demo` so the OpenTelemetry Go eBPF auto-instrumentation sidecar can attach properly.",
+      "notes": "Go target exe annotation"
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We have two conflicting `Instrumentation` CRs (`otel-demo-instrumentation` and `legacy-jaeger-inst`) in `otel-demo` breaking `\"true\"` injection annotations—clean up the obsolete `legacy-jaeger-inst` CR safely.",
+      "notes": "Duplicate Instrumentation CR cleanup"
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Lint `Deployment/ad` (`readOnlyRootFilesystem: true`) in `otel-demo` before enabling `instrumentation.opentelemetry.io/inject-java: \"true\"`.",
+      "notes": "Workload manifest pre-injection lint"
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Provision an `OpenTelemetryCollector` gateway in `otel-demo` and an `otel-agent` DaemonSet in `observability`.",
+      "expected_alternative_skill": "provisioning-opentelemetry-collectors",
+      "notes": "Collector provisioning"
+    },
+    {
+      "id": "trig-13",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Deploy a Prometheus `postgres_exporter` sidecar or Deployment in `otel-demo` to expose `/metrics` for `postgresql:5432`.",
+      "expected_alternative_skill": "onboarding-exporters-and-instrumentation",
+      "notes": "Prometheus exporter onboarding"
+    },
+    {
+      "id": "trig-14",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "`opentelemetry-otel-collector` pods in `otel-demo` are getting `OOMKilled` (`ExitCode 137`) under heavy load—diagnose the collector pipeline.",
+      "expected_alternative_skill": "troubleshooting-telemetry-pipelines",
+      "notes": "Collector pipeline troubleshooting"
+    },
+    {
+      "id": "trig-15",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Audit Kubernetes RBAC `ClusterRole` permissions and exporter TLS settings across `opentelemetry-otel-collector` and `otel-gateway`.",
+      "expected_alternative_skill": "auditing-observability-security-posture",
+      "notes": "Security posture audit"
+    },
+    {
+      "id": "trig-16",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure collector `tail_sampling` policies and `spanmetrics` connectors for `otel-demo` traces on our `otel-tail-sampler` StatefulSet.",
+      "expected_alternative_skill": "tuning-sampling-and-trace-derived-metrics",
+      "notes": "Collector sampling & connectors"
+    }
+  ]
+}

@@ -1,6 +1,8 @@
 node_modules/
 dist/
 build/
+!plugins/**/references/build/
+!plugins/**/references/build/**
 .dprint/
 .ruff_cache/
 .mise/
@@ -9,7 +11,26 @@ build/
 .idea/
 .vscode/
 .env
+.env.*
+.*.env
 .claude/settings.local.json
 .agents/teamwork/
 __pycache__/
+*.pyc
+.venv/
 .opscloud
+.plugin-data/
+.pricing_cache/
+reference/
+
+# Ephemeral skill evaluation workspaces & runtime traces (never commit)
+.eval-runs
+.eval-runs/
+evals/workspaces/
+evals/runs/
+evals/**/iteration-*/
+evals/**/workspace/
+evals/**/trace.jsonl
+evals/**/normalized_trace.json
+evals/**/grading.json
+evals/**/hook_audit.jsonl

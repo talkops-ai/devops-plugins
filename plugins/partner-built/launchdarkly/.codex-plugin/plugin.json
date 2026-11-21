@@ -1,0 +1,31 @@
+{
+  "name": "launchdarkly",
+  "version": "0.2.0",
+  "description": "Official LaunchDarkly feature flag management, progressive guarded rollouts, experimentation, observability (logs, traces, errors, sessions), and AI Config / Agent Control graph skills with bundled remote MCP configuration (`LAUNCHDARKLY_ACCESS_TOKEN`).",
+  "author": {
+    "name": "LaunchDarkly",
+    "url": "https://launchdarkly.com"
+  },
+  "homepage": "https://github.com/talkops-ai/devops-plugins",
+  "repository": "https://github.com/talkops-ai/devops-plugins",
+  "license": "Apache-2.0",
+  "keywords": [
+    "launchdarkly",
+    "mcp",
+    "devops"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "LaunchDarkly",
+    "shortDescription": "Official LaunchDarkly feature flags, guarded rollouts, experiments, observability, and AI Config skills.",
+    "developerName": "LaunchDarkly",
+    "category": "DevOps & Feature Management",
+    "capabilities": [
+      "Interactive",
+      "Read"
+    ],
+    "websiteURL": "https://launchdarkly.com"
+  }
+}

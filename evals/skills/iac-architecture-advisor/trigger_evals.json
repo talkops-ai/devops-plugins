@@ -1,0 +1,95 @@
+{
+  "skill_name": "iac-architecture-advisor",
+  "companion_skills": [
+    "aws-cdk",
+    "aws-terraform",
+    "aws-blocks",
+    "launch-with-aws"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Help us choose between AWS CDK, Terraform/OpenTofu, Pulumi, CloudFormation, and Crossplane for our 20-engineer AWS + Cloudflare org."
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Should we use `aws-blocks`, `launch-with-aws`, or raw CDK to build a greenfield Next.js SaaS prototype vs migrating an existing Heroku app?"
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Compare Crossplane vs Terraform vs ACK for building a self-service Kubernetes internal developer platform on EKS."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Design a clean SSM Parameter Store handoff boundary between a central Terraform landing-zone team and product squads using AWS CDK."
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Check our live `ap-south-1` account for existing CloudFormation stacks or Terraform state tags and advise which IaC engine we should standardize on."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Fix a broken `cdk deploy` `EXPORT_CANNOT_BE_DELETED` cross-stack reference error in TypeScript."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Diagnose why an ECS deployment rolled back and inspect CloudWatch container startup logs."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write an AWS SDK for JavaScript v3 `DynamoDBDocumentClient` paginator using `paginateQuery`."
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Troubleshoot CoreDNS `SERVFAIL` latency and VPC CNI IP exhaustion on our EKS cluster."
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Enable Oracle Data Guard Fast-Start Failover on Amazon RDS for Oracle."
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Tune InfluxDB 3 Processing Engine Python plugins on Amazon Timestream for InfluxDB."
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Build a threat model using STRIDE and MITRE ATT&CK for our payment gateway API."
+    }
+  ]
+}

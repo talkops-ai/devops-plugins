@@ -1,21 +1,12 @@
 ---
 name: waf
-description: >-
-  Configures AWS WAF to filter web traffic: creating web access control lists (web ACLs) on
-  CloudFront, Application Load Balancers, API Gateway, and AppSync; AWS Managed Rules tuned in Count
-  mode; rate-based rules for HTTP floods; IP set and geographic match rules; Bot Control (Common and
-  Targeted); turning bot labels into a confidence signal; stripping spoofed inbound x-amzn-waf-*
-  headers; recovering the real client IP behind a CDN; Fraud Control (account takeover and account
-  creation fraud prevention); and logging and request sampling. Use when the user wants to protect a
-  web application or API from common exploits, bots, credential stuffing, fake-account creation, or
-  HTTP floods at the application layer (layer 7). Routes to the right per-task procedure in
-  references. Do NOT use for L3/L4 DDoS protection (shieldadvanced skill), multi-account WAF rollout
-  (firewallmanager skill), CloudFront configuration (cloudfront skill), or Route 53 health checks or
-  records (route53 skill).
+description: "Configures AWS WAF to filter web traffic: creating web access control lists (web ACLs) on CloudFront, Application Load Balancers, API Gateway, and AppSync; AWS Managed Rules tuned in Count mode; rate-based rules for HTTP floods; IP set and geographic match rules; Bot Control (Common and Targeted); turning bot labels into a confidence signal; stripping spoofed inbound x-amzn-waf-* headers; recovering the real client IP behind a CDN; Fraud Control (account takeover and account creation fraud prevention); and logging and request sampling. Use when the user wants to protect a web application or API from common exploits, bots, credential stuffing, fake-account creation, or HTTP floods at the application layer (layer 7). Routes to the right per-task procedure in references. Do NOT use for L3/L4 DDoS protection (shieldadvanced skill), multi-account WAF rollout (firewallmanager skill), CloudFront configuration (cloudfront skill), or Route 53. Query live AWS state via MCP tools only (never raw aws CLI)."
 version: 1
 ---
 
 # AWS WAF
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, caller/account verification (`sts:GetCallerIdentity`), resource inspection, logs/metrics queries, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___call_aws` / `aws___run_script`, `cloudwatch`, `cloudtrail`, `prometheus`, `dynamodb`, `serverless`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**.
 
 ## Overview
 
@@ -108,6 +99,12 @@ Apply these across every reference:
 - **Header-spoofing risk.** Any `x-amzn-waf-*` signal forwarded to the origin can be forged inbound.
   You MUST add the inbound-header-stripping rule whenever a signal or client IP is forwarded (see
   stripping-inbound-waf-headers-before-trusting-them).
+- **Secret safety & live mutation guardrails.** Never call `secretsmanager:GetSecretValue` or
+  `ssm:GetParameter --with-decryption` to paste plaintext secrets into WAF rules; use metadata-only
+  inspection (`DescribeSecret`, `DescribeParameters`) and dynamic references
+  (`{{resolve:secretsmanager:<secret-id>:SecretString:<key>}}`). Never execute destructive live
+  mutations (`wafv2:DisassociateWebACL`, `wafv2:DeleteWebACL`) during an incident or read-only
+  audit; prescribe surgical `RuleActionOverrides` (`Count`) with group `OverrideAction: {"None": {}}`.
 
 ## Additional Resources
 

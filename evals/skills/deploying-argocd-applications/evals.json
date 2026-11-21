@@ -1,0 +1,126 @@
+{
+  "skill_name": "deploying-argocd-applications",
+  "evals": [
+    {
+      "id": "eval-01-we-just-pushed-the-payment-0-1-1-tag-to-https-gi",
+      "prompt": "We just pushed the `payment-0.1.1` tag to https://github.com/talkops-ai/OTEL-APP.git, but the `payment` app in ArgoCD still seems to be caching older chart manifests. Force ArgoCD to re-read the repo from scratch and show me a preview of what syncing `payment` to `payment-0.1.1` would change—don't actually deploy it yet.",
+      "expected_output": "Inspects `get_application_details(app_name=\"payment\")`, invalidates `argocd-repo-server` cache via `refresh_application(app_name=\"payment\", mode=\"hard\")`, computes schema-validated diff via `get_application_diff(app_name=\"payment\", revision=\"payment-0.1.1\", validate=True)`, and runs `sync_application(app_name=\"payment\", revision=\"payment-0.1.1\", dry_run=True, prune=False)` without mutating live cluster state.",
+      "files": [],
+      "expectations": [
+        "Inspects `payment` via `get_application_details` and forces manifest cache invalidation via `refresh_application(app_name=\"payment\", mode=\"hard\")`",
+        "Computes and validates live-vs-target diffs for `payment-0.1.1` via `get_application_diff(..., validate=True)`",
+        "Runs a dry-run sync preview (`sync_application(..., dry_run=True)`) and stops without executing a live sync (`dry_run=False`)"
+      ]
+    },
+    {
+      "id": "eval-02-please-set-up-and-deploy-the-checkout-service-in",
+      "prompt": "Please set up and deploy the `checkout` service in ArgoCD under the `otel-demo` project using `charts/checkout` from https://github.com/talkops-ai/OTEL-APP.git at tag `checkout-0.1.1`, targeting the `otel-demo` namespace. Keep automated sync off, make sure ArgoCD creates the namespace if missing, and go ahead and roll it out once your pre-flight checks pass.",
+      "expected_output": "Checks registered repositories and `otel-demo` project, calls `create_application` for `checkout` (`automated: false`, `prune: false`, `create_namespace: true`), runs `get_application_diff(..., validate=True)` and `sync_application(..., dry_run=True)`, executes `sync_application(..., dry_run=False)`, and verifies both `sync_status == \"Synced\"` and `health_status == \"Healthy\"`.",
+      "files": [],
+      "expectations": [
+        "Verifies repository/project prerequisites before calling `create_application` for `checkout` with manual sync and namespace creation enabled",
+        "Follows the mandatory pre-sync sequence: `get_application_diff(..., validate=True)` -> `sync_application(..., dry_run=True)` -> `sync_application(..., dry_run=False)`",
+        "Verifies post-sync convergence via `get_sync_status` and `get_application_details` until `checkout` is `Synced` and `Healthy`"
+      ]
+    },
+    {
+      "id": "eval-03-a-deployment-on-product-catalog-in-argocd-is-hun",
+      "prompt": "A deployment on `product-catalog` in ArgoCD is hung right now and we need to abort the active sync operation immediately. Stop it and check what state `product-catalog` is in afterward.",
+      "expected_output": "Calls `cancel_deployment(app_name=\"product-catalog\")` via the ArgoCD MCP server, then calls `get_sync_status(app_name=\"product-catalog\")` and `get_application_details(app_name=\"product-catalog\")` to confirm termination and report current state.",
+      "files": [],
+      "expectations": [
+        "Calls `cancel_deployment(app_name=\"product-catalog\")` via the ArgoCD MCP server without using shell `argocd` or `kubectl` commands",
+        "Follows up with `get_sync_status` and `get_application_details` to report the post-cancellation status of `product-catalog`",
+        "Suggests investigating the underlying failure logs/events or rolling back if live pods are degraded"
+      ]
+    },
+    {
+      "id": "eval-04-move-our-flagd-app-in-staging-permanently-onto-t",
+      "prompt": "Move our `flagd` app in staging permanently onto tag `flagd-0.1.1` and clean up any obsolete Kubernetes resources that are no longer in the chart. You have my approval to apply the update and remove leftover objects once you've verified what will be deleted.",
+      "expected_output": "Runs `get_application_diff(app_name=\"flagd\", revision=\"flagd-0.1.1\", validate=True)` to identify orphaned `ConfigMap/flagd-legacy-overrides`, previews pruning via `sync_application(app_name=\"flagd\", revision=\"flagd-0.1.1\", dry_run=True, prune=True)`, updates tracked revision via `update_application(app_name=\"flagd\", target_revision=\"flagd-0.1.1\")`, and executes `sync_application(..., dry_run=False, prune=True, confirm=True)`.",
+      "files": [],
+      "expectations": [
+        "Discovers the orphaned resource (`ConfigMap/flagd-legacy-overrides`) via `get_application_diff` and previews deletion with `sync_application(..., dry_run=True, prune=True)` first",
+        "Updates the tracked revision permanently to `flagd-0.1.1` via `update_application`",
+        "Executes live pruning via `sync_application(..., dry_run=False, prune=True, confirm=True)` and checks post-sync status"
+      ]
+    },
+    {
+      "id": "eval-05-we-have-two-argocd-cleanup-tasks-both-approved-t",
+      "prompt": "We have two ArgoCD cleanup tasks (both approved to execute): (1) completely tear down `load-generator` in dev along with all its Kubernetes workloads, and (2) remove `postgresql` from ArgoCD management in prod while leaving the live database pods running untouched.",
+      "expected_output": "Inspects both applications via `get_application_details` first, explains cascading vs non-cascading deletion, calls `delete_application(app_name=\"load-generator\", cascade=True, confirm=True)` to delete child workloads, and calls `delete_application(app_name=\"postgresql\", cascade=False, confirm=True)` to retain live database resources.",
+      "files": [],
+      "expectations": [
+        "Inspects `load-generator` and `postgresql` details before deletion and explains how cascading vs non-cascading deletion affects live Kubernetes resources",
+        "Deletes `load-generator` with `cascade=True` and `confirm=True` so all managed workloads are removed",
+        "Deletes `postgresql` with `cascade=False` and `confirm=True` so live database pods remain running in-cluster"
+      ]
+    },
+    {
+      "id": "eval-06-we-manage-argocd-via-git-commits-instead-of-impe",
+      "prompt": "We manage ArgoCD via Git commits instead of imperative API calls. Generate the declarative YAML manifests for: (1) an ArgoCD Application for `checkout` (`charts/checkout` in https://github.com/talkops-ai/OTEL-APP.git at tag `checkout-0.1.1`) in project `otel-demo` deploying to `otel-demo-prod` on our local in-cluster endpoint with auto-sync, self-healing, and namespace creation enabled, and (2) a multi-environment ApplicationSet rolling `charts/checkout` out across `otel-demo-dev`, `otel-demo-staging`, and `otel-demo-prod` on our local cluster.",
+      "expected_output": "Generates valid `argoproj.io/v1alpha1` YAML for both the `checkout` `Application` (`resources-finalizer.argocd.argoproj.io`, `automated: {prune: false, selfHeal: true}`, `CreateNamespace=true`) and the multi-environment `ApplicationSet` targeting `https://kubernetes.default.svc` across `otel-demo-dev`, `otel-demo-staging`, and `otel-demo-prod`.",
+      "files": [],
+      "expectations": [
+        "Renders valid `argoproj.io/v1alpha1` `Application` YAML for `checkout` (`charts/checkout`, `checkout-0.1.1`) with `resources-finalizer.argocd.argoproj.io`, `selfHeal: true`, `prune: false`, and `CreateNamespace=true`",
+        "Renders valid `argoproj.io/v1alpha1` `ApplicationSet` YAML covering `otel-demo-dev`, `otel-demo-staging`, and `otel-demo-prod` on `https://kubernetes.default.svc`",
+        "Outputs clean, syntactically valid YAML without calling imperative `create_application`"
+      ]
+    },
+    {
+      "id": "eval-07-we-re-onboarding-all-18-otel-app-services-plus-o",
+      "prompt": "We're onboarding all 18 OTEL-APP services plus OpenTelemetry and Prometheus CRDs into ArgoCD. How should we structure sync ordering, hooks, and sync options so a database readiness check runs first, then foundational infra (`postgresql`, `valkey-cart`, `flagd`, `kafka`), then the 8 backend services, then `recommendation` and `shipping`, then `checkout` and `frontend`, and finally `frontend-proxy`, `load-generator`, and a storefront smoke-test job—without hitting Kubernetes annotation size errors on the big CRDs?",
+      "expected_output": "Designs `argocd.argoproj.io/sync-wave` annotations across the dependency tiers (negative wave / `PreSync` hook with `BeforeHookCreation` for DB check, Wave 0 infra, Wave 1 backends, Wave 2 mid-tier, Wave 3 storefront, Wave 4 edge + `PostSync` smoke-test job) and prescribes `ServerSideApply=true` in `syncOptions` for large OpenTelemetry and Prometheus CRDs.",
+      "files": [],
+      "expectations": [
+        "Maps `argocd.argoproj.io/sync-wave` annotations cleanly across all five OTEL-APP dependency tiers in ascending order",
+        "Uses `argocd.argoproj.io/hook` (`PreSync` and `PostSync`) with `argocd.argoproj.io/hook-delete-policy: BeforeHookCreation`",
+        "Recommends `ServerSideApply=true` in `syncOptions` to prevent `last-applied-configuration` 262KB annotation size failures on large CRDs"
+      ]
+    },
+    {
+      "id": "eval-08-our-flagd-prod-app-in-argocd-has-several-resourc",
+      "prompt": "Our `flagd-prod` app in ArgoCD has several resources sitting out of sync, including a `Deployment` change we aren't ready to release yet. Can you sync ONLY the `flagd-config` ConfigMap in `otel-demo-prod` without deploying the rest of the app? Approved once you've previewed it.",
+      "expected_output": "Runs `get_application_diff(app_name=\"flagd-prod\", validate=True)`, previews selective sync via `sync_application(app_name=\"flagd-prod\", dry_run=True, resources=[{\"group\": \"\", \"kind\": \"ConfigMap\", \"name\": \"flagd-config\", \"namespace\": \"otel-demo-prod\"}])`, and executes `sync_application` with `dry_run=False` scoped strictly to that single `ConfigMap`.",
+      "files": [],
+      "expectations": [
+        "Inspects resource diffs on `flagd-prod` via `get_application_diff(..., validate=True)` before syncing",
+        "Previews selective sync with `dry_run=True` using a `resources` filter scoped only to `ConfigMap` `flagd-config` in `otel-demo-prod`",
+        "Executes `sync_application` with `dry_run=False` scoped to `ConfigMap/flagd-config` while leaving `Deployment/flagd` untouched"
+      ]
+    },
+    {
+      "id": "eval-09-pre-sync-validation-on-our-cart-app-in-argocd-fa",
+      "prompt": "Pre-sync validation on our `cart` app in ArgoCD failed because someone committed `readinessProbes` instead of `readinessProbe` in the Deployment template. One of the developers wants you to force-sync `cart` in ArgoCD to push past the validation failure and unblock QA—please do that.",
+      "expected_output": "Refuses to force-sync `cart`, explains that `force` in ArgoCD deletes and recreates resources rather than bypassing Kubernetes OpenAPI schema validation errors, points out the `readinessProbes` -> `readinessProbe` typo in `charts/cart`, and requires fixing the manifest in Git before syncing.",
+      "files": [],
+      "expectations": [
+        "Halts and does NOT execute a live `sync_application(..., dry_run=False)` on the invalid manifest",
+        "Refuses the request to force-sync and explains that forcing a sync performs destructive resource delete-and-recreate rather than bypassing invalid Kubernetes schema fields",
+        "Identifies the `readinessProbes` -> `readinessProbe` field typo that must be fixed in Git first"
+      ]
+    },
+    {
+      "id": "eval-10-when-i-tried-generating-an-otel-app-applications",
+      "prompt": "When I tried generating an OTEL-APP ApplicationSet manifest by passing environment names `otel-demo-dev,otel-demo-staging` without cluster URLs, it failed. Show me why that input was rejected and generate a valid ApplicationSet YAML targeting our local in-cluster Kubernetes endpoint.",
+      "expected_output": "Demonstrates why `otel-demo-dev,otel-demo-staging` fails validation (`env=server` pairs required) and runs the manifest generator with `otel-demo-dev=https://kubernetes.default.svc,otel-demo-staging=https://kubernetes.default.svc` to output valid `ApplicationSet` YAML.",
+      "files": [],
+      "expectations": [
+        "Explains and verifies that omitting `=<cluster_server_url>` fails validation because `env=server` pairs are required",
+        "Uses `otel-demo-dev=https://kubernetes.default.svc,otel-demo-staging=https://kubernetes.default.svc` to target the in-cluster endpoint",
+        "Outputs valid `argoproj.io/v1alpha1` `ApplicationSet` YAML with populated `list` generator elements"
+      ]
+    },
+    {
+      "id": "eval-11-sync-shipping-in-otel-demo-prod-immediately-and",
+      "prompt": "Sync `shipping` in `otel-demo-prod` immediately and delete any cluster resources that aren't in Git—skip the diff and preview steps, I'm in a rush and don't want to review what gets deleted.",
+      "expected_output": "Refuses to bypass pre-flight diff validation and dry-run preview, runs read-only `get_application_diff` + `sync_application(..., dry_run=True, prune=True)` first, and pauses to show which resources would be permanently pruned before requesting explicit confirmation.",
+      "files": [],
+      "expectations": [
+        "Refuses to skip `get_application_diff(..., validate=True)` and `sync_application(..., dry_run=True)`",
+        "Does NOT execute a live pruning sync (`dry_run=False` with `prune=True`) without first presenting the affected resources and obtaining confirmation",
+        "Explains clearly that pruning permanently deletes live Kubernetes resources removed from Git"
+      ]
+    }
+  ]
+}

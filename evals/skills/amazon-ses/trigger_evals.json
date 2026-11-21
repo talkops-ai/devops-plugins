@@ -1,0 +1,68 @@
+{
+  "skill_name": "amazon-ses",
+  "companion_skills": [
+    "amazon-eventbridge-event-bus",
+    "amazon-eventbridge-scheduler-and-pipes",
+    "amazon-sqs-sns-async-messaging",
+    "aws-messaging-and-streaming",
+    "aws-sms-voice"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Audit our Amazon SESv2 account status, sending quota, verified email identities, configuration sets, and suppression list in ap-south-1."
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "How do I set up an Amazon SES domain identity with 2048-bit Easy DKIM CNAME records, a Custom MAIL FROM subdomain, SPF, and DMARC in Route 53?"
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Help me request Amazon SES production access using aws sesv2 put-account-details and configure bounce and complaint event destinations."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Our Amazon SES bounce rate is approaching 4% and emails are landing in spam—how do I check our suppressed destinations and enforce TLS_POLICY REQUIRE on our configuration set?"
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Compare our Amazon SESv2 identities and quotas across ap-south-1 and us-east-1 for a multi-region transactional email failover architecture."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "How do I register a US 10DLC campaign or India DLT Sender ID for SMS messaging using aws pinpoint-sms-voice-v2?"
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Help me link a WhatsApp Business Account and create a WhatsApp message template using aws socialmessaging."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "How do I repartition an Amazon Kinesis Data Stream or migrate our Apache Kafka cluster to Amazon MSK Serverless?"
+    }
+  ]
+}

@@ -8,7 +8,7 @@ import json
 import re
 import sys
 
-_GEO_PREFIX = re.compile(r"^(us|eu|apac|global)\.")
+_GEO_PREFIX = re.compile(r"^(us|eu|apac|in|au|jp|global)\.")
 
 
 def is_inference_profile(model_id: str) -> bool:

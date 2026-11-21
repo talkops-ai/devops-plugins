@@ -1,0 +1,95 @@
+{
+  "skill_name": "aws-networking-and-compute",
+  "companion_skills": [
+    "aws-containers",
+    "aws-finops-and-cost",
+    "aws-iam-and-security",
+    "aws-cdk"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Design a 3-AZ dual-stack production VPC in Terraform with Public, Private App, and Isolated Database subnets plus S3/DynamoDB Gateway Endpoints."
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Architect a Hub-and-Spoke AWS Transit Gateway IaC blueprint with Appliance Mode inspection and centralized PrivateLink Interface Endpoints."
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Provide an IaC blueprint for ECS Fargate behind an HTTPS ALB with `awsvpc` security group chaining, `ARM64` Graviton, and graceful `SIGTERM` draining."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Size `gp3` vs `io2` Block Express EBS volumes in IaC and verify ECR PrivateLink endpoints (`ecr.api`, `ecr.dkr`, plus S3 Gateway)."
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Review our serverless API Gateway + VPC Lambda + SQS IaC blueprint for ENI subnet exhaustion and SQS visibility timeout retry storms."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Import 10 unmanaged ClickOps S3 buckets into CloudFormation using `start-resource-scan`."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure GitHub Actions OIDC trust policies and CodeArtifact npm upstream controls."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Migrate our AWS SDK for JS v2 DynamoDB calls to `@aws-sdk/lib-dynamodb` v3 `DynamoDBDocumentClient`."
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Use `launch_with_aws.py` to migrate a Railway Next.js app to AWS."
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Convert Oracle PL/SQL packages to Aurora PostgreSQL PL/pgSQL using AWS DMS Schema Conversion."
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Troubleshoot Amazon WorkSpaces PCoIP/WSP black-screen session disconnects."
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Create an AWS Marketplace Private Offer replacement agreement (`CreateReplacementOffer`)."
+    }
+  ]
+}

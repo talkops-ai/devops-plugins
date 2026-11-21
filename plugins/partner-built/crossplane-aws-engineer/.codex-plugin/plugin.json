@@ -36,5 +36,7 @@
       "Review these Crossplane manifests for security, schema, and reconciliation errors.",
       "Render and validate this Crossplane composition offline."
     ]
-  }
+  },
+  "mcpServers": "./.mcp.json",
+  "hooks": "./hooks/hooks.json"
 }

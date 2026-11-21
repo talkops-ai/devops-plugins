@@ -1,0 +1,68 @@
+{
+  "skill_name": "provisioning-data-infrastructure-iac",
+  "companion_skills": [
+    "amazon-opensearch-service",
+    "analytics-opensearch-expertise",
+    "auditing-aws-system-tables",
+    "authoring-glue-and-emr-spark-jobs",
+    "authoring-mwaa-workflow"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Write a production Terraform module to provision Amazon S3 Tables, AWS Glue Data Catalog, Lake Formation LF-Tags, and Redshift Serverless with KMS encryption."
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Author AWS CDK TypeScript constructs for a private 3-AZ Amazon MSK cluster and Amazon OpenSearch Service domain with RemovalPolicy.RETAIN."
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Provision an AWS Glue 5.0 PySpark Iceberg ETL job and least-privilege IAM execution role using Terraform."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure aws_s3tables_table_bucket in Terraform with SSE-KMS encryption and automated Iceberg unreferenced file removal maintenance."
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Harden our analytics Terraform stack with manage_admin_password = true on Redshift Serverless and prevent_destroy lifecycle rules on stateful stores."
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Debug why a single task in our Amazon MWAA Airflow DAG failed yesterday in CloudWatch logs."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Find which existing table in our Glue Data Catalog contains the customer_churn_score column."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Run an ad-hoc Athena SQL time-travel query (`FOR TIMESTAMP AS OF`) on an existing Iceberg table."
+    }
+  ]
+}

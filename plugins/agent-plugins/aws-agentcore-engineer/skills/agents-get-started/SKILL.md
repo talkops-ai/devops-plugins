@@ -27,322 +27,142 @@ Walk a developer from zero to a running agent on AWS.
 ## When to use
 
 - Developer wants to build an agent on AWS and doesn't know where to start
-- Developer wants to create a new AgentCore project
-- Developer is choosing between frameworks (Strands, LangGraph, GoogleADK, OpenAI Agents)
-- Developer just ran `agentcore create` and wants to know what to do next
+- Developer wants to create a new AgentCore project (`agentcore create`)
+- Developer is choosing between frameworks (Strands, LangGraph, GoogleADK, OpenAI Agents, or BYO Container)
+- Developer just ran `agentcore create` and wants to know what to do next (`agentcore dev`, first deploy, first invoke)
 
 Do NOT use for:
-
-- Environment/prerequisite issues (CLI not found, credentials broken) → use `agents-debug`
+- Environment/prerequisite issues (CLI not found, credentials broken) → use `agents-debug` ([`references/doctor.md`](references/doctor.md))
 - Adding capabilities to an existing project (memory, tools, policies) → use `agents-build` or `agents-connect`
-- Migrating an existing Bedrock Agent → use `agents-build` (loads [`references/migrate.md`](../agents-build/references/migrate.md))
+- Migrating an existing Bedrock Agent → use `agents-build` ([`references/migrate.md`](references/migrate.md))
+
+## MCP-Only Execution & Read-Only Safety
+
+- **MCP-Only Live Discovery & Docs:** Execute **all** live AWS discovery, AgentCore runtime/gateway/memory inspection, telemetry/log/trace queries, IAM policy checks, and documentation lookups **exclusively via connected MCP tools**: `aws-mcp` (`aws___run_script` using read-only `await call_boto3(...)`, `aws___search_documentation`, `aws___read_documentation`), `agentcore` (`search_agentcore_docs`, `fetch_agentcore_doc`, `list_agent_runtimes`, `get_agent_runtime`, etc.), `strands-agents` (`search_docs`, `fetch_doc`, `find_integrations`), `cloudwatch`, `appsignals`, `cloudtrail`, `awspricing`, `awsiac`, and `awsknowledge`.
+- **Zero Raw CLI Execution, Strictly Read-Only & Secret-Safe:** **Never** run raw `aws ...` or `agentcore ...` CLI commands in Bash/`run_command` to query or mutate live AWS accounts (present CLI commands in Markdown strictly as operator reference snippets). **Never** invoke live mutations (`create_*`, `update_*`, `delete_*`, `InvokeAgentRuntime`, `InvokeModel`) — refuse unapproved destructive/mutating requests and explain the safe approval-gated operator workflow with verification and rollback guidance. **Never** read or print plaintext secrets (`secretsmanager:GetSecretValue`, `ssm:GetParameter` with `WithDecryption=True`, `.env` / `.env.local` values, or raw memory record contents).
+- **Edge-Case Documentation Fallback:** For unmapped AWS/AgentCore/Bedrock/Strands edge cases, run 1–2 focused queries via `agentcore`, `strands-agents`, `awsknowledge`, or `aws-mcp` documentation search tools.
 
 ## Input
 
 `$ARGUMENTS` can be:
-
-- A framework preference: "using LangGraph", "with Strands"
-- A protocol: "MCP server", "A2A"
-- A description of what the agent should do: "a customer support agent"
-- Empty — the skill will guide framework selection
+- A framework preference (`"using LangGraph"`, `"with Strands"`), a protocol (`"MCP server"`, `"A2A"`), a task description (`"a customer support agent"`), or empty (guides selection interactively).
 
 ## Process
 
-### Step 0: Verify CLI version
+### Step 0: Verify CLI & toolchain prerequisites
 
-```bash
-agentcore --version
-```
-
-This skill requires v0.9.0 or later.
-
-If the version is older:
-> Your AgentCore CLI is out of date (found vX.Y.Z, need v0.9.0+).
-
-Offer to run the update: `agentcore update`. After the update completes, re-check the version to confirm it's ≥0.9.0 before continuing. Preserve any context the developer already provided (framework preference, project name, what they want to build) so they don't have to repeat themselves.
-
-If `agentcore` is not found:
-> The AgentCore CLI isn't installed. Run `npm install -g @aws/agentcore` (requires Node.js 20+).
-> If you're having trouble with installation, I can run the `agents-debug` skill (which loads [`references/doctor.md`](../agents-debug/references/doctor.md)) to diagnose your environment.
+AgentCore CLI `>= 0.9.0` (Node.js `20+`) and **`uv`** (for Python starter projects) are required. Provide these operator checks:
+- Check versions: `agentcore --version` and `uv --version` (if `agentcore < 0.9.0`, upgrade via `agentcore update`; if missing, install via `npm install -g @aws/agentcore` on Node.js 20+, and uninstall legacy `bedrock-agentcore-starter-toolkit` if shadowing; see [`references/doctor.md`](references/doctor.md)). Preserve all developer context across upgrades.
 
 ### Step 1: Determine intent — exploring or ready to create?
 
-Before jumping into framework selection, figure out where the developer is:
-
-**Ask the developer:** "Are you exploring options (comparing frameworks, understanding what AgentCore does) or ready to create a project?"
-
-- **Exploring** → Go to Step 2 (framework comparison). Present the options, answer questions, and wait. Do not construct a `create` command until they signal they're ready.
-- **Ready to create** → Skip to Step 3 (create the project). If they already specified a framework, skip Step 2 entirely.
-- **Already has a project** → Look for `agentcore/agentcore.json` in the current directory. If found, read it and skip to Step 5 (what to do next). Don't re-scaffold.
-
-If the developer's intent is clear from `$ARGUMENTS` (e.g., "create a Strands agent called MyBot"), skip straight to Step 3.
+Ask: *"Are you exploring options (comparing frameworks, understanding AgentCore) or ready to create a project?"*
+- **Exploring** → Go to Step 2, present options, and wait (do not emit `agentcore create` yet).
+- **Ready to create** → Skip to Step 3 (and skip Step 2 if framework is already chosen).
+- **Already has a project** → Check if `agentcore/agentcore.json` exists in the workspace (never read `.env.local`); if found, inspect it and skip to Step 5 without re-scaffolding.
 
 ### Step 2: Framework selection
 
-**Check conversation context first.** If the developer already discussed frameworks earlier in this conversation (e.g., from a previous skill invocation), don't re-present the full table. Summarize what was discussed and ask if they've decided, or if anything changed.
+Check conversation context first so you don't repeat tables already discussed. When presenting for the first time:
 
-If this is the first time discussing frameworks, present the options:
-
-**Supported frameworks (CLI-scaffolded, Python):**
-
-| Framework | CLI value | Best for |
+| Framework | CLI `--framework` value | Best for |
 |---|---|---|
-| Strands | `Strands` | AWS-native, simplest path, best AgentCore integration |
-| LangGraph | `LangChain_LangGraph` | Complex graph-based workflows, existing LangChain investment |
-| Google ADK | `GoogleADK` | Teams already using Google's agent toolkit |
-| OpenAI Agents | `OpenAIAgents` | Teams already using OpenAI's agent SDK |
+| Strands | `Strands` | AWS-native, simplest path, tightest AgentCore integration (default **only** if user says "no preference") |
+| LangGraph | `LangChain_LangGraph` | Complex cyclic/graph workflows with conditional branching, existing LangChain investment |
+| Google ADK | `GoogleADK` | Teams standardized on Google's agent toolkit (`gemini-*` models) |
+| OpenAI Agents | `OpenAIAgents` | Teams standardized on OpenAI's Agents SDK |
 
-**Ask the developer to choose.** Present the options and wait for their selection. Don't assume a default unless they explicitly say they have no preference.
-
-> **Note on naming:** The CLI flag value is the exact string to pass to `--framework`. In prose use the shorter names.
-
-**Default recommendation** (only when the developer says "no preference" or "you pick"): Strands — AWS-native framework with the tightest AgentCore integration and the most samples/docs.
-
-**Key decision points to surface:**
-
-- "Do you want a zero-code declarative agent configured purely in `agentcore.json`?" → **AgentCore Harness** (can be ejected to Python source code later via `agentcore export harness` producing `app/` + `EXPORT_NOTES.md`)
-- "Do you need complex cyclic workflows with deterministic state-schema routing, human-in-the-loop (`interrupt_before`), AND AWS-native Bedrock streaming/MCP tools?" → **Hybrid LangGraph + Strands Pattern** (outer LangGraph `StateGraph` + inner Strands `Agent` specialist nodes — see [`../agents-build/references/harness-and-hybrid.md`](../agents-build/references/harness-and-hybrid.md))
-- "Do you have existing agent code in LangGraph or OpenAI Agents?" → use that framework
-- "Do you need complex graph-based workflows with conditional branching?" → LangGraph
-- "Starting fresh with no preference?" → Strands
+**Key architecture decision points:**
+- **Zero-code declarative config in `agentcore.json`?** → **AgentCore Harness** (ejectable later via `agentcore export harness` into `app/` + `EXPORT_NOTES.md`).
+- **Deterministic cyclic graph + `interrupt_before` HITL + AWS-native Bedrock streaming/MCP?** → **Hybrid LangGraph + Strands** (outer `StateGraph` + inner Strands `Agent` nodes — load [`references/harness-and-hybrid.md`](references/harness-and-hybrid.md)).
+- **Non-listed frameworks (CrewAI, AutoGen, Semantic Kernel, plain LangChain), `claude-agent-sdk` (`CLAUDE_CODE_USE_BEDROCK=1`, `AWS_REGION`, `ANTHROPIC_MODEL` set in `os.environ` BEFORE `ClaudeAgentOptions`), Java Spring AI / TypeScript / Go / Rust BYO Containers (`POST /invocations` + `GET /ping`), or Framework vs. Model Provider questions?** → Load [`references/byo-container.md`](references/byo-container.md).
 
 > [!IMPORTANT]
-> **`agentcore.json` v0.4.0+ Schema Compliance:**
-> If inspecting or migrating an older project (`< v0.4.0`), enforce these three schema rules before running CLI commands:
-> 1. Top-level array key MUST be `"runtimes"` (never legacy `"agents"`).
-> 2. Strip `"type": "AgentCoreRuntime"` from runtime entries.
-> 3. Rename `"type"` to `"authorizerType"` inside `"credentials"` entries.
+> **`agentcore.json` v0.4.0+ Schema Compliance (when inspecting older `< v0.4.0` projects):**
+> (1) Top-level array key MUST be `"runtimes"` (never legacy `"agents"`); (2) strip `"type": "AgentCoreRuntime"` from runtime entries; (3) rename `"type"` to `"authorizerType"` inside `"credentials"` entries.
 
-#### Framework not listed?
+### Step 3: Validate name & construct `agentcore create`
 
-If the developer asks about a framework not in the table above, handle it:
+**Validate `<ProjectName>` up front before presenting any command** (the CLI fails late):
+- **Length `<= 23` characters** (`MyCustomerSupportBotApp` = 23 fits; `MyCustomerSupportChatBot` = 24 **fails** — state exact character count if near/over 23 and suggest a shorter name)
+- **Alphanumeric only** (no hyphens, underscores, dots, or spaces) and **must start with a letter**
 
-| They ask about | What to say |
-|---|---|
-| **CrewAI, AutoGen, Semantic Kernel** | Not scaffolded by the CLI, but you can use them via the BYO Container path (below). AgentCore Runtime is framework-agnostic — any code that implements the HTTP contract works. |
-| **Anthropic SDK / Claude Agent SDK** | This is a model SDK, not an agent framework. You can use it inside any framework (Strands, LangGraph, etc.) or standalone. When using `claude-agent-sdk`, always set `CLAUDE_CODE_USE_BEDROCK=1`, `AWS_REGION`, and `ANTHROPIC_MODEL` in `os.environ` **before** constructing `ClaudeAgentOptions`. |
-| **Claude Code / Cursor / Copilot** | These are IDE tools, not agent frameworks. They're where you *write* agent code, not what you deploy. Pick a framework from the table above for the agent itself. |
-| **LangChain (without LangGraph)** | LangChain is a library, LangGraph is the agent framework built on it. The CLI scaffolds LangGraph. If you're using plain LangChain chains, the BYO Container path works. |
-| **Custom / homegrown framework** | BYO Container path — see below. |
-
-**BYO Container path (any framework, any language):**
-
-For frameworks or languages not scaffolded by the CLI, AgentCore Runtime accepts any container that implements the HTTP contract (`POST /invocations`, `GET /ping`). The workflow:
-
-1. `agentcore create --name <ProjectName> --defaults` to scaffold the project structure
-2. `agentcore add agent --type byo --build Container --language <Language> --code-location <path>` to register your code
-3. Write a `Dockerfile` that builds and runs your agent
-4. `agentcore deploy` handles ECR push, CDK infra, and runtime creation
-
-**Language-specific notes:**
-
-| Language | Recommended path |
-|---|---|
-| Java (Spring Boot) | [Spring AI SDK for AgentCore](https://aws.amazon.com/blogs/machine-learning/spring-ai-sdk-for-amazon-bedrock-agentcore-is-now-generally-available) — handles the Runtime contract, SSE streaming, and health checks. Use `--language Other --build Container`. |
-| JavaScript / TypeScript | Implement the Runtime contract in Express/Fastify/etc. Use `--language TypeScript --build Container`. |
-| Go, Rust, .NET, other | Implement the Runtime HTTP contract. Use `--language Other --build Container`. |
-
-The rest of this skill (deploy, status, logs, invoke) applies once the container builds correctly.
-
-#### Framework vs. model provider — a common confusion
-
-The framework is how your agent orchestrates (Strands, LangGraph, etc.). The model provider is which LLM it calls (Bedrock, Anthropic, OpenAI, Gemini). These are independent choices:
-
-- Strands + Bedrock (default) — AWS-native everything
-- Strands + Anthropic — Strands orchestration, direct Anthropic API for the model
-- LangGraph + Bedrock — LangGraph orchestration, Bedrock for the model
-- OpenAI Agents + OpenAI — OpenAI everything
-
-If the developer says "I want to use Claude" they mean the model provider (Bedrock or Anthropic), not the framework. If they say "I want to use LangGraph" they mean the framework.
-
-### Step 3: Create the project
-
-Build the `agentcore create` command based on the developer's choices.
-
-**Before constructing the command — validate the project name.** The CLI fails late: if the name is invalid, you'll see the error *after* walking through prompts or building the full command. Save the round-trip and check these rules up front. Reject the name and ask for a new one if any rule fails:
-
-- **Length ≤ 23 characters** (this is shorter than most developers assume — `MyCustomerSupportAgent` is 22 chars and fits; `CustomerSupportChatbot` is 22 and fits; `MyCustomerSupportBotApp` is 23 and just fits; `MyCustomerSupportChatBot` is 24 and **fails**)
-- **Alphanumeric only** — no hyphens, underscores, dots, or spaces
-- **Must start with a letter**
-
-Say the count back out loud when close to the limit: "That name is 24 characters — the CLI caps project names at 23. Want to shorten it to `<suggestion>`?" Do not run the command with an invalid name on the assumption that the CLI error message will be clear — it isn't always, and the developer's mental model will be wrong for subsequent commands.
-
-**Construct the command, then present it for confirmation before the developer runs it.** Show the full command with all flags and explain what each choice means. Wait for the developer to confirm or adjust before proceeding.
-
-Example presentation:
-
-> Here's the command I'd recommend based on what you've told me:
->
-> ```bash
-> agentcore create --name MyAgent --framework Strands --model-provider Bedrock --build CodeZip --memory none
-> ```
->
-> This creates a Strands agent using Bedrock models, deployed as a code zip (no Docker needed). Memory can be added later.
->
-> Want to run this, or change anything?
-
-Do NOT execute the command automatically — present it and wait.
-
-**Minimal (defaults — Strands, Bedrock, CodeZip, no memory):**
+Present the tailored command with flag explanations and wait for operator confirmation (never auto-execute):
 
 ```bash
+# Minimal defaults (Strands, Bedrock, CodeZip, memory=none)
 agentcore create --name <ProjectName> --defaults
-```
 
-**With specific options:**
-
-```bash
+# Explicit options
 agentcore create \
   --name <ProjectName> \
-  --framework <Framework> \
+  --framework Strands \
   --model-provider Bedrock \
   --build CodeZip \
   --memory none
 ```
 
-**Flag reference:**
-
-| Flag | Values | Default |
+| Flag | Values | Default & Guidance |
 |---|---|---|
-| `--name` | alphanumeric, max 23 chars | prompted |
+| `--name` | alphanumeric, starts with letter, max **23** chars | prompted |
 | `--framework` | `Strands`, `LangChain_LangGraph`, `GoogleADK`, `OpenAIAgents` | prompted |
-| `--protocol` | `HTTP`, `MCP`, `A2A` | `HTTP` |
-| `--build` | `CodeZip`, `Container` | `CodeZip` |
-| `--model-provider` | `Bedrock`, `Anthropic`, `OpenAI`, `Gemini` | prompted |
-| `--memory` | `none`, `shortTerm`, `longAndShortTerm` | prompted |
+| `--protocol` | `HTTP`, `MCP`, `A2A` | `HTTP` (for `A2A`, `A2A_PORT=9000`; never install `bedrock-agentcore[a2a]` and `bedrock-agentcore[a2a-v1]` together; for AG-UI use `serve_ag_ui` / `AGUIApp`) |
+| `--build` | `CodeZip`, `Container` | `CodeZip` (packages Python + cross-compiled `uv` wheels directly into a zip; `--build Container` builds ARM64 images remotely via AWS CodeBuild — neither requires local Docker/Podman/Finch for `agentcore deploy`) |
+| `--model-provider` | `Bedrock`, `Anthropic`, `OpenAI`, `Gemini` | `Bedrock` recommended (IAM auth, zero API keys to manage) |
+| `--memory` | `none`, `shortTerm`, `longAndShortTerm` | Start with `none`; add later via `agents-build` ([`references/memory.md`](references/memory.md)) |
 | `--network-mode` | `PUBLIC`, `VPC` | `PUBLIC` |
-| `--dry-run` | — | preview without creating |
+| `--dry-run` | — | Preview scaffold without writing files |
 
-**Guidance on choices:**
-
-- **Protocol:** Use `HTTP` unless the developer specifically needs MCP tool serving, A2A agent-to-agent communication (`A2A_PORT=9000`; never install `bedrock-agentcore[a2a]` and `bedrock-agentcore[a2a-v1]` together), or AG-UI frontend streaming (`serve_ag_ui` / `AGUIApp`)
-- **Build:** Use `CodeZip` unless the developer needs custom system dependencies (CodeZip is faster to deploy and doesn't require Docker locally)
-- **Model provider:** Use `Bedrock` unless the developer has a specific reason for another provider (Bedrock doesn't require managing API keys)
-- **Memory:** Start with `none` — memory can be added later via `agents-build` (loads [`references/memory.md`](../agents-build/references/memory.md)) when the developer needs it
-
-### Step 4: Explain what was created
-
-After the project exists, read `agentcore/agentcore.json` and the generated code to explain the project structure.
-
-The layout below reflects CLI v0.9.x. If the CLI version is different, run `tree <ProjectName>/ -L 3` to see the actual generated structure and explain from there.
+### Step 4: Explain generated project structure
 
 ```
 <ProjectName>/
 ├── agentcore/
-│   ├── agentcore.json      ← Project config (runtimes, resources)
-│   ├── aws-targets.json    ← AWS account + region
-│   ├── .env.local          ← Local environment variables (gitignored)
-│   └── cdk/                ← CDK infrastructure (auto-managed, don't edit)
-└── app/
-    └── <AgentName>/
-        ├── main.py          ← Your agent code — this is where you build
-        ├── mcp_client/      ← Pre-wired example MCP client (see note below)
-        └── pyproject.toml   ← Python dependencies
+│   ├── agentcore.json      ← Project config (runtimes, gateways, memory, credentials)
+│   ├── aws-targets.json    ← Target AWS account + region
+│   ├── .env.local          ← Local-only dev env vars (gitignored — NEVER read by agent)
+│   └── cdk/                ← Auto-managed CDK infrastructure (do not hand-edit)
+└── app/<AgentName>/
+    ├── main.py             ← Agent entrypoint (tools, prompts, logic)
+    ├── mcp_client/         ← Example MCP client (points to public demo MCP server initially)
+    └── pyproject.toml      ← Python dependencies
 ```
 
-**Key files to highlight:**
+**Scaffolded `mcp_client` gotchas:** (1) Repointing `mcp_client/client.py` to `os.getenv("AGENTCORE_GATEWAY_<NAME>_URL")` before `agentcore deploy` yields `None` in local dev and silently binds zero tools — guard with `if not GATEWAY_URL: tools = []` (`agents-connect`). (2) If MCP tools aren't needed, remove `mcp_clients` from `main.py`.
 
-- `app/<AgentName>/main.py` — the agent's entry point. This is where the developer adds tools, system prompts, and logic.
-- `agentcore/agentcore.json` — the project config. Resources are added here via `agentcore add` commands.
-- `agentcore/.env.local` — local environment variables. After deploy, resource IDs are written here for local dev.
-
-**Heads-up on the scaffolded MCP client.** `main.py` imports `get_streamable_http_mcp_client()` from `mcp_client/client.py` and appends it to `tools`. In a fresh project, this client points at a public example MCP endpoint — so `agentcore dev` works immediately. Two things to flag:
-
-1. **It will become a silent no-op if you repoint it at a gateway that isn't deployed yet.** The common path is to swap the example endpoint for `os.getenv("AGENTCORE_GATEWAY_<NAME>_URL")`. That env var is only populated after `agentcore deploy`. If the developer repoints and runs `agentcore dev` before deploying, `get_streamable_http_mcp_client()` returns a client with a `None` URL and the agent starts with zero MCP tools — no error, no warning. See the "Local dev gap" section in `agents-connect` for the guard pattern: `if not GATEWAY_URL: tools = []`.
-2. **If the developer doesn't need MCP tools at all**, remove the `mcp_clients` list and the loop that appends it to `tools`. The scaffold includes it as a convenience, not a requirement.
-
-The reference client code in `agents-connect` (Path A) shows the correct pattern for gateway-backed MCP clients once deploy has run.
-
-### Step 5: Local development
+### Step 5: Local development (`agentcore dev`)
 
 ```bash
-agentcore dev
+agentcore dev --local    # purely local server (avoids deploying cloud backing resources)
+agentcore dev            # binds HTTP=8080, MCP=8000, A2A=9000 (auto-increments 8081/8082 if busy; pin via --port <N>)
 ```
 
-This starts a local dev server. The developer can interact with their agent immediately.
+- **COST WARNING:** Plain `agentcore dev` synthesizes CDK and **deploys real cloud backing resources** if `agentcore.json` defines Memory/Gateway/Identity and an AWS target exists — pass `agentcore dev --local` for strictly local testing (LLM calls still incur Bedrock/provider token charges).
+- **Unit tests:** Run with `OTEL_SDK_DISABLED=true pytest` so ADOT instrumentation does not hang waiting for a local collector.
 
-**Port the dev server binds to** (important if you're scripting `curl` calls or testing from another process):
-
-| Protocol | Default port |
-|---|---|
-| HTTP | `8080` |
-| MCP | `8000` |
-| A2A | `9000` |
-
-The CLI prints the bound port and URL on startup — always read the actual value from the CLI output rather than hardcoding. **If the default port is already in use**, the CLI auto-increments (e.g., 8080 → 8081 → 8082), so a second dev session or a lingering process from a previous run can shift your port without warning. Use `agentcore dev --port <N>` to pin it, or grep `ps` / check the CLI banner if invocations start failing with connection-refused or exit-code-7 errors.
-
-**Important limitations & COST WARNING to mention:**
-
-- **COST WARNING on `agentcore dev`:** While `agentcore dev` runs the agent server locally, if `agentcore.json` defines cloud backing resources (Memory, Gateway, Identity) and you have a configured AWS target, `agentcore dev` **automatically synthesizes CDK and deploys real cloud backing resources** unless `--local` is explicitly passed (`agentcore dev --local`).
-- Memory and Gateway URLs require cloud backing resources to be deployed before local dev can connect to them.
-- The local server uses the model provider configured in the project (which incurs standard Bedrock/API token charges).
-- For unit tests (`pytest`), always set `OTEL_SDK_DISABLED=true pytest` so ADOT auto-instrumentation does not hang waiting for a local collector.
-
-### Step 6: First deploy
-
-When the developer is ready to deploy:
+### Step 6: First deploy, verification & rollback
 
 ```bash
-agentcore deploy
+agentcore validate                         # verify schema before CDK synth
+agentcore deploy --dry-run                 # preview resources safely
+agentcore deploy                           # interactive confirmation (first deploy ~3–5 min)
+agentcore status                           # verify runtime status is READY
+agentcore invoke "Hello, what can you do?" # smoke-test invocation
+
+# Safe rollback / teardown (operator approval required)
+agentcore remove agent --name <AgentName> && agentcore deploy
 ```
 
-This will:
+### Step 7: Next steps & task walkthroughs
 
-1. Show a preview of AWS resources to be created
-2. Ask for confirmation
-3. Build and deploy via CDK
+For customer-support/chatbot prompts, load [`references/example-support-agent.md`](references/example-support-agent.md). Suggest 1–2 next skills matched to intent:
+- App integration (`agentcore fetch access`), Memory (`agentcore add memory`), Multi-agent (`--protocol A2A`), or VPC (`--network-mode VPC`) → `agents-build`
+- External APIs/MCP tools (`agentcore add gateway`) or Cedar tool policies (`agentcore add policy-engine`) → `agents-connect`
+- Quality evaluators (`agentcore add evaluator`) or observability → `agents-optimize`
+- Production security/lifecycle checklist → `agents-harden`
 
-**First deploy takes 3-5 minutes.** Subsequent deploys are faster.
+## Output & Quality Criteria
 
-After deploy, show them how to invoke:
-
-```bash
-agentcore invoke "Hello, what can you do?"
-```
-
-And how to check status:
-
-```bash
-agentcore status
-```
-
-### Step 7: What's next
-
-Based on what the developer said they want to build, suggest the logical next skill:
-
-| Developer intent | Next skill | Command hint |
-|---|---|---|
-| "How do I call it from my app?" | `agents-build` | `agentcore fetch access` |
-| "I want it to remember things" | `agents-build` | `agentcore add memory` |
-| "I want it to call external APIs" | `agents-connect` | `agentcore add gateway` |
-| "I want to restrict what it can do" | `agents-connect` | `agentcore add policy-engine` |
-| "I want to measure quality" | `agents-optimize` | `agentcore add evaluator` |
-| "I want to go to production" | `agents-harden` | production readiness checklist |
-| "I want multiple agents working together" | `agents-build` | `agentcore create --protocol A2A` |
-| "I need it in a VPC" | `agents-build` | `agentcore create --network-mode VPC` |
-
-Don't overwhelm — suggest one or two next steps based on what the developer actually asked for.
-
-### Example walkthroughs
-
-For task-framed prompts (e.g., "build a customer support agent"), load the matching example reference:
-
-| Developer task | Reference |
-|---|---|
-| Customer support, chatbot, answer policy questions | [`references/example-support-agent.md`](references/example-support-agent.md) |
-
-More examples can be added to this skill's references directory as common patterns emerge.
-
-## Output
-
-- A clear path from "I want to build an agent" to a running deployed agent
-- The `agentcore create` command tailored to their choices
-- An explanation of the generated project structure
-- Concrete next steps based on their intent
-
-## Quality criteria
-
-- The `agentcore create` command uses only valid flags from CLI v0.9.1
-- Framework recommendation is based on the developer's context, not a generic default
-- The developer understands what each generated file does
-- Next steps are specific to what the developer wants to build, not a generic list of all features
+- Validated `agentcore create` command (`--name` `<= 23` chars, alphanumeric, valid CLI v0.9.x flags) + `@aws/agentcore >= 0.9.0` and `uv` prerequisites tailored to context
+- Clear explanation of scaffolded files, local dev cost/port behavior, verification (`validate`/`status`), and rollback commands
+- **Always end preflight/scaffolding plans by explicitly asking user confirmation before creating project files (`agentcore create`) or deploying (`agentcore deploy`)**

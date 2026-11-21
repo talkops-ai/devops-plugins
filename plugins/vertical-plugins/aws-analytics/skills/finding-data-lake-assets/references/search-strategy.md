@@ -118,6 +118,50 @@ arn:aws:s3tables:us-east-1:123456789012:bucket/analytics-bucket/table/<uuid>
 | No direct match, prefix exists in S3 | Low | S3 path has data but no catalog entry |
 | No matches anywhere | None | Suggest exploring-data-catalog or refine query |
 
+## 3-Step Multi-Catalog Search Hierarchy & Content Sampling Gate
+
+1. **Step 1 — Glue Data Catalog Search (`aws glue search-tables`)**:
+   - Search table names, column names, and comments across standard Glue databases.
+2. **Step 2 — S3 Tables Enumeration (`aws s3tables list-table-buckets` -> `list-namespaces` -> `list-tables`)**:
+   - Always check S3 Tables alongside `glue search-tables` because `aws glue search-tables` does **not** index S3 Tables unless `s3tablescatalog` federation is active.
+3. **Step 3 — Content Sampling via Athena (`SELECT * FROM db.table LIMIT 5`)**:
+   - Content sampling scans S3 data and **incurs Athena data-scan charges**, so you **MUST always ask the user for confirmation before executing any Athena `LIMIT 5` sample query**.
+
+## Multi-Candidate Ranking, Summary Table & Downstream Handoff Rule
+
+When multiple candidate tables match a fuzzy search:
+1. **Rank Candidates by Relevance & Production Posture**:
+   - Score candidates by table name match, column match, **table format posture** (favoring active **S3 Tables / Iceberg** production tables over legacy `CSV` tables or `tmp_`/`staging` tables), and **`UpdateTime` recency**.
+2. **Present the Structured Candidate Summary Table**:
+   - Always format candidate matches using the following columns:
+     `Table | Database/Namespace | Format | Matched On | Key Columns | Last Updated`
+3. **Inspect Top Candidate Schema & Confirm Before Handoff**:
+   - Retrieve full column and partition metadata for the top candidate using `aws s3tables get-table` or `aws glue get-table`.
+   - **Handoff Rule**: When multiple candidates match, present the ranked comparison table and **let the user confirm which table to use** before proceeding with any downstream query (`querying-data-lake`) or ingestion (`ingesting-into-data-lake`) task.
+
+
+## 3-Step Multi-Catalog Search Hierarchy & Content Sampling Gate
+
+1. **Step 1 — Glue Data Catalog Search (`aws glue search-tables`)**:
+   - Search table names, column names, and comments across standard Glue databases.
+2. **Step 2 — S3 Tables Enumeration (`aws s3tables list-table-buckets` -> `list-namespaces` -> `list-tables`)**:
+   - Always check S3 Tables alongside `glue search-tables` because `aws glue search-tables` does **not** index S3 Tables unless `s3tablescatalog` federation is active.
+3. **Step 3 — Content Sampling via Athena (`SELECT * FROM db.table LIMIT 5`)**:
+   - Content sampling scans S3 data and **incurs Athena data-scan charges**, so you **MUST always ask the user for confirmation before executing any Athena `LIMIT 5` sample query**.
+
+## Multi-Candidate Ranking, Summary Table & Downstream Handoff Rule
+
+When multiple candidate tables match a fuzzy search:
+1. **Rank Candidates by Relevance & Production Posture**:
+   - Score candidates by table name match, column match, **table format posture** (favoring active **S3 Tables / Iceberg** production tables over legacy `CSV` tables or `tmp_`/`staging` tables), and **`UpdateTime` recency**.
+2. **Present the Structured Candidate Summary Table**:
+   - Always format candidate matches using the following columns:
+     `Table | Database/Namespace | Format | Matched On | Key Columns | Last Updated`
+3. **Inspect Top Candidate Schema & Confirm Before Handoff**:
+   - Retrieve full column and partition metadata for the top candidate using `aws s3tables get-table` or `aws glue get-table`.
+   - **Handoff Rule**: When multiple candidates match, present the ranked comparison table and **let the user confirm which table to use** before proceeding with any downstream query (`querying-data-lake`) or ingestion (`ingesting-into-data-lake`) task.
+
+
 ## Disambiguation
 
 When multiple candidates match (medium confidence):

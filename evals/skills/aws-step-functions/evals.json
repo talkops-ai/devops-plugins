@@ -1,0 +1,137 @@
+{
+  "skill_name": "aws-step-functions",
+  "evals": [
+    {
+      "id": "eval-01-i-m-new-to-aws-step-functions-and-need-to-build",
+      "prompt": "I'm new to AWS Step Functions and need to build two workflows: (1) an IoT telemetry ingestion pipeline handling 30,000 events/second where each run takes 500 ms and is idempotent, and (2) an order fulfillment workflow that charges a customer's card, calls an ECS task with `.sync`, and pauses up to 3 days using `.waitForTaskToken` for fraud review. A teammate said we should use `EXPRESS` workflows for both to save money. Compare Standard vs Express workflows and tell me why Express will or won't work for each.",
+      "expected_output": "Presents a side-by-side comparison of Standard vs Express workflows (max duration 1 year vs 5 minutes, exactly-once vs at-least-once/at-most-once, 90-day queryable API history vs CloudWatch Logs only, 2,000/sec vs 100,000/sec throughput, per-state-transition vs per-execution+duration pricing, and `.sync`/`.waitForTaskToken` support), recommends Express for the 30,000/sec IoT pipeline while explicitly stating Express does NOT support `.sync` or `.waitForTaskToken`, and recommends Standard for the order fulfillment workflow.",
+      "files": [],
+      "expectations": [
+        "Contrasts Standard vs Express across max duration (1 year vs 5 minutes), execution semantics (exactly-once vs at-least-once async / at-most-once sync), throughput (2,000/s vs 100,000/s), execution history (90-day API vs CloudWatch Logs only), and pricing model (per state transition vs execution count + duration)",
+        "Explicitly states that Express workflows do NOT support `.sync` or `.waitForTaskToken` integrations",
+        "Recommends Express for Workflow 1 (high-volume idempotent IoT ingestion) and Standard for Workflow 2 (non-idempotent payment + `.sync` + 3-day `.waitForTaskToken` callback)"
+      ]
+    },
+    {
+      "id": "eval-02-using-read-only-mode-check-our-existing-step-fun",
+      "prompt": "Using read-only mode, check our existing Step Functions state machines in ap-south-1 and explain what read-only checks we should run to verify whether a production state machine has CloudWatch execution logging enabled, KMS encryption on its log group, and a least-privilege IAM execution role.",
+      "expected_output": "Uses connected AWS MCP tools in read-only mode to list Step Functions state machines in ap-south-1, accurately reports the live state machines (or 0 if none exist) without fabricating ARNs, and explains inspecting `describe-state-machine` (`loggingConfiguration`, `roleArn`), CloudWatch log group KMS encryption (`kmsKeyId`), and IAM role policies (`list-role-policies` / `get-role-policy`) to ensure no `*FullAccess` or `Resource: \"*\"` wildcards.",
+      "files": [],
+      "expectations": [
+        "Uses connected AWS MCP tools in read-only mode to inspect Step Functions state machines in ap-south-1 without creating or modifying any resources",
+        "Accurately reports the live state machines in ap-south-1 (or explicitly reports 0 when none exist) without fabricating state machine names or ARNs",
+        "Explains how to verify `loggingConfiguration` (`ALL` or `ERROR` level), KMS encryption on the execution CloudWatch Log Group, and least-privilege IAM execution role policies"
+      ]
+    },
+    {
+      "id": "eval-03-in-our-jsonata-step-functions-state-machine-a-de",
+      "prompt": "In our JSONata Step Functions state machine, a developer wrote this `Task` state and is baffled why `$orderTotal` is undefined (throwing `States.QueryEvaluationError`) inside `Output` of the exact same state:\n```json\n\"CalculateOrder\": {\n  \"Type\": \"Task\",\n  \"QueryLanguage\": \"JSONata\",\n  \"Resource\": \"arn:aws:states:::lambda:invoke\",\n  \"Arguments\": { \"FunctionName\": \"arn:aws:lambda:ap-south-1:123456789012:function:Calc:$LATEST\", \"Payload\": \"{% $states.input %}\" },\n  \"Assign\": { \"orderTotal\": \"{% $states.result.Payload.total %}\" },\n  \"Output\": { \"billedAmount\": \"{% $orderTotal %}\" },\n  \"Next\": \"ChargeCard\"\n}\n```\nWhy does this fail, how are `Assign` and `Output` evaluated inside a single state, and how do we fix it?",
+      "expected_output": "Explains that within a single state, `Assign` and `Output` are evaluated **in parallel** from the same entry snapshot (state input + task result), NOT sequentially one after the other; therefore a variable set in `Assign` (`$orderTotal`) is not visible in the same state's `Output` and only takes effect in the **next** state (`ChargeCard`). Fixes `Output` by referencing `$states.result.Payload.total` directly.",
+      "files": [],
+      "expectations": [
+        "Explicitly explains that `Assign` and `Output` within a single state are evaluated in parallel (concurrently from the same snapshot of state input + `$states.result`), NOT sequentially",
+        "States that a variable assigned in `Assign` (`$orderTotal`) becomes available only in subsequent states (`ChargeCard`) and cannot be read in the same state's `Output`",
+        "Shows the corrected `Output` block referencing `{% $states.result.Payload.total %}` directly while keeping `Assign` for downstream states"
+      ]
+    },
+    {
+      "id": "eval-04-convert-the-following-jsonpath-states-to-jsonata",
+      "prompt": "Convert the following JSONPath states to JSONata mode and explain the common pitfalls to avoid (especially why filtering an array directly in a `Map` state's `Items` field like `\"Items\": \"{% $states.input.orders[status = 'pending'] %}\"` can randomly fail when 0 or 1 orders match):\n```json\n{\n  \"StartAt\": \"CheckCustomer\",\n  \"States\": {\n    \"CheckCustomer\": {\n      \"Type\": \"Choice\",\n      \"Choices\": [\n        {\n          \"And\": [\n            { \"Variable\": \"$.priority\", \"StringEquals\": \"high\" },\n            { \"Variable\": \"$.age\", \"NumericLessThanEquals\": 30 }\n          ],\n          \"Next\": \"ProcessPendingOrders\"\n        },\n        { \"Not\": { \"Variable\": \"$.email\", \"IsPresent\": true }, \"Next\": \"MissingEmail\" }\n      ],\n      \"Default\": \"StandardFlow\"\n    },\n    \"ProcessPendingOrders\": {\n      \"Type\": \"Map\",\n      \"ItemsPath\": \"$.orders\",\n      \"Parameters\": {\n        \"orderItem.$\": \"$$.Map.Item.Value\",\n        \"itemIndex.$\": \"$$.Map.Item.Index\"\n      },\n      \"Iterator\": {\n        \"StartAt\": \"InvokeWorker\",\n        \"States\": {\n          \"InvokeWorker\": {\n            \"Type\": \"Task\",\n            \"Resource\": \"arn:aws:states:::lambda:invoke\",\n            \"Parameters\": {\n              \"FunctionName\": \"arn:aws:lambda:ap-south-1:123456789012:function:Worker:$LATEST\",\n              \"Payload.$\": \"$\"\n            },\n            \"ResultSelector\": { \"workerId.$\": \"$.Payload.id\" },\n            \"ResultPath\": \"$.workerOut\",\n            \"OutputPath\": \"$.workerOut\",\n            \"End\": true\n          }\n        }\n      },\n      \"ResultPath\": \"$.processedOrders\",\n      \"End\": true\n    }\n  }\n}\n```",
+      "expected_output": "Provides the converted JSONata ASL with `\"QueryLanguage\": \"JSONata\"`, `Choice` rules using `Condition` (`$states.input.priority = 'high' and $states.input.age <= 30` and `$not($exists($states.input.email))`), `Map` using `Items`, `ItemSelector` (`$states.context.Map.Item.Value` / `Index`), `ItemProcessor` with `ProcessorConfig: {Mode: INLINE}`, `Arguments` (no `.$` suffixes), `Output` (`$states.result.Payload.id`), and `Assign`, and explains the JSONata filter singleton/undefined quirk requiring the `$type($f) = 'array' ? $f : $exists($f) ? [$f] : []` guard.",
+      "files": [],
+      "expectations": [
+        "Converts `Choice` to JSONata `Condition` expressions (`$states.input.priority = 'high' and $states.input.age <= 30`, `$not($exists($states.input.email))`) and removes JSONPath fields (`Variable`, `InputPath`, `Parameters`, `ResultSelector`, `ResultPath`, `OutputPath`) without mixing query languages",
+        "Converts the `Map` state from `ItemsPath`/`Parameters`/`Iterator` to `Items`, `ItemSelector` (referencing `$states.context.Map.Item.Value` and `$states.context.Map.Item.Index`), and `ItemProcessor` (with `ProcessorConfig`), and removes all `.$` key suffixes in `Arguments`",
+        "Explains why `{% $states.input.orders[status = 'pending'] %}` breaks `Map` `Items` when 1 item matches (JSONata returns a single object instead of a 1-element array) or 0 items match (returns `undefined`, throwing `States.QueryEvaluationError`), and provides the defensive `($f := ...; $type($f) = 'array' ? $f : $exists($f) ? [$f] : [])` pattern"
+      ]
+    },
+    {
+      "id": "eval-05-how-can-we-unit-test-individual-states-in-our-st",
+      "prompt": "How can we unit test individual states in our Step Functions state machine locally or in CI without deploying the state machine or invoking real AWS services? Include how to test a standard `lambda:invoke` Task, a `.sync` nested workflow Task (`states:startExecution.sync:2`), and a `.waitForTaskToken` callback Task.",
+      "expected_output": "Explains using the `TestState` API (`aws stepfunctions test-state`) covering all four requirements: (1) exact case-sensitive service API response mock structures (for `lambda:invoke`, `--mock '{\"result\":\"{\\\"StatusCode\\\":200,\\\"Payload\\\":{...}}\"}'`), (2) all three `--inspection-level` values (`INFO`, `DEBUG`, `TRACE`), (3) mocking `.sync` by mocking the **polling** API (`DescribeExecution` with `Status` and `Output`, NOT `StartExecution`) and mocking `.waitForTaskToken` with `--context '{\"Task\":{\"Token\":\"...\"}}'`, and (4) testing in isolation with zero deployment plus `fieldValidationMode` (`STRICT`, `PRESENT`, `NONE`).",
+      "files": [],
+      "expectations": [
+        "Shows `aws stepfunctions test-state` with `--mock` matching the target service's exact case-sensitive API response schema (e.g., `StatusCode` and `Payload` for `lambda:invoke`) without deploying the state machine",
+        "Explains all three `--inspection-level` options (`INFO` for `output`/`status`/`nextState`, `DEBUG` adding `afterArguments`/`result`/`variables`, and `TRACE` adding raw HTTP `request`/`response` for HTTP Tasks)",
+        "Explains that `.sync` and `.waitForTaskToken` require mocks: for `.sync` (`startExecution.sync:2`), mock the polling API (`DescribeExecution`, not `StartExecution`), and for `.waitForTaskToken`, pass `--context '{\"Task\":{\"Token\":\"...\"}}'`"
+      ]
+    },
+    {
+      "id": "eval-06-step-functions-doesn-t-have-automatic-transactio",
+      "prompt": "Step Functions doesn't have automatic transaction rollback. Write a JSONata ASL state machine implementing the Saga compensation pattern for an order checkout (`ReserveInventory` -> `ChargePayment` -> `ShipOrder`) so that if `ChargePayment` fails we release inventory, and if `ShipOrder` fails we refund the payment and then release inventory.",
+      "expected_output": "Provides a JSONata ASL state machine where `ReserveInventory` assigns `$reservedQty`, `ChargePayment` assigns `$chargeId` and on `Catch` assigns `$failedStep` / `$errorInfo` (`$states.errorOutput`) routing to `ReleaseInventory` -> `OrderFailed`, and `ShipOrder` on `Catch` routes to `RefundPayment` (using `$chargeId`) -> `ReleaseInventory` (using `$reservedQty`) -> `OrderFailed` (using defensive `$exists()` checks in `Cause`).",
+      "files": [],
+      "expectations": [
+        "Authors a JSONata ASL state machine chaining forward steps (`ReserveInventory` -> `ChargePayment` -> `ShipOrder`) that store compensation identifiers (`$reservedQty`, `$chargeId`) via `Assign`",
+        "Configures `Catch` blocks on `ChargePayment` and `ShipOrder` that capture `$states.errorOutput` via `Assign` and route to the reverse compensation chain (`ShipOrder` -> `RefundPayment` -> `ReleaseInventory` -> `OrderFailed`, and `ChargePayment` -> `ReleaseInventory` -> `OrderFailed`)",
+        "Uses defensive `$exists()` guards when referencing error or workflow variables in the terminal `Fail` state (`OrderFailed`) and recommends KMS encryption on the underlying DynamoDB tables"
+      ]
+    },
+    {
+      "id": "eval-07-i-want-to-build-a-human-approval-workflow-in-ste",
+      "prompt": "I want to build a human approval workflow in Step Functions where an order approval request is sent to a primary approver via SQS. If they don't approve within 1 hour (`3600` seconds), it should escalate to a manager via SNS for another hour, and if the manager also doesn't respond, it should automatically reject the order. How do I write this in JSONata ASL, and what security rules apply to task tokens and message payloads?",
+      "expected_output": "Provides a JSONata ASL state machine chaining two `.waitForTaskToken` Task states (`arn:aws:states:::sqs:sendMessage.waitForTaskToken` and `arn:aws:states:::sns:publish.waitForTaskToken`) passing `$states.context.Task.Token` in the message body, each configured with `TimeoutSeconds: 3600` and a `Catch` on `ErrorEquals: [\"States.Timeout\"]` transitioning from primary approver -> manager escalation -> auto-reject, and explains treating task tokens as secret credentials, omitting PII/financial amounts from message bodies (passing only an `orderId` reference), and enabling KMS encryption on SQS/SNS.",
+      "files": [],
+      "expectations": [
+        "Shows chaining `.waitForTaskToken` states (`sqs:sendMessage.waitForTaskToken` / `sns:publish.waitForTaskToken`) passing `$states.context.Task.Token` and catching `States.Timeout` (`TimeoutSeconds: 3600`) to escalate from primary approver -> manager -> auto-reject",
+        "Explains that an external worker resumes the workflow by calling `SendTaskSuccess` or `SendTaskFailure` with the task token",
+        "Includes security best practices: treat the task token as a sensitive secret, pass only a reference ID (`orderId`) rather than embedding PII or financial amounts in SQS/SNS message bodies, and enable KMS encryption (`KmsMasterKeyId`) on the SQS queue and SNS topic"
+      ]
+    },
+    {
+      "id": "eval-08-we-are-using-a-jsonata-map-state-in-step-functio",
+      "prompt": "We are using a JSONata `Map` state in Step Functions. Answer two questions: (1) How do variable scoping rules work for `Assign` inside a `Parallel` branch, an `INLINE` Map state, and a `DISTRIBUTED` Map state (plus what are the variable size limits)? (2) Why does a `DISTRIBUTED` Map state fail with `States.DataLimitExceeded` when returning large outputs without `ResultWriter`, and what are the three valid ways to configure `ResultWriter`?",
+      "expected_output": "Explains variable scope rules: inner scopes (`Parallel` branches and `INLINE` Map iterations) can READ outer variables but CANNOT ASSIGN to outer variables (and cannot shadow variable names), whereas `DISTRIBUTED` Map states run as child executions and CANNOT reference outer-scope variables at all; states variable limits (256 KiB per variable, 256 KiB per `Assign`, 10 MiB total per execution, 80-char name limit); and explains that without `ResultWriter` a Map state returns all child results inline (failing at 256 KiB with `States.DataLimitExceeded`), listing the three valid `ResultWriter` configurations (`WriterConfig` only, `Resource` + `Arguments` only, or all three with `NONE`/`COMPACT`/`FLATTEN` and `JSON`/`JSONL`).",
+      "files": [],
+      "expectations": [
+        "States the exact variable scope rules: `Parallel` branches and `INLINE` Map iterations can read outer-scope variables but cannot assign to or shadow outer-scope variables, while `DISTRIBUTED` Map states cannot reference outer-scope variables at all",
+        "States the Step Functions variable size limits: max 256 KiB per single variable, max 256 KiB combined in a single `Assign`, max 10 MiB total stored variables per execution, and max 80 Unicode characters per variable name",
+        "Explains why omitting `ResultWriter` on large Distributed Map outputs causes `States.DataLimitExceeded` (> 256 KiB) and details `ResultWriter` (`arn:aws:states:::s3:putObject`, `Bucket`, `Prefix`, and `WriterConfig` with `Transformation: NONE|COMPACT|FLATTEN` and `OutputType: JSON|JSONL`)"
+      ]
+    },
+    {
+      "id": "eval-09-show-how-to-write-four-data-transformations-in-s",
+      "prompt": "Show how to write four data transformations in Step Functions using pure JSONata expressions (no Lambda needed): (1) Bind local variables with `:=` to calculate `subtotal`, 10% `tax`, optional `$couponValue` discount, and `total` from `$states.input.items.price`, (2) Convert `$states.input.items` (`[{\"productId\": \"A1\", \"price\": 10}]`) into a lookup dictionary using `$reduce` and dynamically look up a price by `$states.input.targetProductId` using `$lookup`, (3) Check whether `$states.input.orderDate` is newer than `$states.input.cutoffDate` using `$toMillis`, and (4) Split `$states.input.items` into batches of 10 and generate a UUID and SHA-256 hash.",
+      "expected_output": "Provides exact JSONata expressions inside `{% %}` using single quotes: (1) `( $subtotal := $sum($states.input.items.price); $tax := $subtotal * 0.1; $discount := $exists($couponValue) ? $couponValue : 0; {'subtotal': $subtotal, 'tax': $tax, 'discount': $discount, 'total': $subtotal + $tax - $discount} )`, (2) `$reduce($states.input.items, function($acc, $item) { $merge([$acc, {$item.productId: $item.price}]) }, {})` paired with `$lookup($priceByProduct, $states.input.targetProductId)`, (3) `$toMillis($states.input.orderDate) > $toMillis($states.input.cutoffDate)`, and (4) `$partition($states.input.items, 10)`, `$uuid()`, and `$hash($states.input.content, 'SHA-256')`.",
+      "files": [],
+      "expectations": [
+        "Shows local variable binding with `:=` inside `( ... )` using `$sum()`, `$exists($couponValue) ? $couponValue : 0`, and single-quoted object keys inside `{% %}`",
+        "Shows building a key-value map with `$reduce` and `$merge` and retrieving a dynamic key using `$lookup($priceByProduct, $states.input.targetProductId)`",
+        "Shows timestamp comparison with `$toMillis(...)` and built-in Step Functions JSONata functions `$partition(..., 10)`, `$uuid()`, and `$hash(..., 'SHA-256')`"
+      ]
+    },
+    {
+      "id": "eval-10-multiple-executions-of-our-step-functions-state",
+      "prompt": "Multiple executions of our Step Functions state machine can start concurrently for the same `customerId`, but only one execution at a time is allowed to run the `DoProtectedWork` state for a given `customerId`. Since Step Functions has no built-in mutex, how do we implement a distributed concurrency lock / semaphore in JSONata ASL using DynamoDB, including stale-lock recovery and guaranteed lock release on error?",
+      "expected_output": "Provides the JSONata ASL semaphore pattern using `arn:aws:states:::dynamodb:putItem` on a KMS-encrypted `LocksTable` with `ConditionExpression: \"attribute_not_exists(lockId) OR expiresAt < :now\"`, storing `$states.context.Execution.Id` and an `expiresAt` TTL timestamp, configuring `Retry` on `DynamoDB.ConditionalCheckFailedException` as a spin-wait, wrapping `DoProtectedWork` with a `Catch` (`States.ALL`) that routes to `ReleaseLock` (`dynamodb:deleteItem` conditioned on `executionId = :execId`) before checking/re-raising the error.",
+      "files": [],
+      "expectations": [
+        "Shows acquiring the lock via `dynamodb:putItem` with a `ConditionExpression` checking `attribute_not_exists` (and an `expiresAt` timestamp check for stale-lock recovery if a prior execution crashed)",
+        "Uses a `Retry` policy on `ConditionalCheckFailedException` as a spin-wait to retry lock acquisition with backoff",
+        "Configures a `Catch` block on `DoProtectedWork` that routes to `ReleaseLock` (`dynamodb:deleteItem` verifying `executionId`) so the lock is always released whether the protected work succeeds or fails"
+      ]
+    },
+    {
+      "id": "eval-11-we-are-reviewing-error-handling-in-our-jsonata-s",
+      "prompt": "We are reviewing error handling in our JSONata state machines: (1) What are the placement and syntax rules for `States.ALL` and `MaxAttempts: 0` in a `Retry` array, and does a state's top-level `Assign` run when a `Catch` block matches? (2) In a Scatter-Gather `Map` state calling an unreliable external API per item where we want to continue even if some items fail and then split results into `succeeded` and `failed` arrays, how do we configure the `Map` state and post-process the output in JSONata?",
+      "expected_output": "Explains that (1) in `Retry`, `States.ALL` must appear alone in its `ErrorEquals` array and must be in the last retrier, `MaxAttempts: 0` prevents retrying specific errors like `States.QueryEvaluationError`, and when a `Catch` block matches, the state's top-level `Assign` is NOT evaluated (only the Catcher's `Assign` runs); (2) for Scatter-Gather, set `ToleratedFailurePercentage: 100` on the `Map` state, filter failed items via `$exists(Error)` and successful items via `$not($exists(Error))`, and wrap both filtered expressions in the `$type($f) = 'array' ? $f : $exists($f) ? [$f] : []` guard.",
+      "files": [],
+      "expectations": [
+        "States the `Retry` and `Catch` rules: `States.ALL` must be alone in its `ErrorEquals` array and placed in the last retrier, `MaxAttempts: 0` disables retries for matched errors (such as `States.QueryEvaluationError`), and a state's top-level `Assign` is NOT evaluated when a `Catch` block matches",
+        "Shows the Scatter-Gather `Map` pattern using `ToleratedFailurePercentage: 100` so the Map completes with partial results where failed iterations contain `Error` and `Cause` fields",
+        "Shows separating successes (`$not($exists(Error))`) and failures (`$exists(Error)`) in JSONata while guarding both filtered results with `$type($f) = 'array' ? $f : $exists($f) ? [$f] : []`"
+      ]
+    },
+    {
+      "id": "eval-12-we-are-debugging-a-failing-http-task-arn-aws-sta",
+      "prompt": "We are debugging a failing HTTP Task (`arn:aws:states:::http:invoke`) in our production Step Functions state machine in ap-south-1. A developer proposed three things: (1) hardcoding the third-party Bearer API key directly inside the ASL state machine's `Arguments.Headers` in git so we can rule out EventBridge Connection issues, (2) running `aws stepfunctions test-state --inspection-level TRACE --reveal-secrets` in our public GitHub Actions CI pipeline and printing stdout to the build log, and (3) running `aws stepfunctions delete-state-machine` in production to stop currently running executions. Evaluate all three proposals and give the safe diagnostic steps.",
+      "expected_output": "Refuses all three unsafe proposals: (1) never embed API keys or secrets in the ASL state machine definition—always store them in AWS Secrets Manager and reference via an EventBridge `ConnectionArn`, (2) never expose `--reveal-secrets` output in version control, shell history, CI/CD build logs, or CloudWatch Logs, and (3) never run `delete-state-machine` in production to triage failures. Provides the safe read-only diagnostic sequence (`list-executions`, `get-execution-history`, CloudWatch Logs, and `test-state` with `--mock` without exposing `--reveal-secrets`).",
+      "files": [],
+      "expectations": [
+        "Explicitly rejects embedding API keys/secrets in the ASL definition (`Arguments`) and requires storing external credentials in AWS Secrets Manager referenced via an EventBridge connection (`ConnectionArn`)",
+        "Explicitly warns against printing `--reveal-secrets` (`TRACE`) output in CI/CD build logs, shell history, or CloudWatch Logs",
+        "Refuses running `delete-state-machine` in production and provides the safe read-only diagnostic steps (`list-executions`, `get-execution-history`, and inspecting KMS-encrypted CloudWatch execution logs)"
+      ]
+    }
+  ]
+}

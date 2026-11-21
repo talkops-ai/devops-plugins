@@ -1,0 +1,95 @@
+{
+  "skill_name": "directconnect",
+  "companion_skills": [
+    "transitgateway",
+    "route53",
+    "aws-networking-and-compute",
+    "shieldadvanced"
+  ],
+  "queries": [
+    {
+      "id": "trig-pos-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure a 10 Gbps AWS Direct Connect Dedicated Connection with a Transit VIF, BGP BFD fast failover, and Direct Connect Gateway."
+    },
+    {
+      "id": "trig-pos-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Compare MACsec Layer-2 encryption vs Private IP Site-to-Site VPN over a Transit VIF for encrypting AWS Direct Connect traffic."
+    },
+    {
+      "id": "trig-pos-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Migrate our AWS Direct Connect setup from a Private VIF + Virtual Private Gateway (VGW) to a Transit VIF + Direct Connect Gateway + Transit Gateway with zero packet loss."
+    },
+    {
+      "id": "trig-pos-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Enable AWS Direct Connect SiteLink between our Mumbai and Frankfurt offices and safely remove a member from a Direct Connect LAG (`minimumLinks`)."
+    },
+    {
+      "id": "trig-pos-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Design a 99.99% SLA Direct Connect topology using the Resiliency Toolkit and `7224:7300` BGP local-preference communities."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Create Transit Gateway route tables to isolate Dev VPCs from Prod VPCs and force east-west traffic through AWS Network Firewall."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure Route 53 DNS Firewall domain blocklists and failover routing policies."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Set up AWS WAF Bot Control Targeted rules and Fraud Control on CloudFront."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Subscribe to AWS Shield Advanced and configure SRT proactive engagement."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Debug a timing-out AWS Lambda function connected to DynamoDB."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Convert Oracle PL/SQL queries in a Java Hibernate app to Aurora PostgreSQL."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write PromQL queries against Amazon Managed Service for Prometheus."
+    }
+  ]
+}

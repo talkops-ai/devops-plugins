@@ -1,0 +1,95 @@
+{
+  "skill_name": "aws-secrets-manager",
+  "companion_skills": [
+    "creating-secrets-using-best-practices",
+    "aws-iam",
+    "aws-security",
+    "aws-iam-and-security"
+  ],
+  "queries": [
+    {
+      "id": "trig-pos-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Pass our database credentials from AWS Secrets Manager into `psql` and `mysql` using `asm-exec` and `{{resolve:secretsmanager:...}}` without exposing plaintext to the agent."
+    },
+    {
+      "id": "trig-pos-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Explain how `asm-exec` resolves `{{resolve:secretsmanager:...}}` via Secrets Manager Agent (`localhost:2773`) and SigV4 `aws-mcp` without local CLI stdout leaks."
+    },
+    {
+      "id": "trig-pos-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Troubleshoot `asm-exec: MCP resolution failed: HTTP 401` and empty-string JSON key resolution errors."
+    },
+    {
+      "id": "trig-pos-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Run a Docker container locally with Secrets Manager credentials injected at runtime so secret values never enter LLM chat context."
+    },
+    {
+      "id": "trig-pos-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Resolve a cross-region `ap-south-1` secret in `asm-exec` when `AWS_REGION` defaults to `us-east-1`."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Create a brand-new secret in AWS Secrets Manager with a dedicated KMS CMK, 30-day Lambda rotation, and recovery window."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Add Amazon Cognito PKCE authentication to a React frontend."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Fix the `ForAllValues` vacuous truth bug in an AWS IAM policy."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Audit CloudTrail Lake events for root account console logins."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure AWS WAF Bot Control Targeted rules on CloudFront."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Set up an encrypted SNS topic for CloudWatch alarm notifications."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Run PromQL queries against Amazon Managed Service for Prometheus."
+    }
+  ]
+}

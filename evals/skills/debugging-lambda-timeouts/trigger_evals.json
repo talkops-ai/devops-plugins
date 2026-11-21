@@ -1,0 +1,95 @@
+{
+  "skill_name": "debugging-lambda-timeouts",
+  "companion_skills": [
+    "aws-lambda",
+    "aws-serverless",
+    "troubleshooting-application-failures",
+    "lambda-event-source-mappings-esm"
+  ],
+  "queries": [
+    {
+      "id": "trig-pos-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Our `order-enrichment` AWS Lambda function in `ap-south-1` is hitting `Task timed out after 30.00 seconds` \u2014 systematically debug the root cause."
+    },
+    {
+      "id": "trig-pos-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Diagnose why our VPC-attached Lambda hangs until timeout when calling S3 `PutObject` even though RDS queries finish in 15ms."
+    },
+    {
+      "id": "trig-pos-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Analyze CloudWatch `Duration`, `Max Memory Used`, and cold-start metrics for a Lambda function approaching its timeout limit."
+    },
+    {
+      "id": "trig-pos-04",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Why does our Node.js callback Lambda hang until timeout after `callback(null, res)` when keeping a global Redis connection open?"
+    },
+    {
+      "id": "trig-pos-05",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Review this Python Lambda code and configuration to figure out why 10% of invocations time out under burst load."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Connect an existing Lambda function to a new API Gateway REST API with `AWS_PROXY` and CORS."
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Design a single-table DynamoDB schema using `aws-dynamodb-mcp` and validate against DynamoDB Local."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure AWS Transit Gateway inter-Region peering and Network Firewall east-west inspection."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Set up a multi-region AWS CloudTrail trail encrypted with KMS."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Migrate a legacy Windows IIS .NET app to Amazon ECS using AWS App2Container."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Create a Route 53 failover routing policy backed by an HTTPS health check."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a blameless Correction of Errors (COE) postmortem with a 5-Whys timeline."
+    }
+  ]
+}

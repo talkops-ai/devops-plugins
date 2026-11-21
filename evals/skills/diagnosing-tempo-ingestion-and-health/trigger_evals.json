@@ -1,0 +1,112 @@
+{
+  "skill_name": "diagnosing-tempo-ingestion-and-health",
+  "companion_skills": [
+    "operating-tempo-deployments-and-tenants",
+    "troubleshooting-telemetry-pipelines",
+    "operating-loki-deployments-and-ingestion",
+    "authoring-traceql-and-metrics-queries",
+    "triaging-tempo-service-errors"
+  ],
+  "queries": [
+    {
+      "id": "trig-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Check Grafana Tempo ingestion and component health in `observability` to find out why spans are being dropped for `otel-demo` during `loadGeneratorFloodHomepage`.",
+      "notes": "Direct Tempo ingestion diagnostics"
+    },
+    {
+      "id": "trig-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Diagnose unhealthy Tempo ingester hash-ring members and memberlist gossip port `7946` failures in `observability`.",
+      "notes": "Tempo ring health diagnosis"
+    },
+    {
+      "id": "trig-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Check our `opentelemetry-otel-collector` exporter config in `otel-demo` for Tempo port/protocol mismatches (`:4317` vs `:4318`) and missing `X-Scope-OrgID` headers.",
+      "notes": "OTel-to-Tempo exporter audit"
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We ran `helm upgrade --set otel.enabled=true` across all 14 `otel-demo` app charts and `opentelemetry-otel-collector` is running, yet Tempo returns zero traces!",
+      "notes": "No-traces decision tree"
+    },
+    {
+      "id": "trig-05",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "In Tempo 3.0 (`observability`), newly generated `PlaceOrder` traces from `checkout-service` lag 5 minutes behind real time before showing up in Grafana.",
+      "notes": "Tempo 3.x Kafka partition lag"
+    },
+    {
+      "id": "trig-06",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why do `checkout-service` -> `shipping-service` -> `quote` traces in `otel-demo` look truncated with missing child spans and huge blank gaps in the waterfall?",
+      "notes": "max_bytes_per_trace_exceeded + time gaps"
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Our `TempoStack` custom resource `tempo-otel-degraded` in `observability` is stuck with `Ready=False` after a storage secret rotation—diagnose what failed.",
+      "notes": "Operator CR readiness failure"
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why did Tempo `metrics-generator` stop producing `local-blocks` and `service-graphs` metrics for `otel-demo` after a config reload?",
+      "notes": "Missing metrics-generator processors"
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Render a `large-prod` `TempoStack` CR `tempo-otel` with S3 storage and 30-day retention in `observability`.",
+      "expected_alternative_skill": "operating-tempo-deployments-and-tenants",
+      "notes": "Day-1/Day-2 TempoStack sizing & provisioning"
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "`opentelemetry-otel-collector` in `otel-demo` is `OOMKilled` and `otelcol_exporter_enqueue_failed_spans` is spiking on `:8888/metrics`.",
+      "expected_alternative_skill": "troubleshooting-telemetry-pipelines",
+      "notes": "OTel Collector internal pipeline failure"
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Grafana Loki in `observability` is dropping `frontend-proxy` Envoy logs with `loki_discarded_samples_total{reason=\"per_stream_rate_limit\"}`.",
+      "expected_alternative_skill": "operating-loki-deployments-and-ingestion",
+      "notes": "Loki ingestion drops"
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Triage a 25% `PlaceOrder` error spike on `checkout-service` in Tempo caused by `paymentFailure` and identify which downstream microservice is failing.",
+      "expected_alternative_skill": "triaging-tempo-service-errors",
+      "notes": "Application service error triage in Tempo"
+    }
+  ]
+}

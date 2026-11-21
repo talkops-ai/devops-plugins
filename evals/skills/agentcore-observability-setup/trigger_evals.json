@@ -1,0 +1,99 @@
+{
+  "skill_name": "agentcore-observability-setup",
+  "companion_skills": [
+    "agentcore-ops-review",
+    "agents-debug",
+    "agents-optimize",
+    "arize-incident-investigation",
+    "bedrock-adoption-readiness"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Validate whether Amazon Bedrock AgentCore observability, CloudWatch Transaction Search, and X-Ray span delivery are configured properly in ap-south-1."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Set up OpenTelemetry (ADOT) tracing, logs, and session metrics for our AgentCore Runtime and Memory resources."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Run an AgentCore observability readiness check across our Runtime, Gateway, and Lambda-hosted agents."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why can't I see any spans in CloudWatch GenAI Observability even though my AgentCore agent is handling requests and writing runtime logs?"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "What OTEL environment variables and Lambda Layer settings do we need so an external Strands agent running on AWS Lambda and ECS reports traces to CloudWatch?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Check if our `/aws/bedrock-agentcore/runtimes/` log group has the required `xray.amazonaws.com` resource policy for unified span delivery."
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Before next week's launch, SRE wants proof that our new AgentCore runtime (`orders_agent`) and its Code Interpreter built-in tool will emit end-to-end traces and vended logs into CloudWatch."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "We migrated our agent to an August 2026 AgentCore runtime with `aws-opentelemetry-distro==0.14.0` and `UNIFIED_TRACES_DESTINATION_ENABLED=true`, and spans aren't landing in the agent's log group."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Our security team only granted basic `logs:DescribeLogGroups` and `cloudwatch:ListMetrics` permissions — tell us what AgentCore telemetry wiring you can verify right now vs what inline read-only IAM policy unlocks full Transaction Search checks."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Investigate why our LLM eval scores dropped in Arize AX after yesterday's prompt version label change using Arize monitors and OpenInference spans.",
+      "expected_alternative_skill": "arize-incident-investigation"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure `Builtin.GoalSuccessRate` and custom code-based AgentCore Evaluators with a CI/CD quality gate in our `agentcore.json` project.",
+      "expected_alternative_skill": "agents-optimize"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Audit our Bedrock foundation-model Zero Data Retention (ZDR) regimes, 5:1 Claude output token TPM burndown, and Organization SCPs before production cutover.",
+      "expected_alternative_skill": "bedrock-adoption-readiness"
+    }
+  ]
+}

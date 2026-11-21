@@ -26,7 +26,7 @@
       "args": [
         "--with",
         "fastmcp<4.0.0",
-        "awslabs.aws-iac-mcp-server==0.2.14"
+        "awslabs.aws-iac-mcp-server@latest"
       ],
       "env": {
         "FASTMCP_LOG_LEVEL": "ERROR",

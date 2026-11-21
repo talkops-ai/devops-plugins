@@ -148,3 +148,235 @@ Resources:
       SecurityGroupIds:
         - !Ref RedshiftPrivateSecurityGroup
 ```
+
+---
+
+## 3. Amazon MSK & Amazon OpenSearch Service Terraform Blueprints (Zero-Trust Security & Stateful Guardrails)
+
+Never allow unauthenticated plaintext ports (`client_broker = "PLAINTEXT"` on port `9092`), `0.0.0.0/0` ingress, or public unencrypted OpenSearch endpoints without Fine-Grained Access Control (FGAC). Always place stateful streaming and search clusters in 3-AZ private subnets with KMS CMK encryption, IAM authentication, audit/slow logs, and `lifecycle { prevent_destroy = true }` (or `RemovalPolicy.RETAIN` in CDK).
+
+```hcl
+# 1. Amazon MSK Cluster (3-AZ Private Subnets, KMS CMK, TLS 1.2+ Only, IAM Auth)
+resource "aws_msk_cluster" "analytics_kafka" {
+  cluster_name           = "analytics-events-msk"
+  kafka_version          = "3.7.x.kraft"
+  number_of_broker_nodes = 3
+
+  broker_node_group_info {
+    instance_type   = "kafka.m7g.large"
+    client_subnets  = var.private_subnet_ids # 3 AZs
+    security_groups = [aws_security_group.msk_private_sg.id]
+    storage_info {
+      ebs_storage_info {
+        volume_size = 500
+      }
+    }
+  }
+
+  encryption_info {
+    encryption_at_rest_kms_key_arn = aws_kms_key.data_platform_cmk.arn
+    encryption_in_transit {
+      client_broker = "TLS" # Reject PLAINTEXT (9092) and TLS_PLAINTEXT
+      in_cluster    = true
+    }
+  }
+
+  client_authentication {
+    unauthenticated = false
+    sasl {
+      iam = true
+    }
+  }
+
+  logging_info {
+    broker_logs {
+      cloudwatch_logs {
+        enabled   = true
+        log_group = aws_cloudwatch_log_group.msk_broker_logs.name
+      }
+    }
+  }
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+# 2. Amazon OpenSearch Service Domain (3-AZ Zone Awareness, 3 Dedicated Masters, KMS, HTTPS TLS 1.2+, FGAC)
+resource "aws_opensearch_domain" "analytics_search" {
+  domain_name    = "analytics-search-prod"
+  engine_version = "OpenSearch_2.17"
+
+  cluster_config {
+    instance_type            = "r7g.large.search"
+    instance_count           = 3
+    dedicated_master_enabled = true
+    dedicated_master_type    = "m7g.large.search"
+    dedicated_master_count   = 3
+    zone_awareness_enabled   = true
+    zone_awareness_config {
+      availability_zone_count = 3
+    }
+  }
+
+  vpc_options {
+    subnet_ids         = var.private_subnet_ids # 3 AZs
+    security_group_ids = [aws_security_group.opensearch_private_sg.id]
+  }
+
+  ebs_options {
+    ebs_enabled = true
+    volume_type = "gp3"
+    volume_size = 200
+  }
+
+  encrypt_at_rest {
+    enabled    = true
+    kms_key_id = aws_kms_key.data_platform_cmk.arn
+  }
+
+  node_to_node_encryption {
+    enabled = true
+  }
+
+  domain_endpoint_options {
+    enforce_https       = true
+    tls_security_policy = "Policy-Min-TLS-1-2-2019-07"
+  }
+
+  advanced_security_options {
+    enabled                        = true
+    anonymous_auth_enabled         = false
+    internal_user_database_enabled = false
+    master_user_options {
+      master_user_arn = var.opensearch_admin_iam_role_arn
+    }
+  }
+
+  log_publishing_options {
+    log_type                 = "AUDIT_LOGS"
+    cloudwatch_log_group_arn = aws_cloudwatch_log_group.opensearch_audit_logs.arn
+  }
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+```
+
+
+---
+
+## 3. Amazon MSK & Amazon OpenSearch Service Terraform Blueprints (Zero-Trust Security & Stateful Guardrails)
+
+Never allow unauthenticated plaintext ports (`client_broker = "PLAINTEXT"` on port `9092`), `0.0.0.0/0` ingress, or public unencrypted OpenSearch endpoints without Fine-Grained Access Control (FGAC). Always place stateful streaming and search clusters in 3-AZ private subnets with KMS CMK encryption, IAM authentication, audit/slow logs, and `lifecycle { prevent_destroy = true }` (or `RemovalPolicy.RETAIN` in CDK).
+
+```hcl
+# 1. Amazon MSK Cluster (3-AZ Private Subnets, KMS CMK, TLS 1.2+ Only, IAM Auth)
+resource "aws_msk_cluster" "analytics_kafka" {
+  cluster_name           = "analytics-events-msk"
+  kafka_version          = "3.7.x.kraft"
+  number_of_broker_nodes = 3
+
+  broker_node_group_info {
+    instance_type   = "kafka.m7g.large"
+    client_subnets  = var.private_subnet_ids # 3 AZs
+    security_groups = [aws_security_group.msk_private_sg.id]
+    storage_info {
+      ebs_storage_info {
+        volume_size = 500
+      }
+    }
+  }
+
+  encryption_info {
+    encryption_at_rest_kms_key_arn = aws_kms_key.data_platform_cmk.arn
+    encryption_in_transit {
+      client_broker = "TLS" # Reject PLAINTEXT (9092) and TLS_PLAINTEXT
+      in_cluster    = true
+    }
+  }
+
+  client_authentication {
+    unauthenticated = false
+    sasl {
+      iam = true
+    }
+  }
+
+  logging_info {
+    broker_logs {
+      cloudwatch_logs {
+        enabled   = true
+        log_group = aws_cloudwatch_log_group.msk_broker_logs.name
+      }
+    }
+  }
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+# 2. Amazon OpenSearch Service Domain (3-AZ Zone Awareness, 3 Dedicated Masters, KMS, HTTPS TLS 1.2+, FGAC)
+resource "aws_opensearch_domain" "analytics_search" {
+  domain_name    = "analytics-search-prod"
+  engine_version = "OpenSearch_2.17"
+
+  cluster_config {
+    instance_type            = "r7g.large.search"
+    instance_count           = 3
+    dedicated_master_enabled = true
+    dedicated_master_type    = "m7g.large.search"
+    dedicated_master_count   = 3
+    zone_awareness_enabled   = true
+    zone_awareness_config {
+      availability_zone_count = 3
+    }
+  }
+
+  vpc_options {
+    subnet_ids         = var.private_subnet_ids # 3 AZs
+    security_group_ids = [aws_security_group.opensearch_private_sg.id]
+  }
+
+  ebs_options {
+    ebs_enabled = true
+    volume_type = "gp3"
+    volume_size = 200
+  }
+
+  encrypt_at_rest {
+    enabled    = true
+    kms_key_id = aws_kms_key.data_platform_cmk.arn
+  }
+
+  node_to_node_encryption {
+    enabled = true
+  }
+
+  domain_endpoint_options {
+    enforce_https       = true
+    tls_security_policy = "Policy-Min-TLS-1-2-2019-07"
+  }
+
+  advanced_security_options {
+    enabled                        = true
+    anonymous_auth_enabled         = false
+    internal_user_database_enabled = false
+    master_user_options {
+      master_user_arn = var.opensearch_admin_iam_role_arn
+    }
+  }
+
+  log_publishing_options {
+    log_type                 = "AUDIT_LOGS"
+    cloudwatch_log_group_arn = aws_cloudwatch_log_group.opensearch_audit_logs.arn
+  }
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+```
+

@@ -1,0 +1,116 @@
+{
+  "skill_name": "diagnosing-tempo-ingestion-and-health",
+  "evals": [
+    {
+      "id": "eval-01-full-diagnostics-spans-discarded-rate-limited",
+      "prompt": "After turning on `loadGeneratorFloodHomepage` in `flagd` (50 Locust users flooding `frontend-proxy:8090`), `otel-demo` microservices started losing spans in our primary Grafana Tempo cluster in `observability`. Run a full Tempo health and ingestion check for `otel-demo`, pinpoint why spans are being discarded, and preview a safe per-tenant override increase without applying it live yet.",
+      "expected_output": "Reads `tempo://server/capabilities` and `tempo://deployment/overview`, calls `tempo_get_diagnostics(backend_id=\"default\", tenant=\"otel-demo\")`, identifies `SPANS_DISCARDED` (`rate_limited` / `max_bytes_per_trace_exceeded` / `live_traces_exceeded` during the `loadGeneratorFloodHomepage` surge), reads `tempo://overrides/default/otel-demo` to capture the current `etag`, previews `tempo_patch_tenant_overrides(..., expected_etag=..., dry_run=True)` without calling `dry_run=False`, and asks operator confirmation.",
+      "files": [],
+      "expectations": [
+        "Calls `tempo_get_diagnostics` on the primary Tempo backend covering health, rings, ingestion, config, and operator status",
+        "Identifies `SPANS_DISCARDED` drop reasons triggered during the `loadGeneratorFloodHomepage` surge",
+        "Reads `tempo://overrides/default/otel-demo` to capture `etag` and previews `tempo_patch_tenant_overrides(..., dry_run=True)`",
+        "Stops at the confirmation gate without invoking `dry_run=False`"
+      ]
+    },
+    {
+      "id": "eval-02-ring-member-unhealthy-and-gossip-port-7946",
+      "prompt": "TraceQL searches for `checkout-service` and `product-catalog-service` intermittently return HTTP 500s on our Tempo 2.6 distributed cluster `tempo-2x-degraded-ring` in `observability`. Diagnose its component and hash-ring health, and explain how to handle stateful ingester pods safely so recent traces aren't lost.",
+      "expected_output": "Reads `tempo://system/backends/tempo-2x-degraded-ring` (and/or `tempo://deployment/overview`) and calls `tempo_get_diagnostics(backend_id=\"tempo-2x-degraded-ring\")`, surfacing `RING_MEMBER_UNHEALTHY` (**Critical**) on the ingester ring and `RING_CHECK_FAILED` (**Warning**) on compactor/memberlist gossip port `7946` (plus `COMPONENT_NOT_RUNNING` if present), and warns to preserve stateful Tempo 2.x ingester WAL PVCs/flush before restarting pods.",
+      "files": [],
+      "expectations": [
+        "Calls `tempo_get_diagnostics` on `tempo-2x-degraded-ring` (and inspects `tempo://system/backends/tempo-2x-degraded-ring` or `tempo://deployment/overview`)",
+        "Classifies `RING_MEMBER_UNHEALTHY` / `COMPONENT_NOT_RUNNING` as Critical and `RING_CHECK_FAILED` (memberlist gossip port `7946`) as Warning",
+        "Warns against force-deleting stateful Tempo 2.x ingester pods without preserving WAL volumes / flushing in-memory blocks"
+      ]
+    },
+    {
+      "id": "eval-03-tempo-3-kafka-ingest-partition-lag-and-vparquet4",
+      "prompt": "On our Grafana Tempo 3.x distributed cluster `tempo-3x-distributed` in `observability` (tenant `otel-demo`), newly emitted `PlaceOrder` traces from `opentelemetry-otel-collector` take nearly 4 minutes to appear in search! Run Tempo diagnostics and explain which Tempo 3.x components are lagging and how to remediate it.",
+      "expected_output": "Calls `tempo_get_diagnostics(backend_id=\"tempo-3x-distributed\", tenant=\"otel-demo\")` detecting `tempo_major_version: 3` (`architecture_generation: \"3.x\"`) and `PARTITION_LAG_OBSERVED` (`tempo_ingest_group_partition_lag_seconds`), explains the Tempo 3.x stateless `distributor -> ingest -> Kafka -> block-builder -> vParquet4 object storage` pipeline (distinct from `otel-demo`'s own `kafka:9092` broker and Tempo 2.x stateful ingesters), and recommends scaling Tempo `block-builder` consumers or object-storage upload concurrency.",
+      "files": [],
+      "expectations": [
+        "Calls `tempo_get_diagnostics` on `tempo-3x-distributed` (tenant `otel-demo`) and surfaces `PARTITION_LAG_OBSERVED` (`tempo_ingest_group_partition_lag_seconds`)",
+        "Correctly describes the Tempo 3.x `distributor -> ingest -> Kafka -> block-builder -> vParquet4` architecture",
+        "Recommends scaling Tempo `block-builder` replicas / partition consumer throughput rather than Tempo 2.x stateful ingesters"
+      ]
+    },
+    {
+      "id": "eval-04-multitenancy-missing-x-scope-orgid-header",
+      "prompt": "After turning on multi-tenancy on `tempo-3x-distributed` in `observability`, `opentelemetry-otel-collector` in `otel-demo` started getting HTTP 400/401 rejections and zero traces show up in Tempo. Check diagnostics on `tempo-3x-distributed` and audit this Collector exporter configuration:\n```yaml\nexporters:\n  otlp/tempo:\n    endpoint: tempo-distributor.observability.svc.cluster.local:4318\nservice:\n  pipelines:\n    traces:\n      exporters: [otlp/tempo]\n```",
+      "expected_output": "Calls `tempo_get_diagnostics(backend_id=\"tempo-3x-distributed\")` surfacing `TENANT_HEADER_REQUIRED` (**Critical**) and runs `scripts/check_otel_exporter_config.py` against the `opentelemetry-otel-collector` config, catching two defects: (1) `NO_TENANT_HEADER` — missing `headers.X-Scope-OrgID: otel-demo` required when `multitenancy_enabled: true`, and (2) `PORT_PROTOCOL_MISMATCH` — gRPC `otlp/tempo` exporter pointing at HTTP port `:4318` instead of `:4317` (or switching exporter type to `otlphttp/tempo`).",
+      "files": [],
+      "expectations": [
+        "Calls `tempo_get_diagnostics` on `tempo-3x-distributed` surfacing `TENANT_HEADER_REQUIRED`",
+        "Runs `check_otel_exporter_config.py` detecting `NO_TENANT_HEADER` (missing `X-Scope-OrgID: otel-demo`)",
+        "Detects `PORT_PROTOCOL_MISMATCH` (`otlp` gRPC exporter targeting HTTP port `:4318` instead of `:4317`) and outputs corrected Collector YAML"
+      ]
+    },
+    {
+      "id": "eval-05-otel-exporter-not-wired-in-traces-pipeline",
+      "prompt": "We ran `helm upgrade product-catalog charts/product-catalog/ -n otel-demo --set otel.enabled=true` and Tempo in `observability` is healthy, yet traces from a newly deployed collector in `otel-staging` never arrive in Tempo. Check Tempo backend health and service attributes, and audit this `opentelemetry-otel-collector` configuration:\n```yaml\nreceivers:\n  otlp:\n    protocols:\n      grpc:\n        endpoint: 0.0.0.0:4317\n      http:\n        endpoint: 0.0.0.0:4318\nexporters:\n  otlp/tempo:\n    endpoint: tempo.observability.svc.cluster.local:4317\n    tls:\n      insecure: true\n    headers:\n      X-Scope-OrgID: otel-staging\n  debug:\n    verbosity: basic\nservice:\n  pipelines:\n    traces:\n      receivers: [otlp]\n      exporters: [debug]\n```",
+      "expected_output": "Follows the zero-traces decision tree: verifies Tempo health via `tempo_get_diagnostics`, checks `tempo_get_attribute_values(attribute=\"resource.service.name\", tenant=\"otel-staging\")`, and runs `scripts/check_otel_exporter_config.py` against the Collector config—flagging `NOT_IN_TRACES_PIPELINE` because `otlp/tempo` is declared under `exporters:` but omitted from `service.pipelines.traces.exporters: [debug]`.",
+      "files": [],
+      "expectations": [
+        "Verifies Tempo health and `resource.service.name` presence via `tempo_get_diagnostics` and `tempo_get_attribute_values`",
+        "Runs `check_otel_exporter_config.py` and identifies `NOT_IN_TRACES_PIPELINE` (`otlp/tempo` missing from `service.pipelines.traces.exporters`)",
+        "Provides the corrected `service.pipelines.traces.exporters: [otlp/tempo]` configuration"
+      ]
+    },
+    {
+      "id": "eval-06-trace-time-gaps-and-broken-context-propagation",
+      "prompt": "`PlaceOrder` trace `9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d` in `otel-demo` took `4.8` seconds end-to-end from `frontend-proxy` through `checkout-service`, `shipping-service`, and `quote`, yet the spans visible in the Tempo waterfall only add up to `900ms`! Diagnose why `3.9` seconds of the trace is blank.",
+      "expected_output": "Calls `tempo_summarize_trace` and `tempo_get_trace` on `9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d` plus `tempo_get_diagnostics`, identifying `TRACE_TIME_GAPS` (`critical_path_duration_ms < 50%` of `total_duration_ms`) and checking whether child spans (`quote` PHP `:8080` or `flagd` `:8013` evaluations) had `otel.enabled=false` in their Helm chart, dropped W3C `traceparent` HTTP headers between Rust `shipping-service` and PHP `quote`, or hit `SPANS_DISCARDED` (`max_bytes_per_trace_exceeded`).",
+      "files": [],
+      "expectations": [
+        "Calls `tempo_summarize_trace` / `tempo_get_trace` on `9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d` and `tempo_get_diagnostics`",
+        "Identifies `TRACE_TIME_GAPS` because critical-path span coverage is `< 50%` of the `4.8s` total trace duration",
+        "Checks `SPANS_DISCARDED` (`max_bytes_per_trace_exceeded`), `otel.enabled=false` on downstream `OTEL-APP` services (`quote`/`email`), and broken W3C `traceparent` propagation"
+      ]
+    },
+    {
+      "id": "eval-07-operator-cr-not-ready-remediation-flow",
+      "prompt": "Our `TempoStack` custom resource `tempo-otel-degraded` in namespace `observability` became unhealthy right after an object-storage secret rotation (pointing at `tempo-otel-missing-s3-secret` instead of `tempo-otel-s3-credentials`). Inspect Tempo Operator status in `observability` without exposing secret values, diagnose what failed, and validate a fix via server-side dry-run without applying it live yet.",
+      "expected_output": "Reads `tempo://operator/crs/observability` and `tempo://operator/manifests/TempoStack/observability/tempo-otel-degraded`, runs `tempo_get_diagnostics` surfacing `OPERATOR_CR_NOT_READY` (**Critical**), pinpoints `Ready=False` (`StorageSecretNotFound` / `tempo-otel-missing-s3-secret`) without reading raw Kubernetes Secret data, updates `spec.storage.secret.name` to `tempo-otel-s3-credentials`, and previews via `tempo_apply_operator_cr(..., dry_run=True)` without calling `dry_run=False`.",
+      "files": [],
+      "expectations": [
+        "Reads `tempo://operator/crs/observability` and `tempo://operator/manifests/TempoStack/observability/tempo-otel-degraded` via MCP resources",
+        "Calls `tempo_get_diagnostics` surfacing `OPERATOR_CR_NOT_READY` and identifies the `Ready=False` storage secret condition without dumping Secret values",
+        "Previews the corrected `TempoStack` manifest (`tempo-otel-s3-credentials`) via `tempo_apply_operator_cr(..., dry_run=True)` without calling `dry_run=False`"
+      ]
+    },
+    {
+      "id": "eval-08-metrics-generator-processor-absent-diagnosis",
+      "prompt": "Grafana Service Graphs (`frontend -> checkout-service -> payment/cart-service/product-catalog-service/shipping-service`) and TraceQL Metrics panels went completely blank on our `tempo-no-local-blocks` Tempo instance in `observability`, even though looking up individual traces by `trace_id` still works fine. Diagnose what is disabled on `tempo-no-local-blocks` and show how to fix it.",
+      "expected_output": "Calls `tempo_get_diagnostics(backend_id=\"tempo-no-local-blocks\")` and inspects `tempo://server/capabilities` / `tempo://system/backends/tempo-no-local-blocks`, identifying `METRICS_GENERATOR_PROCESSOR_ABSENT` (`service-graphs`, `span-metrics`, and `local-blocks` missing from `metrics_generator.processors`) and `OVERRIDES_API_DISABLED` (`user_configurable_overrides` disabled), and shows the exact `tempo.yaml` / `TempoStack` configuration to enable `[\"service-graphs\", \"span-metrics\", \"local-blocks\"]`.",
+      "files": [],
+      "expectations": [
+        "Calls `tempo_get_diagnostics` on `tempo-no-local-blocks` and checks `tempo://server/capabilities` / `tempo://system/backends/tempo-no-local-blocks`",
+        "Surfaces `METRICS_GENERATOR_PROCESSOR_ABSENT` (missing `service-graphs`, `span-metrics`, `local-blocks`) and `OVERRIDES_API_DISABLED`",
+        "Provides exact `metrics_generator.processors` (`service-graphs`, `span-metrics`, `local-blocks`) enablement guidance"
+      ]
+    },
+    {
+      "id": "eval-09-backend-unreachable-and-ingestion-metrics-unreachable",
+      "prompt": "Check our two regional Tempo backends `otel-eu` and `otel-us` in `observability`—`otel-eu` is failing all trace queries completely, while `otel-us` serves TraceQL searches normally but isn't reporting any dropped-span counters. Inspect both backends, classify the severity difference, and give concrete Kubernetes troubleshooting steps for each.",
+      "expected_output": "Reads `tempo://system/backends` and runs `tempo_get_diagnostics` on `otel-eu` and `otel-us`, classifying `BACKEND_UNREACHABLE` on `otel-eu` as **Critical** (Tempo `:3200` HTTP query endpoint down, DNS mismatch, TLS error, or NetworkPolicy block) and `INGESTION_METRICS_UNREACHABLE` on `otel-us` as **Info** (TraceQL search works, but `/metrics` cannot be scraped from the gateway URL so `SPANS_DISCARDED` / `PARTITION_LAG_OBSERVED` counters aren't visible), giving concrete K8s Service/NetworkPolicy/metrics-port steps for both.",
+      "files": [],
+      "expectations": [
+        "Reads `tempo://system/backends` and runs `tempo_get_diagnostics` on `otel-eu` and `otel-us`",
+        "Distinguishes Critical `BACKEND_UNREACHABLE` on `otel-eu` from Info `INGESTION_METRICS_UNREACHABLE` on `otel-us`",
+        "Provides concrete Kubernetes Service DNS, port `:3200`, NetworkPolicy, and `/metrics` scrape remediation steps for both"
+      ]
+    },
+    {
+      "id": "eval-10-apply-approved-override-remediation-after-dry-run",
+      "prompt": "We confirmed that tenant `otel-demo` on our primary Tempo cluster in `observability` is hitting single-trace byte limits during `recommendationCacheFailure` and `loadGeneratorFloodHomepage` runs. Preview raising `max_bytes_per_trace` to `20971520` (20 MiB) safely with optimistic concurrency first, apply the change live as approved, and verify Tempo ingestion health afterward.",
+      "expected_output": "Reads `tempo://overrides/default/otel-demo` to obtain the current `etag`, calls `tempo_patch_tenant_overrides(backend_id=\"default\", tenant=\"otel-demo\", merge_patch={\"max_bytes_per_trace\": 20971520}, expected_etag=..., dry_run=True)` to inspect the unified diff, executes `tempo_patch_tenant_overrides(..., dry_run=False, confirm=True)`, and re-runs `tempo_get_diagnostics(backend_id=\"default\", tenant=\"otel-demo\")` to verify post-change health.",
+      "files": [],
+      "expectations": [
+        "Reads `tempo://overrides/default/otel-demo` first to fetch the current `etag`",
+        "Calls `tempo_patch_tenant_overrides` chronologically with `dry_run=True` first, followed by `dry_run=False, confirm=True`",
+        "Re-runs `tempo_get_diagnostics` for `otel-demo` afterward to verify post-change health"
+      ]
+    }
+  ]
+}

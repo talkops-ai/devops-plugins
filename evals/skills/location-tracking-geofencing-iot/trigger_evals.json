@@ -1,0 +1,62 @@
+{
+  "skill_name": "location-tracking-geofencing-iot",
+  "companion_skills": [
+    "amazon-location-service",
+    "location-migration-specialist",
+    "location-security-iac-and-finops",
+    "location-v2-maps-places-routes",
+    "signing-in-to-aws"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use `location-tracking-geofencing-iot` to design, validate, and troubleshoot location tracking geofencing iot."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Walk me through production best practices and operational guardrails for location tracking geofencing iot (`location-tracking-geofencing-iot`)."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We need an operational review and step-by-step runbook covering: Stateful fleet tracking, geofencing, location integrity verification, predictive ETA breaching, and IoT ingestion architectures using `@aws-sdk/client-location` (`location`). Use w"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "What are the critical failure modes, configuration checks, and verification commands for location tracking geofencing iot?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our location tracking geofencing iot setup in read-only mode."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure and troubleshoot amazon location service exclusively without touching location tracking geofencing iot.",
+      "expected_alternative_skill": "amazon-location-service"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+    }
+  ]
+}

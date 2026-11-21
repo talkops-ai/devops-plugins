@@ -1,0 +1,98 @@
+{
+  "skill_name": "serverless-sam-deploy",
+  "companion_skills": [
+    "aws-architecture-diagram",
+    "container-ecs-deploy",
+    "aws-deployment",
+    "verify-and-rollback"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Package and validate our FastAPI service in `template.yaml` using AWS SAM, AWS Lambda Web Adapter (`LambdaAdapterLayerArm64`), and HTTP API Gateway."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Configure an SQS Event Source Mapping in AWS SAM with `ReportBatchItemFailures`, `VisibilityTimeout >= 6x`, and `ScalingConfig.MaximumConcurrency`."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Estimate monthly Lambda + API Gateway cost, run `sam build --use-container` for compiled Python wheels, and prepare our `sam deploy` command."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Our Express.js app needs SSE response streaming for 60 seconds without API Gateway's 29-second timeout — wire it up on Lambda Function URL behind CloudFront OAC."
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Stop poison-pill DynamoDB Stream records from blocking our Lambda shard by adding `BisectBatchOnFunctionError`, `FilterCriteria`, and an `OnFailure` DLQ in `template.yaml`."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Deploy our static SPA `index.html` and `/assets/*` to private S3 behind CloudFront OAC and run targeted CloudFront cache invalidations after updating our serverless API."
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Replace wildcard IAM policies and hardcoded secrets in our `AWS::Serverless::Function` template with SAM Policy Templates and Secrets Manager references."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Compare API Gateway HTTP API (`HttpApi`) vs REST API (`Api`) for Usage Plans, AWS WAF association, and request validation in our serverless stack."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Enable `AWS_LWA_ASYNC_INIT=true` on our Lambda Web Adapter function and `ProvisionedPollerConfig` on our MSK Kafka Event Source Mapping."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Export a validated `.drawio` AWS architecture diagram from our `template.yaml` stack with AWS4 category-tinted containers and step badges.",
+      "expected_alternative_skill": "aws-architecture-diagram"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Build a multi-stage `Dockerfile`, push to Amazon ECR with lifecycle policies, and deploy a Fargate service behind an Application Load Balancer.",
+      "expected_alternative_skill": "container-ecs-deploy"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Upgrade our Elastic Beanstalk Python platform branch with immutable deployments and enhanced health reporting.",
+      "expected_alternative_skill": "elastic-beanstalk"
+    }
+  ]
+}

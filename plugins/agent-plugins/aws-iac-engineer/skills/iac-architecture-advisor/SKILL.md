@@ -1,9 +1,11 @@
 ---
 name: iac-architecture-advisor
-description: Day-0 multi-engine AWS IaC architecture advisor and rapid-prototyping router. Evaluates team language expertise, multi-cloud portability, state/control-plane governance, and Day-0 feature needs to select and scaffold AWS CDK, CloudFormation, Terraform/OpenTofu, Pulumi, Crossplane, or AWS Blocks / Launch-with-AWS.
+description: "Day-0 multi-engine AWS IaC architecture advisor and rapid-prototyping router. Evaluates team language expertise, multi-cloud portability, state/control-plane governance, and Day-0 feature needs to select and scaffold AWS CDK, CloudFormation, Terraform/OpenTofu, Pulumi, Crossplane, or AWS Blocks / Launch-with-AWS. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # AWS IaC Architecture Advisor & Rapid-Prototyping Router
+
+> **MCP-Only Live AWS Execution:** Execute ALL live AWS API discovery, account/region preflight checks (`sts:GetCallerIdentity`), stack/cluster/resource inspection, pricing (`awspricing`/`billing`), IaC validation (`awsiac`), and documentation lookups (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___run_script` `call_boto3`, `awsknowledge`, `awsiac`, `awspricing`, `eks`, `ecs`, `cloudwatch`) — **never invoke raw `aws ...` CLI commands in shell (`run_command`)**. Offline local linters/synthesizers (`cdk synth`, `terraform validate`, `python3`) may run locally without mutating live AWS.
 
 Use this skill for **Day-0 architectural routing** when starting a new AWS infrastructure project, comparing IaC engines, or migrating a rapid prototype ("vibe-coded" application or AWS Blocks app) to production AWS infrastructure.
 

@@ -38,6 +38,7 @@ Declared in [`.mcp.json`](./.mcp.json) (Claude Code) and [`mcp.json`](./mcp.json
 
 | Server | Transport | Launch | Claude Code tool pattern | Notes |
 |---|---|---|---|---|
+| `aws-mcp` | stdio | `uvx mcp-proxy-for-aws-cli==1.7.0` `--region us-east-1 --metadata` | `mcp__plugin_aws-deployment-engineer_aws-mcp__*` | Managed AWS MCP Server (`aws___call_aws`, `aws___run_script`, `aws___search_documentation`). |
 | `awsknowledge` | http | `https://knowledge-mcp.global.api.aws` | `mcp__plugin_aws-deployment-engineer_awsknowledge__*` |  |
 | `awsiac` | stdio | `uvx awslabs.aws-iac-mcp-server==1.0.26` | `mcp__plugin_aws-deployment-engineer_awsiac__*` | Pinned to 0.2.14 with fastmcp<4.0.0 to prevent FastMCP 4.0 breaking import crashes (awslabs/mcp#4567). |
 | `awspricing` | stdio | `uvx awslabs.aws-pricing-mcp-server==1.1.1` | `mcp__plugin_aws-deployment-engineer_awspricing__*` |  |

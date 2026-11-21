@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Skill Execution Evaluation Suite",
+  "description": "Outcome-driven skill evaluation schema aligned with agentskills.io/skill-creation/evaluating-skills. Provides natural read-only user queries and expectations without hardcoding internal reference or script filenames.",
+  "type": "object",
+  "required": [
+    "skill_name",
+    "evals"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "skill_name": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "evals": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "prompt",
+          "expected_output",
+          "expectations"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 10,
+            "description": "Natural read-only user query passed verbatim to the agent."
+          },
+          "expected_output": {
+            "type": "string",
+            "description": "Human-readable description of the expected behavior and output."
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "expectations": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            },
+            "description": "Verifiable behavioral and outcome expectations. If all match -> GREEN (PASS); otherwise -> RED (FAIL, revisit skill or its components)."
+          },
+          "assertions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Optional deterministic string/regex assertions (`contains '...'`, `not contains '...'`, `matches regex /.../`) evaluated alongside expectations."
+          }
+        }
+      }
+    }
+  }
+}

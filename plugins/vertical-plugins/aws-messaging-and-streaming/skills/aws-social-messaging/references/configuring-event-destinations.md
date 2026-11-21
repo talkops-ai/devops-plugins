@@ -22,13 +22,19 @@ Without event destinations, delivery failures and reclassifications are invisibl
 
 ## Configure Event Destination
 
-A WABA can only have **one** event destination at a time.
+A WABA can only have **one** event destination at a time (calling `put-whatsapp-business-account-event-destinations` replaces any existing destination).
+
+Supported `eventDestinationArn` target services:
+1. **Amazon EventBridge** (`arn:aws:events:<region>:<account>:event-bus/<bus-name>`) — IAM role needs `events:PutEvents`
+2. **Amazon SNS** (`arn:aws:sns:<region>:<account>:<topic-name>`) — IAM role needs `sns:Publish`
+3. **Amazon Kinesis Data Streams** (`arn:aws:kinesis:<region>:<account>:stream/<stream-name>`) — IAM role needs `kinesis:PutRecord`, `kinesis:PutRecords`
+4. **Amazon Data Firehose** (`arn:aws:firehose:<region>:<account>:deliverystream/<stream-name>`) — IAM role needs `firehose:PutRecord`, `firehose:PutRecordBatch`
+5. **Amazon CloudWatch Logs** (`arn:aws:logs:<region>:<account>:log-group:<log-group-name>`) — IAM role needs `logs:CreateLogStream`, `logs:PutLogEvents`, `logs:DescribeLogStreams`
 
 ```bash
 aws socialmessaging put-whatsapp-business-account-event-destinations \
   --id "waba-XXXXXXXXXXXXXXXXXXXX" \
   --event-destinations '[{"eventDestinationArn":"arn:aws:sns:us-east-1:123456789012:whatsapp-events","roleArn":"arn:aws:iam::123456789012:role/WhatsAppEventDeliveryRole"}]'
-
 ```
 
 ### Parameters
@@ -36,7 +42,7 @@ aws socialmessaging put-whatsapp-business-account-event-destinations \
 | Parameter | Required | Description |
 |-----------|----------|-------------|
 | `--id` | Yes | WABA ID (format: `waba-XXXX`) |
-| `--event-destinations` | Yes | Array with one entry: SNS topic ARN + IAM role ARN |
+| `--event-destinations` | Yes | Array with one entry: target ARN (EventBridge, SNS, Kinesis, Firehose, or CloudWatch Logs) + IAM role ARN |
 
 ## Prerequisites
 
@@ -135,6 +141,18 @@ Subscriptions must show `"SubscriptionArn"` (not `"PendingConfirmation"`).
 Verify SNS subscription endpoints are authorized personnel/systems — use access policies to restrict who can subscribe. Use HTTPS-only endpoints for encryption in transit.
 
 ## Event Payload Examples
+
+AWS End User Messaging Social delivers a top-level JSON envelope containing `context` (`MetaWabaIds`, `MetaPhoneNumberIds`) and a JSON-stringified `whatsAppWebhookEntry` field (which downstream consumers parse a second time with `JSON.parse` / `json.loads` to access `changes[].value.messages` for inbound messages and `changes[].value.statuses` for delivery receipts and `statuses[].errors`):
+
+```json
+{
+  "context": {
+    "MetaWabaIds": ["123456789012345"],
+    "MetaPhoneNumberIds": ["987654321098765"]
+  },
+  "whatsAppWebhookEntry": "{\"id\":\"123456789012345\",\"changes\":[{\"field\":\"messages\",\"value\":{\"messaging_product\":\"whatsapp\",\"metadata\":{\"display_phone_number\":\"15550199999\",\"phone_number_id\":\"987654321098765\"},\"messages\":[{\"from\":\"14155551234\",\"id\":\"wamid.XXXX\",\"timestamp\":\"1710000000\",\"type\":\"text\",\"text\":{\"body\":\"Hello\"}}],\"statuses\":[{\"id\":\"wamid.YYYY\",\"status\":\"delivered\",\"timestamp\":\"1710000005\",\"recipient_id\":\"14155551234\"}]}}]}"
+}
+```
 
 Delivery receipt:
 

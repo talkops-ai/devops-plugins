@@ -1,0 +1,99 @@
+{
+  "skill_name": "tf-best-practices",
+  "companion_skills": [
+    "gcp-to-aws",
+    "heroku-to-aws",
+    "azure-to-aws",
+    "start-building-for-startups",
+    "architect-for-startups"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Run the read-only `validate-terraform-policy.py` policy gate against our generated `./terraform` directory and produce the JSON `POLICY_OK` / `POLICY_FAIL` verdict."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Load the pre-authoring AWS Terraform security posture rules (`alb_https_listener`, `rds_encryption_at_rest`, `no_wildcard_iam`) before our migration Generate phase writes `terraform/`."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Verify the 7 security posture rules on our synthesized `cdk.out/*.template.json` CDK output (`npx cdk synth --quiet` + `cdk-nag`)."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why did our generated Terraform fail `alb_http_redirect`, `rds_not_public`, and `db_sg_no_public_ingress` on `0:0:0:0:0:0:0:0/0` during post-generation validation?"
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "When `terraform init -backend=false` fails offline with `dial tcp: lookup registry.terraform.io: no such host`, how does `passed_degraded_offline` interact with `policy_status` in `validation-report/v2`?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Why does an `aws_elastic_beanstalk_environment` pass the static ALB listener check vacuously, and why is `elasticbeanstalk:CreateStorageLocation` exempt from `no_wildcard_iam`?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Check which compliance-conditional Terraform resources must be emitted when the caller passes `compliance = ['soc2', 'pci', 'hipaa']`."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Compare how the static Terraform policy gate handles `aws_elasticache_replication_group` vs single-node Redis `aws_elasticache_cluster` vs Memcached."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Explain the 3-attempt Stage D Fix-and-Retry `[retry/skip/abort]` protocol and why the policy gate unit itself never edits `.tf` or `.phase-status.json`."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Discover our Heroku Procfile, dynos, and Heroku Postgres add-ons and design a complete Heroku-to-AWS migration plan.",
+      "expected_alternative_skill": "heroku-to-aws"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Advise our 2-person Seed startup on whether to choose Lambda, ECS Fargate, or EKS and how to stretch $10k in AWS Activate credits.",
+      "expected_alternative_skill": "architect-for-startups"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Give me a copy-paste AI coding System Prompt from the AWS Startups Prompt Library to request a GPU instance quota increase.",
+      "expected_alternative_skill": "prompt-library-for-startups"
+    }
+  ]
+}

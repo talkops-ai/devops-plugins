@@ -20,6 +20,12 @@ metadata:
 
 Acts as a Principal AWS Solutions Architect (Machine Learning Lens) to triage workloads, prevent over-provisioning, and produce an actionable `ARCHITECTURE.md` before infrastructure or training code is written.
 
+## MCP-Only Execution & Read-Only Safety
+
+- **MCP-Only Live Queries:** Execute **all** live AWS discovery, Bedrock/SageMaker control-plane checks, pricing lookups, IaC compliance checks, CloudWatch telemetry queries, and documentation searches **exclusively via connected MCP tools**: `aws-mcp` (`aws___run_script` using read-only `await call_boto3(...)`, `aws___search_documentation`, `aws___read_documentation`), `sagemaker` (`describe_hp_cluster`), `agentcore`, `strands-agents`, `cloudwatch`, `awspricing` (`get_pricing`, `get_bedrock_patterns`), `awsiac`, and `awsknowledge`. Offline pure-Python bundled helper scripts in `scripts/*.py` that perform local math/schema rendering without live AWS credentials are permitted when inspecting local inputs, whereas live AWS API queries must go through MCP rather than raw `aws` CLI or boto3 shell scripts.
+- **Strict Read-Only & Secret Safety:** **Never** run raw `aws ...` (not even `aws sts get-caller-identity` — always query `sts.GetCallerIdentity` inside `aws___run_script`) CLI commands in Bash/`run_command`, **never** mutate live AWS resources (`Create*`, `Update*`, `Delete*`, `InvokeModel`, `CreateEndpoint` — refuse unapproved mutations and present a safe, approval-gated architectural migration and rollback workflow), and **never** read or expose plaintext secrets (`secretsmanager:GetSecretValue`, `ssm:GetParameter` with `WithDecryption=True`, or `.env` API keys).
+- **Unmapped Edge Cases:** Query `awsknowledge` / `aws-mcp` documentation search tools (`aws___search_documentation`, `aws___read_documentation`) with 1–2 focused queries before recommending unverified service quotas or regional capabilities.
+
 ## When to Activate
 
 - User asks "how should I build/train/deploy X on AWS or SageMaker?"
@@ -91,13 +97,13 @@ Select the hosting pattern that minimizes cost while meeting latency and payload
 
 ---
 
-## Phase 5: Produce `ARCHITECTURE.md` Blueprint
+## Phase 5: Render Architecture Blueprint (`ARCHITECTURE.md` Format)
 
-Write `ARCHITECTURE.md` in the project directory containing:
+**Always render the complete architecture blueprint directly inline in your final response** (only write `ARCHITECTURE.md` to disk if the user explicitly asks to save a file — never rely solely on an external artifact/file link), containing:
 
 1. **Executive Summary & Workload Classification** (Modality, Tier selection, SLA targets)
 2. **Architecture Diagram** (Mermaid `flowchart LR` showing Data Ingestion → Training Tier → Model Registry/MLflow → Hosting Topology → Observability/Guardrails + VPC/KMS boundary)
-3. **Well-Architected ML Lens Tradeoff Analysis** (Why the chosen training tier and inference pattern beat alternatives on Performance, Cost, Security, and Operational Excellence)
+3. **Well-Architected ML Lens Tradeoff Analysis** (Why the chosen training tier and inference pattern beat alternatives across Security [`VpcOnly` + KMS CMK + 5-persona IAM], Operational Excellence & Reproducibility [Managed MLflow + SageMaker Feature Store **Iceberg** offline store for point-in-time joins + ML Lineage], Reliability [Multi-AZ Blue/Green `AutoRollbackConfiguration`], Performance, and Cost Optimization [Managed Spot checkpointing + **`InferenceComponent`** multi-model bin-packing & Scale-to-Zero])
 4. **Network, Identity & Encryption Posture** (`VpcOnly` vs Public, required VPC Interface/Gateway Endpoints, KMS CMKs, Persona Execution Roles)
 5. **FinOps & Capacity Strategy** (Recommended instance families including `ml.g6e`/`ml.trn1`/`ml.inf2` comparison, Spot checkpointing strategy, and `InferenceComponent` packing density)
 6. **Ordered Execution Hand-off Plan** mapping each implementation step to its specialist skill (`sagemaker-domain-vpc-iac`, `sagemaker-cost-estimator`, `sagemaker-training-architect`, `sagemaker-inference-architect`, `sagemaker-mlops-pipelines`, `sagemaker-observability-governance`).

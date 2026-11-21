@@ -1,0 +1,95 @@
+{
+  "skill_name": "aws-terraform",
+  "evals": [
+    {
+      "id": "eval-01-dual-provider-hashicorp-aws-plus-awscc-and-s3-native-lockfile",
+      "prompt": "Author a modern Terraform `>= 1.10` / OpenTofu `versions.tf` and `backend.tf` setup in `ap-south-1` configuring the dual-provider (`hashicorp/aws` + `hashicorp/awscc`) architecture, `default_tags`, and S3 state backend with native S3 `.tflock` locking (no legacy DynamoDB lock table).",
+      "expectations": [
+        "Activates the aws-terraform skill",
+        "Configures `required_providers` for both `hashicorp/aws` (`~> 5.0` or `~> 6.0`) and `hashicorp/awscc` (`~> 1.0`) with `default_tags` on the AWS provider",
+        "Configures the `backend \"s3\"` block in `ap-south-1` using `use_lockfile = true` and `encrypt = true` (eliminating deprecated `dynamodb_table` state locking)"
+      ]
+    },
+    {
+      "id": "eval-02-safe-module-refactoring-with-moved-and-removed-blocks",
+      "prompt": "We split a monolithic `aws_rds_cluster.main` and `aws_s3_bucket.uploads` from root `main.tf` into `module.database` and `module.storage`, and want to retire a legacy `aws_s3_bucket.old_archive` from Terraform state WITHOUT deleting the real S3 bucket in AWS. Show the declarative HCL refactoring blocks so nobody runs manual `terraform state mv` or `state rm` CLI commands.",
+      "expectations": [
+        "Activates the aws-terraform skill",
+        "Uses declarative `moved { from = ... to = ... }` blocks to map `aws_rds_cluster.main` -> `module.database.aws_rds_cluster.this` and `aws_s3_bucket.uploads` -> `module.storage.aws_s3_bucket.this`",
+        "Uses Terraform `removed { from = aws_s3_bucket.old_archive lifecycle { destroy = false } }` to detach the legacy bucket from state without destroying it in AWS, verified with a `0 to destroy` `terraform plan`"
+      ]
+    },
+    {
+      "id": "eval-03-terraform-test-framework-tftest-hcl-with-mock-provider",
+      "prompt": "Show how to write fast offline unit tests in native `.tftest.hcl` (`terraform test`) using `mock_provider \"aws\"` for a Terraform S3 + KMS module, asserting that `bucket_key_enabled == true`, `block_public_acls == true`, and variable validation rejects invalid `environment` inputs.",
+      "expectations": [
+        "Activates the aws-terraform skill",
+        "Provides a valid `.tftest.hcl` test file using `mock_provider \"aws\" {}` and `run` blocks (`command = plan`) with `assert { condition = ... error_message = ... }`",
+        "Demonstrates testing negative input validation via `expect_failures = [var.environment]` without needing live AWS credentials"
+      ]
+    },
+    {
+      "id": "eval-04-ephemeral-resources-and-write-only-password-wo-zero-secret-state",
+      "prompt": "Explain how Terraform `>= 1.10`/`1.11` `ephemeral` resources and write-only (`*_wo` + `*_wo_version`) attributes solve the classic problem of `random_password` and `aws_secretsmanager_secret_version` persisting plaintext passwords in `terraform.tfstate`. Provide a concrete RDS / Secrets Manager HCL example.",
+      "expectations": [
+        "Activates the aws-terraform skill",
+        "Uses `ephemeral \"random_password\"` (or `ephemeral \"aws_secretsmanager_random_password\"`) paired with write-only attributes (`password_wo` + `password_wo_version` or `secret_string_wo` + `secret_string_wo_version`, or `manage_master_user_password = true`)",
+        "Explains that `ephemeral` values and `*_wo` attributes are never written to `terraform.tfstate` or plan artifacts, and bumping `*_wo_version` triggers secret rotation"
+      ]
+    },
+    {
+      "id": "eval-05-terraform-stacks-tfstack-hcl-multi-region-orchestration",
+      "prompt": "When should a platform team adopt **Terraform Stacks** (`.tfstack.hcl` + `.tfdeploy.hcl`) instead of copy-pasting directory-per-region root modules or Terragrunt wrappers for deploying identical VPC + EKS infrastructure across `ap-south-1` and `eu-west-1`?",
+      "expectations": [
+        "Activates the aws-terraform skill",
+        "Explains Terraform Stacks structure (`component` blocks in `.tfstack.hcl` with `for_each` over regions/providers and `deployment` blocks in `.tfdeploy.hcl` with OIDC identity tokens)",
+        "Highlights native cross-component dependency orchestration and deferred planning (solving the classic provider-depends-on-EKS-cluster two-stage apply problem)"
+      ]
+    },
+    {
+      "id": "eval-06-count-to-for-each-migration-preventing-index-shift-destruction",
+      "prompt": "An engineer created 3 private subnets using `count = length(var.azs)` (`aws_subnet.private[0..2]`). Removing the first AZ caused `terraform plan` to shift indexes and destroy/recreate subnets `[1]` and `[2]`! Rewrite this using `for_each` keyed by stable AZ name and include the `moved` blocks so existing subnets aren't recreated.",
+      "expectations": [
+        "Activates the aws-terraform skill",
+        "Replaces fragile list-index `count` with `for_each = toset(var.azs)` (or map keyed by AZ name) so removing one key never shifts sibling addresses",
+        "Provides explicit `moved` blocks mapping `aws_subnet.private[0]` -> `aws_subnet.private[\"ap-south-1a\"]` (etc.) and requires verifying `0 to destroy` in `terraform plan`"
+      ]
+    },
+    {
+      "id": "eval-07-policy-as-code-opa-rego-vs-sentinel-vs-checkov-in-terraform-ci",
+      "prompt": "Design a pre-apply Terraform verification pipeline combining `terraform fmt -check`, `terraform validate`, `tflint`, `trivy`/`checkov`, and OPA/Sentinel policy checks against `terraform show -json tfplan`.",
+      "expectations": [
+        "Activates the aws-terraform skill",
+        "Orders fast offline checks (`terraform fmt -check`, `terraform validate`, `terraform test`, `tflint`, `checkov`/`trivy config`) before plan-JSON policy evaluation (`terraform plan -out=tfplan` -> `terraform show -json tfplan` -> OPA/Conftest or Sentinel)",
+        "Explains why evaluating `tfplan` JSON catches computed module outputs and dynamic variable values that static HCL-only linters miss"
+      ]
+    },
+    {
+      "id": "eval-08-module-style-guide-variables-validation-preconditions-and-outputs",
+      "prompt": "Review a reusable Terraform module structure and show the idiomatic file layout (`main.tf`, `variables.tf`, `outputs.tf`, `versions.tf`, `examples/`, `tests/`) plus custom `validation {}` blocks and `lifecycle { precondition / postcondition }` checks enforcing encrypted `gp3` EBS volumes.",
+      "expectations": [
+        "Activates the aws-terraform skill",
+        "Follows the standard Terraform module structure (`main.tf`, `variables.tf` with explicit `type` and `description`, `outputs.tf`, `versions.tf` pinning minimum versions without hardcoding `backend` or provider credentials inside child modules)",
+        "Demonstrates `variable` `validation {}` blocks and resource `lifecycle { precondition / postcondition }` enforcing `gp3` and `encrypted == true`"
+      ]
+    },
+    {
+      "id": "eval-09-live-ap-south-1-s3-and-vpc-data-source-scaffolding",
+      "prompt": "Inspect our live VPCs in `ap-south-1` (read-only) and generate clean Terraform `data \"aws_vpc\"` and `data \"aws_subnets\"` HCL blocks tailored to the live `ap-south-1` network so a downstream workload module can attach safely without running `terraform apply`.",
+      "expectations": [
+        "Activates the aws-terraform skill and queries live VPCs/subnets in `ap-south-1` via connected AWS MCP tools with zero raw `aws` CLI shell commands",
+        "Emits valid Terraform `data \"aws_vpc\"` and `data \"aws_subnets\"` HCL grounded in the live `ap-south-1` inspection",
+        "Makes zero mutating AWS or `terraform apply` calls"
+      ]
+    },
+    {
+      "id": "eval-10-awsknowledge-awscc-provider-cloud-control-behavior-and-import",
+      "prompt": "Using AWS documentation via connected AWS documentation tools, explain how the `hashicorp/awscc` Terraform provider interacts with AWS Cloud Control API schemas and how `import {}` blocks specify composite vs single-property CloudFormation primary identifiers on `awscc_*` resources.",
+      "expectations": [
+        "Activates the aws-terraform skill and queries connected AWS documentation MCP tools (`awsknowledge`, `aws-mcp`, or `awsiac`)",
+        "Explains that `hashicorp/awscc` is auto-generated from AWS CloudFormation Registry resource schemas over the AWS Cloud Control API (giving same-day coverage for new AWS features)",
+        "Explains `awscc_*` `import { id = ... }` primary identifier formatting (pipe-delimited `|` composite primary identifiers when a CloudFormation resource type defines a multi-part `primaryIdentifier`)"
+      ]
+    }
+  ]
+}

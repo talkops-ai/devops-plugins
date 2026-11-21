@@ -1,0 +1,93 @@
+{
+  "skill_name": "aws-iam-and-security",
+  "evals": [
+    {
+      "id": "eval-01-least-privilege-iam-policy-audit-iam-passrole-and-wildcard-fix",
+      "prompt": "Security blocked our Terraform PR because an engineer wrote an ECS Task Role policy with `Action = [\"s3:*\", \"dynamodb:*\", \"kms:*\", \"iam:PassRole\"]` and `Resource = \"*\"`. Explain the exact privilege-escalation risks (especially wildcard `iam:PassRole`) and rewrite it in least-privilege Terraform `aws_iam_policy_document` HCL for reading `s3://orders-bucket-prod/invoices/*` and writing to `arn:aws:dynamodb:ap-south-1:111122223333:table/Orders` with KMS key `arn:aws:kms:ap-south-1:111122223333:key/mrk-1234`.",
+      "expectations": [
+        "Activates the aws-iam-and-security skill",
+        "Explains why `iam:PassRole` on `Resource = \"*\"` enables privilege escalation (passing privileged admin/service roles to compute services)",
+        "Rewrites the policy using `data \"aws_iam_policy_document\"` with exact actions (`s3:GetObject`, `dynamodb:PutItem`/`UpdateItem`, `kms:Decrypt`/`GenerateDataKey`), exact bucket/object/table/key ARNs, and `kms:ViaService` (or `iam:PassedToService` if `PassRole` is ever needed)"
+      ]
+    },
+    {
+      "id": "eval-02-zero-plaintext-secrets-in-iac-rds-ecs-and-terraform-ephemeral",
+      "prompt": "Our security scanner found `master_password = var.db_password` in our Terraform `aws_db_instance`, `environment = [{ name = \"DB_PASSWORD\", value = var.db_password }]` in our ECS Task Definition, and `aws_iam_access_key` resources being created for app pods. Remediate all three using modern zero-plaintext-secret IaC patterns.",
+      "expectations": [
+        "Activates the aws-iam-and-security skill",
+        "Replaces RDS `master_password` with `manage_master_user_password = true` (AWS-managed Secrets Manager rotation) or Terraform 1.10+ `ephemeral` + `password_wo` write-only attributes so secrets never enter `.tfstate`",
+        "Replaces ECS `environment` plaintext secrets with `secrets = [{ name = \"DB_PASSWORD\", valueFrom = ... }]` injected from Secrets Manager / SSM Parameter Store at container start",
+        "Eliminates `aws_iam_access_key` static credentials in favor of ECS Task IAM Roles / EKS Pod Identity / IRSA"
+      ]
+    },
+    {
+      "id": "eval-03-confused-deputy-cross-service-trust-policy-aws-sourcearn-sourceaccount",
+      "prompt": "Write a secure IAM Role trust policy (`AssumeRolePolicyDocument`) and KMS Key Policy for an SNS topic / EventBridge Scheduler assuming a role in account `111122223333`, explicitly preventing the cross-service Confused Deputy vulnerability.",
+      "expectations": [
+        "Activates the aws-iam-and-security skill",
+        "Includes `aws:SourceAccount` (`111122223333`) and `aws:SourceArn` (`StringEquals` / `ArnLike`) conditions on the service principal trust policy to prevent Confused Deputy attacks",
+        "Ensures the KMS Key Policy preserves root/key-admin management access (preventing unrecoverable key lockout) while scoping service encrypt/decrypt grants via `kms:ViaService` or `aws:SourceArn`"
+      ]
+    },
+    {
+      "id": "eval-04-permissions-boundaries-for-delegated-developer-iac-roles",
+      "prompt": "We want application teams to author and deploy their own CDK/Terraform IAM roles in sandbox and staging accounts (`role/app-*`), without being able to escalate privileges to `AdministratorAccess`, modify CloudTrail/GuardDuty, or create IAM roles without our guardrail attached. Design the IAM Permissions Boundary + deployer policy pattern.",
+      "expectations": [
+        "Activates the aws-iam-and-security skill",
+        "Explains how an IAM Permissions Boundary acts as an intersection ceiling (`Effective Permissions = Identity Policy \u2229 Permissions Boundary`)",
+        "Grants the CI/deployer role `iam:CreateRole` / `iam:AttachRolePolicy` ONLY when `Condition` enforces `iam:PermissionsBoundary = arn:aws:iam::...:policy/AppDeveloperBoundary` and `arn:aws:iam::*:role/app-*` naming prefix, while denying modification/deletion of the boundary policy itself"
+      ]
+    },
+    {
+      "id": "eval-05-shift-left-iac-security-scanner-matrix-cfn-guard-cdk-nag-checkov-accessanalyzer",
+      "prompt": "Compare the shift-left IaC security validation tools across CloudFormation, AWS CDK, Terraform/OpenTofu, Pulumi, and Crossplane (`cdk-nag`, `cfn-guard`, `checkov`/`trivy`, CrossGuard, and IAM Access Analyzer `ValidatePolicy` / `CheckNoNewAccess`) and show how to combine static scanning with semantic IAM policy validation in CI.",
+      "expectations": [
+        "Activates the aws-iam-and-security skill",
+        "Maps each IaC engine to its primary shift-left scanner (`cdk-nag` for CDK, `cfn-guard` / `cfn-lint` for CloudFormation, `checkov` / `trivy` / `tflint` for Terraform, CrossGuard for Pulumi, and `crossplane beta validate` / Kyverno/OPA for Crossplane)",
+        "Pairs static resource posture scanning with AWS IAM Access Analyzer (`ValidatePolicy` for syntax/security warnings and `CheckNoNewAccess` / `CheckAccessNotGranted` for semantic least-privilege gates)"
+      ]
+    },
+    {
+      "id": "eval-06-aws-organizations-scp-vs-rcp-data-perimeter-design",
+      "prompt": "Our CISO wants Organization-wide guardrails ensuring (1) nobody in member accounts can disable S3 Account-Level Block Public Access or CloudTrail, and (2) S3 buckets and SQS queues in our org can NEVER be accessed by principals outside `o-exampleorgid` (even if a developer misconfigures a bucket policy). Contrast AWS Service Control Policies (SCPs) vs Resource Control Policies (RCPs) and provide the guardrail design.",
+      "expectations": [
+        "Activates the aws-iam-and-security skill",
+        "Contrasts SCPs (bound maximum permissions of IAM principals *inside* member accounts, e.g., denying `s3:PutAccountPublicAccessBlock` and `cloudtrail:StopLogging`) against RCPs (Resource Control Policies \u2014 bound maximum permissions on *AWS resources* in member accounts regardless of external caller principal, enforcing an `aws:PrincipalOrgID != o-exampleorgid` data perimeter)",
+        "Includes safe break-glass / AWS service principal exclusions (`aws:PrincipalIsAWSService: true`) on RCP data perimeters so CloudTrail/Config/AWS services do not break"
+      ]
+    },
+    {
+      "id": "eval-07-encryption-by-default-ebs-s3-rds-sns-sqs-cloudwatch-checklist",
+      "prompt": "Provide an IaC encryption-by-default hardening checklist covering account-level EBS default encryption, S3 buckets (SSE-KMS Bucket Keys + TLS-only bucket policy), RDS/Aurora, SQS/SNS, and CloudWatch Log Groups.",
+      "expectations": [
+        "Activates the aws-iam-and-security skill",
+        "Covers `aws_ebs_encryption_by_default`, S3 `BucketKeyEnabled: true` (cutting KMS API costs by up to 99%) + `aws:SecureTransport: false` `Deny` bucket policy + `BlockPublicAccess`, RDS `storage_encrypted = true` + KMS key, SQS/SNS KMS CMK encryption, and CloudWatch Logs KMS key `logs.<region>.amazonaws.com` principal grant"
+      ]
+    },
+    {
+      "id": "eval-08-live-ap-south-1-security-posture-read-only-audit",
+      "prompt": "Perform a read-only IAM & encryption baseline check in `ap-south-1` on our live AWS account: check whether EBS Encryption by Default is enabled in `ap-south-1`, whether Account-Level S3 Block Public Access is enabled, and whether any IAM Access Analyzer analyzers exist in `ap-south-1`. Do not read any secrets or mutate anything.",
+      "expectations": [
+        "Activates the aws-iam-and-security skill and executes read-only checks (`get-ebs-encryption-by-default`, `accessanalyzer list-analyzers`, and account-level S3 public access block if caller has permission) via connected AWS MCP tools with zero raw `aws` CLI shell commands",
+        "Accurately reports live findings and gracefully notes any read-only API `AccessDenied` boundaries without failing",
+        "Makes zero mutating AWS calls and reads zero secret payloads"
+      ]
+    },
+    {
+      "id": "eval-09-diagnose-sts-encoded-access-denied-with-explicit-deny-chain",
+      "prompt": "An ECS task in account `222233334444` gets `AccessDenied` calling `s3:GetObject` on a KMS-encrypted bucket in account `111122223333`, even though the ECS Task Role has `s3:GetObject` allowed. Walk through the complete cross-account IAM + S3 Bucket Policy + KMS + SCP/Boundary evaluation checklist to isolate the exact blocker.",
+      "expectations": [
+        "Activates the aws-iam-and-security skill",
+        "Walks through the complete cross-account evaluation chain: (1) explicit `Deny` first (SCP, RCP, VPC Endpoint Policy, Bucket/KMS Policy), (2) Identity-based policy on BOTH `s3:GetObject` AND `kms:Decrypt`, (3) Permissions Boundary / Session Policy intersection, and (4) Resource-based policies on BOTH the S3 Bucket Policy AND the customer-managed KMS Key Policy (noting AWS-managed `aws/s3` keys cannot be shared cross-account)"
+      ]
+    },
+    {
+      "id": "eval-10-awsknowledge-iam-access-analyzer-checknonewaccess-and-validatepolicy",
+      "prompt": "Using AWS documentation via connected AWS documentation tools, verify the exact API parameters and differences between IAM Access Analyzer `ValidatePolicy`, `CheckAccessNotGranted`, and `CheckNoNewAccess` when gating IAM policies in CI/CD.",
+      "expectations": [
+        "Activates the aws-iam-and-security skill and queries connected AWS documentation MCP tools (`awsknowledge`, `aws-mcp`, or `awsiac`)",
+        "Accurately distinguishes `ValidatePolicy` (free syntax, error, security warning, and best-practice linting against `IDENTITY_POLICY` / `RESOURCE_POLICY` / `SERVICE_CONTROL_POLICY` / `RESOURCE_CONTROL_POLICY`), `CheckAccessNotGranted` (verifying critical actions/resources are NOT granted), and `CheckNoNewAccess` (comparing `newPolicyDocument` against `existingPolicyDocument` via automated reasoning)"
+      ]
+    }
+  ]
+}

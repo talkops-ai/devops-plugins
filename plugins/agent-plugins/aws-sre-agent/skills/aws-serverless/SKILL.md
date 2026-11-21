@@ -1,11 +1,13 @@
 ---
 name: aws-serverless
-description: Builds, deploys, manages, debugs, configures, and optimizes serverless applications on AWS using Lambda, API Gateway, Step Functions, EventBridge, and SAM/CDK. Covers cold starts, CORS debugging, event source mappings, troubleshooting, concurrency, SnapStart, Powertools, function URLs, EventBridge Scheduler, Lambda layers, and production readiness. Triggers on mentions of Lambda, API Gateway, Step Functions, SAM templates, CDK serverless stacks, DynamoDB stream triggers, SQS event sources, cold starts, timeouts, 502/504 errors, throttling, concurrency, CORS, Powertools, or any event-driven architecture on AWS, even without the word "serverless." Does not apply to EC2, ECS/Fargate containers, or Amplify hosting.
+description: "Builds, deploys, manages, debugs, configures, and optimizes serverless applications on AWS using Lambda, API Gateway, Step Functions, EventBridge, and SAM/CDK. Covers cold starts, CORS debugging, event source mappings, troubleshooting, concurrency, SnapStart, Powertools, function URLs, EventBridge Scheduler, Lambda layers, and production readiness. Triggers on mentions of Lambda, API Gateway, Step Functions, SAM templates, CDK serverless stacks, DynamoDB stream triggers, SQS event sources, cold starts, timeouts, 502/504 errors, throttling, concurrency, CORS, Powertools, or any event-driven architecture on AWS, even without the word \"serverless.\" Does not apply to EC2, ECS/Fargate containers, or Amplify hosting. Query live AWS state via MCP tools only (never raw aws CLI)."
 metadata:
   version: "4"
 ---
 
 # AWS Serverless
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, caller/account verification (`sts:GetCallerIdentity`), resource inspection, logs/metrics queries, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___call_aws` / `aws___run_script`, `cloudwatch`, `cloudtrail`, `prometheus`, `dynamodb`, `serverless`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**.
 
 Domain expertise for building serverless applications on AWS: Lambda, API Gateway, Step Functions, EventBridge, event source mappings, concurrency, cold starts, deployment, and troubleshooting.
 
@@ -13,7 +15,7 @@ Domain expertise for building serverless applications on AWS: Lambda, API Gatewa
 
 ## Serverless MCP Server Orchestration (`serverless` MCP)
 
-When operating within the `aws-platform-engineer` plugin, prefer the bound `serverless` (`mcp__plugin_aws-platform-engineer_serverless__*`) and `sns-sqs` (`mcp__plugin_aws-platform-engineer_sns-sqs__*`) MCP tools over ad-hoc shell commands:
+When operating with bound serverless MCP servers (`aws-serverless-mcp` / `serverless`, `aws-mcp`, `sns-sqs`, `dynamodb`, `cloudwatch`, `awspricing`, `awsknowledge`), prefer connected MCP tools over raw `aws` CLI shell commands:
 
 | Capability | `serverless` MCP Tools to Invoke | Platform Engineering Rule |
 |---|---|---|

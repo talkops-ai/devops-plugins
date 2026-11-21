@@ -1,0 +1,62 @@
+{
+  "skill_name": "launchdarkly-agent-graphs",
+  "companion_skills": [
+    "launchdarkly-alert-investigation",
+    "launchdarkly-configs-create",
+    "launchdarkly-configs-targeting",
+    "launchdarkly-configs-update",
+    "launchdarkly-configs-variations"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use `launchdarkly-agent-graphs` to design, validate, and troubleshoot launchdarkly agent graphs."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Walk me through production best practices and operational guardrails for launchdarkly agent graphs (`launchdarkly-agent-graphs`)."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We need an operational review and step-by-step runbook covering: Create and manage agent graphs — directed graphs of configs connected by edges with handoff logic. Use when building multi-agent workflows where configs route to each other."
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "What are the critical failure modes, configuration checks, and verification commands for launchdarkly agent graphs?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our launchdarkly agent graphs setup in read-only mode."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure and troubleshoot launchdarkly alert investigation exclusively without touching launchdarkly agent graphs.",
+      "expected_alternative_skill": "launchdarkly-alert-investigation"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+    }
+  ]
+}

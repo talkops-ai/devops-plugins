@@ -1,0 +1,117 @@
+{
+  "skill_name": "authoring-traceql-and-metrics-queries",
+  "evals": [
+    {
+      "id": "eval-01-schema-first-discovery-and-dual-semconv-http-search",
+      "prompt": "Our storefront `frontend` service (`POST /api/checkout` in namespace `otel-demo`) has been returning HTTP 5xx errors over the last 30 minutes. Find the failing `frontend` server spans in Grafana Tempo for the `otel-demo` tenant—keeping in mind that our `OTEL-APP` services (`frontend`, `shipping-service`, `quote`, `email`) run a mix of older and newer OpenTelemetry HTTP semantic conventions.",
+      "expected_output": "Reads `tempo://schema/default/attributes` and calls `tempo_get_attribute_names` (`scope=\"resource\"` and `scope=\"span\"`) plus `tempo_get_attribute_values` first, constructs a dual-schema TraceQL selector covering both OTel v1.20 (`span.http.status_code >= 500`) and v1.24+ (`span.http.response.status_code >= 500`) scoped to `resource.service.namespace = \"otel-demo\" && resource.service.name = \"frontend\" && kind = server`, validates syntax via `scripts/lint_traceql.py`, and executes `tempo_traceql_search` for tenant `otel-demo`.",
+      "files": [],
+      "expectations": [
+        "Performs schema discovery via `tempo_get_attribute_names` and `tempo_get_attribute_values` (or `tempo://schema/default/attributes`) before running `tempo_traceql_search`",
+        "Handles both legacy (`span.http.status_code`) and stable (`span.http.response.status_code`) HTTP semantic conventions",
+        "Scopes the TraceQL query to namespace `otel-demo` (`resource.service.namespace = \"otel-demo\"` or `resource.k8s.namespace.name = \"otel-demo\"`), `resource.service.name = \"frontend\"`, and `kind = server` for tenant `otel-demo`",
+        "Validates TraceQL syntax with `lint_traceql.py` before executing `tempo_traceql_search`"
+      ]
+    },
+    {
+      "id": "eval-02-structural-descendant-and-negated-child-operators",
+      "prompt": "Write and execute two TraceQL searches in Grafana Tempo over the last hour for `otel-demo`: (1) traces where `frontend-proxy` (Envoy `:8090`) is an ancestor at any depth of a failing `postgresql:5432` database client span (`productCatalogFailure` on product `L9ECAV7KIM`), and (2) `oteldemo.CheckoutService/PlaceOrder` spans on `checkout-service` that aborted early during `paymentUnreachable` without making any direct child call to `email` (`/send_order_confirmation`).",
+      "expected_output": "Discovers exact DB and service attributes first, validates both expressions with `scripts/lint_traceql.py`, authors `{ resource.service.namespace = \"otel-demo\" && resource.service.name = \"frontend-proxy\" } >> { kind = client && status = error && (span.db.system = \"postgresql\" || span.db.system.name = \"postgresql\") }` using the `>>` descendant operator, and `{ resource.service.name = \"checkout-service\" && name = \"oteldemo.CheckoutService/PlaceOrder\" } !> { resource.service.name = \"email\" }` using the `!>` negated direct-child operator, running both via `tempo_traceql_search`.",
+      "files": [],
+      "expectations": [
+        "Uses structural descendant operator `>>` from `frontend-proxy` to downstream `postgresql` error client spans",
+        "Uses negated direct-child structural operator `!>` for `checkout-service` `PlaceOrder` spans missing `email` child spans",
+        "Avoids unscoped `.attr` selectors in favor of explicit `resource.` and `span.` scopes",
+        "Validates queries with `lint_traceql.py` and executes `tempo_traceql_search`"
+      ]
+    },
+    {
+      "id": "eval-03-sibling-operator-and-pipeline-count-aggregation",
+      "prompt": "Search Grafana Tempo over the last 30 minutes in `otel-demo` for two trace patterns, prioritizing the newest matching traces first: (1) `PlaceOrder` traces where `payment` (`oteldemo.PaymentService/Charge`) and `shipping-service` executed as sibling spans under the same `checkout-service` parent span, and (2) `recommendation` traces (while `recommendationCacheFailure` is active) that issued more than 15 `oteldemo.ProductCatalogService/GetProduct` gRPC client calls.",
+      "expected_output": "Uses the sibling structural operator `{ resource.service.name = \"payment\" && name = \"oteldemo.PaymentService/Charge\" } ~ { resource.service.name = \"shipping-service\" }` and pipeline aggregation `{ resource.service.name = \"recommendation\" && kind = client && name = \"oteldemo.ProductCatalogService/GetProduct\" } | count() > 15` with `most_recent=True` (or `with(most_recent=true)` hint on Tempo 2.5+/3.x), validating via `scripts/lint_traceql.py` and executing `tempo_traceql_search`.",
+      "files": [],
+      "expectations": [
+        "Uses sibling structural operator `~` to match `payment` (`Charge`) and `shipping-service` spans sharing the same parent span",
+        "Uses TraceQL pipeline aggregation `| count() > 15` to detect high `GetProduct` fan-out under `recommendationCacheFailure`",
+        "Applies `most_recent=True` or `with(most_recent=true)` hint appropriately for recent `otel-demo` traces"
+      ]
+    },
+    {
+      "id": "eval-04-traceql-metrics-range-and-instant-topk",
+      "prompt": "Check whether our primary Grafana Tempo cluster in `observability` supports TraceQL Metrics, and then compute: (1) a 1-hour p99 server latency time series for `shipping-service` in `otel-demo` broken down by HTTP route at 1-minute resolution, and (2) an instant ranking of the top 5 services with the highest server error rate across `otel-demo` over the last 15 minutes while `paymentFailure` and `productCatalogFailure` are active.",
+      "expected_output": "Checks `tempo://server/capabilities` / `tempo://deployment/overview` (verifying `local-blocks` is active in `metrics_generator.processors`), calls `tempo_traceql_metrics_range` with `{ resource.service.namespace = \"otel-demo\" && resource.service.name = \"shipping-service\" && kind = server } | quantile_over_time(duration, 0.99) by (span.http.route)` (`step=\"1m\"`), and calls `tempo_traceql_metrics_instant` with `{ resource.service.namespace = \"otel-demo\" && kind = server && status = error } | rate() by (resource.service.name) | topk(5)`.",
+      "files": [],
+      "expectations": [
+        "Checks `tempo://server/capabilities` or `tempo_get_diagnostics` for `local-blocks` TraceQL Metrics readiness before querying",
+        "Calls `tempo_traceql_metrics_range` for `shipping-service` with `quantile_over_time(duration, 0.99) by (span.http.route)` and `step=\"1m\"`",
+        "Calls `tempo_traceql_metrics_instant` scoped to `resource.service.namespace = \"otel-demo\"` with `rate() by (resource.service.name) | topk(5)`"
+      ]
+    },
+    {
+      "id": "eval-05-cohort-comparison-with-compare-clause",
+      "prompt": "Contrast slow server spans taking longer than 4 seconds against normal storefront spans on `image-provider` in `otel-demo` over the last 30 minutes in Grafana Tempo (while `imageSlowLoad` is set to `5sec`) to find the top 5 attributes (`url.path`, `flagd` variant, pod, etc.) differentiating the slow cohort from normal traffic.",
+      "expected_output": "Calls `tempo_compare_span_cohorts(backend_id=\"default\", base_query='{ resource.service.namespace = \"otel-demo\" && resource.service.name = \"image-provider\" && kind = server }', selection='{ duration > 4s }', since='30m', top_n=5)` (backed by TraceQL `| compare({ duration > 4s }, 5)`) and summarizes the highest-skew resource/span dimensions.",
+      "files": [],
+      "expectations": [
+        "Calls `tempo_compare_span_cohorts` with `base_query` scoped to `otel-demo` `image-provider` server spans and `selection` filtering `duration > 4s`",
+        "Requests bounded `top_n` differentiating attributes over the 30-minute window",
+        "Interprets attribute skew shares between the `imageSlowLoad` slow cohort and baseline cohort"
+      ]
+    },
+    {
+      "id": "eval-06-interactive-a2ui-waterfall-visualization",
+      "prompt": "Render an interactive waterfall trace view for `checkout-service` `PlaceOrder` trace `4bf92f3577b34da6a3ce929d0e0e4736` in `otel-demo` so our on-call channel can inspect the call timeline visually without scrolling through raw JSON.",
+      "expected_output": "Calls `tempo_query_a2ui(backend_id=\"default\", trace_id=\"4bf92f3577b34da6a3ce929d0e0e4736\", tenant=\"otel-demo\")` and returns the interactive A2UI trace waterfall payload alongside concise `PlaceOrder` metadata (`frontend-proxy -> frontend -> checkout-service -> payment/shipping-service/email`).",
+      "files": [],
+      "expectations": [
+        "Calls `tempo_query_a2ui` for `trace_id=\"4bf92f3577b34da6a3ce929d0e0e4736\"` in `otel-demo`",
+        "Does not dump hundreds of lines of raw OTLP JSON spans into chat when interactive visualization was requested",
+        "Includes concise trace context (root service, duration, error status across `otel-demo` hops) alongside the A2UI view"
+      ]
+    },
+    {
+      "id": "eval-07-event-and-link-intrinsic-scope-queries",
+      "prompt": "Write and execute a TraceQL query in `otel-demo` over the last 2 hours to find asynchronous `orders` Kafka consumer spans (`accounting` / `kafka`) that recorded an `exception` span event and also carry at least one span link pointing back to an upstream `PlaceOrder` producer trace.",
+      "expected_output": "Discovers `event` and `link` scope attributes via `tempo_get_attribute_names(scope=\"event\")` and `tempo_get_attribute_names(scope=\"link\")`, validates with `scripts/lint_traceql.py`, and runs `tempo_traceql_search` with `{ resource.service.namespace = \"otel-demo\" && kind = consumer && event:name = \"exception\" && link:traceID != \"\" }` (or `link:traceID != nil`).",
+      "files": [],
+      "expectations": [
+        "Inspects `event` and `link` attribute scopes via `tempo_get_attribute_names`",
+        "Uses `event:name = \"exception\"` (and/or `event.exception.type`) and `link:traceID` intrinsics accurately",
+        "Scopes the search to `otel-demo` (`resource.service.namespace = \"otel-demo\"`, `resource.k8s.namespace.name = \"otel-demo\"`, or `tenant=\"otel-demo\"` with `resource.service.name = \"accounting\"`) consumer spans over the 2-hour window"
+      ]
+    },
+    {
+      "id": "eval-08-local-blocks-absent-graceful-fallback",
+      "prompt": "Run `{ resource.service.name = \"product-catalog-service\" && name = \"oteldemo.ProductCatalogService/GetProduct\" } | histogram_over_time(duration)` against our `tempo-no-local-blocks` Tempo instance in `observability`, and handle it cleanly if `local-blocks` isn't enabled on that cluster.",
+      "expected_output": "Checks `tempo://server/capabilities` / `tempo_get_diagnostics(backend_id=\"tempo-no-local-blocks\")` detecting `METRICS_GENERATOR_PROCESSOR_ABSENT` (`local-blocks` missing from `metrics_generator.processors`), explains why TraceQL Metrics (`histogram_over_time(duration)`) requires `local-blocks`, falls back to bounded `tempo_traceql_search` sampling on `tempo-no-local-blocks` for `product-catalog-service` `GetProduct` durations, and shows the `metrics_generator.processors` config needed to enable `local-blocks`.",
+      "files": [],
+      "expectations": [
+        "Detects missing `local-blocks` (`METRICS_GENERATOR_PROCESSOR_ABSENT`) on `tempo-no-local-blocks` via capabilities/diagnostics or upon querying",
+        "Explains that TraceQL Metrics (`rate`, `quantile_over_time`, `histogram_over_time`) require `local-blocks` in `metrics_generator.processors`",
+        "Provides a bounded `tempo_traceql_search` fallback for `product-catalog-service` `GetProduct` on `tempo-no-local-blocks` plus exact `local-blocks` enablement guidance"
+      ]
+    },
+    {
+      "id": "eval-09-lint-broken-traceql-unscoped-regex-anti-patterns",
+      "prompt": "Lint and fix this TraceQL query drafted by a teammate to hunt `productCatalogFailure` errors on product `L9ECAV7KIM` before we run it against production Tempo: `{ .app.product.id =~ \".*L9ECAV7KIM.*\" && status = \"error }`.",
+      "expected_output": "Runs `scripts/lint_traceql.py` on the broken query (flagging `valid: false` due to unclosed string literal `\"error`, `status` requiring an unquoted intrinsic enum `status = error` rather than a string, unscoped `.app.product.id` scanning both `resource` and `span` scopes, and unanchored regex `=~ \".*L9ECAV7KIM.*\"` without a `resource.service.name` equality filter), rewrites to `{ resource.service.name = \"product-catalog-service\" && span.app.product.id = \"L9ECAV7KIM\" && status = error }`, and re-runs `scripts/lint_traceql.py` confirming `valid: true`.",
+      "files": [],
+      "expectations": [
+        "Runs `lint_traceql.py` and flags both the unclosed double-quote syntax error and `status = error` (unquoted intrinsic enum, not string)",
+        "Warns against unscoped `.app.product.id` attribute access and replaces it with explicit `span.app.product.id`",
+        "Replaces unbounded `=~ \".*L9ECAV7KIM.*\"` regex with exact equality `= \"L9ECAV7KIM\"` and `resource.service.name = \"product-catalog-service\"`, validating the fixed query with `lint_traceql.py`"
+      ]
+    },
+    {
+      "id": "eval-10-deterministic-pagination-across-time-window",
+      "prompt": "We have more than 20 failing `oteldemo.PaymentService/Charge` traces on `payment` in `otel-demo` across the last 2 hours while `paymentFailure` was active, and we want to page through them in small batches of 10 in Grafana Tempo without hitting search result caps, overloading Tempo queriers, or missing/duplicating traces between pages. Fetch the first batch of 10 and then fetch the next batch cleanly.",
+      "expected_output": "Validates `{ resource.service.namespace = \"otel-demo\" && resource.service.name = \"payment\" && name = \"oteldemo.PaymentService/Charge\" && status = error }` via `scripts/lint_traceql.py`, runs page 1 with bounded `limit=10` (and bounded `spss`), observes `truncated: true` (`total_matched == 10`) and the returned `next_window` (`start`..`end` epoch bounds), and executes page 2 passing `since=\"<next_window.start>..<next_window.end>\"` with `limit=10` to continue deterministically without overlap.",
+      "files": [],
+      "expectations": [
+        "Executes the initial `payment` `Charge` error search with `limit=10` and recognizes `truncated == True` (`total_matched == 10`) as a capped page",
+        "Uses the returned `next_window` epoch boundaries (`start..end`) to fetch the second batch deterministically without duplicate or missed windows",
+        "Keeps `limit` and `spss` (spans per span-set) bounded to protect Tempo queriers in `observability`"
+      ]
+    }
+  ]
+}

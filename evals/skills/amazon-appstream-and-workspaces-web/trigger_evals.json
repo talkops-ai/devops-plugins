@@ -1,0 +1,97 @@
+{
+  "skill_name": "amazon-appstream-and-workspaces-web",
+  "companion_skills": [
+    "amazon-workspaces-administration",
+    "amazon-workspaces-agent-access",
+    "euc-observability-and-troubleshooting"
+  ],
+  "queries": [
+    {
+      "id": "trig-exp-01",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Compare Amazon AppStream 2.0 Elastic, On-Demand, and Always-On fleets and package our Windows desktop app as an S3 VHD App Block."
+    },
+    {
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Deploy an Amazon WorkSpaces Secure Browser (WorkSpaces Web) portal with Okta SAML 2.0, private VPC `NetworkSettings`, and clipboard/download DLP `UserSettings`."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure Application Auto Scaling step policies (`CapacityUtilization` 75% scale-out / 25% scale-in) and Image Builder PrivateLink endpoints for AppStream 2.0."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Give external contractors zero-trust isolated Chromium browser access to our internal intranet web apps without client VPNs and block copy/paste and file downloads."
+    },
+    {
+      "id": "trig-imp-02",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Consolidate four separate department AppStream stacks into a single shared fleet using SAML PrincipalTag Application Entitlements."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Why do users lose files saved on their AppStream session desktop after logging out, and how do we enable S3 Home Folders and `Image Assistant` launch optimization?"
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Write a CloudFormation stack for `AWS::WorkSpacesWeb::Portal`, `UserSettings`, `BrowserSettings` managed Chrome policies, and `IpAccessSettings`."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Can an AppStream 2.0 Elastic Fleet join our Active Directory domain and install kernel-mode drivers, or must we switch to an On-Demand Fleet?"
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Size a multi-session Windows Server AppStream 2.0 fleet (`MaxSessionsPerInstance`) vs single-session `stream.graphics.g4dn` instances."
+    },
+    {
+      "id": "trig-neg-01",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Connect a computer-use AI agent to `https://agentaccess-mcp.us-east-1.api.aws/mcp` with `X-Amzn-AgentAccess-Connect-Mode: POLLING` and `forwarded___` MCP tools.",
+      "expected_alternative_skill": "amazon-workspaces-agent-access"
+    },
+    {
+      "id": "trig-neg-02",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Set up persistent Amazon WorkSpaces Personal desktops with Standby WorkSpaces multi-region DR and WorkSpaces Cost Optimizer (`AutoStop` vs `AlwaysOn`).",
+      "expected_alternative_skill": "amazon-workspaces-administration"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Triage `AWS/WorkSpaces` `Unhealthy >= 1` alarms, AD Connector OU join failures, and FSLogix SMB 445 profile mount timeouts.",
+      "expected_alternative_skill": "euc-observability-and-troubleshooting"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "honeycomb": {
+      "type": "streamable-http",
+      "url": "${HONEYCOMB_MCP_URL:-https://mcp.honeycomb.io/mcp}",
+      "headers": {
+        "Authorization": "Bearer ${HONEYCOMB_API_KEY:-}"
+      }
+    }
+  }
+}
