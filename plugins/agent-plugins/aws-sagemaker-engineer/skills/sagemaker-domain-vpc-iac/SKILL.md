@@ -8,7 +8,9 @@ description: >-
   URL authentication, and 5-persona least-privilege IAM execution roles. Always validates generated
   templates using the awsiac MCP server (cfn-lint and cfn-guard). Use when the user asks to
   provision a SageMaker Studio Domain, configure VpcOnly networking, set up IAM roles or KMS for
-  SageMaker, create custom Studio Docker images, or write CDK/CloudFormation for SageMaker.
+  SageMaker, create custom Studio Docker images, configure CfnSpace EbsStorageSettings or
+  CustomFileSystems EFS mounts, or write CDK/CloudFormation for SageMaker.
+  Always query live AWS state via connected MCP tools (never raw aws CLI).
 metadata:
   version: "1.0.0"
 ---
@@ -16,6 +18,12 @@ metadata:
 # SageMaker Domain, VPC & Security IaC Architect
 
 Generates compliant, production-hardened AWS CDK (TypeScript or Python) and CloudFormation templates for Amazon SageMaker AI platform infrastructure and validates every template with the `awsiac` MCP server.
+
+## MCP-Only Execution & Read-Only Safety
+
+- **MCP-Only Live Queries:** Execute **all** live AWS discovery, Bedrock/SageMaker control-plane checks, pricing lookups, IaC compliance checks, CloudWatch telemetry queries, and documentation searches **exclusively via connected MCP tools**: `aws-mcp` (`aws___run_script` using read-only `await call_boto3(...)`, `aws___search_documentation`, `aws___read_documentation`), `sagemaker` (`describe_hp_cluster`), `agentcore`, `strands-agents`, `cloudwatch`, `awspricing` (`get_pricing`, `get_bedrock_patterns`), `awsiac` (`validate_cloudformation_template`, `check_cloudformation_template_compliance`), and `awsknowledge`. Offline pure-Python bundled helper scripts in `scripts/*.py` that perform local math/schema rendering without live AWS credentials are permitted when inspecting local inputs, whereas live AWS API queries must go through MCP rather than raw `aws` CLI or boto3 shell scripts.
+- **Strict Read-Only & Secret Safety:** **Never** run raw `aws ...` (not even `aws sts get-caller-identity` — always call `sts.GetCallerIdentity` inside `aws___run_script`), `cdk deploy`, or `cdk destroy` CLI commands in Bash/`run_command`, **never** mutate live AWS resources (`Create*`, `Update*`, `Delete*`, `InvokeModel`, `CreateEndpoint` — refuse unapproved mutations and present a safe, approval-gated IaC rollout and rollback plan), and **never** read or expose plaintext secrets (`secretsmanager:GetSecretValue`, `ssm:GetParameter` with `WithDecryption=True`, or `.env` API keys). When running a live regional Studio Domain preflight audit, always inspect and summarize SageMaker Domains, VPCs/subnets/PrivateLink endpoints, **KMS CMKs (`kms:ListKeys` / `ListAliases`)**, and `AuthMode` (`SSO` vs `IAM`) readiness via MCP.
+- **Unmapped Edge Cases:** Query `awsknowledge` / `aws-mcp` documentation search tools (`aws___search_documentation`, `aws___read_documentation`) with 1–2 focused queries before recommending unverified CloudFormation resource properties.
 
 ## Critical Architectural Rules (Read Before Writing Any Code)
 

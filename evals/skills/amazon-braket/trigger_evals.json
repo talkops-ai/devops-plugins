@@ -10,50 +10,87 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `amazon-braket` to design, validate, and troubleshoot amazon braket."
+      "prompt": "List all currently `ONLINE` Amazon Braket QPUs and managed simulators across AWS regions, parse `deviceCapabilities` for qubit counts and `shotsRange`, and filter out `RETIRED` devices."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through production best practices and operational guardrails for amazon braket (`amazon-braket`)."
+      "prompt": "Rewrite our `device.run_batch` parameter sweep using Amazon Braket `ProgramSet` and `CircuitBinding` so all 24 OpenQASM 3.0 executables run inside a single quantum task."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Build an Analog Hamiltonian Simulation (`braket.ahs`) Rydberg atom program with `AtomArrangement` and `DrivingField` and check which Braket devices support `braket.ir.ahs.program`."
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need an operational review and step-by-step runbook covering: Runs quantum computing workflows on AWS through Amazon Braket — discovering devices (QPUs and simulators) and their availability, building gate-model circuits and analog Hamiltonia"
+      "prompt": "Why does `sv1.run(circuit, shots=0)` fail unless we attach `.state_vector()` or `.expectation()`, and how do we run a locally emulated QPU validation using `AwsDevice(arn).emulator()`?"
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the critical failure modes, configuration checks, and verification commands for amazon braket?"
+      "prompt": "Why is `SearchDevices` throwing `Missing required parameter: filters` when called with empty arguments, and why did `GetDevice` return `200 OK` for a retired quantum processor?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "How do Braket Direct hourly reservations (`reservationShotsRange` and reservation ARNs) and custom pulse-level gate calibrations work on supported QPUs?"
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our amazon braket setup in read-only mode."
+      "prompt": "Migrate our old `braket.ir.jaqcd` quantum circuit generator to OpenQASM 3.0 with verbatim pragma blocks and proper `botocore` `AWSSkill-Braket` attribution."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Query `AmazonBraket` in the AWS Price List API to compare the two QPU `productFamily` entries (`Quantum Task` and `Quantum Task-Shot`) against duration-billed `Simulator Task` usage types."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Fix our Braket Hybrid Job `entry_point` (`ModuleNotFoundError` from unstripped `source_module` directories) and `/service-role/AmazonBraketJobsExecutionRole*` `PassRole` error."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Configure and troubleshoot braket cost governance and security exclusively without touching amazon braket.",
-      "expected_alternative_skill": "braket-cost-governance-and-security"
+      "prompt": "Enable hybrid Post-Quantum Cryptography (`ML-KEM` TLS key exchange) on our AWS KMS endpoints, ACM certificates, and CloudFront distributions.",
+      "expected_alternative_skill": "none"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+      "prompt": "Generate a validated `.drawio` AWS architecture diagram from our Serverless SAM `template.yaml` using official AWS4 icons.",
+      "expected_alternative_skill": "aws-architecture-diagram"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure an AWS Batch multi-node parallel MPI cluster on `hpc7a` instances with EFA networking for classical molecular dynamics simulations.",
+      "expected_alternative_skill": "none"
     }
   ]
 }

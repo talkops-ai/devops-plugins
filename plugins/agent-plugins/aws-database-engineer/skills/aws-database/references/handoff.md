@@ -36,7 +36,7 @@ In addition to the engine-specific skill from the Service Reference table, also 
 
 ### 2. AWS MCP server and AWS Pricing MCP server (if available)
 
-If the skill is not installed locally and the AWS MCP server is connected, call `aws___retrieve_skill` with the skill name from the service reference table in SKILL.md. You already have the authoritative skill name, so you do not need to call `aws___search_documentation` first to discover it — pass the listed name directly.
+If the skill is not installed locally and the AWS MCP server is connected, activate the matching engine skill directly.md. You already have the authoritative skill name, so you do not need to call `aws___search_documentation` first to discover it — pass the listed name directly.
 
 When the user's request involves **cost estimation, instance/ACU sizing, or storage tier comparison** (e.g., Aurora Standard vs. Aurora I/O-Optimized, DynamoDB On-Demand vs. Provisioned, or commercial RDS License Included vs. BYOL), query the `awspricing` MCP server (`mcp__plugin_aws-database-engineer_awspricing__*`) alongside the service skill or knowledge card so that all estimates use live regional unit prices.
 

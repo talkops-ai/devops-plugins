@@ -1,11 +1,10 @@
 {
   "skill_name": "ai-to-bedrock",
   "companion_skills": [
+    "llm-to-bedrock",
     "agent-advisor",
-    "architect-for-startups",
-    "azure-to-aws",
-    "contextual-offers-for-startups",
-    "gcp-to-aws"
+    "amazon-bedrock",
+    "bedrock-adoption-readiness"
   ],
   "queries": [
     {
@@ -13,50 +12,87 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `ai-to-bedrock` to design, validate, and troubleshoot ai to bedrock."
+      "prompt": "Migrate our Seed startup's TypeScript `@openrouter/ai-sdk-provider` app onto Amazon Bedrock (`@ai-sdk/amazon-bedrock`) so we eliminate the 5.5% OpenRouter fee and use our AWS Activate credits."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through production best practices and operational guardrails for ai to bedrock (`ai-to-bedrock`)."
+      "prompt": "Consolidate our multi-provider LiteLLM and `AzureOpenAI` Python services onto Amazon Bedrock writing decoupled `.saws-migrate/discover-ai.json` and `aws-design-ai.json` artifacts."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Audit our proposed OpenAI-to-Bedrock model mapping against the 90-day EOL exclusion guardrail — replace DALL-E 3, GPT-4o, and `text-embedding-3-large` (`3,072` dims) with non-retiring Bedrock models."
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need an operational review and step-by-step runbook covering: Provider-neutral AI and LLM migration engine that decouples application-code AI/LLM discovery, target model mapping, token cost estimation, behavior-delta detection, and SDK/gatewa"
+      "prompt": "Should we map DALL-E 3 to `amazon.nova-canvas-v1:0` and buy Provisioned Model Throughput for our pre-revenue startup migrating off OpenRouter?"
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the critical failure modes, configuration checks, and verification commands for ai to bedrock?"
+      "prompt": "Can we swap OpenAI `text-embedding-3-large` to `amazon.titan-embed-text-v2:0` on queries only without re-embedding our existing `vector(3072)` pgvector corpus or changing our `0.82` similarity cutoff?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Will running AI SDK migration discovery in our repo overwrite the `.saws-migrate/aws-design.json` file that our Heroku-to-AWS infrastructure migration already created?"
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our ai to bedrock setup in read-only mode."
+      "prompt": "Map our Azure OpenAI custom deployment names and Vercel AI SDK providers across Track 1 (same family), Track 2 (cross family Converse), and Track 3 (agentic)."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Scan `.env.example` (without touching `.env`) and our Node/Python code to inventory OpenRouter, Anthropic, Gemini, and Azure OpenAI calls for Bedrock consolidation."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Check whether any target models in our Bedrock migration design fall inside the 90-day EOL window or post-September-2026 45-day Legacy deprecation window."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Configure and troubleshoot agent advisor exclusively without touching ai to bedrock.",
-      "expected_alternative_skill": "agent-advisor"
+      "prompt": "Run a standalone read-only Bedrock model access preflight in `ap-south-1` — no codebase, just check Marketplace auto-subscription and Anthropic FTU access.",
+      "expected_alternative_skill": "llm-to-bedrock"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+      "prompt": "Fine-tune Qwen-2.5-7B on SageMaker Serverless Model Customization using `RLVRTrainer` and validate custom rating-scale metrics.",
+      "expected_alternative_skill": "aws-ai-ml"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Score AgentCore vs ECS vs EKS vs Lambda vs Lambda MicroVMs for migrating our Temporal-orchestrated Python agents to AWS.",
+      "expected_alternative_skill": "agent-advisor"
     }
   ]
 }

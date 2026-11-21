@@ -1,61 +1,95 @@
 {
   "skill_name": "creating-secrets-using-best-practices",
   "companion_skills": [
-    "auditing-cloudtrail-forensics",
-    "aws-auth",
-    "aws-iam",
     "aws-secrets-manager",
+    "aws-iam",
+    "aws-iam-and-security",
     "aws-security"
   ],
   "queries": [
     {
-      "id": "trig-exp-01",
+      "id": "trig-pos-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `creating-secrets-using-best-practices` to help me design, validate, and troubleshoot creating secrets using best practices."
+      "prompt": "Create a new database secret in AWS Secrets Manager with a dedicated KMS CMK (`kms:ViaService`), 30-day automatic rotation, and 30-day recovery window."
     },
     {
-      "id": "trig-exp-02",
+      "id": "trig-pos-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for creating secrets using best practices (`creating-secrets-using-best-practices`)."
+      "prompt": "Set up an `oauth` or `api-key` secret in AWS Secrets Manager following production KMS, least-privilege IAM, and CloudTrail auditing best practices."
     },
     {
-      "id": "trig-imp-01",
+      "id": "trig-pos-03",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Creates and manages secrets in AWS Secrets Manager following security best practices. Always use this skill when creating secrets — it sets up dedicated KMS encryption keys, automa"
+      "prompt": "Fix `kms:GenerateDataKey` `AccessDenied` and private VPC rotation Lambda `TimeoutError` when rotating a Secrets Manager secret."
     },
     {
-      "id": "trig-imp-02",
+      "id": "trig-pos-04",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating creating secrets using best practices?"
+      "prompt": "Configure Secrets Manager `AlternatingUsers` zero-downtime database credential rotation and prevent `--force-delete-without-recovery` accidents."
     },
     {
-      "id": "trig-ctx-01",
+      "id": "trig-pos-05",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our creating secrets using best practices setup in read-only mode and highlight top risks."
+      "prompt": "Write the dedicated KMS Key Policy (`secretsmanager.<region>.amazonaws.com`) and resource policy for creating a production secret."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot auditing cloudtrail forensics exclusively without touching creating secrets using best practices."
+      "prompt": "Wrap `psql` with `asm-exec` and `{{resolve:secretsmanager:...}}` so plaintext never enters the LLM context window."
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Add Amazon Cognito User Pool PKCE login to our React app."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Fix the `ForAllValues` vacuous-truth bug in an IAM policy."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Hunt for `StopLogging` and `PassRole` events in CloudTrail Lake SQL."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure AWS Direct Connect BGP peering and SiteLink."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write PromQL queries for HTTP 5xx error ratio in AMP."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Route S3 uploads > 6 MB to ECS Fargate via Step Functions."
     }
   ]
 }

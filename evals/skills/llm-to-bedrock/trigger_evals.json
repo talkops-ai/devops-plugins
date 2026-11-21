@@ -1,11 +1,10 @@
 {
   "skill_name": "llm-to-bedrock",
   "companion_skills": [
-    "agent-advisor",
     "ai-to-bedrock",
-    "architect-for-startups",
-    "azure-to-aws",
-    "contextual-offers-for-startups"
+    "amazon-bedrock",
+    "bedrock-adoption-readiness",
+    "agent-advisor"
   ],
   "queries": [
     {
@@ -13,50 +12,87 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `llm-to-bedrock` to design, validate, and troubleshoot llm to bedrock."
+      "prompt": "Run a read-only Bedrock model access preflight in `ap-south-1` — just check model access, Marketplace subscription requirements, and Anthropic FTU status without touching any code."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through production best practices and operational guardrails for llm to bedrock (`llm-to-bedrock`)."
+      "prompt": "Migrate our Python `openai` SDK service calling `gpt-5.5` and `gpt-5.6-terra` onto Amazon Bedrock `bedrock-mantle` (`BedrockOpenAI` + `aws_bedrock_token_generator`) and `in.openai.gpt-5.6-terra` CRIS."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Translate our `google-genai` Gemini Python client (`system_instruction`, `response_schema`, base64 images) and Anthropic 1P SDK calls to Amazon Bedrock on a git branch with parity harness validation."
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need an operational review and step-by-step runbook covering: Use when the user wants to migrate code that calls OpenAI, Gemini/Google AI, or the Anthropic API to Amazon Bedrock — a pure model/SDK rewrite. End-to-end: assesses the codebase, r"
+      "prompt": "Why does pointing `BedrockOpenAI` at `https://bedrock-mantle.us-east-1.api.aws/v1` return HTTP 404 when calling `openai.gpt-5.5` on Bedrock?"
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the critical failure modes, configuration checks, and verification commands for llm to bedrock?"
+      "prompt": "Our migrated `bedrock_runtime.invoke_model()` call crashes with `KeyError: 'Body'` and our `Converse` image block fails when we pass `'format': 'jpg'` with a `data:image/jpeg;base64,...` string."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Generate the Dual-ARN IAM policy and `BedrockOpenAI` `aws_bedrock_token_generator` setup needed to cut our Python `openai` SDK service over to `in.openai.gpt-5.6-luna` and `openai.gpt-5.5`."
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our llm to bedrock setup in read-only mode."
+      "prompt": "Check whether our LLM migration parity run (`pass_rate = 0.93`, `source_baseline_quality = 'poor'`) passes the release gate and whether we can auto-map `gpt-4o-mini` to `gpt-4o`."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "How do we enable commercial Bedrock model access linked into `us-gov-west-1` GovCloud and verify `throttled_ok` vs `embedding_unprobed` preflight verdicts?"
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Set up `.saws-migrate/.source-provider-env` safely for source-vs-Bedrock parity testing without exposing our `OPENAI_API_KEY` in chat or git."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Configure and troubleshoot agent advisor exclusively without touching llm to bedrock.",
-      "expected_alternative_skill": "agent-advisor"
+      "prompt": "Migrate our startup's OpenRouter `@openrouter/ai-sdk-provider` and Azure OpenAI multi-upstream gateway onto Amazon Bedrock to eliminate the 5.5% OpenRouter fee and burn AWS Activate credits.",
+      "expected_alternative_skill": "ai-to-bedrock"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+      "prompt": "Fine-tune Qwen-2.5-7B on SageMaker Serverless Model Customization with `DPOTrainer` and validate custom rating-scale evaluation metrics.",
+      "expected_alternative_skill": "aws-ai-ml"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Score AgentCore vs ECS vs EKS vs Lambda for migrating our Temporal-orchestrated Python agents to AWS.",
+      "expected_alternative_skill": "agent-advisor"
     }
   ]
 }

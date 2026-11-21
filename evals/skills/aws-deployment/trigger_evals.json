@@ -1,61 +1,95 @@
 {
   "skill_name": "aws-deployment",
   "companion_skills": [
-    "aws-architecture-diagram",
-    "container-ecs-deploy",
     "deploy",
-    "elastic-beanstalk",
-    "preflight-discovery"
+    "verify-and-rollback",
+    "aws-cdk",
+    "aws-terraform"
   ],
   "queries": [
     {
-      "id": "trig-exp-01",
+      "id": "trig-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `aws-deployment` to help me design, validate, and troubleshoot aws deployment."
+      "prompt": "Set up a GitHub Actions workflow with AWS IAM OIDC federation separating read-only Terraform PR plans from gated `main` deployments."
     },
     {
-      "id": "trig-exp-02",
+      "id": "trig-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for aws deployment (`aws-deployment`)."
+      "prompt": "Configure AWS CodePipeline V2 with CodeConnections, CodeBuild, and CodeDeploy ECS blue/green canary traffic shifting."
     },
     {
-      "id": "trig-imp-01",
+      "id": "trig-03",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Configures CI/CD and GitOps pipelines for AWS infrastructure and workloads using AWS CodePipeline V2, CodeBuild, CodeDeploy, CodeConnections, and CodeArtifact, as well as GitHub Ac"
+      "prompt": "Configure AWS CodeArtifact upstream PyPI/npm origin controls to prevent dependency confusion in our CodeBuild pipelines."
     },
     {
-      "id": "trig-imp-02",
+      "id": "trig-04",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating aws deployment?"
+      "prompt": "Why does our AWS CodeBuild job placed in a public VPC subnet time out connecting to ECR and npmjs?"
     },
     {
-      "id": "trig-ctx-01",
+      "id": "trig-05",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our aws deployment setup in read-only mode and highlight top risks."
+      "prompt": "Compare Atlantis PR-level locking vs HCP Terraform and configure GitLab CI `id_tokens` AWS OIDC trust policies."
     },
     {
-      "id": "trig-neg-01",
-      "quadrant": "near_miss_negative",
-      "split": "train",
-      "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot aws architecture diagram exclusively without touching aws deployment."
-    },
-    {
-      "id": "trig-neg-02",
+      "id": "trig-06",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Import an unmanaged ClickOps RDS cluster into OpenTofu 1.8 using `import {}` blocks."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Calculate the monthly AWS cost of 3 NAT Gateways vs S3 Gateway Endpoints in `ap-south-1`."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write an AWS SDK for JavaScript v3 S3 multipart upload helper using `@aws-sdk/lib-storage`."
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Run preflight VPC subnet and service quota checks in `us-east-1` before generating infrastructure code."
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Tune OpenCypher queries and Serverless NCU scaling on Amazon Neptune."
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Investigate high `IteratorAge` on a Lambda Kafka Event Source Mapping."
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Conduct an AWS Well-Architected Framework review across all 6 pillars for our healthcare workload."
     }
   ]
 }

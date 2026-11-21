@@ -1,61 +1,95 @@
 {
   "skill_name": "transitgateway",
   "companion_skills": [
-    "amazon-ec2-image-builder",
-    "aws-backup-coverage-review",
-    "aws-compute",
-    "aws-containers",
-    "aws-finops-and-cost-optimization"
+    "directconnect",
+    "aws-networking-and-compute",
+    "route53",
+    "waf"
   ],
   "queries": [
     {
-      "id": "trig-exp-01",
+      "id": "trig-pos-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `transitgateway` to help me design, validate, and troubleshoot transitgateway."
+      "prompt": "Create an AWS Transit Gateway in `ap-south-1` with `DefaultRouteTableAssociation` disabled and segment `Prod`, `NonProd`, and `SharedServices` VPCs."
     },
     {
-      "id": "trig-exp-02",
+      "id": "trig-pos-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for transitgateway (`transitgateway`)."
+      "prompt": "Force east-west VPC-to-VPC traffic through AWS Network Firewall using Transit Gateway route tables and `ApplianceModeSupport=enable`."
     },
     {
-      "id": "trig-imp-01",
+      "id": "trig-pos-03",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Configures AWS Transit Gateway: creating a hub and attaching VPCs, segmenting traffic with route tables, centralizing egress and inspection through a hub (appliances or a Gateway L"
+      "prompt": "Centralize outbound internet egress through a shared NAT Egress VPC on AWS Transit Gateway and add RFC 1918 blackhole routes."
     },
     {
-      "id": "trig-imp-02",
+      "id": "trig-pos-04",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating transitgateway?"
+      "prompt": "Migrate 10 VPCs off a 45-link VPC Peering mesh onto AWS Transit Gateway without dropping traffic, and enable VPN ECMP across 4 IPsec tunnels."
     },
     {
-      "id": "trig-ctx-01",
+      "id": "trig-pos-05",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our transitgateway setup in read-only mode and highlight top risks."
+      "prompt": "Configure AWS Transit Gateway inter-Region peering static routes and IP Multicast (`Igmpv2Support=enable`) domains."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot amazon ec2 image builder exclusively without touching transitgateway."
+      "prompt": "Order an AWS Direct Connect Dedicated cross-connect and configure MACsec Layer-2 encryption."
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Create a Route 53 Public Hosted Zone Alias record and DNS Firewall blocklist."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure AWS WAF Bot Control Targeted rules and strip spoofed `x-amzn-waf-*` headers."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Subscribe to AWS Shield Advanced and configure SRT access."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Connect an AWS Lambda function to DynamoDB Streams."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Rewrite Oracle `CONNECT BY PRIOR` queries to PostgreSQL `WITH RECURSIVE`."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Audit CloudTrail logs for root user console logins."
     }
   ]
 }

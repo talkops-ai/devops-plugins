@@ -1,316 +1,283 @@
----
-_phase: estimate
-_title: "Estimate — Coarse Cost Magnitude"
-_requires_phase: design
-_input:
-  - design.json
-_knowledge:
-  - { file: references/decision-refs/cost-levers.md, _when: "always (drivers step)" }
-_assemble:
-  _file: phases/estimate/estimate-assemble.md
-_produces:
-  - estimate.json
-_advances_to: generate
-_interactive: false
-_exec:
-  _agent: rw
-_preconditions:
-  - _check_phase_completed: design
-    _on_failure: _halt_and_inform
-  - _check_file_exists: design.json
-    _on_failure: _unrecoverable
-  - _validate_json: design.json
-    _on_failure: _unrecoverable
-_postconditions:
-  - _check_file_exists: estimate.json
-    _on_failure: _halt_and_inform
-  - _validate_json: estimate.json
-    _on_failure: _halt_and_inform
-  - _assert: "estimate.json states a monthly_magnitude_usd band (never a precise total), records pricing_source (cached|cached_stale|mcp), and lists every assumption behind the magnitude; estimate.json has a units{} entry per costed unit and a total band; top-level fields mirror the primary unit; each costed unit carries a breakdown {compute, model_tokens, other}; drivers[] cites only levers from cost-levers.md"
-    _on_failure: _halt_and_inform
----
+# Phase 4: Estimate AWS Costs (Orchestrator)
 
-# Phase: Estimate — Coarse Cost Magnitude
+**Execute ALL steps in order. Do not skip or optimize.**
 
-All entry points except add_capabilities run Estimate. Scope: target-state run cost per unit,
-presented as order-of-magnitude bands. This phase NEVER produces a TCO comparison or current-spend
-delta — that belongs to the Migration Plan engine (for migrate entry points); do not duplicate or
-contradict its numbers. The add_capabilities branch runs its own self-contained flow and never
-reaches here. Magnitude only — NOT precise estimation (that's the migration skills' job). Mirrors
-the migration skills' pricing pattern.
+## Step 0: Pricing Mode Selection
 
-## Step 1 — Read the design and answers
+Before running any sub-estimate file, determine the pricing source.
 
-Read `$RUN_DIR/design.json` and `$RUN_DIR/answers.json`. Extract `primary_unit` from answers.json
-and the `units[]` array from design.json. Each unit has `id`, `workload_class`, `verdict`, and
-(for agent units) `deployment_model`.
+### Step 0a: Load Pricing Cache
 
-## Step 2 — Pricing source (cached, same as the migration skills)
+Read `shared/pricing-cache.md`. Check the `Last updated` date in the header:
 
-1. Primary: a small cached rate table (inline below — AgentCore vCPU/GB-hour, Fargate, Lambda,
-   plus the model default's token rates as order-of-magnitude). Carry a "last updated" date.
-2. Record `pricing_source`: `cached` | `cached_stale` (if >90 days old).
+- If <= 90 days old: **Cached prices are the primary source.** No MCP calls needed for services listed in the cache. Proceed to Step 1.
+- If > 90 days old: Cache is stale. There is no live pricing lookup to fall back to — keep using the cached rates, widen the stated accuracy band, and surface the staleness warning in Step 0b.
 
-Cached anchors (order-of-magnitude, us-east-1, verify; last updated 2025-07-14):
+### Step 0b: Surface Status to User (ALWAYS run)
 
-- AgentCore (microVMs compute type): ~$0.0895/vCPU-hour (active CPU only), ~$0.00945/GB-hour
-- AgentCore (Instances compute type, `agentcore_compute_type: "instances"` in design.json):
-  EC2 On-Demand rate for the chosen instance type (user's Savings Plans / ODCRs apply) PLUS
-  an AgentCore management fee — NOT consumption-based and NOT $0 during I/O wait. No cached
-  anchor here: use the instance type from the user's `instance_type_requirement` answer (else
-  assume a mid-size general-purpose type and say so), and set `pricing_source: cached_stale`
-  for that component with a note to verify the EC2 rate before committing.
-- Lambda MicroVMs: ~$0.0997/vCPU-hour, ~$0.0132/GB-hour
-- Fargate: ~$0.04048/vCPU-hour, ~$0.004445/GB-hour
-- Bedrock model token rates: defer to the `gcp-to-aws` pricing cache (`skills/gcp-to-aws/references/shared/pricing-cache.md`) for exact figures
+**Before any sub-estimate file runs**, display the pricing mode to the user so they know what to expect:
 
-## Step 3 — Produce a magnitude per unit, not a quote
+- **If cache ≤ 90 days**: "Pricing source: cached (updated [date], ±5-25% accuracy). No live pricing API required."
+- **If cache > 90 days**: "⚠️ Pricing source: stale cache only (updated [date]). Proceeding with cached pricing; accuracy may be ±15-25% for AI models."
+- **If a required service is NOT in cache**: "⚠️ Some services not in pricing cache. Those services will show `pricing_source: unavailable` in the estimate."
 
-For EACH unit in design.json.units[], estimate a rough monthly band based on its workload_class
-and its **`effective_runtime`** — NOT its `verdict`. Under a consolidated platform a unit actually
-runs on `platform.runtime` (its `effective_runtime`), so it must be COSTED there: a unit whose
-`verdict` is `batch` but whose `effective_runtime` is `ecs` bills as an always-on ECS Fargate task,
-not as scale-to-zero AWS Batch. In a split run `effective_runtime == verdict`, so nothing changes.
-Where a bullet below says "verdict", read `effective_runtime`. The pricing shape depends on the
-unit's class:
+This prevents silent failures — the user sees the pricing constraint upfront, not after 5 minutes of estimation work.
 
-**EKS pricing rule — applies to ANY unit whose `effective_runtime == "eks"`, regardless of
-class (agent_session, service, batch, light_io):** price by the cluster's ACTUAL node capacity
-type — do NOT assume Fargate. EKS-on-Fargate → the Fargate vCPU/GB anchor; EC2 managed nodes /
-Karpenter / Spot / GPU → EC2 instance pricing for the stated instance type (Spot discount when
-stated); reusing an existing cluster → near-zero marginal cost ONLY when the user stated there is
-spare capacity to absorb the workload — otherwise Karpenter/ASG adds nodes and the full
-incremental node cost applies, so price the added EC2/Fargate capacity the workload needs. State
-the capacity-type assumption (and whether spare capacity was assumed). When the capacity type or
-instance is unknown, set `pricing_source: cached_stale` and note the
-assumption; do not assume Fargate. A W1
-"existing cluster reuse" verdict or a consolidation onto EKS can land a service/batch unit here —
-this rule governs it, NOT the class default below.
+### Pricing Hierarchy
 
-- **agent_session units** (effective_runtime = agentcore | lambda_microvms | ecs | eks | lambda):
-  estimate as today — runtime + model + stated usage assumption (sessions/mo, duration, I/O wait
-  %). Apply the cached anchors from Step 2 (AgentCore vCPU/GB, Lambda MicroVMs, Fargate) plus
-  Bedrock model token rates. For a `lambda` runtime use Lambda request pricing (invocations ×
-  duration × memory). For `eks`, apply the EKS pricing rule above. Any runtime missing a cached
-  anchor: set `pricing_source: cached_stale` and state the assumption.
-  For answers, read `answers.json.units[<unit_id>]` (which is already fully resolved — system +
-  unit dims merged).
+Each sub-estimate file uses this lookup order per service:
 
-- **batch units** (verdict from workload-classes.md: AWS Batch → Fargate compute; scheduled Lambda):
-  - When `effective_runtime == "eks"` (W1 existing-cluster reuse or a consolidation onto EKS):
-    apply the EKS pricing rule above — NOT the AWS Batch / Fargate shape.
-  - AWS Batch (long runs, GPU, large memory): Fargate vCPU-hour + GB-hour × run count/month. State
-    assumptions: run frequency, duration, vCPU/GB per run.
-  - Scheduled Lambda (short runs ≤ 15 min): Lambda request pricing (invocations × duration ×
-    memory). State assumptions: schedule frequency, duration, memory.
+1. **`shared/pricing-cache.md`** (primary) — Cached prices (±5-25% accuracy). Set `pricing_source: "cached"`. Used first because it requires zero API calls and covers most common services.
+2. **Unavailable** — If a service is NOT in the cache, set `pricing_source: "unavailable"` for that service. Add the service to `services_with_missing_fallback` and display a warning to the user: "Pricing unavailable for [service] — not in cache. Exclude from totals or provide a manual estimate."
 
-- **light_io units** (verdict: Lambda or Fargate behind ALB):
-  - Lambda (spiky/scale-to-zero): request pricing (invocations/month × avg duration × memory).
-    State assumptions: request volume, duration, memory.
-  - Fargate (sustained high traffic): vCPU-hour + GB-hour for always-on service. State assumptions:
-    vCPU/GB allocation, % utilization.
+**`pricing_source` values summary:**
 
-- **service units** (verdict: Fargate ECS, or existing cluster reuse): Fargate vCPU-hour + GB-hour
-  for long-running service. State assumptions: vCPU/GB allocation, % utilization. When
-  `effective_runtime == "eks"` (W1 existing-cluster reuse or a consolidation onto EKS), apply the
-  EKS pricing rule above instead of the flat Fargate anchor.
+| Value           | Meaning                                    |
+| --------------- | ------------------------------------------ |
+| `"cached"`      | Found in pricing-cache.md (normal path)    |
+| `"unavailable"` | Not in cache; service excluded from totals |
 
-- **temporal_worker_poll units** (verdict from Tier 1: ecs / eks / serverless_workers): estimate the
-  polling tier and the execution tier separately per the cost table shape below. The polling tier
-  is the worker-fleet compute, priced by `effective_runtime`:
-  - `effective_runtime == "ecs"` (Fargate) → tens of $/month (small).
-  - `effective_runtime == "eks"` → NOT automatically small; apply the EKS pricing rule above
-    (this class is subject to it like any other): EKS-on-Fargate → the Fargate anchor, but EC2
-    managed nodes / Karpenter / Spot / GPU fleets → EC2 instance pricing, and a GPU worker fleet
-    can run into hundreds–thousands of $/month, not "tens". State the node-capacity assumption.
-  - `effective_runtime == "serverless_workers"` → Temporal Serverless Workers is **Public
-    Preview, not GA** (labeled so regardless of any docs claim — the label has moved before
-    without a GA announcement). Do NOT invent a cached anchor: give a **qualitative fallback** (state
-    "Serverless Workers pricing is Public Preview / unverified — treated as a scale-to-zero
-    execution-billed tier; confirm the published rate before committing") rather than a
-    fabricated dollar band. Every other cost line for the unit still gets its band; only the SW
-    polling line may be qualitative when the rate is unverified.
+If cache is > 90 days old:
 
-  **Charge ONLY the worker-fleet polling compute to the `temporal_worker_poll` unit's
-  `monthly_magnitude_usd`.** The execution tier (LLM tokens, AgentCore sessions, batch compute) is
-  the cost of the ACTIVITY-class units, which are ALREADY costed as their own `units{}` entries
-  and already in `total_monthly_magnitude_usd` — do NOT also add execution cost into the worker
-  unit or you DOUBLE-COUNT every Activity. The execution tier is USUALLY the dominant tier — same
-  tokens as today (the migration moves them, it doesn't multiply them) — but do NOT assert
-  dominance unconditionally: COMPARE the worker unit's polling band against the aggregate of the
-  Activity units' bands (a comparison for the takeaway, NOT an addition). When Activity volume is
-  low OR the polling fleet is on GPU/added EKS nodes (hundreds–thousands of $/mo), the polling
-  tier can equal or exceed the aggregate Activity cost — say which dominates based on the numbers,
-  or that they are comparable. For Temporal Cloud, derive actions line from user volume × $0.01/action
-  when Way = cloud; self-hosted gets a qualitative-only ops line (no dollar figure). State
-  assumptions per tier.
+- Add warning: "Cached pricing data is >90 days old; accuracy may be significantly degraded"
+- **Display to user**: Add visible warning with staleness notice
 
-  The temporal cost table below:
+## Step 1: Prerequisites
 
-  | Cost line                                                                          | Magnitude                                                                                                                                          | Note                                                                                                                  |
-  | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-  | Polling tier (worker fleet: ECS / EKS / Serverless Workers)                        | tens of $/mo on ECS-Fargate; EKS priced by node capacity (EC2/Spot/GPU can be hundreds+); Serverless Workers Public Preview → qualitative fallback | small only on Fargate — size per the EKS pricing rule when effective_runtime==eks; SW rate unverified until confirmed |
-  | Execution tier = the ACTIVITY units' own costs (already their own units{} entries) | usually dominant — but compare, do NOT re-add                                                                                                      | same tokens as today; counted ONCE via the Activity units — never folded into the worker unit; compare vs polling     |
-  | Temporal Cloud actions (system-level orchestration)                                | derive from the user's volume × $0.01/action                                                                                                       | new line vs self-hosted; or unchanged if already on Cloud                                                             |
-  | What it replaces                                                                   | qualitative only                                                                                                                                   | self-hosted cluster ops burden — no dollar figure                                                                     |
+1. Read `$MIGRATION_DIR/.phase-status.json`. If missing, invalid, or `phases.clarify` is not exactly `"completed"`: **STOP**. Output: "Phase 2 (Clarify) not completed or phase state is missing/invalid. Complete Clarify before Estimate."
+2. Read `$MIGRATION_DIR/preferences.json`. If missing: **STOP**. Output: "Phase 2 (Clarify) not completed. Run Phase 2 first."
 
-  One takeaway sentence: on ECS-Fargate the execution tier dominates and the polling tier is
-  noise — but on EKS with EC2/GPU nodes (or under low Activity volume) the polling fleet can be
-  material or even dominant, so compare the two computed bands rather than assuming an order.
+Check which design artifacts exist in `$MIGRATION_DIR/`:
 
-  **Important:** Temporal Cloud actions are a SYSTEM-LEVEL cost (orchestration dispatches for
-  ALL Activities), NOT attributable to any single unit — so do NOT fold them into any unit's
-  `breakdown.other` or `monthly_magnitude_usd`. When Way = cloud, record them ONCE at the system
-  level: add them into `total_monthly_magnitude_usd` and surface them as their own assumption in
-  the top-level `assumptions` (e.g. "Temporal Cloud orchestration: N actions/mo ×
-  $0.01"). This is the estimate.json source for the report's system-level "— orchestration"
-  roll-up row (generate-report.md); it is deliberately a system line, not a per-unit breakdown
-  entry, because the per-unit `breakdown` is fixed at `{compute, model_tokens, other}`. Way =
-  self_hosted contributes no orchestration dollar line (qualitative ops burden only).
+- `aws-design.json` (infrastructure design from IaC)
+- `aws-design-ai.json` (AI workload design)
+- `aws-design-billing.json` (billing-only design)
 
-State every assumption per unit. Never present a precise total — always a band (e.g. "$10–30").
+If **none** of these artifacts exist: **STOP**. Output: "No design artifacts found. Run Phase 3 (Design) first."
 
-For each unit, also structure the components you just computed into a `breakdown` — don't flatten
-them into the total: `compute` (runtime/request pricing: AgentCore or Lambda MicroVMs vCPU/GB,
-Fargate, Lambda requests), `model_tokens` (Bedrock token costs — `null` for units that call no
-models), and `other` (everything else: ALB, storage). Every component is a band, never precise —
-EXCEPT when a component's rate is genuinely unverifiable (a Serverless Workers Public Preview
-polling tier with no published cached rate): set that component to the string
-`"unverified"` instead of a fabricated band, and reflect it in `monthly_magnitude_usd` — if the
-unverified component is the only compute line, the unit's `monthly_magnitude_usd` is the band of
-its remaining priced components plus a `"+ unverified SW polling"` suffix (e.g. `"40-120 +
-unverified SW polling"`), never a made-up total. State the unverified rate in that unit's
-`assumptions`. All other units/components stay strict dollar bands.
+## Step 2: Routing Rules
 
-> Determinism note: this magnitude is computed in the LLM layer (convention-aligned with
-> the migration skills, which also estimate in-skill). It is the one output that is NOT
-> script-deterministic. Acceptable for v1 (magnitude-only, every assumption stated); flagged as
-> a future candidate to move into a small deterministic script if precision is ever required.
+### Infrastructure Estimate
 
-## Step 4 — Identify cost drivers per unit
+IF `aws-design.json` exists:
 
-For each unit, determine what moves the cost and which optimization levers apply. Emit one
-`drivers[]` entry per unit with the shape:
+> Load `estimate-infra.md`
 
-```json
-{
-  "unit": "<unit_id>",
-  "driver": "<what moves the number>",
-  "effect": "<band per increment>",
-  "lever": "<from cost-levers.md, cited>"
-}
+Produces: `estimation-infra.json`
+
+### Billing-Only Estimate
+
+IF `aws-design-billing.json` exists AND `aws-design.json` does **NOT** exist:
+
+> Load `estimate-billing.md`
+
+Produces: `estimation-billing.json`
+
+### AI Estimate
+
+IF `aws-design-ai.json` exists:
+
+> Load `estimate-ai.md`
+
+Produces: `estimation-ai.json`
+
+### Mutual Exclusion
+
+- **estimate-infra** and **estimate-billing** never both run (billing-only is the fallback when no IaC exists).
+- **estimate-ai** runs independently of either estimate-infra or estimate-billing (no shared state). Run it after the infra/billing estimate completes.
+
+## Phase Completion
+
+Before marking Estimate complete, enforce route output gates (fail closed):
+
+1. Determine which estimate routes ran:
+   - Infra route: `aws-design.json` exists
+   - Billing-only route: `aws-design-billing.json` exists AND `aws-design.json` does NOT exist
+   - AI route: `aws-design-ai.json` exists
+2. Require at least one route to be active. If none active: STOP.
+3. For each active route, require its expected artifact:
+   - Infra route -> `estimation-infra.json`
+   - Billing-only route -> `estimation-billing.json`
+   - AI route -> `estimation-ai.json`
+4. If any active route is missing its expected output: STOP and output: "Estimate route [name] did not produce required artifact(s). Re-run the failed sub-estimate before completing Phase 4."
+
+## Completion Handoff Gate (Fail Closed)
+
+Load `shared/handoff-gates.md`. **Re-read from disk** each active estimate artifact before checking.
+
+**Re-entry guard:** If `generation-infra.json` (or sibling generation artifacts) exists and `phases.generate` is not `"pending"`: STOP unless the user explicitly confirms re-running Estimate. Emit `GATE_FAIL | phase=estimate | field=generation-infra.json | reason=stale_downstream`.
+
+**Infra route additional checks** (when `estimation-infra.json` exists):
+
+- `recommendation.path` ∈ `{migrate_optimized, migrate_phased, stay}`
+- `recommendation.path_label` is non-empty
+- `recommendation.migrate_if` and `recommendation.stay_if` are non-empty arrays
+
+**On any FAIL:** Emit `GATE_FAIL | phase=estimate | field=<path> | reason=missing`. **Do NOT modify artifacts to pass the gate.** **Do NOT update `.phase-status.json`.** Tell the user to re-run `estimate-infra.md` Part 7 (recommendation block).
+
+**On PASS:** Emit `HANDOFF_OK | phase=estimate | artifacts=<comma-separated active estimate files>`.
+
+### Inner workshop reprice — skip state transition
+
+When Estimate is invoked from `workshop-refresh.md` (inner reprice): write the
+estimate artifact(s), present a brief summary, then **return to the workshop
+loop**. Do **not** emit `HANDOFF_OK`, do **not** update `.phase-status.json`, do
+**not** offer the what-if workshop below.
+
+### Outer Estimate — Decision gate
+
+After outer-run `HANDOFF_OK`, use the Phase Status Update Protocol
+(read-merge-write) — **in the same turn** as the summary:
+
+1. Set `phases.estimate` to `"completed"`
+2. Ensure `phases.workshop` exists (seed `"pending"` if missing)
+3. **Do not** set `current_phase` to `"generate"` — Generate is opt-in from
+   here on. Leave `current_phase` at `"estimate"` and present the Decision
+   gate below.
+
+### Post-Estimate: Decision Gate
+
+**The decision is the product; execution artifacts are opt-in.** The verdict
+(`recommendation.outcome` / `path`) already exists in the estimate artifacts —
+present it and let the user choose what happens next. Never advance to
+Generate without an explicit choice of option C (or an explicit later request
+for Terraform/scripts).
+
+Present (values from the active estimate artifacts; one line each):
+
+```
+Phase 4 of 6 complete (Estimate). Remaining: Generate (+ optional Feedback).
+
+### Decision pack ready
+
+- Verdict: [outcome_label when recommendation.outcome exists; else path_label]
+- AWS estimate (Balanced): $[X]/mo · Your GCP baseline: [figure with its
+  baseline-quality label from estimate-infra.md Part 1 — apply the
+  not-comparable rule when the sources measure different things]
+- Timeline if you execute: ~[N–M] weeks ([complexity tier], from
+  shared/migration-complexity.md — omit this line when no tier signal exists)
+- Deferred to specialists: [BigQuery / other deferred rows, or omit line]
+
+[A] Done for now — I have what I need to decide
+[B] Explore what-ifs — reprice scenarios side by side (~1 min each): region,
+    single-AZ database, EKS vs Fargate, Graviton
+[C] Generate Terraform and migration scripts
 ```
 
-Load `references/decision-refs/cost-levers.md` and cite only the levers documented in that table.
-Do not invent discounts or optimizations outside of the table.
+**Data-justified scenario hint (add one line when applicable):** if a material
+assumption was defaulted rather than confirmed — most commonly `availability`
+(Multi-AZ, ~2x database cost) — append: "Suggestion: we assumed [assumption];
+comparing a [alternative] scenario would bound that assumption before you
+commit." Suggest at most one.
 
-- **driver**: the primary cost input (e.g., "session count × avg duration", "batch runs/month", "model tokens", "request volume")
-- **effect**: order-of-magnitude impact per increment (e.g., "+$10-30 per 1k sessions", "+$5-15 per 100 batch runs")
-- **lever**: the applicable cost-optimization lever from cost-levers.md (e.g., "Model tier routing (Sonnet→Haiku for triage/simple items)", "Prompt caching", "Scale-to-zero runtimes"). Cite the lever name exactly as it appears in the table. If no lever applies, use `null`.
+**Choice handling:**
 
-**IMPORTANT:** Each driver's lever must be the cost-levers.md lever that actually fits THAT
-driver. Do not pick a legal-but-irrelevant lever. For example:
+- **A** → Mark `phases.workshop` → `"completed"` (declined). Then:
+  1. **Render the decision pack:** load `references/shared/report-decision-core.md`
+     and render it in **decision** mode — write
+     `$MIGRATION_DIR/decision-report.html` and `$MIGRATION_DIR/DECISION.md`
+     per that file's decision-mode rules (no appendices, no Terraform, CTA
+     footer). Validate with
+     `python3 "$PLUGIN_ROOT/scripts/validate-migration-report.py" "$MIGRATION_DIR/decision-report.html" --mode decision --migration-dir "$MIGRATION_DIR"`
+     and pass `--estimation-infra` / `--estimation-ai` / `--aws-design` when
+     those files exist so the Cost Optimization gate can fire
+     (absolute paths — cwd must not be load-bearing) and fix failures before
+     presenting. `--migration-dir` is required on a real run: it is how the
+     validator finds `scenarios/index.json`, so the what-if column check
+     (Region, HA, Compute, Arch, the three tiers, Complexity) fires when
+     Workshop produced two or more scenarios before the user chose A.
+  2. Set `run_mode: "decide"` and `current_phase: "complete"` in
+     `.phase-status.json` (`phases.generate` **stays** `"pending"` — this
+     combination means "decision complete, execution available on request";
+     see `schema-phase-status.md`).
+  3. **Write the web-handoff summary (fail-open):** run
+     `python3 "$PLUGIN_ROOT/scripts/emit-plan-json.py" --migration-dir "$MIGRATION_DIR" --plugin-json "$PLUGIN_ROOT/.claude-plugin/plugin.json"`
+     (absolute paths — cwd must not be load-bearing). It reads the estimate
+     artifacts and writes `$MIGRATION_DIR/plan.json`, the uploadable handoff
+     file, printing `PLAN_OK | …` or `PLAN_SKIP | reason=…`. This is an optional
+     enhancement, never a gate: on any skip or error the decision is still
+     complete — continue without it and do not surface the script output to the
+     user.
+  4. Run the post-gate feedback checkpoint per `SKILL.md`. Step 3 has already
+     run, so you know its `PLAN_OK`/`PLAN_SKIP` status — author the close **once**
+     with that knowledge, never as a two-pass edit of an already-shown message:
+     - If step 3 printed `PLAN_SKIP` (no `plan.json`), close with:
+       "Your decision report is saved at `decision-report.html` (plus a
+       Slack-friendly `DECISION.md`). If you decide to migrate, say 'generate
+       the Terraform and migration scripts' — everything is saved and I'll pick
+       up from here."
+     - If step 3 printed `PLAN_OK`, close with that same sentence and also name
+       `plan.json` in it, with **AWS Startups Migrate** as a Markdown link (the
+       close is prose, so a link renders here, unlike the fenced Generate
+       produced-list). Substitute the run's `run_id` (from `.phase-status.json`),
+       lowercased if it is a UUID — e.g. "Your decision report is saved at
+       `decision-report.html` (plus a Slack-friendly `DECISION.md`), and your
+       uploadable plan at `plan.json` — upload it to
+       [AWS Startups Migrate](https://startups.aws.com/startups/en-US/migrate/credits?source=plugin&run=<run_id>)
+       for up to $1,500 in credits. If you decide to migrate, say 'generate the
+       Terraform and migration scripts' — everything is saved and I'll pick up
+       from here." The `plan.json` filename appears in EXACTLY ONE place — this
+       close — and NEVER in the What's next block below.
+  5. **Web-handoff — only when step 3 printed `PLAN_OK`** (if it printed
+     `PLAN_SKIP`, omit this whole block; there is no file to upload). Append the
+     What's next block below, verbatim, replacing `<run_id>` in the link with the
+     run's `run_id` (from `.phase-status.json`), lowercased if it is a UUID so the
+     `run=` value matches the plan's `runId`. It MUST begin with the "💬 What's
+     next" heading — do NOT add a `plan.json` line (or any file line) above or
+     inside it. The call-to-action must be a Markdown link so it renders as
+     clickable text with no bare URL. Do not reword it — this copy is owned by the
+     web experience:
 
-- A batch/OCR compute-bound driver (e.g., "pages × duration") should use "Batch inference" or
-  right-sizing levers, NOT "Scale-to-zero runtimes" (AWS Batch is already scale-to-zero).
-- An agent-session driver (e.g., "session count × duration") fits "Scale-to-zero runtimes" when
-  traffic is spiky/idle-heavy.
-- Model token drivers fit "Model tier routing", "Prompt caching", or "Batch inference" depending
-  on the workload's latency tolerance.
+     > **💬 What's next**
+     >
+     > - **Refine your plan**
+     >   Tell me what to change. For example: "use Fargate instead," "make it multi-region," or "reduce the cost."
+     > - **Claim your credits**
+     >   When you're happy with your plan, upload it below to apply for up to $1,500 in AWS migration credits.
+     >
+     > [🎉 Get up to $1,500 in AWS migration credits →](https://startups.aws.com/startups/en-US/migrate/credits?source=plugin&run=<run_id>)
+     >
+     > Upload your plan to AWS Startups Migrate to see what you qualify for and unlock:
+     >
+     > - Interactive plan dashboard
+     > - Monthly cost estimate
+     > - Migration paths: AI Agent, AWS Expert, or AWS Partner
+     > - Up to $1,500 in AWS migration credits
 
-Example for an agent_session unit:
+     Ship note: this reaches customers only after the import page and the
+     ImportPlan API are both live in production.
+- **B** → Load `references/phases/workshop/workshop.md`. Keep
+  `current_phase: estimate`; set `phases.workshop` → `"in_progress"`. On
+  workshop exit, **return to this gate** (options A and C; the workshop's
+  active scenario carries into either) — do not advance to Generate directly.
+- **C** → Mark `phases.workshop` → `"completed"` (declined). Set
+  `run_mode: "decide_and_execute"` and `current_phase` → `"generate"`. Then
+  run the post-gate feedback checkpoint per `SKILL.md` and continue to
+  Generate.
 
-```json
-{
-  "unit": "ai-customer-support",
-  "driver": "session count × avg duration",
-  "effect": "+$10-30 per 1k sessions",
-  "lever": "Model tier routing (Sonnet→Haiku for triage/simple items)"
-}
-```
+For AI-only / billing-only runs (no infra inventory), present the gate without
+option B and set `phases.workshop` → `"completed"`. Prefix the presented gate
+with the same breadcrumb line: "Phase 4 of 6 complete (Estimate). Remaining:
+Generate (+ optional Feedback)."
 
-Example for a batch unit:
+_Breadcrumbs are emitted only after outer-run `HANDOFF_OK` — never on `GATE_FAIL`, never from inner workshop reprices._
 
-```json
-{
-  "unit": "weekly-report-generator",
-  "driver": "batch runs/month",
-  "effect": "+$5-15 per 100 runs",
-  "lever": "Batch inference"
-}
-```
+## Reference Files
 
-## Step 5 — Write estimate.json
+- `shared/pricing-cache.md` — Cached AWS + source provider pricing (±5-25%, primary source)
 
-Assemble per-unit estimates under `units{}`, compute the system total, populate the top-level
-legacy mirror from the primary unit, and include the `drivers[]` array:
+## Scope Boundary
 
-```json
-{
-  "units": {
-    "<unit_id>": {
-      "monthly_magnitude_usd": "50-150",
-      "breakdown": {
-        "compute": "10-30",
-        "model_tokens": "40-120",
-        "other": "0-5"
-      },
-      "assumptions": ["1000 sessions/mo, 5 min avg, 60% I/O wait"]
-    },
-    "<unit_id_2>": {
-      "monthly_magnitude_usd": "10-30",
-      "breakdown": {
-        "compute": "10-25",
-        "model_tokens": null,
-        "other": "0-5"
-      },
-      "assumptions": ["500 batch runs/mo, 10 min avg, 2 vCPU/4GB"]
-    }
-  },
-  "drivers": [
-    {
-      "unit": "<unit_id>",
-      "driver": "session count × avg duration",
-      "effect": "+$10-30 per 1k sessions",
-      "lever": "Model tier routing (Sonnet→Haiku for triage/simple items)"
-    },
-    {
-      "unit": "<unit_id_2>",
-      "driver": "batch runs/month",
-      "effect": "+$5-15 per 100 runs",
-      "lever": "Batch inference"
-    }
-  ],
-  "total_monthly_magnitude_usd": "60-180",
-  "total_compute": "20-55",
-  "total_model": "40-120",
-  "total_other": "0-10",
-  "monthly_magnitude_usd": "50-150",
-  "pricing_source": "cached",
-  "assumptions": ["1000 sessions/mo, 5 min avg, 60% I/O wait"],
-  "note": "Order-of-magnitude only. For a precise estimate use the migration skills (gcp-to-aws or heroku-to-aws)."
-}
-```
+**This phase covers financial analysis ONLY.**
 
-**Legacy mirror (collapse + compatibility):** the primary unit's `monthly_magnitude_usd`,
-`assumptions` are ALSO written at the top level (exactly as today). The top-level
-`pricing_source` and `note` apply to the entire estimate. `total_monthly_magnitude_usd` is the
-sum of the units' band edges PLUS any system-level line not attributable to a single unit
-(e.g. Temporal Cloud orchestration actions when Way = cloud), rounded to a clean band (e.g.,
-units of 50-150 and 10-30 → total 60-180; add the orchestration band on top when present). The
-system-level line is recorded in the top-level `assumptions`, never inside a unit's `breakdown`.
-Also emit `total_compute`, `total_model`, `total_other` — the per-column sums of the units'
-`breakdown.compute` / `model_tokens` / `other` bands (Generate renders these as the cost table's
-Total row). **Unverified handling (uniform across all three column totals AND
-`total_monthly_magnitude_usd`):** when a component is the string `"unverified"` (a Serverless
-Workers Public Preview rate the MCP could not confirm) or `null`, EXCLUDE it from the numeric sum
-and append a `"+ unverified"` suffix to that total's band (e.g. `total_compute` = `"20-55 +
-unverified"`, and `total_monthly_magnitude_usd` likewise carries `"+ unverified SW polling"`).
-Never coerce an unverified component to $0 — an excluded-and-flagged band, never a silent drop.
+**Cost labeling rule (applies to ALL sub-estimate files):** All dollar figures presented to the user in chat summaries, report tables, and metric boxes MUST be labeled as "estimated monthly costs" or prefixed with "Est." — never present raw dollar amounts as if they are exact. This includes the Present Summary output, migration report content, and any user-facing cost references.
 
-Single-unit runs produce today's estimate.json plus a one-key `units` map (the collapse invariant:
-single unit = today's behavior + additive `units{}` key).
+FORBIDDEN — Do NOT include ANY of:
 
-## Step 6 — Write state
+- Changes to architecture mappings from the Design phase
+- Execution timelines or migration schedules — **exception:** the Decision gate's one-line timeline band (`~N–M weeks`, tier from `shared/migration-complexity.md`) is allowed; full schedules, week-by-week plans, and runbooks remain Generate-only
+- Terraform or IaC code generation
+- Detailed migration procedures or runbooks
+- Team staffing or resource allocation
 
-Set `phases.estimate` = completed.
+**Your ONLY job: Show the financial picture of moving to AWS. Nothing else.**

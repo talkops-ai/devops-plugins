@@ -1,11 +1,11 @@
 {
   "skill_name": "rds-oracle",
   "companion_skills": [
-    "amazon-aurora-mysql",
-    "amazon-aurora-postgresql",
-    "amazon-documentdb",
-    "amazon-dynamodb",
-    "amazon-elasticache"
+    "rds-oss",
+    "rds-sqlserver",
+    "rds-db2",
+    "dms-schema-conversion",
+    "amazon-aurora-postgresql"
   ],
   "queries": [
     {
@@ -13,49 +13,84 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `rds-oracle` to help me design, validate, and troubleshoot rds oracle."
+      "prompt": "Connect a Python AWS Lambda function in thin mode to Amazon RDS for Oracle with connection pooling and ORA-12170 retry handling."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure S3_INTEGRATION and rdsadmin_s3_tasks Data Pump imports on Amazon RDS for Oracle 19c."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for rds oracle (`rds-oracle`)."
+      "prompt": "Compare Amazon RDS for Oracle vs RDS Custom for Oracle when an application requires SYSDBA and OS access."
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Full-lifecycle management, administration, and connectivity troubleshooting for Amazon RDS for Oracle and RDS Custom for Oracle. Covers CDB/PDB multitenant architecture, rdsadmin s"
+      "prompt": "Our container fails with DPI-1047: Cannot locate a 64-bit Oracle Client library libclntsh.so when connecting to RDS."
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Deploy Oracle Connection Manager (CMAN) across two AZs on EC2 since RDS Proxy doesn't support port 1521."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating rds oracle?"
+      "prompt": "Use Optimize CPUs on db.r6i.4xlarge so our 128 GiB DB fits inside 8 vCPUs of Enterprise Edition BYOL processor licenses."
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our rds oracle setup in read-only mode and highlight top risks."
+      "prompt": "Audit ap-south-1 for oracle-ee, oracle-se2, and custom-oracle-ee RDS instances and Option Groups."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Mount Secrets Manager credentials into EKS pods via SecretProviderClass and IRSA to connect to port 1521 on RDS."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Troubleshoot ORA-12170 TNS:Connect timeout across peered VPCs using nc -zv and NACL checks."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot amazon aurora mysql exclusively without touching rds oracle."
+      "prompt": "Convert Oracle PL/SQL packages to PostgreSQL using AWS DMS Schema Conversion (SC) assessment action items."
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Troubleshoot Cannot generate SSPI context and Kerberos NTLM fallback on RDS for SQL Server."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Restore a multi-part Db2 backup from S3 using rdsadmin.restore_database and rollforward_database."
     }
   ]
 }

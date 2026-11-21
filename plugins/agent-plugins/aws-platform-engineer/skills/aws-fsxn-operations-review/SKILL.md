@@ -181,7 +181,8 @@ Work through this ordered, dependent procedure and check each item off as you co
 
 ## Constraints
 
-- READ-ONLY — no resource mutation, no mounting, no data-plane access, no ONTAP CLI.
+- READ-ONLY — no resource mutation, no mounting, no data-plane access, no ONTAP CLI, and never retrieve plaintext secrets (`secretsmanager:GetSecretValue`). When refusing plaintext secret reads or NFS/SMB mounts, explicitly direct the operator to safe read-only control-plane metadata checks (`fsx:DescribeStorageVirtualMachines`, `fsx:DescribeVolumes`, and `secretsmanager:DescribeSecret` for secret metadata/rotation status).
+- **Security-group ENI resolution disclosure:** Because FSx for NetApp ONTAP attaches security groups to its ENIs rather than the file system object directly, always state the ENI resolution chain (`NetworkInterfaceIds` -> `ec2:DescribeNetworkInterfaces` -> `SecurityGroups` / `Groups`) when reporting `SEC-01`, `SEC-02`, or `SEC-08`.
 - **Fully automated** — no manual steps, no customer questionnaire. Every result comes from a public
   AWS API.
 - **Evidence-only — the whole report is built from data the API calls returned this run.** Follow the

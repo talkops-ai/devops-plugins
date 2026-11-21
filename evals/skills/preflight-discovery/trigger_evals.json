@@ -1,61 +1,95 @@
 {
   "skill_name": "preflight-discovery",
   "companion_skills": [
-    "aws-architecture-diagram",
-    "aws-deployment",
-    "container-ecs-deploy",
     "deploy",
-    "elastic-beanstalk"
+    "aws-brownfield-migration",
+    "verify-and-rollback",
+    "aws-networking-and-compute"
   ],
   "queries": [
     {
-      "id": "trig-exp-01",
+      "id": "trig-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `preflight-discovery` to help me design, validate, and troubleshoot preflight discovery."
+      "prompt": "Run a read-only preflight discovery check in `ap-south-1` covering VPC CIDRs, subnet route-table classification, CloudFormation exports, and Service Quotas before we write Terraform."
     },
     {
-      "id": "trig-exp-02",
+      "id": "trig-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for preflight discovery (`preflight-discovery`)."
+      "prompt": "Check `AvailableIpAddressCount` across our subnets, EIP/NAT Gateway service quotas, and per-AZ `c8g` instance availability in `ap-south-1` before deploying."
     },
     {
-      "id": "trig-imp-01",
+      "id": "trig-03",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Read-only AWS brownfield environment discovery and preflight governance check. Triggers when inspecting an existing AWS account before deployment, checking existing VPCs, subnets,"
+      "prompt": "Verify caller identity, IAM Permissions Boundaries, ACM certificate status, and Route 53 hosted zones in `ap-south-1` for preflight readiness."
     },
     {
-      "id": "trig-imp-02",
+      "id": "trig-04",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating preflight discovery?"
+      "prompt": "Classify our brownfield subnets as Public, Private, or Isolated by effective route table associations and check for `172.31.0.0/16` CIDR overlaps."
     },
     {
-      "id": "trig-ctx-01",
+      "id": "trig-05",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our preflight discovery setup in read-only mode and highlight top risks."
+      "prompt": "Audit `ap-south-1` CloudFormation `list-exports` for naming collisions and emit a Go/No-Go Preflight Discovery Summary."
     },
     {
-      "id": "trig-neg-01",
-      "quadrant": "near_miss_negative",
-      "split": "train",
-      "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot aws architecture diagram exclusively without touching preflight discovery."
-    },
-    {
-      "id": "trig-neg-02",
+      "id": "trig-06",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Diagnose a post-deployment `UPDATE_ROLLBACK_COMPLETE` CloudFormation failure and roll back our ECS service."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Scaffold a greenfield Next.js application using `npx @aws-blocks/create-blocks-app my-app`."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Migrate our Python Django app from Heroku to AWS using `launch_with_aws.py`."
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Write an AWS SDK for JS v3 S3 presigned URL helper with `@aws-sdk/s3-request-presigner`."
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Optimize openCypher graph traversal queries on Amazon Neptune."
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure Db2 HADR standby synchronization on Amazon RDS for Db2."
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Run a VQE molecular ground-state simulation on Amazon Braket SV1."
     }
   ]
 }

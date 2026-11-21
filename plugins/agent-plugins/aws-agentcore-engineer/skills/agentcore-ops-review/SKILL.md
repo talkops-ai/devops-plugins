@@ -35,12 +35,18 @@ This skill provides procedures for a review of AgentCore resources across four c
 
 This is a **READ-ONLY** review. No modifications are made to any resource, and it never invokes an agent (`InvokeAgentRuntime`), reads no prompts or responses, and makes no other data-plane calls. **One exception:** for long-term memories the skill calls `bedrock-agentcore:ListMemoryRecords` (a data-plane API) solely to obtain a **record count**. That response can include a `content` field carrying extracted, potentially PII-bearing memory content; the skill uses **only the count** and never parses, logs, stores, or reproduces `content`. See "Memory record data handling" below.
 
+## MCP-Only Execution & Read-Only Safety
+
+- **MCP-Only Live Discovery & Docs:** Execute **all** live AWS discovery, AgentCore runtime/gateway/memory/identity inspection, CloudWatch metric queries, Cost Explorer/VPC subnet lookups, and documentation searches **exclusively via connected MCP tools**: `aws-mcp` (`aws___run_script` using read-only `await call_boto3(...)`, `aws___search_documentation`, `aws___read_documentation`), `agentcore` (`search_agentcore_docs`, `fetch_agentcore_doc`, `list_agent_runtimes`, `get_agent_runtime`, etc.), `strands-agents` (`search_docs`, `fetch_doc`, `find_integrations`), `cloudwatch`, `appsignals`, `cloudtrail`, `awspricing`, `awsiac`, and `awsknowledge`.
+- **Zero Raw CLI Execution, Strictly Read-Only & Secret-Safe:** **Never** run raw `aws ...` or `agentcore ...` CLI commands in Bash/`run_command` to query or mutate live AWS accounts (present CLI commands in Markdown strictly as operator reference snippets). **Never** invoke live mutations (`create_*`, `update_*`, `delete_*`, `InvokeAgentRuntime`, `InvokeModel`) and **never** read plaintext secrets (`secretsmanager:GetSecretValue`, `ssm:GetParameter` with `WithDecryption=True`, `.env` values, or raw memory record `content` fields).
+- **Edge-Case Documentation Fallback:** For unmapped AWS/AgentCore/Bedrock operational edge cases, run 1–2 focused queries via `agentcore`, `strands-agents`, `awsknowledge`, or `aws-mcp` documentation search tools.
+
 ## Data Source Boundaries (IMPORTANT — IAM footprint)
 
-The standard `AIDevOpsAgentAccessPolicy` covers `bedrock:*` read actions but does **NOT** include the `bedrock-agentcore:*` namespace. (Note: `bedrock-agentcore-control` is the SDK client name, not an IAM prefix — all control-plane actions such as `ListAgentRuntimes`, `GetMemory`, and `ListGateways` authorize under the single service prefix `bedrock-agentcore:`.) Two modes:
+The standard `AIDevOpsAgentAccessPolicy` covers `bedrock:*` read actions but does **NOT** include the `bedrock-agentcore:*` namespace. (Note: `bedrock-agentcore-control` is the SDK/CLI client name, not an IAM prefix — all control-plane and data-plane actions authorize under the single IAM service prefix `bedrock-agentcore:`. Always contrast the two operating modes below when explaining IAM boundaries:)
 
-1. **Runtime-observability-only mode** — relies exclusively on CloudWatch metrics (`cloudwatch:GetMetricData`, `cloudwatch:ListMetrics`) against namespace `AWS/Bedrock-AgentCore`. Requires no `bedrock-agentcore:` additions. When an account isn't using AgentCore, the namespace is simply empty ("no activity detected") — this is not a failure.
-2. **Full control-plane mode** — adds read-only `bedrock-agentcore:` control-plane List/Get actions and `ec2:DescribeSubnets` to enable the runtime/gateway/memory/utilization checks. It also uses one **data-plane** action, `bedrock-agentcore:ListMemoryRecords`, for the long-term-memory record count only (see "Memory record data handling" below). See `references/iam-policy-linked-account.json`.
+1. **Mode 1 — Runtime-observability-only mode:** relies exclusively on CloudWatch metrics (`cloudwatch:GetMetricData`, `cloudwatch:ListMetrics` against namespace `AWS/Bedrock-AgentCore`, plus Cost Explorer / Health). Requires zero `bedrock-agentcore:` permissions. When an account isn't using AgentCore, the namespace is simply empty ("no activity detected") — this is not a failure.
+2. **Mode 2 — Full control-plane mode:** adds read-only `bedrock-agentcore:` control-plane List/Get actions and `ec2:DescribeSubnets` to enable the runtime/gateway/memory/utilization checks. It also uses one **data-plane** action, `bedrock-agentcore:ListMemoryRecords`, for the long-term-memory record count only (see "Memory record data handling" below). See `references/iam-policy-linked-account.json`.
 
 If a required permission is missing, the affected check degrades to a **visibility limit** (reported as "signal unavailable / check skipped") rather than failing the review or producing a false finding.
 
@@ -49,6 +55,8 @@ If a required permission is missing, the affected check degrades to a **visibili
 **Seam with `agentcore-observability-setup`:** This skill assesses operational posture from *existing* telemetry; it does not configure or validate observability wiring. Where telemetry is absent, this skill reports a visibility limit and defers the configuration gap to `agentcore-observability-setup` — that skill owns the observability-wiring finding (Transaction Search, OTEL/ADOT, log delivery, X-Ray resource policy), while this skill reports only the posture consequence. A customer running both should not see two overlapping findings on the same resource.
 
 ## Step 1: Discover Account and Regions
+
+*(Note: When scoping to a user-provided context fixture or explaining IAM `bedrock-agentcore-control` vs `bedrock-agentcore:` permissions, always explicitly name and contrast **Mode 1 — Runtime-observability-only mode** vs **Mode 2 — Full control-plane mode** from Data Source Boundaries above.)*
 
 1. Call `sts:GetCallerIdentity` to determine the account.
 2. Discover AgentCore-active regions:
@@ -154,7 +162,7 @@ Derived signals:
 
 ## Step 8: Produce Report and Recommendations
 
-Produce an artifact with the structure defined in `references/report-template.md`.
+**Always render the complete Markdown report from `references/report-template.md` directly inline in your final response** (never rely solely on linking an external artifact file, even when stopping early for "No AgentCore usage detected").
 
 For each finding with severity Warning/Medium or higher, create a recommendation with:
 - Title: `[Check ID] [Check name] — [Resource identifier]`

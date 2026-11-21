@@ -1,61 +1,95 @@
 {
   "skill_name": "live-site-incident-postmortem",
   "companion_skills": [
-    "arc-region-switch",
-    "aws-billing-and-cost-management",
-    "aws-cloudformation",
-    "aws-compute",
-    "aws-deployment"
+    "troubleshooting-application-failures",
+    "prometheus-and-grafana-sre",
+    "auditing-cloudtrail-forensics",
+    "verify-and-rollback"
   ],
   "queries": [
     {
-      "id": "trig-exp-01",
+      "id": "trig-pos-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `live-site-incident-postmortem` to help me design, validate, and troubleshoot live site incident postmortem."
+      "prompt": "Author a blameless Amazon-style Correction of Errors (COE) postmortem with UTC timeline (`TTD`, `TTM`, `MTTR`), 5-Whys, and P0/P1/P2 action items."
     },
     {
-      "id": "trig-exp-02",
+      "id": "trig-pos-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for live site incident postmortem (`live-site-incident-postmortem`)."
+      "prompt": "Run Sev-1 live-site incident command for a single-AZ outage in `ap-south-1b` using Route 53 ARC Zonal Shift while preserving forensic logs."
     },
     {
-      "id": "trig-imp-01",
+      "id": "trig-pos-03",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Coordinate Sev-1/Sev-2 AWS live-site incident command and author blameless Correction of Errors (COE) / Postmortem documents with UTC timelines, 5-Whys root-cause analysis, blast-r"
+      "prompt": "Rewrite a blame-heavy RCA ('engineer forgot to check the wiki') into a systemic 5-Whys postmortem with CI/CD guardrails."
     },
     {
-      "id": "trig-imp-02",
+      "id": "trig-pos-04",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating live site incident postmortem?"
+      "prompt": "Calculate monthly `99.95%` SLO error-budget burn percentage for a 27-minute partial outage in our COE report."
     },
     {
-      "id": "trig-ctx-01",
+      "id": "trig-pos-05",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our live site incident postmortem setup in read-only mode and highlight top risks."
+      "prompt": "Coordinate war-room triage and timeline reconstruction (`T_trigger`, `T_onset`, `T_detect`, `T_recover`) after a production ECS outage."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot arc region switch exclusively without touching live site incident postmortem."
+      "prompt": "Write PromQL queries for `histogram_quantile` p99 latency in Amazon Managed Service for Prometheus."
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Run SQL queries on VPC Flow Logs in S3 Tables (`s3tablescatalog/aws-cloudwatch`)."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Create a multi-region CloudTrail trail with S3 storage."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure an encrypted SNS topic for CloudWatch alarm email notifications."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Add Amazon Cognito PKCE login to a React web app."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Use `asm-exec` to pass Secrets Manager dynamic references to `psql`."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure AWS Direct Connect BGP peering and MACsec."
     }
   ]
 }

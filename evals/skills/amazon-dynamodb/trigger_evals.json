@@ -1,11 +1,11 @@
 {
   "skill_name": "amazon-dynamodb",
   "companion_skills": [
-    "amazon-aurora-mysql",
-    "amazon-aurora-postgresql",
-    "amazon-documentdb",
+    "amazon-keyspaces",
     "amazon-elasticache",
-    "amazon-keyspaces"
+    "amazon-aurora-postgresql",
+    "aws-database",
+    "amazon-documentdb"
   ],
   "queries": [
     {
@@ -13,49 +13,84 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `amazon-dynamodb` to help me design, validate, and troubleshoot amazon dynamodb."
+      "prompt": "Design a multi-tenant single-table Amazon DynamoDB schema with GSIs and calculate monthly On-Demand vs Standard-IA cost."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure native DynamoDB vector search using VectorIndexes and SearchVectors for product embeddings."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for amazon dynamodb (`amazon-dynamodb`)."
+      "prompt": "Troubleshoot ProvisionedThroughputExceededException caused by hot GSI write backpressure on our DynamoDB table."
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Designs, reviews, and debugs DynamoDB data layers from design axioms — enumerates access patterns, chooses partition/sort keys and GSIs, decides single-table vs. multi-table, confi"
+      "prompt": "Can we change a GSI ProjectionType from KEYS_ONLY to ALL with UpdateTable without downtime?"
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why does GetItem reject ConditionExpression, and does ConditionalCheckFailedException still consume WCUs?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating amazon dynamodb?"
+      "prompt": "Pre-warm our NoSQL checkout table for a 50,000 RPS flash sale using WarmThroughput and configure 3-region MRSC Global Tables."
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our amazon dynamodb setup in read-only mode and highlight top risks."
+      "prompt": "Audit all DynamoDB tables in ap-south-1 for PITR, deletion protection, and PAY_PER_REQUEST vs PROVISIONED billing mode."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Archive expired TTL records from our orders table to S3 Parquet using Streams TRIM_HORIZON and Lambda ESM filtering."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Our BatchWriteItem bulk loader is silently dropping rows under load\u2014how do we handle UnprocessedItems and the 400 KB item cap?"
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot amazon aurora mysql exclusively without touching amazon dynamodb."
+      "prompt": "Estimate Amazon Keyspaces CQL read/write capacity units for migrating a 6-node Apache Cassandra 3.11 ring."
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Set up node-based ElastiCache for Valkey 9.0 to cache session tokens and run HNSW vector search."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Tune Aurora PostgreSQL autovacuum_vacuum_scale_factor and RDS Proxy connection pinning."
     }
   ]
 }

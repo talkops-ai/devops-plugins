@@ -1,10 +1,12 @@
 ---
 name: aws-lambda
-description: "Design, build, deploy, test, and debug serverless applications with AWS Lambda. Triggers on phrases like: Lambda function, event source, serverless application, API Gateway, EventBridge, Step Functions, serverless API, event-driven architecture, Lambda trigger. For deploying non-serverless apps to AWS, use the aws-deployment-engineer plugin instead."
+description: "Design, build, deploy, test, and debug serverless applications with AWS Lambda. Triggers on phrases like: Lambda function, event source, serverless application, API Gateway, EventBridge, Step Functions, serverless API, event-driven architecture, Lambda trigger. For deploying non-serverless apps to AWS, use the aws-deployment-engineer plugin instead. Query live AWS state via MCP tools only (never raw aws CLI)."
 argument-hint: "[what are you building?]"
 ---
 
 # AWS Lambda Serverless Development
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, caller/account verification (`sts:GetCallerIdentity`), resource inspection, logs/metrics queries, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___call_aws` / `aws___run_script`, `cloudwatch`, `cloudtrail`, `prometheus`, `dynamodb`, `serverless`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**.
 
 Design, build, deploy, and debug serverless applications with AWS serverless services. This skill provides access to serverless development guidance through the AWS Serverless MCP Server, helping you to build production-ready serverless applications with best practices built-in.
 

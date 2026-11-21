@@ -1,10 +1,9 @@
 {
   "skill_name": "prompt-library-for-startups",
   "companion_skills": [
-    "agent-advisor",
-    "ai-to-bedrock",
+    "knowledge-base-for-startups",
+    "start-building-for-startups",
     "architect-for-startups",
-    "azure-to-aws",
     "contextual-offers-for-startups"
   ],
   "queries": [
@@ -13,50 +12,87 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `prompt-library-for-startups` to design, validate, and troubleshoot prompt library for startups."
+      "prompt": "Give me the copy-paste System Prompt from the AWS Startups Prompt Library for building a RAG chatbot with Claude on Bedrock."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through production best practices and operational guardrails for prompt library for startups (`prompt-library-for-startups`)."
+      "prompt": "Share the download link and details for the installable AWS Bill Shock Preventer and AWS Multi-Account Transition Advisor agents."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Pull the AWS Startups reference prompt for requesting EC2 and SageMaker GPU instance quota increases."
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need an operational review and step-by-step runbook covering: AWS-curated copy-paste prompts for AI coding agents (MVP scaffolding, RAG chatbot with Claude on Bedrock, security baseline evaluation, cost anomaly detection, GPU quota requests, "
+      "prompt": "Is there an installable AWS Startups agent I can clone into my AI coding tool to help pick and operate the right AWS database (`AWS DB Advisor`)?"
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the critical failure modes, configuration checks, and verification commands for prompt library for startups?"
+      "prompt": "Show me the curated AWS Startups prompt for converting an OpenAPI REST spec into an AgentCore Gateway MCP server."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Give me a starter AWS prompt for Day 1 AWS Foundation Setup or an MVSP-compliant security baseline."
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our prompt library for startups setup in read-only mode."
+      "prompt": "Find the AWS Bedrock Quota Manager (TPM/RPM/CRIS navigator) prompt and the Bedrock Model Availability downloadable agent."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "List the Karpenter + KEDA Spot EKS and Cost Anomaly Detection prompts available in the AWS Startups Prompt Library."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Give me the AWSome MVP Builder System Prompt so I can copy or adapt it for Kiro CLI."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Configure and troubleshoot agent advisor exclusively without touching prompt library for startups.",
-      "expected_alternative_skill": "agent-advisor"
+      "prompt": "Do AWS Activate credits expire, what is the difference between Activate Founders and Activate Portfolio, and how do VCs become Activate Providers?",
+      "expected_alternative_skill": "knowledge-base-for-startups"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+      "prompt": "Run the read-only `validate-terraform-policy.py` policy checker against `./migration/terraform` and output the JSON verdict.",
+      "expected_alternative_skill": "tf-best-practices"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Our live production ECS service in `us-east-1` just started throwing 502 errors after a deploy — help us investigate the root cause.",
+      "expected_alternative_skill": "operate-on-aws"
     }
   ]
 }

@@ -1,9 +1,11 @@
 ---
 name: eks-karpenter-and-addon-upgrades
-description: Validates Amazon EKS Managed Add-ons (paginated DescribeAddonVersions compatibility, eksbuild numeric ordering, PRESERVE vs OVERWRITE configuration conflict checks), self-managed aws-node/coredns/kube-proxy DaemonSets, retired ingress-nginx to Gateway API or AWS Load Balancer Controller migrations, and two-step Karpenter CRD + controller v0.37/v1.x upgrades.
+description: "Validates Amazon EKS Managed Add-ons (paginated DescribeAddonVersions compatibility, integer eksbuild ordering, PRESERVE vs OVERWRITE configuration conflict checks), self-managed aws-node/coredns/kube-proxy DaemonSets, retired ingress-nginx to Gateway API or AWS Load Balancer Controller migrations, and two-step Karpenter CRD + controller v0.37-to-v1.x upgrades. Do NOT use for EKS Extended Support surcharge/EOS calendars, AL2 bootstrap.sh-to-nodeadm OS migration, or post-upgrade rollback/PodEvictionFailure triage. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # EKS Add-ons & Karpenter Upgrade Validation
+
+> **MCP-Only Live AWS Execution:** Execute ALL live AWS API discovery, add-on version compatibility lookups (`eks:DescribeAddonVersions`), and documentation checks strictly via connected MCP tools (`aws-mcp`, `aws-api`, `eks`, `aws-documentation-mcp`, `cloudwatch`) — **never invoke raw `aws ...` CLI commands in shell (`run_command`)**.
 
 Strictly **read-only** compatibility audit and upgrade sequencing skill for **EKS Managed Add-ons**, **self-managed cluster add-ons**, and **Karpenter (`v0.32`/`v0.37` -> `v1.0+`)**.
 

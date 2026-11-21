@@ -103,11 +103,15 @@ by `connectionArn`) → map to VIFs via the connection ID in the ARN. Signals:
   empty table is itself a finding.
 - Comparing a BGP-down VIF's stale/empty table against live peers produces
   false positives; exclude and report instead.
-- All results are point-in-time snapshots; assess during stable traffic
-  periods and re-run after changes.
+- All results are point-in-time snapshots: always **record the exact snapshot
+  timestamp (`UTC`)** in the report, assess during stable traffic periods, and
+  re-run after ~15 minutes following BGP changes (1–14 minute `ListVirtualInterfaceRoutes`
+  convergence lag) before declaring newly modified prefixes permanent gaps.
 
-## Out of scope for this skill
+## Out of scope for live API mutation / physical audit
 
-End-to-end physical path diversity (cross-connects, last-mile), BFD tuning,
-on-prem router configuration, MACsec, and any mutating validation (BGP
-failover tests are deliberately excluded — this skill is read-only).
+End-to-end physical last-mile fiber/cross-connect verification, mutating on-prem
+router or VIF BFD/MACsec configurations, and any mutating validation (live BGP
+failover tests are deliberately excluded — this skill is strictly read-only;
+answer architecture questions on Direct Connect asynchronous BFD timers and
+SiteLink VIF connectivity via `awsknowledge`).

@@ -1,11 +1,11 @@
 {
   "skill_name": "agents-deploy",
   "companion_skills": [
-    "agentcore-observability-setup",
-    "agentcore-ops-review",
+    "agents-harden",
+    "agents-debug",
     "agents-build",
     "agents-connect",
-    "agents-debug"
+    "agents-optimize"
   ],
   "queries": [
     {
@@ -13,50 +13,87 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `agents-deploy` to design, validate, and troubleshoot agents deploy."
+      "prompt": "Run pre-flight checks for `agentcore deploy` in ap-south-1 and show me how to preview changes with `--dry-run` and `--diff`."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through production best practices and operational guardrails for agents deploy (`agents-deploy`)."
+      "prompt": "`agentcore deploy` failed with a CDK toolkit bootstrap and IAM `CreateRole` error — help me fix the deployment."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Pin our `prod` AgentCore Runtime endpoint to `Version 4`, set up a 10% canary deploy for `Version 5`, and show the instant rollback command."
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need an operational review and step-by-step runbook covering: Use when deploying your agent to AWS, or when a deploy has failed. Handles pre-flight validation, CDK/IAM/quota error diagnosis, version management, rollback, and canary deployment"
+      "prompt": "Design a 6-stage GitHub Actions OIDC CI/CD pipeline to build `linux/arm64` AgentCore images, gate on Inspector scans and evaluations, and promote staging to prod."
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the critical failure modes, configuration checks, and verification commands for agents deploy?"
+      "prompt": "Why did `agentcore deploy` complain `Stack is in region us-east-1 but the target is ap-south-1` when deploying from CI?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Our CloudFormation stack has been stuck in `UPDATE_IN_PROGRESS` for 20 minutes during an AgentCore redeploy — how do we diagnose and roll back safely?"
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our agents deploy setup in read-only mode."
+      "prompt": "We shipped a bad prompt in `Version 8` two minutes ago and `SystemErrorRate` crossed 2% — roll `prod` back to `Version 7` immediately."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Docker push inside our AgentCore deploy pipeline failed with `no basic auth credentials` against ECR in `ap-south-1`."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "How do we configure `agentcore/aws-targets.json` so PR merges deploy to our staging account while release tags promote immutable versions to production?"
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Configure and troubleshoot agentcore observability setup exclusively without touching agents deploy.",
-      "expected_alternative_skill": "agentcore-observability-setup"
+      "prompt": "Run through the production security hardening checklist: inbound `CUSTOM_JWT` `allowedAudience`, KMS CMK encryption, and `StopRuntimeSession` lifecycle timeouts.",
+      "expected_alternative_skill": "agents-harden"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+      "prompt": "My deployed agent is returning `424 Failed Dependency` and dropping SSE streams mid-response — read CloudWatch traces and logs to find the bug.",
+      "expected_alternative_skill": "agents-debug"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure VPC private subnets, NAT Gateway, and VPC Endpoints (`ecr.api`, `ecr.dkr`, `s3`, `logs`) on our AgentCore Runtime.",
+      "expected_alternative_skill": "agents-build"
     }
   ]
 }

@@ -1,12 +1,24 @@
 # Skill Evaluations (`evals/`)
 
-Open-source evaluation suites, JSON schemas, and multi-harness execution runner for all **446 canonical skills** across the 49 plugins in `devops-plugins`.
+Open-source evaluation suites, JSON schemas, and multi-harness execution runner for all **446 canonical skills** across the **49 plugins** in `devops-plugins` (**3,459 execution test cases** + **3,989 4-quadrant trigger routing queries** = **7,448 automated checks**).
 
 > **Why top-level `evals/` instead of `plugins/**/skills/*/evals/`?**
 > Because `devops-plugins` is an installable multi-plugin marketplace where 200+ canonical skills are shared across specialist **agent plugins** and **vertical plugins**, keeping evaluation suites in `evals/skills/<skill-name>/` ensures:
 > 1. **Zero install bloat (`0 KB` overhead)** when users run `claude plugin install` or `codex plugin install`.
 > 2. **Single source of truth** per canonical skill — no duplicated `evals.json` files across shared plugins.
 > 3. **Clean runtime isolation** — ephemeral execution sandboxes are staged into `.eval-runs/` (gitignored), never inside `plugins/` or `evals/`.
+
+---
+
+## Coverage & Live-Verification Summary
+
+| Metric | Count | Details |
+|---|---:|---|
+| **Canonical skill suites (`evals/skills/*`)** | **446** | 100% of canonical skills across all 20 Agent, 21 Vertical, and 8 Partner plugins |
+| **Full multi-quadrant suites (`8–20` exec + `8–16` trigger)** | **274** | Live-verified **`100% GREEN`** against read-only AWS & Kubernetes MCP environments across all non-parked AWS Vertical Plugins (`20/21`) and AWS-native Agent Plugins (`aws-eks-upgrade-engineer`, `aws-devsecops-engineer`, `aws-platform-engineer`, `aws-sre-agent`, `aws-database-engineer`, `aws-serverless-engineer`, `aws-data-engineer`, `aws-iac-engineer`, `aws-deployment-engineer`, `aws-cloud-security-engineer`, `aws-finops-engineer`, `aws-solutions-architect`, `aws-startup-advisor`, `aws-agentcore-engineer`, `aws-modernization-agent`) + core Kubernetes delivery/observability skills |
+| **Baseline schema-validated suites** | **172** | Partner-built ecosystem plugins (`72`), parked SageMaker/Web-Mobile waves (`32`), and specialized CNCF/connector sub-skills (`68`), all validated by Layer 1 `static` checks |
+| **Total Layer 3 execution cases (`evals.json`)** | **3,459** | Functional workflows, live read-only MCP telemetry, script calculators, `awsknowledge`/`awspricing` checks, and adversarial safety refusals |
+| **Total Layer 2 trigger queries (`trigger_evals.json`)** | **3,989** | Balanced across `explicit`, `implicit`, `contextual`, and `near_miss_negative` sibling-collision quadrants |
 
 ---
 
@@ -41,8 +53,8 @@ Validates `SKILL.md` frontmatter, shared-skill parity across plugins, local `ref
 # Audit all 446 canonical skills and 49 plugins
 python3 scripts/eval_skills.py static
 
-# Audit a single skill
-python3 scripts/eval_skills.py static --skill amazon-aurora-postgresql
+# Audit a single skill with strict <=500 line / <=5,000 token budgets
+python3 scripts/eval_skills.py static --strict-limits --skill amazon-aurora-postgresql
 ```
 
 ### Layer 2: 4-Quadrant Trigger & Sibling Collision Evaluation (`trigger`)
@@ -65,16 +77,16 @@ Provisions a clean workspace in `.eval-runs/` with the owning plugin's `SKILL.md
 # Dry-run validate execution cases
 python3 scripts/eval_skills.py run --skill deploying-helm-charts --dry-run
 
-# Run full evaluation (add --baseline to compare with_skill vs without_skill A/B delta)
-python3 scripts/eval_skills.py run --skill deploying-helm-charts --harness claude --workers 2
+# Run full evaluation (supports --harness agy|claude|codex and optional read-only --aws-profile / --aws-region)
+python3 scripts/eval_skills.py run --skill eks-karpenter-and-addon-upgrades --harness claude --aws-profile my-readonly-profile --aws-region us-east-1 --workers 2
 ```
 
 ---
 
 ## Authoring Standards & Open-Source Hygiene Rules
 
-1. **Outcome-driven, natural prompts**: Write realistic operator/architect prompts without hardcoding internal `references/*.md` filenames in the prompt text.
-2. **Strictly read-only live checks + adversarial safety cases**: Include guardrail test cases verifying that `secret-safety.py` and `aws-mutation-gate.py` block `.env`/secret exfiltration and unapproved infrastructure mutations.
+1. **Outcome-driven, natural prompts**: Write realistic operator/architect prompts without hardcoding internal `references/*.md` filenames or `/plugin:command` slash commands in the prompt text.
+2. **Strictly read-only live checks + adversarial safety cases**: Include guardrail test cases verifying that `secret-safety.py` and `aws-mutation-gate.py` block `.env`/secret exfiltration and unapproved infrastructure mutations, and execute live AWS checks strictly via bundled MCP servers (`aws-mcp`, `awspricing`, `awsknowledge`, `eks`, `cloudwatch`, etc.).
 3. **Placeholder identifiers only**: Always use standard AWS documentation dummy Account IDs (`123456789012`, `111122223333`, `444455556666`, `999988887777`), example resource prefixes (`example-prod-*`), and repo-relative paths (`files/...`). `eval_skills.py static` automatically rejects real account IDs and personal `/Users/...` paths.
 
-For detailed authoring patterns and debugging workflows, see [`docs/skill-evals-handover-guide.md`](../docs/skill-evals-handover-guide.md).
+For detailed authoring patterns, debugging workflows, and phased rollout status, see [`docs/skill-evals-handover-guide.md`](../docs/skill-evals-handover-guide.md) and [`docs/skill-evals-rollout-plan.md`](../docs/skill-evals-rollout-plan.md).

@@ -1,61 +1,95 @@
 {
   "skill_name": "setting-up-cloudtrail-multi-region",
   "companion_skills": [
-    "arc-region-switch",
-    "aws-billing-and-cost-management",
-    "aws-cloudformation",
-    "aws-compute",
-    "aws-deployment"
+    "auditing-cloudtrail-forensics",
+    "querying-aws-cloudwatch",
+    "setting-up-cloudwatch-alarm-notifications",
+    "aws-security"
   ],
   "queries": [
     {
-      "id": "trig-exp-01",
+      "id": "trig-pos-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `setting-up-cloudtrail-multi-region` to help me design, validate, and troubleshoot setting up cloudtrail multi region."
+      "prompt": "Set up a centralized multi-region AWS CloudTrail trail with KMS-encrypted S3 storage, `--enable-log-file-validation`, and CloudWatch Logs integration."
     },
     {
-      "id": "trig-exp-02",
+      "id": "trig-pos-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for setting up cloudtrail multi region (`setting-up-cloudtrail-multi-region`)."
+      "prompt": "Fix `InsufficientS3BucketPolicyException` and `InsufficientEncryptionPolicyException` when creating a multi-region CloudTrail trail."
     },
     {
-      "id": "trig-imp-01",
+      "id": "trig-pos-03",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Enables a multi-region AWS CloudTrail trail with S3 log storage, CloudWatch Logs integration, and CloudWatch Logs Insights queries for security monitoring and compliance auditing."
+      "prompt": "Configure the CloudTrail-to-CloudWatch Logs IAM role (`CloudTrail/APILogs`) and CIS metric filters on a new multi-region trail."
     },
     {
-      "id": "trig-imp-02",
+      "id": "trig-pos-04",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating setting up cloudtrail multi region?"
+      "prompt": "Scope S3 and Lambda Data Events safely with CloudTrail Advanced Event Selectors and explain why a trail isn't logging until `start-logging` runs."
     },
     {
-      "id": "trig-ctx-01",
+      "id": "trig-pos-05",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our setting up cloudtrail multi region setup in read-only mode and highlight top risks."
+      "prompt": "Create an AWS Organizations multi-region CloudTrail trail managed by a delegated Security Administrator account."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot arc region switch exclusively without touching setting up cloudtrail multi region."
+      "prompt": "Forensically investigate who deleted our production RDS snapshot yesterday using CloudTrail Lake SQL."
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Set up an encrypted SNS topic and email/webhook subscriptions for an existing CloudWatch CPU alarm."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Run Athena SQL queries against VPC Flow Logs in `s3tablescatalog/aws-cloudwatch`."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Add Amazon Cognito PKCE login to a React web app."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Use `asm-exec` to inject Secrets Manager credentials into `psql`."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure AWS Direct Connect BGP peering and SiteLink."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Debug a timing-out Python Lambda function in `ap-south-1`."
     }
   ]
 }

@@ -14,7 +14,7 @@ Before starting, read `.elasticache/requirements.json` if it exists. Use the val
 
 Before creating or modifying anything, verify the execution path works:
 
-1. **Credentials check (primary):** Run `aws sts get-caller-identity`. If it works, use AWS CLI, boto3 SDK, CloudFormation, and the bundled scripts for all control-plane operations.
+1. **Credentials check (primary):** Check caller identity via MCP (`aws-mcp` `call_boto3('sts', 'GetCallerIdentity')` — never raw `aws` CLI). If it works, use AWS CLI, boto3 SDK, CloudFormation, and the bundled scripts for all control-plane operations.
 2. **If credentials fail:** Stop. Tell the user to configure AWS CLI credentials (`aws configure`).
 3. **Region:** Confirm region is set (from `.elasticache/requirements.json`, workspace scan, or ask the user).
 4. **Permissions:** Run a read-only call to confirm the caller has ElastiCache access. Try `aws elasticache describe-serverless-caches --region <region>` first. If that fails with AccessDenied (the caller may only have node-based permissions), fall back to `aws elasticache describe-replication-groups --region <region>`. Either succeeding confirms ElastiCache access.

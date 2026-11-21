@@ -1,61 +1,95 @@
 {
   "skill_name": "serverless-data-and-file-processing",
   "companion_skills": [
-    "amazon-eventbridge-event-bus",
-    "amazon-eventbridge-scheduler-and-pipes",
-    "amazon-sqs-sns-async-messaging",
-    "api-gateway",
-    "aws-auth-and-environment-preflight"
+    "processing-s3-uploads-with-step-functions",
+    "aws-serverless",
+    "aws-lambda",
+    "aws-sdk-js-v3-usage"
   ],
   "queries": [
     {
-      "id": "trig-exp-01",
+      "id": "trig-pos-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `serverless-data-and-file-processing` to help me design, validate, and troubleshoot serverless data and file processing."
+      "prompt": "Bypass API Gateway's 10 MB and Lambda's 6 MB payload limits using S3 Presigned POST / Multipart upload URLs."
     },
     {
-      "id": "trig-exp-02",
+      "id": "trig-pos-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for serverless data and file processing (`serverless-data-and-file-processing`)."
+      "prompt": "Process a 25 GB CSV file in S3 using AWS Step Functions Distributed Map with `ItemReader`, `ItemBatcher`, and `ResultWriter`."
     },
     {
-      "id": "trig-imp-01",
+      "id": "trig-pos-03",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Architect serverless file upload, event-driven S3 processing, and high-concurrency batch data pipelines. Covers S3 Presigned URLs (bypassing API Gateway 10 MB / Lambda 6 MB payload"
+      "prompt": "Prevent runaway AWS bills from S3 -> Lambda -> S3 recursive invocation loops using bucket separation and `anything-but` prefix filters."
     },
     {
-      "id": "trig-imp-02",
+      "id": "trig-pos-04",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating serverless data and file processing?"
+      "prompt": "Backfill 100 million S3 objects using Step Functions Distributed Map over an S3 Inventory `MANIFEST` with `ToleratedFailurePercentage` and Redrive."
     },
     {
-      "id": "trig-ctx-01",
+      "id": "trig-pos-05",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our serverless data and file processing setup in read-only mode and highlight top risks."
+      "prompt": "Design a buffered S3 `EventBridgeEnabled` -> EventBridge -> SQS -> Lambda document ingestion pipeline."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot amazon eventbridge event bus exclusively without touching serverless data and file processing."
+      "prompt": "Connect a Lambda function to an API Gateway REST API for JSON CRUD."
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Debug an Amazon MSK SASL/SCRAM `AmazonMSK_` secret error on a Kafka ESM."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure AWS Direct Connect SiteLink and BGP communities."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Audit IAM policies for `ForAllValues` vacuous truth bugs."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Set up an encrypted SNS topic for CloudWatch alarm notifications."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Use `asm-exec` with `{{resolve:secretsmanager:...}}` to run `psql` without exposing secrets."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure AWS Transit Gateway multicast domains."
     }
   ]
 }

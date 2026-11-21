@@ -1,11 +1,11 @@
 {
   "skill_name": "amazon-elasticache",
   "companion_skills": [
-    "amazon-aurora-mysql",
-    "amazon-aurora-postgresql",
-    "amazon-documentdb",
     "amazon-dynamodb",
-    "amazon-keyspaces"
+    "amazon-aurora-postgresql",
+    "rds-db2",
+    "database-and-cache-reliability",
+    "aws-database"
   ],
   "queries": [
     {
@@ -13,49 +13,84 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `amazon-elasticache` to help me design, validate, and troubleshoot amazon elasticache."
+      "prompt": "Compare ElastiCache for Valkey vs Redis OSS pricing for a Serverless cache and a 3-shard r7g cluster in us-east-1."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Set up server-side vector similarity search on Amazon ElastiCache for our Strands RAG agent."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for amazon elasticache (`amazon-elasticache`)."
+      "prompt": "Validate our self-managed EC2 Redis 7 cluster for zero-downtime ElastiCache Online Migration."
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Activate when developers have latent caching needs: slow API responses, database read bottlenecks, DynamoDB throttling or cost, RDS/Aurora scaling pressure, Bedrock latency or cost"
+      "prompt": "Our VPC Lambda times out on reader queries to our Serverless Valkey cache\u2014check ports 6379/6380 and IAM auth."
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Fix CROSSSLOT multi-key pipeline errors and single-shard hot-key CPU skew on our 6-shard Valkey cluster."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating amazon elasticache?"
+      "prompt": "Should we use Memcached or Valkey on AWS for gaming leaderboards, pub/sub match alerts, and IAM auth?"
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our amazon elasticache setup in read-only mode and highlight top risks."
+      "prompt": "Audit all ElastiCache Serverless caches and replication groups in ap-south-1 for TLS, KMS encryption, and Valkey upgrade savings."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Design a cross-region active-passive Global Datastore cache across us-east-1 and eu-west-1 with regional KMS keys."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Add semantic LLM response caching in front of Amazon Bedrock to cut repeated prompt latency and token spend."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot amazon aurora mysql exclusively without touching amazon elasticache."
+      "prompt": "Configure CloudFront Origin Access Control (OAC) cache behaviors and Cache-Control headers for an S3 static SPA."
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Size an Aurora PostgreSQL Serverless v2 cluster and enable pgvector HNSW indexing."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Migrate an IBM Db2 LUW database onto Amazon RDS for Db2 BYOL with HADR standby."
     }
   ]
 }

@@ -10,6 +10,8 @@ version: 1
 
 # Database HA/DR, RDS Proxy Multiplexing, Role Hardening & Online Schema Evolution
 
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, account/region checks (`sts:GetCallerIdentity`), cluster/instance/table inspection, CloudWatch telemetry, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___run_script` `call_boto3`, `dynamodb`, `elasticache`, `postgres`, `mysql`, `cloudwatch`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**. Local offline helper scripts under `scripts/` may be run via `python3` or `node`.
+
 Use this skill for cross-engine **Day-2 architecture and operational hygiene**: designing Multi-AZ or multi-region High Availability and Disaster Recovery (HA/DR) topologies against explicit RPO/RTO targets, refreshing lower environments via Aurora Fast Cloning, preventing connection pinning on Amazon RDS Proxy, hardening database roles for data-plane MCP servers, and executing zero-downtime lock-free DDL migrations.
 
 ## Reference Library (Load On-Demand)

@@ -49,6 +49,12 @@ Do NOT use for:
 - Scaffolding a new project → use `agents-get-started`
 - Deploying → use `agents-deploy`
 
+## MCP-Only Execution & Read-Only Safety
+
+- **MCP-Only Live Discovery & Docs:** Execute **all** live AWS discovery, AgentCore runtime/gateway/memory inspection, telemetry/log/trace queries, IAM policy checks, and documentation lookups **exclusively via connected MCP tools**: `aws-mcp` (`aws___run_script` using read-only `await call_boto3(...)`, `aws___search_documentation`, `aws___read_documentation`), `agentcore` (`search_agentcore_docs`, `fetch_agentcore_doc`, `list_agent_runtimes`, `get_agent_runtime`, etc.), `strands-agents` (`search_docs`, `fetch_doc`, `find_integrations`), `cloudwatch`, `appsignals`, `cloudtrail`, `awspricing`, `awsiac`, and `awsknowledge`.
+- **Zero Raw CLI Execution, Strictly Read-Only & Secret-Safe:** **Never** run raw `aws ...` or `agentcore ...` CLI commands in Bash/`run_command` to query or mutate live AWS accounts (present CLI commands in Markdown strictly as operator reference snippets). **Never** invoke live mutations (`create_*`, `update_*`, `delete_*`, `InvokeAgentRuntime`, `InvokeModel`) — refuse unapproved destructive/mutating requests and explain the safe, approval-gated operator workflow with verification and rollback guidance. **Never** read or print plaintext secrets (`secretsmanager:GetSecretValue`, `ssm:GetParameter` with `WithDecryption=True`, `.env` / `.env.local` values, or raw memory record contents).
+- **Edge-Case Documentation Fallback:** For unmapped AWS/AgentCore/Bedrock/Strands edge cases, run 1–2 focused queries via `agentcore`, `strands-agents`, `awsknowledge`, or `aws-mcp` documentation search tools.
+
 ## Input
 
 `$ARGUMENTS` can be:
@@ -59,15 +65,13 @@ Do NOT use for:
 
 ## Process
 
-### Step 0: Verify CLI version
+### Step 0: Verify CLI version prerequisite
 
-Run `agentcore --version`. This skill requires v0.9.0 or later.
-
-If older: "Run `agentcore update` to get the latest version."
+AgentCore CLI `>= 0.9.0` is required (operators can check locally via `agentcore --version` and upgrade via `agentcore update`).
 
 ### Step 1: Read project context
 
-Read `agentcore/agentcore.json` to understand the current project — framework, existing resources, agent configuration.
+Read `agentcore/agentcore.json` to understand the current project — framework, existing resources, agent configuration (never read `.env` or `agentcore/.env.local`).
 
 If `agentcore/agentcore.json` is not found:
 

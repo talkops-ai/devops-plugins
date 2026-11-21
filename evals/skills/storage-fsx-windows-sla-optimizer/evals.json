@@ -8,7 +8,7 @@
       "files": [],
       "expectations": [
         "Uses aws-mcp (aws___run_script calling read-only sts/fsx operations) and executes zero raw aws CLI shell commands via run_command",
-        "Confirms zero FSx for Windows File Server (WINDOWS) file systems were found in ap-south-1 (account 123456789012)",
+        "Confirms zero FSx for Windows File Server (WINDOWS) file systems were found in ap-south-1 (reporting the resolved AWS account ID)",
         "Reports the empty discovery cleanly without inventing file systems or fabricating SLA findings"
       ]
     },

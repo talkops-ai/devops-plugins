@@ -1,61 +1,95 @@
 {
   "skill_name": "connecting-lambda-to-api-gateway",
   "companion_skills": [
-    "amazon-eventbridge-event-bus",
-    "amazon-eventbridge-scheduler-and-pipes",
-    "amazon-sqs-sns-async-messaging",
-    "api-gateway",
-    "aws-auth-and-environment-preflight"
+    "aws-lambda",
+    "aws-serverless",
+    "connecting-lambda-to-dynamodb",
+    "debugging-lambda-timeouts"
   ],
   "queries": [
     {
-      "id": "trig-exp-01",
+      "id": "trig-pos-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `connecting-lambda-to-api-gateway` to help me design, validate, and troubleshoot connecting lambda to api gateway."
+      "prompt": "Connect our existing `invoice-generator` Lambda function to a new Amazon API Gateway REST API with CORS, `AWS_IAM` auth, and throttling."
     },
     {
-      "id": "trig-exp-02",
+      "id": "trig-pos-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for connecting lambda to api gateway (`connecting-lambda-to-api-gateway`)."
+      "prompt": "Wire an existing AWS Lambda function to API Gateway `POST /invoke` with `AWS_PROXY`, `lambda:InvokeFunction` permissions, and access logging."
     },
     {
-      "id": "trig-imp-01",
+      "id": "trig-pos-03",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Connects an existing AWS Lambda function to Amazon API Gateway by creating a REST or HTTP API with resource/method setup, Lambda proxy integration, permissions, and deployment. Alw"
+      "prompt": "Why is my newly connected API Gateway REST API returning `502 Bad Gateway` (`Malformed Lambda proxy response`) from Lambda?"
     },
     {
-      "id": "trig-imp-02",
+      "id": "trig-pos-04",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating connecting lambda to api gateway?"
+      "prompt": "Fix `Invalid permissions on Lambda function` (`lambda:add-permission` source ARN) and missing `POST` CORS headers on our API Gateway Lambda proxy endpoint."
     },
     {
-      "id": "trig-ctx-01",
+      "id": "trig-pos-05",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our connecting lambda to api gateway setup in read-only mode and highlight top risks."
+      "prompt": "Explain why `put-integration --type AWS_PROXY` requires `--integration-http-method POST` even for a `GET` REST API route."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot amazon eventbridge event bus exclusively without touching connecting lambda to api gateway."
+      "prompt": "Connect our Lambda function to a DynamoDB table with DynamoDB Streams and an Event Source Mapping."
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Debug why our background ETL Lambda function is timing out at 300 seconds in a private VPC."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Route S3 uploads > 6 MB to ECS Fargate and <= 6 MB to Lambda via Step Functions."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Design a single-table DynamoDB GSI schema using `dynamodb_data_model_validation`."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure AWS Direct Connect SiteLink between `us-east-1` and `eu-west-1`."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Audit GuardDuty findings and Security Hub CSPM compliance controls."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Set up multi-window PromQL burn-rate alerts in Amazon Managed Service for Prometheus."
     }
   ]
 }

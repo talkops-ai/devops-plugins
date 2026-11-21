@@ -29,7 +29,7 @@ Do NOT use `AdministratorAccess` or `*:FullAccess` managed policies. Scope write
 
 ## Credential Hygiene
 
-- Prefer short-lived credentials (IAM roles, `ada credentials update`, SSO) over long-lived IAM user keys.
+- Prefer short-lived credentials (IAM roles, SSO) over long-lived IAM user keys.
 - Do NOT create or store long-lived DB passwords from within the skill. If the user's Isengard credentials are expired, prompt them to refresh outside the skill.
 - **IAM auth tokens are approved.** Calling `aws rds generate-db-auth-token` or `rds_client.generate_db_auth_token()` is explicitly safe — these produce short-lived (15-minute) tokens derived from the caller's IAM identity. They are not stored credentials. Use them when IAM database authentication is enabled on the cluster.
 - Do NOT log or echo DB passwords or raw secret values. For RDS Data API precheck runs, reference secrets by their `secretArn` and let the service resolve them.

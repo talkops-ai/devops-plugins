@@ -311,10 +311,15 @@ def classify_run_script(name: str, inp: dict) -> str | None:
 
     # Block dynamic execution/reflection primitives that could obscure AWS mutations
     for node in ast.walk(tree):
-        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id in (
-            "eval", "exec", "compile", "__import__", "getattr",
-        ):
-            return f"{name} (dynamic {node.func.id} in run_script)"
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
+            if node.func.id in ("eval", "exec", "compile", "__import__"):
+                return f"{name} (dynamic {node.func.id} in run_script)"
+            if node.func.id == "getattr":
+                attr_lit = _const_str(node.args[1]) if len(node.args) >= 2 else None
+                tgt = node.args[0] if node.args else None
+                bad_tgt = isinstance(tgt, ast.Name) and tgt.id in ("aws_mcp", "builtins", "__builtins__")
+                if attr_lit is None or attr_lit == "call_boto3" or bad_tgt:
+                    return f"{name} (dynamic getattr in run_script)"
         if isinstance(node, (ast.Import, ast.ImportFrom)):
             mods = [a.name for a in node.names]
             if isinstance(node, ast.ImportFrom) and node.module:
@@ -337,10 +342,64 @@ def classify_run_script(name: str, inp: dict) -> str | None:
     if not boto_calls:
         return None  # Pure Python computation (e.g., CIDR / DNS simulation math) with zero AWS API calls
 
-    # Map enclosing function definitions and constant for-loop tuple bindings
+    # Collect single-assignment constant list/tuple variables (e.g., ops = [("versioning", "GetBucketVersioning"), ...])
+    assign_counts: dict[str, int] = {}
+    seq_candidates: dict[str, ast.List | ast.Tuple] = {}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign):
+            for tgt in node.targets:
+                if isinstance(tgt, ast.Name):
+                    assign_counts[tgt.id] = assign_counts.get(tgt.id, 0) + 1
+                    if isinstance(node.value, (ast.List, ast.Tuple)):
+                        seq_candidates[tgt.id] = node.value
+                elif isinstance(tgt, (ast.Tuple, ast.List)):
+                    for elt in tgt.elts:
+                        if isinstance(elt, ast.Name):
+                            assign_counts[elt.id] = assign_counts.get(elt.id, 0) + 1
+        elif isinstance(node, (ast.AugAssign, ast.AnnAssign)) and isinstance(node.target, ast.Name):
+            assign_counts[node.target.id] = assign_counts.get(node.target.id, 0) + 1
+    const_seqs = {k: v for k, v in seq_candidates.items() if assign_counts.get(k) == 1}
+
+    def _bind_iter_target(
+        target: ast.AST,
+        iter_node: ast.AST,
+        cur_loops: dict[str, list[str]],
+    ) -> dict[str, list[str]]:
+        seq_node: ast.List | ast.Tuple | None = None
+        if isinstance(iter_node, (ast.List, ast.Tuple)):
+            seq_node = iter_node
+        elif isinstance(iter_node, ast.Name) and iter_node.id in const_seqs:
+            seq_node = const_seqs[iter_node.id]
+        if seq_node is None:
+            return cur_loops
+        new_loops = dict(cur_loops)
+        if isinstance(target, ast.Name):
+            vals = [_const_str(el) for el in seq_node.elts]
+            if vals and all(v is not None for v in vals):
+                new_loops[target.id] = [v for v in vals if v is not None]
+        elif isinstance(target, (ast.Tuple, ast.List)) and all(isinstance(t, ast.Name) for t in target.elts):
+            names = [t.id for t in target.elts if isinstance(t, ast.Name)]
+            per_idx: list[list[str]] = [[] for _ in names]
+            ok = bool(seq_node.elts)
+            for el in seq_node.elts:
+                if not (isinstance(el, (ast.Tuple, ast.List)) and len(el.elts) == len(names)):
+                    ok = False
+                    break
+                strs = [_const_str(item) for item in el.elts]
+                if any(s is None for s in strs):
+                    ok = False
+                    break
+                for idx, s in enumerate(strs):
+                    per_idx[idx].append(s or "")
+            if ok:
+                for idx, nm in enumerate(names):
+                    new_loops[nm] = per_idx[idx]
+        return new_loops
+
+    # Map enclosing function definitions and constant for-loop / comprehension bindings for ALL ast.Call nodes
     func_defs: dict[str, ast.FunctionDef | ast.AsyncFunctionDef] = {}
     parent_func: dict[int, ast.FunctionDef | ast.AsyncFunctionDef] = {}
-    loop_bindings: dict[int, dict[str, list[str]]] = {}
+    call_loop_bindings: dict[int, dict[str, list[str]]] = {}
 
     def _walk_scope(
         node: ast.AST,
@@ -351,49 +410,43 @@ def classify_run_script(name: str, inp: dict) -> str | None:
             func_defs[node.name] = node
             cur_fn = node
         if isinstance(node, ast.For):
-            new_loops = dict(cur_loops)
-            if isinstance(node.iter, (ast.List, ast.Tuple)):
-                if isinstance(node.target, ast.Name):
-                    vals = [_const_str(el) for el in node.iter.elts]
-                    if vals and all(v is not None for v in vals):
-                        new_loops[node.target.id] = [v for v in vals if v is not None]
-                elif isinstance(node.target, ast.Tuple) and all(isinstance(t, ast.Name) for t in node.target.elts):
-                    names = [t.id for t in node.target.elts if isinstance(t, ast.Name)]
-                    per_idx: list[list[str]] = [[] for _ in names]
-                    ok = bool(node.iter.elts)
-                    for el in node.iter.elts:
-                        if not (isinstance(el, (ast.Tuple, ast.List)) and len(el.elts) == len(names)):
-                            ok = False
-                            break
-                        strs = [_const_str(item) for item in el.elts]
-                        if any(s is None for s in strs):
-                            ok = False
-                            break
-                        for idx, s in enumerate(strs):
-                            per_idx[idx].append(s or "")
-                    if ok:
-                        for idx, nm in enumerate(names):
-                            new_loops[nm] = per_idx[idx]
-            cur_loops = new_loops
-        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "call_boto3":
+            cur_loops = _bind_iter_target(node.target, node.iter, cur_loops)
+        elif isinstance(node, (ast.ListComp, ast.SetComp, ast.GeneratorExp)):
+            comp_loops = dict(cur_loops)
+            for gen in node.generators:
+                comp_loops = _bind_iter_target(gen.target, gen.iter, comp_loops)
+            cur_loops = comp_loops
+        if isinstance(node, ast.Call):
             if cur_fn is not None:
                 parent_func[id(node)] = cur_fn
-            loop_bindings[id(node)] = cur_loops
+            call_loop_bindings[id(node)] = cur_loops
         for child in ast.iter_child_nodes(node):
             _walk_scope(child, cur_fn, cur_loops)
 
     _walk_scope(tree, None, {})
 
-    def _resolve_fn_arg(call_node: ast.Call, param_names: list[str], target_param: str) -> str | None:
+    def _resolve_expr_strs(expr: ast.AST | None, call_id: int) -> list[str] | None:
+        if expr is None:
+            return None
+        lit = _const_str(expr)
+        if lit is not None:
+            return [lit]
+        if isinstance(expr, ast.Name):
+            bound = call_loop_bindings.get(call_id, {}).get(expr.id)
+            if bound:
+                return bound
+        return None
+
+    def _resolve_fn_arg(call_node: ast.Call, param_names: list[str], target_param: str) -> list[str] | None:
         for kw in call_node.keywords:
             if kw.arg is None:
                 return None
             if kw.arg == target_param:
-                return _const_str(kw.value)
+                return _resolve_expr_strs(kw.value, id(call_node))
         if target_param in param_names:
             idx = param_names.index(target_param)
             if len(call_node.args) > idx:
-                return _const_str(call_node.args[idx])
+                return _resolve_expr_strs(call_node.args[idx], id(call_node))
         return None
 
     resolved_pairs: list[tuple[str, str]] = []
@@ -405,16 +458,8 @@ def classify_run_script(name: str, inp: dict) -> str | None:
         if svc_node is None or op_node is None:
             return f"{name} (missing service/operation in call_boto3)"
 
-        svc_lit = _const_str(svc_node)
-        op_lit = _const_str(op_node)
-        if svc_lit is not None and op_lit is not None:
-            resolved_pairs.append((svc_lit, op_lit))
-            continue
-
-        # Check constant for-loop variables
-        lmap = loop_bindings.get(id(bcall), {})
-        svcs = [svc_lit] if svc_lit is not None else (lmap.get(svc_node.id) if isinstance(svc_node, ast.Name) else None)
-        ops = [op_lit] if op_lit is not None else (lmap.get(op_node.id) if isinstance(op_node, ast.Name) else None)
+        svcs = _resolve_expr_strs(svc_node, id(bcall))
+        ops = _resolve_expr_strs(op_node, id(bcall))
         if svcs and ops:
             for s in svcs:
                 for o in ops:
@@ -429,7 +474,7 @@ def classify_run_script(name: str, inp: dict) -> str | None:
             all_params = pnames + kwonly
             svc_param = svc_node.id if isinstance(svc_node, ast.Name) and svc_node.id in all_params else None
             op_param = op_node.id if isinstance(op_node, ast.Name) and op_node.id in all_params else None
-            if (svc_lit is not None or svc_param is not None) and (op_lit is not None or op_param is not None):
+            if (svcs is not None or svc_param is not None) and (ops is not None or op_param is not None):
                 fn_refs = [n for n in ast.walk(tree) if isinstance(n, ast.Name) and n.id == enclosing.name]
                 fn_calls = [
                     n for n in ast.walk(tree)
@@ -438,11 +483,13 @@ def classify_run_script(name: str, inp: dict) -> str | None:
                 if len(fn_refs) != len(fn_calls):
                     return f"{name} (aliased wrapper {enclosing.name} in run_script)"
                 for fcall in fn_calls:
-                    s_val = svc_lit if svc_lit is not None else _resolve_fn_arg(fcall, pnames, svc_param or "")
-                    o_val = op_lit if op_lit is not None else _resolve_fn_arg(fcall, pnames, op_param or "")
-                    if s_val is None or o_val is None:
+                    s_vals = svcs if svcs is not None else _resolve_fn_arg(fcall, pnames, svc_param or "")
+                    o_vals = ops if ops is not None else _resolve_fn_arg(fcall, pnames, op_param or "")
+                    if not s_vals or not o_vals:
                         return f"{name} (dynamic wrapper {enclosing.name} call in run_script)"
-                    resolved_pairs.append((s_val, o_val))
+                    for s_v in s_vals:
+                        for o_v in o_vals:
+                            resolved_pairs.append((s_v, o_v))
                 continue
 
         return f"{name} (dynamic call_boto3 arguments in run_script)"

@@ -1,9 +1,11 @@
 ---
 name: eks-post-upgrade-validation-and-rollback
-description: Executes read-only post-upgrade functional smoke validation against pre-upgrade cluster baselines, triages stalled or degraded EKS control-plane and node-group upgrades (PodEvictionFailure, InsufficientInstanceCapacity, ConfigurationConflict, IpamdNotReady), and evaluates 7-day EKS control-plane ROLLBACK_READINESS insights with reverse-order component rollback runbooks.
+description: "Executes read-only post-upgrade functional smoke validation against pre-upgrade cluster baselines, triages stalled or degraded EKS control-plane and node-group upgrades (PodEvictionFailure, InsufficientInstanceCapacity, ConfigurationConflict, NodeCreationFailure), and evaluates 7-day EKS control-plane ROLLBACK_READINESS insights with reverse-order component rollback runbooks. Do NOT use for pre-upgrade Extended Support surcharge forecasting, AL2 bootstrap.sh-to-nodeadm OS migration, or Karpenter v1 CRD authoring. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # EKS Post-Upgrade Validation, Stuck-Upgrade Triage & Rollback
+
+> **MCP-Only Live AWS Execution:** Execute ALL live AWS API discovery, EKS cluster/update/insight checks, and CloudWatch log/metric queries strictly via connected MCP tools (`aws-mcp`, `aws-api`, `eks`, `cloudwatch`, `aws-documentation-mcp`) — **never invoke raw `aws ...` CLI commands in shell (`run_command`)**.
 
 Strictly **read-only** verification, incident triage, and rollback eligibility skill for Amazon EKS upgrades.
 

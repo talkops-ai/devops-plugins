@@ -1,61 +1,95 @@
 {
   "skill_name": "aws-crossplane",
   "companion_skills": [
+    "aws-terraform",
+    "aws-containers",
     "aws-brownfield-migration",
-    "aws-cdk",
-    "aws-cloudformation",
-    "aws-deployment",
-    "aws-finops-and-cost"
+    "aws-deployment"
   ],
   "queries": [
     {
-      "id": "trig-exp-01",
+      "id": "trig-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `aws-crossplane` to help me design, validate, and troubleshoot aws crossplane."
+      "prompt": "Write a Crossplane `CompositeResourceDefinition` (XRD) and pipeline-mode `Composition` using Upbound `provider-aws-s3` and `function-auto-ready`."
     },
     {
-      "id": "trig-exp-02",
+      "id": "trig-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for aws crossplane (`aws-crossplane`)."
+      "prompt": "Validate our Crossplane XR and Composition offline with `crossplane render` and `crossplane beta validate` before applying to EKS."
     },
     {
-      "id": "trig-imp-01",
+      "id": "trig-03",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Designs, authors, renders, and validates production-grade Crossplane v1.20 / v2 control-plane configurations targeting AWS with the Upbound provider-family-aws ecosystem, IRSA/Pod"
+      "prompt": "Configure Upbound `provider-family-aws` `ProviderConfig` with EKS Pod Identity / IRSA and ArgoCD sync waves without drift loops."
     },
     {
-      "id": "trig-imp-02",
+      "id": "trig-04",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating aws crossplane?"
+      "prompt": "Debug why our Crossplane `XDatabase` claim is stuck at `SYNCED=True, READY=False` using `crossplane beta trace`."
     },
     {
-      "id": "trig-ctx-01",
+      "id": "trig-05",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our aws crossplane setup in read-only mode and highlight top risks."
+      "prompt": "Configure `vpcIdSelector` and `writeConnectionSecretToRef` on Upbound Crossplane RDS and Subnet managed resources."
     },
     {
-      "id": "trig-neg-01",
-      "quadrant": "near_miss_negative",
-      "split": "train",
-      "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot aws brownfield migration exclusively without touching aws crossplane."
-    },
-    {
-      "id": "trig-neg-02",
+      "id": "trig-06",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Diagnose `OOMKilled` and `ImagePullBackOff` pods in an application namespace on Amazon EKS."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Write a Terraform Stack (`.tfstack.hcl`) deploying multi-region VPCs with `hashicorp/aws`."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Synthesize an AWS CDK v2 EKS blueprint stack and run `cdk-nag` compliance checks."
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Migrate a Docker Compose Node.js app to AWS App Runner using Launch with AWS."
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Set up Amazon Keyspaces auto-scaling and point-in-time recovery for Cassandra tables."
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Create an AWS WAFv2 rate-based rule blocking credential stuffing on `/api/login`."
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Enable AWS Secrets Manager automatic rotation for an RDS SQL Server master credential."
     }
   ]
 }

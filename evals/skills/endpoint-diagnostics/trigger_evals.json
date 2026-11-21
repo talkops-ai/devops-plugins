@@ -1,11 +1,11 @@
 {
   "skill_name": "endpoint-diagnostics",
   "companion_skills": [
-    "aiml-access-diagnostics",
-    "aiml-gpu-training-cluster-investigation",
-    "bedrock-adoption-readiness",
-    "bedrock-operation-review",
-    "dataset-evaluation"
+    "sagemaker-observability-governance",
+    "model-deployment",
+    "sagemaker-inference-architect",
+    "finetuning",
+    "sagemaker-cost-estimator"
   ],
   "queries": [
     {
@@ -13,50 +13,87 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `endpoint-diagnostics` to design, validate, and troubleshoot endpoint diagnostics."
+      "prompt": "Run a read-only diagnostic check on our failing SageMaker endpoint `fraud-xgb-prod` in `ap-south-1` — pull variant status, latency/error metrics, GPU/memory utilization, and recent container logs."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through production best practices and operational guardrails for endpoint diagnostics (`endpoint-diagnostics`)."
+      "prompt": "Why is our SageMaker real-time endpoint throwing HTTP `424 ModelError` and `CUDA out of memory` crashes?"
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Diagnose why our SageMaker endpoint deployment is stuck in `Failed` status with `did not pass the ping health check`."
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need an operational review and step-by-step runbook covering: Collects deterministic, read-only diagnostic information from a SageMaker AI endpoint using documented AWS APIs and CloudWatch MCP tools. Returns endpoint status, ProductionVariant"
+      "prompt": "Latency on our `ml.g5.2xlarge` SageMaker endpoint jumped from 200ms to 7 seconds — check whether `ModelLatency` or `OverheadLatency` is the culprit."
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the critical failure modes, configuration checks, and verification commands for endpoint diagnostics?"
+      "prompt": "Inspect `ProductionVariants`, `GPUMemoryUtilization`, `Invocation4XXErrors` vs `Invocation5XXErrors`, and the last 15 minutes of `/aws/sagemaker/Endpoints/` logs for `rec-engine-v3`."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Our Inference Component endpoint is returning `NoCapacityInvocationFailures` and slow cold-start spikes — collect a read-only health snapshot."
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our endpoint diagnostics setup in read-only mode."
+      "prompt": "PagerDuty alert: `Invocation5XXErrors > 10` on SageMaker endpoint `llama-summary-ep` in Mumbai — find out if the container OOM'd or timed out without touching live config."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "An engineer queried `AWS/SageMaker` without `VariantName` and read `ModelLatency = 350000` as 350 seconds while debugging our endpoint outage — verify the real metrics."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "`DescribeEndpoint` shows `CapacityError: Unable to provision requested ML compute capacity` on `ml.g5.12xlarge` — diagnose and recommend safe next steps."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Configure and troubleshoot aiml access diagnostics exclusively without touching endpoint diagnostics.",
-      "expected_alternative_skill": "aiml-access-diagnostics"
+      "prompt": "Configure hourly SageMaker Model Monitor Data Quality, Model Quality ground-truth joins (`StartTimeOffset: -PT24H`), and Clarify SHAP attribution drift schedules.",
+      "expected_alternative_skill": "sagemaker-observability-governance"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+      "prompt": "Deploy our merged LoRA weights (`checkpoints/hf_merged/`) to Amazon Bedrock using `BedrockModelBuilder`.",
+      "expected_alternative_skill": "model-deployment"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Calculate a monthly `COST_ESTIMATE.md` comparing `InferenceComponent` bin-packing + Scale-to-Zero vs dedicated `ml.g5` endpoints in `ap-south-1`.",
+      "expected_alternative_skill": "sagemaker-cost-estimator"
     }
   ]
 }

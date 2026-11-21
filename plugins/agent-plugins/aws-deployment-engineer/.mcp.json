@@ -1,5 +1,21 @@
 {
   "mcpServers": {
+    "aws-mcp": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "mcp-proxy-for-aws-cli==1.7.0",
+        "https://aws-mcp.us-east-1.api.aws/mcp",
+        "--region",
+        "us-east-1",
+        "--metadata",
+        "INSTALL_SOURCE=agent-toolkit-core"
+      ],
+      "env": {
+        "AWS_REGION": "us-east-1",
+        "AWS_DEFAULT_REGION": "us-east-1"
+      }
+    },
     "awsknowledge": {
       "type": "http",
       "url": "https://knowledge-mcp.global.api.aws"

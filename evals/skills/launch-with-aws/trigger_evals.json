@@ -1,61 +1,95 @@
 {
   "skill_name": "launch-with-aws",
   "companion_skills": [
+    "iac-architecture-advisor",
+    "deploy",
     "aws-blocks",
-    "aws-brownfield-migration",
-    "aws-cdk",
-    "aws-cloudformation",
-    "aws-crossplane"
+    "aws-brownfield-migration"
   ],
   "queries": [
     {
-      "id": "trig-exp-01",
+      "id": "trig-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `launch-with-aws` to help me design, validate, and troubleshoot launch with aws."
+      "prompt": "Migrate our existing Heroku Express + PostgreSQL codebase to AWS using the `launch_with_aws.py` workflow."
     },
     {
-      "id": "trig-exp-02",
+      "id": "trig-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for launch with aws (`launch-with-aws`)."
+      "prompt": "Our Launch with AWS job is in `awaiting_input` status \u2014 refine the migration plan to use App Runner and Aurora Serverless v2."
     },
     {
-      "id": "trig-imp-01",
+      "id": "trig-03",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Migrates vibe-coded web applications to AWS. Handles the full workflow from analysis through migration to deployment, producing deployable AWS Blocks infrastructure code. Supports"
+      "prompt": "Download our completed Launch with AWS migration archive and apply it to our local repo via a 3-way Git merge without losing recent commits."
     },
     {
-      "id": "trig-imp-02",
+      "id": "trig-04",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating launch with aws?"
+      "prompt": "List my active Launch with AWS migration jobs and explain what files `archive.py` excludes before calling `create-launch`."
     },
     {
-      "id": "trig-ctx-01",
+      "id": "trig-05",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our launch with aws setup in read-only mode and highlight top risks."
+      "prompt": "Use Launch with AWS to convert our Render `render.yaml` Python Flask + Redis app into AWS infrastructure and cloud bindings."
     },
     {
-      "id": "trig-neg-01",
-      "quadrant": "near_miss_negative",
-      "split": "train",
-      "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot aws blocks exclusively without touching launch with aws."
-    },
-    {
-      "id": "trig-neg-02",
+      "id": "trig-06",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Scaffold a brand-new greenfield Next.js app from scratch using `npx @aws-blocks/create-blocks-app my-app`."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Import 10 existing unmanaged ClickOps EC2 instances and RDS databases into Terraform `import {}` blocks."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Troubleshoot a failed CloudFormation `UPDATE_ROLLBACK_FAILED` stack and inspect failed logical resources."
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure Crossplane Upbound AWS ProviderConfig with EKS Pod Identity."
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Optimize DynamoDB global secondary index write sharding for high-cardinality order events."
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure AWS WAF Bot Control and rate-limiting rules on CloudFront."
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Investigate why Amazon Aurora DSQL rejected an OCC concurrent DDL transaction with `SQLState 40001`."
     }
   ]
 }

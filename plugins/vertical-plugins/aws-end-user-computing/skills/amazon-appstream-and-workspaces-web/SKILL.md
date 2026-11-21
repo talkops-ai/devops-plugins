@@ -1,6 +1,6 @@
 ---
 name: amazon-appstream-and-workspaces-web
-description: "Design, deploy, and operate Amazon AppStream 2.0 (Always-On, On-Demand, and Elastic Fleets, Image Builder, Application Entitlements) and Amazon WorkSpaces Secure Browser (WorkSpaces Web) for zero-trust browser isolation."
+description: "Design, deploy, and operate Amazon AppStream 2.0 (Always-On, On-Demand, and Elastic Fleets, Image Builder, Application Entitlements) and Amazon WorkSpaces Secure Browser (WorkSpaces Web) for zero-trust browser isolation. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # Amazon AppStream 2.0 & WorkSpaces Secure Browser Operations

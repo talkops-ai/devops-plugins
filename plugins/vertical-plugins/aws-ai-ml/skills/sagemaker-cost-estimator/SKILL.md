@@ -17,6 +17,12 @@ metadata:
 
 Protects engineering teams from runaway GPU bills by querying live regional rates from the `awspricing` MCP server and modeling architectural cost optimizations before any compute is provisioned.
 
+## MCP-Only Execution & Read-Only Safety
+
+- **MCP-Only Live Queries:** Execute **all** live AWS discovery, Bedrock/SageMaker control-plane checks, pricing lookups, IaC compliance checks, CloudWatch telemetry queries, and documentation searches **exclusively via connected MCP tools**: `aws-mcp` (`aws___run_script` using read-only `await call_boto3(...)`, `aws___search_documentation`, `aws___read_documentation`), `sagemaker` (`describe_hp_cluster`), `agentcore`, `strands-agents`, `cloudwatch`, `awspricing` (`get_pricing`, `get_bedrock_patterns`), `awsiac`, and `awsknowledge`. Offline pure-Python bundled helper scripts in `scripts/*.py` that perform local math/schema rendering without live AWS credentials are permitted when inspecting local inputs, whereas live AWS API queries must go through MCP rather than raw `aws` CLI or boto3 shell scripts.
+- **Strict Read-Only & Secret Safety:** **Never** run raw `aws ...` (not even `aws sts get-caller-identity` — always query `sts.GetCallerIdentity` inside `aws___run_script`) CLI commands in Bash/`run_command`, **never** mutate live AWS resources (`Create*`, `Update*`, `Delete*`, `InvokeModel`, `CreateEndpoint` — refuse unapproved mutations and present a safe, approval-gated FinOps/provisioning plan), and **never** read or expose plaintext secrets (`secretsmanager:GetSecretValue`, `ssm:GetParameter` with `WithDecryption=True`, or `.env` API keys).
+- **Unmapped Edge Cases:** Query `awsknowledge` / `aws-mcp` documentation search tools (`aws___search_documentation`, `aws___read_documentation`) with 1–2 focused queries before recommending unverified pricing attributes or SKU filters.
+
 ## Core Principles
 
 1. **Never Hallucinate Static Prices**: Always query the `awspricing` MCP server (`get_pricing`, `get_pricing_service_codes`, `get_pricing_service_attributes`, `get_pricing_attribute_values`) for the user's target AWS region (`us-east-1`, `us-west-2`, `eu-west-1`, etc.).
@@ -55,20 +61,20 @@ Apply the formulas in `references/sagemaker-finops-formulas.md`:
 1. **Training Optimization**:
    - **Baseline**: On-Demand `CreateTrainingJob` ($N \times \text{Rate}_{\text{OD}} \times T$)
    - **Optimization A (Managed Spot Training)**: `EnableManagedSpotTraining=True` with S3 checkpointing (typically **60%–90% discount**; query current Spot savings or model conservative 65%–70% discount)
-   - **Optimization B (AWS Trainium)**: `ml.trn1` / `ml.trn2` vs `ml.p4d` / `ml.g5` (up to **50% lower cost-to-train**)
+   - **Optimization B (AWS Trainium)**: Always surface `ml.trn1` / `ml.trn2` vs `ml.p4d` / `ml.g5` (up to **50% lower cost-to-train**) as an architectural alternative whenever estimating GPU training jobs
 2. **Inference Optimization**:
    - **Baseline (Naive 1-Model-Per-Endpoint)**: $M \times 730\,\text{hrs} \times \text{Rate}_{\text{Host}}$
    - **Optimization A (`InferenceComponent` Multi-Model Bin-Packing)**: Pack multiple models/adapters onto shared `ml.g5.12xlarge` / `ml.g6e.12xlarge` instances using `ComputeResourceRequirements` (`AcceleratorChips`, `MemoryInMB`) and `CopyCount` (**40%–80% reduction in instance count**)
    - **Optimization B (`InferenceComponent` Scale-to-Zero)**: Set `MinCapacity=0` on `SageMakerVariantInvocationsPerCopy` so idle models scale down to 0 copies and the underlying endpoint scales to **0 instances ($0/hr compute)** outside active traffic hours
    - **Optimization C (AWS Inferentia2 `ml.inf2`)**: Compile/serve on `ml.inf2.xlarge` / `ml.inf2.8xlarge` / `ml.inf2.24xlarge` for **35%–50% lower price-performance** vs comparable GPU instances
-   - **Optimization D (Serverless / Async / Bedrock Crossover)**: Calculate the exact daily request/token threshold below which Serverless Inference, Asynchronous Inference (with `MinCapacity=0`), or Amazon Bedrock is cheaper than a 24/7 Real-Time Endpoint.
+   - **Optimization D (Serverless / Async / Bedrock Crossover)**: Calculate the exact break-even utilization (`U_break-even = R_realtime_hr / (3600 × R_serverless_sec)` plus Serverless inference request charges `~$0.20 / 1M requests`, typically crossing over around **~20%–25% daily utilization**; always state Serverless limits: **`≤ 6 GB` RAM max, CPU-only, `≤ 4 MB` payload, `60s` timeout**) and Asynchronous Inference mechanics (**up to `1 GB` S3 payloads, up to `1 hr` timeout**, scaling `MinCapacity=0` to `$0/hr` when the S3 queue drains).
 3. **Commitment & Credit Strategy**:
    - **SageMaker Savings Plans**: 1-year or 3-year commitment (No Upfront, Partial Upfront, All Upfront) offering **up to 64% discount** across Studio, Training, Real-Time Inference, and Batch Transform regardless of instance family or region.
    - **AWS Activate / POC Credits**: Note how startup/POC credits apply to SageMaker compute vs Marketplace third-party model subscriptions (Marketplace software fees are typically excluded from standard Activate credits).
 
-### Step 4: Write `COST_ESTIMATE.md`
+### Step 4: Render Cost Estimate Report (`COST_ESTIMATE.md` Format)
 
-Save `COST_ESTIMATE.md` in the project directory with:
+**Always render the complete cost estimate report directly inline in your final response** (only write `COST_ESTIMATE.md` to disk if the user explicitly asks to save a file — never rely solely on an external artifact/file link):
 
 1. **Live Pricing Table** (Region, Service Code, Instance/Resource Type, Unit Rate, Timestamp of `awspricing` lookup)
 2. **Component Breakdown** (Studio Spaces + Storage, Training Jobs, Inference Hosting, MLOps/Observability)

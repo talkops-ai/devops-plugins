@@ -10,50 +10,87 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `braket-cost-governance-and-security` to design, validate, and troubleshoot braket cost governance and security."
+      "prompt": "Calculate the pre-execution QPU task and shot cost for a 100-iteration, 20-parameter VQE run using parameter-shift gradients on Amazon Braket and set up per-device spending limits."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through production best practices and operational guardrails for braket cost governance and security (`braket-cost-governance-and-security`)."
+      "prompt": "Harden our `amazon-braket-us-east-1` S3 bucket with SSE-KMS, `PublicAccessBlock`, TLS-only policies, and private `VpcConfig` PrivateLink endpoints for Braket Hybrid Jobs."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Audit our Amazon Braket IAM roles, `CreateSpendingLimit` / `DeleteSpendingLimit` guardrails, and EventBridge `Braket Task State Change` alerting so researchers cannot run up surprise QPU bills."
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need an operational review and step-by-step runbook covering: Enforce pre-execution QPU and simulator cost estimation, budget circuit breakers, S3 KMS encryption, VPC private networking, and IAM least-privilege execution roles for Amazon Brak"
+      "prompt": "Will `braket.tracking.Tracker().start()` automatically reject QPU tasks on AWS once our lab hits a $300 monthly budget, or do we need a server-side Braket guardrail?"
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the critical failure modes, configuration checks, and verification commands for braket cost governance and security?"
+      "prompt": "Why did running 5,000 sub-second circuits on `SV1` bill us for 250 minutes of simulator time, and why is our `ml.g5.2xlarge` Hybrid Job billing while stuck in an offline QPU queue?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Replace our overnight notebook `while job.state()` polling loop for Braket quantum tasks with zero-idle-cost EventBridge state-change notifications."
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our braket cost governance and security setup in read-only mode."
+      "prompt": "List the exact VPC Interface and Gateway Endpoints needed to run air-gapped Amazon Braket Hybrid Jobs with `VpcConfig` and zero NAT Gateway egress."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Design a least-privilege IAM policy replacing `AmazonBraketFullAccess` that locks researchers out of `DeleteSpendingLimit` and `UpdateSpendingLimit` while auditing changes in CloudTrail."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Review our Braket security checklist: KMS encryption on `/aws/braket/jobs` CloudWatch logs, `amazon-braket-*` S3 confused-deputy bucket conditions, and keeping API keys out of Hybrid Job `hyperparameters`."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Configure and troubleshoot amazon braket exclusively without touching braket cost governance and security.",
-      "expected_alternative_skill": "amazon-braket"
+      "prompt": "Write an Analog Hamiltonian Simulation (`braket.ahs`) Rydberg atom lattice arrangement for Maximum Independent Set on QuEra Aquila.",
+      "expected_alternative_skill": "braket-hybrid-jobs-and-algorithms"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+      "prompt": "Set up AWS Cost Anomaly Detection and Savings Plans coverage alerts for our production Amazon RDS Aurora PostgreSQL and EC2 fleet.",
+      "expected_alternative_skill": "none"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Package a Python FastAPI app with AWS Lambda Web Adapter in `template.yaml` and configure SQS partial batch failure reporting.",
+      "expected_alternative_skill": "serverless-sam-deploy"
     }
   ]
 }

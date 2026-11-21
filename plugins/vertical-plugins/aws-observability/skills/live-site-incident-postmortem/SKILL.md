@@ -1,9 +1,11 @@
 ---
 name: live-site-incident-postmortem
-description: Coordinate Sev-1/Sev-2 AWS live-site incident command and author blameless Correction of Errors (COE) / Postmortem documents with UTC timelines, 5-Whys root-cause analysis, blast-radius quantification, and tracked preventive action items. Use when the user asks for an incident postmortem, COE document, RCA report, incident timeline reconstruction, or live-site war-room coordination.
+description: "Coordinate Sev-1/Sev-2 AWS live-site incident command and author blameless Correction of Errors (COE) / Postmortem documents with UTC timelines, 5-Whys root-cause analysis, blast-radius quantification, and tracked preventive action items. Use when the user asks for an incident postmortem, COE document, RCA report, incident timeline reconstruction, or live-site war-room coordination. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # Live-Site Incident Command & Correction of Errors (COE) Postmortem Guide
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, caller/account verification (`sts:GetCallerIdentity`), resource inspection, logs/metrics queries, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___call_aws` / `aws___run_script`, `cloudwatch`, `cloudtrail`, `prometheus`, `dynamodb`, `serverless`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**.
 
 Use this skill during active **Sev-1 / Sev-2 live-site incident response** ("stop the bleeding first") and after mitigation to generate an Amazon-style **Correction of Errors (COE) / Blameless Postmortem** backed by exact UTC telemetry and change history.
 

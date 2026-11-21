@@ -1,16 +1,12 @@
 ---
 name: processing-s3-uploads-with-step-functions
-description: >
-  Deploy an event-driven workflow that routes S3 uploads to either Lambda or Fargate
-  via Step Functions based on file size. Uses EventBridge to trigger a Step Functions
-  state machine when objects are uploaded to S3. Small files are processed by Lambda,
-  large files by a Fargate task. Includes VPC, ECR repository, ECS cluster, and scoped
-  IAM roles. Trigger keywords: Step Functions, Fargate, Lambda, S3 event, EventBridge,
-  ECS, ECR, file processing, workflow orchestration, serverless.
+description: "Deploy an event-driven workflow that routes S3 uploads to either Lambda or Fargate via Step Functions based on file size. Uses EventBridge to trigger a Step Functions state machine when objects are uploaded to S3. Small files are processed by Lambda, large files by a Fargate task. Includes VPC, ECR repository, ECS cluster, and scoped IAM roles. Trigger keywords: Step Functions, Fargate, Lambda, S3 event, EventBridge, ECS, ECR, file processing, workflow orchestration, serverless. Query live AWS state via MCP tools only (never raw aws CLI)."
 version: 1
 ---
 
 # Step Functions Workflow: Route S3 Uploads to Lambda or Fargate
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, caller/account verification (`sts:GetCallerIdentity`), resource inspection, logs/metrics queries, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___call_aws` / `aws___run_script`, `cloudwatch`, `cloudtrail`, `prometheus`, `dynamodb`, `serverless`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**.
 
 ## Overview
 
@@ -69,7 +65,7 @@ Constraints for parameter acquisition:
 
 Constraints:
 
-- You MUST verify the following tools are available: aws-cli, python3 (3.12+), docker
+- You MUST verify the following tools are available: connected AWS MCP (`call_aws`), python3 (3.12+), docker
 - You MUST inform the user about any missing tools with a clear message
 - You MUST ask if the user wants to proceed despite missing tools
 - You MUST respect the customer's decision to abort at any point
@@ -79,7 +75,7 @@ Constraints:
 
 Constraints:
 
-- You MUST retrieve the account ID with: `aws sts get-caller-identity --query 'Account' --output text`
+- You MUST retrieve the account ID via connected AWS MCP (`call_aws` `sts get-caller-identity`), never raw `aws` CLI in shell
 - You MUST store the result as {account_id} for use in all subsequent steps
 - You MUST abort if credentials are not configured
 

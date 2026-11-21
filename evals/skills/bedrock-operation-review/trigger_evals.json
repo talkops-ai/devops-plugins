@@ -1,54 +1,99 @@
 {
   "skill_name": "bedrock-operation-review",
   "companion_skills": [
-    "agentcore-observability-setup",
+    "bedrock-adoption-readiness",
     "agentcore-ops-review",
-    "agents-build",
-    "agents-connect",
-    "agents-debug"
+    "arize-incident-investigation",
+    "amazon-bedrock",
+    "aws-ai-ml"
   ],
   "queries": [
     {
-      "id": "trig-pos-01",
+      "id": "trig-exp-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Which skill would help me run a Bedrock operational review? Just name it; do not run it."
+      "prompt": "Run a 5-pillar Well-Architected Amazon Bedrock Operational Review (ORR) of our account in ap-south-1."
     },
     {
-      "id": "trig-pos-02",
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Perform a Bedrock best-practices audit covering Security, Performance, Service Quotas, Cost Optimization, and Resilience."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Review our Bedrock workload's Guardrail intervention rates, Knowledge Base chunking/KMS posture, Prompt Caching offload %, and CRIS adoption."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Audit our deployed Bedrock account to check if our Prompt Caching writes have zero cache reads (`Misconfigured`), whether Batch Inference or Model Distillation applies, and if any invoked models are `Legacy`."
+    },
+    {
+      "id": "trig-imp-02",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Is there a skill available for auditing Amazon Bedrock workloads against best practices? Answer yes or no with the skill name; do not execute it."
+      "prompt": "Evaluate our Bedrock operational health and self-managed `p5.48xlarge` DCGM GPU utilization (`CWAgent` `nvidia_smi_utilization_gpu`) for Trainium2 or Savings Plan opportunities."
     },
     {
-      "id": "trig-pos-03",
-      "quadrant": "explicit",
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Generate `bedrock-review-<account>-<region>-<date>.md` summarizing our Bedrock throttling, latency, Application Inference Profile cost tags, and guardrail tuning."
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Name the skill that covers Bedrock security, cost optimization, and quota reviews. Do not run any audit."
+      "prompt": "We've been running Classic Bedrock Agents, Knowledge Bases, and Claude Sonnet in `us-east-1` for 6 months — run a comprehensive GenAI operational & cost optimization health check."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Our TAM wants a Well-Architected Bedrock review checking why `InvocationsIntervened` hit 22% on our guardrail and whether our Classic Bedrock Agent qualifies for latency-optimized flow."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Sweep `ap-south-1` for active Bedrock usage (without being fooled by `ListFoundationModels`) and produce a 5-pillar best-practices report if active."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Write a Python script that sorts a list of numbers"
+      "prompt": "Audit our AgentCore Runtimes (`AC-RUN-1..4`), Gateways (`GW-01`), and Long-Term Memory ingestion error rates (`AC-MEM-1..4`).",
+      "expected_alternative_skill": "agentcore-ops-review"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "What's the weather forecast for Sydney this weekend?"
+      "prompt": "Investigate a triggered Arize AX hallucination monitor by reconstructing OpenInference trace trees (`context.trace_id`) and checking `DECISION_JUDGE_EVALUATION` tasks.",
+      "expected_alternative_skill": "arize-incident-investigation"
     },
     {
       "id": "trig-neg-03",
       "quadrant": "near_miss_negative",
-      "split": "train",
+      "split": "val",
       "should_trigger": false,
-      "prompt": "Create a CloudFormation template for an S3 bucket"
+      "prompt": "Assess our Zero Data Retention (ZDR) regimes across Claude Covered Models (`Mythos 5`, `Fable 5`) and OpenAI Mantle (`AWS/BedrockMantle`) plus Organization SCPs for a Go/No-Go launch gate.",
+      "expected_alternative_skill": "bedrock-adoption-readiness"
     }
   ]
 }

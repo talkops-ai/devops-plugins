@@ -1,14 +1,11 @@
 ---
 name: auditing-cloudtrail-forensics
-description: >-
-  Executes AWS CloudTrail forensic investigations, management and data event timeline
-  reconstruction, CloudTrail Lake SQL queries, `AccessDenied` spike analysis, root account
-  activity checks, and `aws:CalledViaAWSMCP` AI agent audit trails. Use when the user asks
-  "who changed or deleted this resource", "audit CloudTrail events", "investigate suspicious
-  IAM activity", or needs forensic evidence during incident or security triage.
+description: "Executes AWS CloudTrail forensic investigations, management and data event timeline reconstruction, CloudTrail Lake SQL queries, `AccessDenied` spike analysis, root account activity checks, and `aws:CalledViaAWSMCP` AI agent audit trails. Use when the user asks \"who changed or deleted this resource\", \"audit CloudTrail events\", \"investigate suspicious IAM activity\", or needs forensic evidence during incident or security triage. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # CloudTrail Security Forensics & Audit Trail Analysis
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, caller/account verification (`sts:GetCallerIdentity`), resource inspection, logs/metrics queries, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___call_aws` / `aws___run_script`, `cloudwatch`, `cloudtrail`, `prometheus`, `dynamodb`, `serverless`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**.
 
 ## When to Use
 Invoke this skill whenever you need to answer **"Who did what, when, from where, and how?"** in an AWS account: investigating unauthorized infrastructure mutations, tracing compromised IAM credentials, auditing root user logins, diagnosing `AccessDenied` spikes, or auditing AI agent actions via `aws:CalledViaAWSMCP`.

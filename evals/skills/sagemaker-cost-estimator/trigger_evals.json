@@ -1,11 +1,11 @@
 {
   "skill_name": "sagemaker-cost-estimator",
   "companion_skills": [
-    "aiml-access-diagnostics",
-    "aiml-gpu-training-cluster-investigation",
-    "bedrock-adoption-readiness",
-    "bedrock-operation-review",
-    "dataset-evaluation"
+    "sagemaker-solution-architect",
+    "sagemaker-inference-architect",
+    "sagemaker-training-architect",
+    "sagemaker-domain-vpc-iac",
+    "endpoint-diagnostics"
   ],
   "queries": [
     {
@@ -13,50 +13,87 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `sagemaker-cost-estimator` to design, validate, and troubleshoot sagemaker cost estimator."
+      "prompt": "Generate a `COST_ESTIMATE.md` FinOps comparison in `ap-south-1` for hosting 8 fine-tuned models on dedicated `ml.g5` endpoints vs `InferenceComponent` bin-packing with Scale-to-Zero."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through production best practices and operational guardrails for sagemaker cost estimator (`sagemaker-cost-estimator`)."
+      "prompt": "Calculate the monthly SageMaker Studio TCO (compute + 24/7 Space EBS and Domain EFS storage) for 25 data scientists in Mumbai with `IdleTimeoutInMinutes: 60`."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Compare Managed Spot Training vs On-Demand vs Trainium (`ml.trn1`) pricing and Warm Pool tail costs for a 16-hour multi-node SageMaker training job."
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need an operational review and step-by-step runbook covering: Calculates pre-provisioning FinOps cost estimates and architectural savings comparisons for Amazon SageMaker AI workloads using live queries to the awspricing MCP server. Covers St"
+      "prompt": "At what daily request volume does a dedicated SageMaker `ml.g6e` endpoint become cheaper than pay-per-token Amazon Bedrock `Converse`?"
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the critical failure modes, configuration checks, and verification commands for sagemaker cost estimator?"
+      "prompt": "Why is our SageMaker Studio bill still charging hundreds of dollars a month even though all our JupyterLab and CodeEditor apps are stopped?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Compute the break-even utilization percentage between SageMaker Serverless Inference (`4096 MB`) and a `24/7` `ml.m5.large` real-time endpoint."
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our sagemaker cost estimator setup in read-only mode."
+      "prompt": "Before our CFO approves provisioning 4 `ml.g5.12xlarge` endpoints and a Studio Domain in `ap-south-1`, pull live SKU rates and model 1-year SageMaker Savings Plan discounts."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "We have `$50,000` in AWS Activate credits — check whether Activate covers AWS Marketplace 3P model fees and estimate burn rate for Batch Transform vs Real-Time hosting."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Quantify how much we'd save migrating our `ml.g5` LLM endpoint to AWS Inferentia2 (`ml.inf2`) in `ap-south-1` using live pricing."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Configure and troubleshoot aiml access diagnostics exclusively without touching sagemaker cost estimator.",
-      "expected_alternative_skill": "aiml-access-diagnostics"
+      "prompt": "Write AWS CDK TypeScript (`CfnDomain`, `CfnUserProfile`, `CfnSpace`) for a `VpcOnly` SageMaker Studio Domain with 7 PrivateLink endpoints and 5-persona IAM roles.",
+      "expected_alternative_skill": "sagemaker-domain-vpc-iac"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+      "prompt": "Pull a read-only diagnostic snapshot (`ModelLatency`, `GPUMemoryUtilization`, and container logs) for our failing `InService` endpoint.",
+      "expected_alternative_skill": "endpoint-diagnostics"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a PyTorch `train.py` freezing `vision_encoder` on `facebook/sam-vit-base` with Managed Spot `/opt/ml/checkpoint` resume logic.",
+      "expected_alternative_skill": "sagemaker-training-architect"
     }
   ]
 }

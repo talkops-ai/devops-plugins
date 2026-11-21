@@ -1,9 +1,11 @@
 ---
 name: serverless-data-and-file-processing
-description: Architect serverless file upload, event-driven S3 processing, and high-concurrency batch data pipelines. Covers S3 Presigned URLs (bypassing API Gateway 10 MB / Lambda 6 MB payload limits), S3 EventBridge notifications, S3 recursive loop prevention, and AWS Step Functions Distributed Map (ItemReader, ItemBatcher, ResultWriter) for multi-GB CSV/JSON/Parquet processing.
+description: "Architect serverless file upload, event-driven S3 processing, and high-concurrency batch data pipelines. Covers S3 Presigned URLs (bypassing API Gateway 10 MB / Lambda 6 MB payload limits), S3 EventBridge notifications, S3 recursive loop prevention, and AWS Step Functions Distributed Map (ItemReader, ItemBatcher, ResultWriter) for multi-GB CSV/JSON/Parquet processing. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # Serverless Data & File Processing Pipelines
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, caller/account verification (`sts:GetCallerIdentity`), resource inspection, logs/metrics queries, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___call_aws` / `aws___run_script`, `cloudwatch`, `cloudtrail`, `prometheus`, `dynamodb`, `serverless`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**.
 
 Design and implement production-grade serverless file ingestion, asynchronous transformation, and massively parallel batch pipelines on Amazon S3, AWS Lambda, Amazon EventBridge, Amazon SQS, and AWS Step Functions Distributed Map.
 

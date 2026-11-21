@@ -1,11 +1,11 @@
 {
   "skill_name": "rds-sqlserver",
   "companion_skills": [
-    "amazon-aurora-mysql",
-    "amazon-aurora-postgresql",
-    "amazon-documentdb",
-    "amazon-dynamodb",
-    "amazon-elasticache"
+    "rds-oss",
+    "rds-oracle",
+    "rds-db2",
+    "dms-schema-conversion",
+    "amazon-aurora-postgresql"
   ],
   "queries": [
     {
@@ -13,49 +13,84 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `rds-sqlserver` to help me design, validate, and troubleshoot rds sqlserver."
+      "prompt": "Write a Python Lambda handler using pymssql with TDS 7.4 and Secrets Manager to connect to Amazon RDS for SQL Server."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Configure SQLSERVER_BACKUP_RESTORE and msdb.dbo.rds_backup_database to export .bak files to S3 on RDS for SQL Server."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for rds sqlserver (`rds-sqlserver`)."
+      "prompt": "Troubleshoot Cannot generate SSPI context with Windows Authentication on AD-joined RDS for SQL Server."
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Full-lifecycle management, administration, and connectivity troubleshooting for Amazon RDS for SQL Server and RDS Custom for SQL Server. Covers Multi-AZ Always On Availability Grou"
+      "prompt": "SSMS times out on port 1433 from our Windows EC2 jump box when connecting to our RDS instance."
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why does sys.dm_exec_connections show auth_scheme = NTLM instead of KERBEROS from our ECS Fargate tasks?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating rds sqlserver?"
+      "prompt": "Open an AWS-StartPortForwardingSessionToRemoteHost SSM tunnel on localhost,11433 for SSMS."
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our rds sqlserver setup in read-only mode and highlight top risks."
+      "prompt": "Audit ap-south-1 for sqlserver-ee, sqlserver-se, and custom-sqlserver RDS instances and TLS force_ssl settings."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Place tempdb on local NVMe SSD storage using db.r6id instances and enable SSRS via an RDS Option Group."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Does RDS SQL Server support direct IAM database authentication, or do we need RDS Proxy in front of port 1433?"
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot amazon aurora mysql exclusively without touching rds sqlserver."
+      "prompt": "Convert T-SQL stored procedures to PL/pgSQL using AWS DMS Schema Conversion action items."
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Configure Oracle Connection Manager (CMAN) and python-oracledb thin mode on RDS for Oracle."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Set up mounted cross-region DR standby replicas and rdsadmin.restore_database on RDS for Db2."
     }
   ]
 }

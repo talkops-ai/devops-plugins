@@ -2,11 +2,11 @@
 
 Production-grade agents, skills, slash commands, deterministic safety hooks, and MCP servers for AWS architecture, cloud engineering, FinOps, security, and SRE operations.
 
-The marketplace contains **49 plugins** across three categories:
+The marketplace contains **49 plugins** (**446 canonical skills**) across three categories:
 
-- **[Agent plugins (20)](./plugins/agent-plugins)**: one named Principal-level AWS or Kubernetes specialist agent per plugin. Every skill, slash command, safety hook, and MCP server in the plugin is bound to that agent, and the host runtime spawns the agent as an isolated sub-agent. Each agent plugin is **self-contained**.
-- **[Vertical plugins (21)](./plugins/vertical-plugins)**: focused AWS domain bundles of skills (**246 total**), multi-phase slash-command playbooks (**109 total**), safety hooks, and MCP servers that attach **directly to your main agent**, with no sub-agent hand-off. Install a vertical when you want deep AWS domain capability directly in your primary session.
-- **[Partner-built plugins (8)](./plugins/partner-built)**: ecosystem and vendor plugins (`terraform`, `crossplane-aws-engineer`, `launchdarkly`, `coralogix`, `honeycomb`, `elastic`, `neo4j`, and `bronto`) that ship with Claude Code, portable Agent Plugins 1.0.0, and Codex layouts.
+- **[Agent plugins (20)](./plugins/agent-plugins)**: one named Principal-level AWS or Kubernetes specialist agent per plugin (**401 skill instances / 350 unique skills**, **23 slash commands**). Every skill, slash command, safety hook, and MCP server in the plugin is bound to that agent, and the host runtime spawns the agent as an isolated sub-agent. Each agent plugin is **self-contained**.
+- **[Vertical plugins (21)](./plugins/vertical-plugins)**: focused AWS domain bundles of skills (**246 skill instances / 225 unique skills**), multi-phase slash-command playbooks (**108 total**), safety hooks, and MCP servers that attach **directly to your main agent**, with no sub-agent hand-off. Install a vertical when you want deep AWS domain capability directly in your primary session.
+- **[Partner-built plugins (8)](./plugins/partner-built)**: ecosystem and vendor plugins (`terraform`, `crossplane-aws-engineer`, `launchdarkly`, `coralogix`, `honeycomb`, `elastic`, `neo4j`, and `bronto` — **72 skills**, **21 slash commands**) that ship with Claude Code, portable Agent Plugins 1.0.0, and Codex layouts.
 
 ---
 
@@ -17,17 +17,17 @@ Each [agent plugin](./plugins/agent-plugins) spawns a dedicated specialist sub-a
 | Function | Agent | Skills | Commands | MCP servers | What it does |
 |---|---|---:|---:|---|---|
 | **Build & deliver** | **[AWS IaC Engineer](./plugins/agent-plugins/aws-iac-engineer)** (`aws-iac-engineer`) | 13 | 0 | `aws-mcp`, `awsiac`, `terraform`, `pulumi` | Multi-engine AWS IaC (CDK, CloudFormation, Terraform/OpenTofu, Pulumi, Crossplane), EKS Karpenter bootstrap IaC, FinOps cost estimates, brownfield imports, and CI/CD & GitOps pipelines. |
-|  | **[AWS Deployment Engineer](./plugins/agent-plugins/aws-deployment-engineer)** (`aws-deployment-engineer`) | 9 | 0 | `awsknowledge`, `awsiac`, `awspricing`, `awsapi`, `cloudwatch` | Codebase discovery → hosting architecture → pre-deploy cost estimate → IaC scaffolding → deployment verification & rollback. |
+|  | **[AWS Deployment Engineer](./plugins/agent-plugins/aws-deployment-engineer)** (`aws-deployment-engineer`) | 9 | 0 | `aws-mcp`, `awsknowledge`, `awsiac`, `awspricing`, `awsapi`, `cloudwatch` | Codebase discovery → hosting architecture → pre-deploy cost estimate → IaC scaffolding → deployment verification & rollback. |
 |  | **[AWS Serverless Engineer](./plugins/agent-plugins/aws-serverless-engineer)** (`aws-serverless-engineer`) | 24 | 0 | `aws-serverless-mcp`, `aws-documentation-mcp`, `aws-dynamodb-mcp`, `aws-sns-sqs-mcp`, `aws-cloudwatch-mcp`, `aws-billing-cost-mcp` + connectors | Lambda (SnapStart, Power Tuning, Durable Functions, Managed Instances), API Gateway, Step Functions, EventBridge, SQS/SNS, DynamoDB, Aurora DSQL, and SAM/CDK. |
 |  | **[AWS Amplify Engineer](./plugins/agent-plugins/aws-amplify-engineer)** (`aws-amplify-engineer`) | 9 | 0 | `aws-mcp`, `awsknowledge`, `appsync`, `awsiac`, `dynamodb`, `cloudwatch` | Amplify Gen 2 TypeScript-first full-stack web & mobile apps: Cognito Auth, AppSync Data, S3 Storage, Functions, Custom CDK, and Hosting CI/CD. |
 |  | **[AWS Location Engineer](./plugins/agent-plugins/aws-location-engineer)** (`aws-location-engineer`) | 6 | 0 | `aws-mcp`, `awslocation` | Maps, geocoding, places search, route calculation/matrix, geofencing, and device tracking with Amazon Location Service V2. |
 | **Platform & operations** | **[AWS Platform Engineer](./plugins/agent-plugins/aws-platform-engineer)** (`aws-platform-engineer`) | 44 | 0 | `aws-mcp`, `aws-iac`, `iam`, `cloudwatch`, `cloudtrail`, `pricing`, `billing-cost`, `well-architected-security`, `eks`, `ecs`, `serverless`, `awsnetwork`, `finch`, `sns-sqs`, `mq` | EC2, Golden AMIs, EKS (Auto Mode, Karpenter v1 autoscaling, Pod Identity), ECS Fargate, multi-AZ VPC/TGW/Cloud WAN/DX routing & flow/DNS diagnostics, S3/EFS/FSx/Backup storage resiliency, quota checks, and Golden Path landing zones. |
-|  | **[AWS SRE Agent](./plugins/agent-plugins/aws-sre-agent)** (`aws-sre-agent`) | 43 | 0 | `aws-mcp`, `aws-api`, `cloudwatch`, `appsignals`, `prometheus`, `cloudtrail`, `eks`, `ecs`, `network`, `iac`, `cost-explorer`, `awssupport` + connectors | CloudWatch, Application Signals APM, X-Ray, CloudTrail forensics, Managed Prometheus/Grafana, EKS/ECS health & operations reviews, live-streaming readiness, AWS Health & Support cases, FIS/ARC resilience, COE postmortems, and optional Grafana Cloud/Cribl/ClickStack/Bluebox/Sumo Logic/Wiz connectors. |
+|  | **[AWS SRE Agent](./plugins/agent-plugins/aws-sre-agent)** (`aws-sre-agent`) | 43 | 0 | `aws-mcp`, `aws-api`, `cloudwatch`, `appsignals`, `prometheus`, `cloudtrail`, `eks`, `ecs`, `network`, `iac`, `cost-explorer`, `awssupport`, `awspricing`, `awsknowledge` + connectors | CloudWatch, Application Signals APM, X-Ray, CloudTrail forensics, Managed Prometheus/Grafana, EKS/ECS health & operations reviews, live-streaming readiness, AWS Health & Support cases, FIS/ARC resilience, COE postmortems, and optional Grafana Cloud/Cribl/ClickStack/Bluebox/Sumo Logic/Wiz connectors. |
 |  | **[AWS DevSecOps Engineer](./plugins/agent-plugins/aws-devsecops-engineer)** (`aws-devsecops-engineer`) | 20 | 11 | `aws-mcp`, `aws-security-agent`, `aws-cloudwatch`, `aws-cloudtrail`, `aws-well-architected-security`, `aws-billing` + connectors | Live incident RCA, Security Hub CSPM triage, least-privilege IAM, IaC/perimeter hardening, AWS Security Agent SAST/DAST/pentest scans & incident enrichment, optional Wiz security context, release gates, and FinOps guardrails. |
 | **Security & cost** | **[AWS Cloud Security Engineer](./plugins/agent-plugins/aws-cloud-security-engineer)** (`aws-cloud-security-engineer`) | 13 | 0 | `aws-mcp`, `iam`, `wa-security`, `cloudtrail`, `awsiac`, `cloudwatch`, `awsnetwork` + connectors | IAM & SCPs/RCPs, KMS & Secrets Manager data protection, Security Hub OCSF CSPM, GuardDuty & CloudTrail incident response & telemetry cost governance, WAF/Network Firewall perimeter, container security, and optional Wiz/Sumo Logic connectors. |
 |  | **[AWS FinOps Engineer](./plugins/agent-plugins/aws-finops-engineer)** (`aws-finops-engineer`) | 7 | 0 | `aws-mcp`, `billing`, `awspricing`, `cloudwatch`, `awsiac` | Cost Explorer & Anomaly Detection, CUR 2.0 Athena SQL analytics, Compute Optimizer P95/P99 rightsizing, CloudTrail/Config/GuardDuty/NAT Gateway cost optimization, Extended Support EOS cost modeling, Savings Plans/RIs, and Shift-Left IaC estimation. |
 | **Architecture & advisory** | **[AWS Solutions Architect](./plugins/agent-plugins/aws-solutions-architect)** (`aws-solutions-architect`) | 24 | 0 | `aws-mcp`, `awsknowledge`, `awspricing`, `iac`, `bcm`, `tm`, `drawio` | Well-Architected 6-pillar reviews, ADRs, STRIDE threat modeling, Draw.io architecture diagrams, multi-account Landing Zones, multi-region DR tiers, and Bedrock/ML architecture. |
-|  | **[AWS Startup Advisor](./plugins/agent-plugins/aws-startup-advisor)** (`aws-startup-advisor`) | 14 | 1 | `aws-mcp`, `aws-pricing`, `aws-billing` | Stage-aware Pre-Seed to Series B architecture, account hygiene audits, Azure/GCP/Heroku → AWS migrations, OpenAI/Anthropic → Bedrock migrations, and AWS Activate optimization. |
+|  | **[AWS Startup Advisor](./plugins/agent-plugins/aws-startup-advisor)** (`aws-startup-advisor`) | 14 | 1 | `aws-mcp`, `awsknowledge`, `aws-pricing`, `aws-billing` | Stage-aware Pre-Seed to Series B architecture, account hygiene audits, Azure/GCP/Heroku → AWS migrations, OpenAI/Anthropic → Bedrock migrations, and AWS Activate optimization. |
 | **Data & AI** | **[AWS Data Engineer](./plugins/agent-plugins/aws-data-engineer)** (`aws-data-engineer`) | 29 | 0 | `aws-mcp`, `dataprocessing`, `redshift`, `s3tables`, `cloudwatch`, `spark-troubleshooting` | S3 Tables (Apache Iceberg), AWS Glue (Catalog, Spark ETL, DQDL Data Quality), Lake Formation governance, Athena, Redshift & support diagnostics, Kinesis/Firehose/MSK operations, MWAA, and OpenSearch expertise. |
 |  | **[AWS Database Engineer](./plugins/agent-plugins/aws-database-engineer)** (`aws-database-engineer`) | 21 | 0 | `awsknowledge`, `aws-mcp`, `dynamodb`, `cloudwatch`, `postgres`, `mysql`, `elasticache`, `awspricing` + connectors | Workload-driven DB selection, Aurora (PostgreSQL/MySQL/DSQL), RDS operational reviews & DevOps health checks, DynamoDB single-table design, ElastiCache (Valkey/Redis), DocumentDB, Keyspaces, Neptune, Performance Insights, and DMS migrations. |
 |  | **[AWS AgentCore Engineer](./plugins/agent-plugins/aws-agentcore-engineer)** (`aws-agentcore-engineer`) | 14 | 0 | `aws-mcp`, `awsknowledge`, `agentcore`, `strands-agents`, `cloudwatch`, `appsignals`, `cloudtrail` + connectors | Build, connect, deploy, harden, debug, evaluate, and operate production AI agents on Amazon Bedrock AgentCore & Strands Agents, including AgentCore/Bedrock operational reviews, observability setup, and optional Arize AX trace investigation. |
@@ -165,11 +165,11 @@ Every agent, vertical, and partner plugin follows the portable [Agent Plugins 1.
 
 Three layers protect your AWS accounts from accidental secret exposure or unapproved mutations across **both agent plugins and vertical plugins**:
 
-1. **Server side (all hosts).** Bundled `awslabs` MCP servers default to read-only flags where supported (`--readonly`, `ALLOW_WRITE=false`, `READ_OPERATIONS_ONLY=true`). Dedicated read-only specialist agents (`aws-sre-agent`, `aws-finops-engineer`, `aws-solutions-architect`) also run `aws-mcp` with `--read-only`.
+1. **Server side (all hosts).** Bundled `awslabs` MCP servers default to read-only flags where supported (`--readonly`, `ALLOW_WRITE=false`, `READ_OPERATIONS_ONLY=true`). Dedicated read-only specialist agents (`aws-sre-agent`, `aws-eks-upgrade-engineer`, `aws-finops-engineer`, `aws-solutions-architect`) also run `aws-mcp` with `--read-only` and/or enforce read-only hook locks.
 2. **Deterministic `PreToolUse` / `PostToolUse` hooks.**
-   - **`secret-safety.py`**: Blocks shell commands and AWS MCP calls that attempt to print, exfiltrate, or hardcode AWS secret keys, session tokens, or private keys.
-   - **`aws-mutation-gate.py`**: Intercepts mutating `aws`, `terraform`, `tofu`, `cdk`, `sam`, `pulumi`, `eksctl`, `kubectl`, `helm`, `copilot`, and `amplify` operations across all 17 agent plugins and all 21 vertical plugins. It blocks mutations outright for read-only agents and requires explicit user confirmation otherwise (`TALKOPS_AWS_MUTATION_GATE=off|warn|ask|deny`).
-   - **Domain-specific hooks**: `session-aws-preflight.py` (credential & region preflight), `iac-post-write-lint.py` (`cfn-lint` / `cfn-guard` / `terraform validate` after template edits), `finops-sql-and-cost-gate.py` (Athena CUR SQL partition & cost guardrails), and Aurora DSQL `PostToolUse` transaction checks.
+   - **`secret-safety.py`**: Blocks shell commands and AWS MCP calls across all 49 plugins that attempt to print, exfiltrate, or hardcode AWS secret keys, session tokens, `.env` secrets, or private keys.
+   - **`aws-mutation-gate.py`**: Intercepts mutating `aws`, `terraform`, `tofu`, `cdk`, `sam`, `pulumi`, `eksctl`, `kubectl`, `helm`, `copilot`, and `amplify` operations across all 18 AWS agent plugins, all 21 vertical plugins, and AWS/IaC partner plugins (`terraform`, `crossplane-aws-engineer`). It blocks mutations outright for read-only agents and requires explicit user confirmation otherwise (`TALKOPS_AWS_MUTATION_GATE=off|warn|ask|deny`).
+   - **Domain-specific hooks**: `session-aws-preflight.py` and `session-argocd-preflight.py` (credential, region, and GitOps preflight), `iac-post-write-lint.py` (`cfn-lint` / `cfn-guard` / `terraform validate` after template edits), `validate-drawio.sh` (`PostToolUse` AWS4 `.drawio` XML validator), `finops-sql-and-cost-gate.py` (Athena CUR SQL partition & cost guardrails), `turn-completion-verifier.py`, and Aurora DSQL `PostToolUse` transaction checks.
 3. **IAM.** The ultimate boundary. See [docs/iam-guardrails.md](./docs/iam-guardrails.md) for read-only roles and AWS MCP condition keys.
 
 ---
@@ -197,7 +197,7 @@ plugins/
 evals/
   README.md                       # open-source 3-layer skill evaluation architecture & usage guide
   schemas/                        # JSON Schemas for execution (evals.json) and trigger (trigger_evals.json) suites
-  skills/<skill-name>/            # canonical evals.json, trigger_evals.json, and optional files/ fixtures (446 skills)
+  skills/<skill-name>/            # canonical evals.json, trigger_evals.json & optional files/ fixtures (446 skills · 7,448 checks)
 scripts/
   _plugin_lib.py                  # shared dependency-free frontmatter and schema helpers
   validate_plugins.py             # structural, binding, portable-format, and Codex validation across all 49 plugins
@@ -207,18 +207,19 @@ docs/
   iam-guardrails.md               # IAM patterns that back read-only and approval rules
   mcp-server-coverage.md          # how each MCP server is used across agent, vertical, and partner plugins
   skill-evals-handover-guide.md   # authoring & debugging guide for skill evaluations
+  skill-evals-rollout-plan.md     # phased rollout & live-verification tracker across canonical skills
 ```
 
 ## Validating plugins & running skill evaluations
 
-All 49 plugins and 446 canonical skill evaluation suites are validated before opening a PR:
+All **49 plugins** and **446 canonical skill evaluation suites** (**3,459** execution cases + **3,989** 4-quadrant trigger queries = **7,448** checks, including **274** full multi-quadrant suites live-verified `100% GREEN` against read-only AWS & Kubernetes MCP environments) are validated before opening a PR:
 
 ```bash
-python3 scripts/validate_plugins.py                            # structural, manifest, hook, and MCP binding checks
-python3 scripts/validate_plugins.py --claude                   # also run `claude plugin validate`
-python3 scripts/eval_skills.py static                          # static skill, link, script, schema & open-source hygiene audit
-python3 scripts/eval_skills.py trigger --skill <name>          # 4-quadrant trigger precision/recall eval (runs in .eval-runs/)
-python3 scripts/eval_skills.py run --skill <name>              # isolated end-to-end skill, MCP & safety-hook execution eval
+python3 scripts/validate_plugins.py                                      # structural, manifest, hook, and MCP binding checks
+python3 scripts/validate_plugins.py --claude                             # also run `claude plugin validate`
+python3 scripts/eval_skills.py static                                    # static skill, link, script, schema & open-source hygiene audit
+python3 scripts/eval_skills.py trigger --skill <name> --harness claude   # 4-quadrant trigger precision/recall eval (runs in .eval-runs/)
+python3 scripts/eval_skills.py run --skill <name> --harness claude       # isolated end-to-end skill, MCP & safety-hook execution eval
 ```
 
 See [docs/authoring-agent-plugins.md](./docs/authoring-agent-plugins.md) and [evals/README.md](./evals/README.md) before adding or modifying a plugin or skill.

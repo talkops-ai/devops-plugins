@@ -45,11 +45,7 @@ Check for required tools and warn the user if any are missing.
 - You MUST ask if the user wants to proceed anyway despite missing tools
 - You MUST respect the user's decision to proceed or abort
 - You MUST explain the reason for every tool call before executing it throughout the entire SOP
-- You MUST verify AWS CLI is properly configured with this command:
-
-  ```
-  aws sts get-caller-identity
-  ```
+- You MUST verify AWS caller identity via connected AWS MCP tools (`call_aws` `sts get-caller-identity`, never raw `aws` CLI in shell)
 
 ### 2. Create or Verify KMS Key
 

@@ -8,7 +8,7 @@
       "files": [],
       "expectations": [
         "Activates the aws-backup-coverage-review skill and executes all AWS control-plane reads in `ap-south-1` exclusively via connected MCP tools (`aws-mcp` `aws___run_script`) without running raw `aws` CLI shell commands",
-        "Discovers the live inventory strategy (`direct-enumeration` vs `config-fast-path`) and live `ap-south-1` state (account `123456789012`, `0` backup plans, `0` protected resources, and live S3 bucket `example-prod-1234-as1-terraform-tfstate` resolved to `ap-south-1` via `GetBucketLocation` as `Unprotected`)",
+        "Discovers the live inventory strategy (`direct-enumeration` vs `config-fast-path`) and live `ap-south-1` state (the caller's AWS account ID, `0` backup plans, `0` protected resources, and any discovered `ap-south-1` S3 bucket resolved via `GetBucketLocation` as `Unprotected`)",
         "Renders the mandatory report sections in order including `## Scope`, `## Coverage Rating` (with consistent coverage percentage), `## Executive Summary`, `## Coverage Matrix`, `## Findings & Recommendations`, `## Check Coverage Matrix`, and `## Next Steps`",
         "Includes all **23 rows** in `## Check Coverage Matrix` without offering to 'run the full review later' or execute mutations"
       ]

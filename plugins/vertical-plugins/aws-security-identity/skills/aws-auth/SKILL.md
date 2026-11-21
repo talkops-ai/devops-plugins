@@ -1,22 +1,13 @@
 ---
 name: aws-auth
-description: >
-  Adds user authentication to web and mobile apps with Amazon Cognito (user pools and identity
-  pools) and the AWS Amplify client auth libraries. Covers sign-up/sign-in flows and the login
-  page (Cognito-hosted UI / managed login), MFA, password policies, OAuth 2.0 / OIDC flows
-  (auth-code + PKCE, client credentials), social/SAML federation, tokens (ID/access/refresh,
-  rotation, revocation, storage), Cognito Lambda triggers, identity pools (temp AWS creds), and
-  gating API Gateway (or ALB) routes to signed-in users via Cognito/JWT authorizers. Applies when
-  adding a login or sign-up page, configuring a user pool or app client, choosing user pool vs
-  identity pool, wiring social/SAML, refreshing tokens, requiring sign-in on an API Gateway or
-  ALB, or debugging redirect_uri/token/MFA/CORS/federation errors. Does NOT cover Amplify Gen2
-  backend definitions (defineAuth, npx ampx → aws-amplify), IAM/STS/Identity Center (→ aws-iam),
-  or API Gateway/Lambda resource config beyond the authorizer (→ aws-serverless).
+description: "Adds user authentication to web and mobile apps with Amazon Cognito (user pools and identity pools) and the AWS Amplify client auth libraries. Covers sign-up/sign-in flows and the login page (Cognito-hosted UI / managed login), MFA, password policies, OAuth 2.0 / OIDC flows (auth-code + PKCE, client credentials), social/SAML federation, tokens (ID/access/refresh, rotation, revocation, storage), Cognito Lambda triggers, identity pools (temp AWS creds), and gating API Gateway (or ALB) routes to signed-in users via Cognito/JWT authorizers. Applies when adding a login or sign-up page, configuring a user pool or app client, choosing user pool vs identity pool, wiring social/SAML, refreshing tokens, requiring sign-in on an API Gateway or ALB, or debugging redirect_uri/token/MFA/CORS/federation errors. Query live AWS state via MCP tools only (never raw aws CLI)."
 metadata:
   version: "1"
 ---
 
 # AWS Auth (Amazon Cognito)
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, caller/account verification (`sts:GetCallerIdentity`), resource inspection, logs/metrics queries, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___call_aws` / `aws___run_script`, `cloudwatch`, `cloudtrail`, `prometheus`, `dynamodb`, `serverless`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**.
 
 Application-level user authentication and authorization with Amazon Cognito and the Amplify
 client auth libraries. Verify specific limits, quotas, and exact API shapes against official AWS

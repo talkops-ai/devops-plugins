@@ -8,7 +8,7 @@
       "files": [],
       "expectations": [
         "Uses aws-mcp (aws___run_script calling read-only sts/fsx operations) and executes zero raw aws CLI shell commands via run_command",
-        "Confirms zero FSx for NetApp ONTAP file systems were discovered in ap-south-1 (account 123456789012)",
+        "Confirms zero FSx for NetApp ONTAP file systems were discovered in ap-south-1 (reporting the resolved AWS account ID)",
         "Applies empty-scope precedence by reporting 'No FSx for NetApp ONTAP activity detected.' without inventing unobserved file systems or findings"
       ]
     },

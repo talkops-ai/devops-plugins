@@ -85,6 +85,8 @@ Declared in [`.mcp.json`](./.mcp.json) (Claude Code) and [`mcp.json`](./mcp.json
 | `iac` | stdio | `uvx fastmcp<4.0.0` `--with` | `mcp__plugin_aws-sre-agent_iac__*` | Pinned to 0.2.14 with fastmcp<4.0.0 to prevent FastMCP 4.0 breaking import crashes (awslabs/mcp#4567). |
 | `cost-explorer` | stdio | `uvx awslabs.billing-cost-management-mcp-server@latest` | `mcp__plugin_aws-sre-agent_cost-explorer__*` |  |
 | `awssupport` | stdio | `uvx awslabs.aws-support-mcp-server@latest` | `mcp__plugin_aws-sre-agent_awssupport__*` |  |
+| `awspricing` | stdio | `uvx awslabs.aws-pricing-mcp-server@latest` | `mcp__plugin_aws-sre-agent_awspricing__*` |  |
+| `awsknowledge` | http | `https://knowledge-mcp.global.api.aws` | `mcp__plugin_aws-sre-agent_awsknowledge__*` |  |
 
 AWS credentials are inherited from the host environment (`AWS_PROFILE`, SSO, or instance role). In Claude Code `AWS_REGION` defaults to `us-east-1` when unset; the portable `mcp.json` can't express that default, so set `AWS_REGION` in your environment on other hosts. Codex starts MCP servers with a minimal environment: if a server can't see your profile, set `AWS_PROFILE`/`AWS_REGION` for it in `~/.codex/config.toml`.
 

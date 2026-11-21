@@ -1,9 +1,11 @@
 ---
 name: aws-networking-and-compute
-description: Provides production AWS infrastructure-as-code blueprints for multi-AZ VPCs, VPC Endpoints/PrivateLink, Transit Gateways, EKS/ECS Fargate container platforms, Lambda/EventBridge serverless architectures, and S3/RDS/DynamoDB stateful storage across CDK, CloudFormation, Terraform, Pulumi, and Crossplane.
+description: "Provides production AWS infrastructure-as-code blueprints for multi-AZ VPCs, VPC Endpoints/PrivateLink, Transit Gateways, EKS/ECS Fargate container platforms, Lambda/EventBridge serverless architectures, and S3/RDS/DynamoDB stateful storage across CDK, CloudFormation, Terraform, Pulumi, and Crossplane. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # AWS Networking, Compute, Containers, Serverless & Storage Blueprints
+
+> **MCP-Only Live AWS Execution:** Execute ALL live AWS API discovery, account/region preflight checks (`sts:GetCallerIdentity`), stack/cluster/resource inspection, pricing (`awspricing`/`billing`), IaC validation (`awsiac`), and documentation lookups (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___run_script` `call_boto3`, `awsknowledge`, `awsiac`, `awspricing`, `eks`, `ecs`, `cloudwatch`) — **never invoke raw `aws ...` CLI commands in shell (`run_command`)**. Offline local linters/synthesizers (`cdk synth`, `terraform validate`, `python3`) may run locally without mutating live AWS.
 
 Use this skill whenever designing or authoring AWS VPC networking, EKS/ECS container platforms, EC2 Auto Scaling, serverless event topologies, or stateful storage in **any IaC engine** (`aws-cdk`, `aws-cloudformation`, `aws-terraform`, `aws-pulumi`, `aws-crossplane`).
 

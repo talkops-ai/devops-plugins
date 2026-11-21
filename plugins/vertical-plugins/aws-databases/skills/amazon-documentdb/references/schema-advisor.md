@@ -130,7 +130,7 @@ db.runCommand({
 })
 ```
 
-Use **IVFFlat** instead when index build speed matters more than recall and you have > 1M vectors. Set `lists: sqrt(num_documents)`.
+Use **IVFFlat** instead when index build speed or lower memory footprint matters more than HNSW's higher recall/lower query latency and you have > 1M vectors (requires representative data before building; set build-time `lists: sqrt(num_documents)` and tune query-time `probes`).
 
 **Query — DocumentDB 8.0+ (`$vectorSearch`):**
 

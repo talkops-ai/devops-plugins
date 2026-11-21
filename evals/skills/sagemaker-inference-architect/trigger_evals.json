@@ -1,11 +1,11 @@
 {
   "skill_name": "sagemaker-inference-architect",
   "companion_skills": [
-    "aiml-access-diagnostics",
-    "aiml-gpu-training-cluster-investigation",
-    "bedrock-adoption-readiness",
-    "bedrock-operation-review",
-    "dataset-evaluation"
+    "model-deployment",
+    "sagemaker-cost-estimator",
+    "sagemaker-observability-governance",
+    "sagemaker-solution-architect",
+    "endpoint-diagnostics"
   ],
   "queries": [
     {
@@ -13,50 +13,87 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `sagemaker-inference-architect` to design, validate, and troubleshoot sagemaker inference architect."
+      "prompt": "Architect a SageMaker Real-Time Endpoint with `InferenceComponent` multi-model GPU bin-packing (`LEAST_OUTSTANDING_REQUESTS`) and two-policy Scale-to-Zero (`MinCapacity=0` + `NoCapacityInvocationFailures`)."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through production best practices and operational guardrails for sagemaker inference architect (`sagemaker-inference-architect`)."
+      "prompt": "Configure DJL Serving / LMI vLLM on `ml.g6e.12xlarge` and Neuronx compilation on AWS Inferentia2 (`ml.inf2`) for a Full Fine-Tuned 70B `model.tar.gz`."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Design a SageMaker Asynchronous Inference endpoint supporting 750 MB payloads and a 45-minute timeout with S3 queues and SNS callbacks."
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need an operational review and step-by-step runbook covering: Architects and generates production inference and model-hosting solutions across all Amazon SageMaker AI deployment patterns. Covers Real-Time Endpoints with SageMaker Inference Co"
+      "prompt": "We have 1,200 per-tenant XGBoost `.tar.gz` models in S3 — configure a SageMaker Multi-Model Endpoint (`Mode='MultiModel'`) invoked via `TargetModel`."
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the critical failure modes, configuration checks, and verification commands for sagemaker inference architect?"
+      "prompt": "Chain a `sklearn` preprocessing container and a `pytorch` scoring container inside a single SageMaker Multi-Container Endpoint (`InferenceExecutionConfig: Serial`)."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Set up a nightly SageMaker Batch Transform job using `InputFilter`, `JoinSource='Input'`, and `OutputFilter` so `customer_id` stays attached to predictions."
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our sagemaker inference architect setup in read-only mode."
+      "prompt": "Our `InferenceComponent` scaled down to `0` copies overnight under `TargetTrackingScaling`, and now morning requests fail without ever waking `0 -> 1`!"
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Run a SageMaker Inference Recommender `Advanced` load test (`PHASES` traffic pattern) on our custom `ModelPackageVersionArn` in `ap-south-1`."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Compare `bedrock:CreateModelImportJob` against SageMaker `InferenceComponent` hosting for our custom 90 GB HuggingFace safetensors checkpoint."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Configure and troubleshoot aiml access diagnostics exclusively without touching sagemaker inference architect.",
-      "expected_alternative_skill": "aiml-access-diagnostics"
+      "prompt": "Pull a read-only diagnostic snapshot (`DescribeEndpoint`, `ModelLatency`, `GPUMemoryUtilization`, and last 15m container logs) from our failing `InService` endpoint.",
+      "expected_alternative_skill": "endpoint-diagnostics"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+      "prompt": "Configure hourly SageMaker Model Monitor Data Quality, Model Quality ground-truth joins, and Clarify SHAP attribution drift schedules.",
+      "expected_alternative_skill": "sagemaker-observability-governance"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Produce a `COST_ESTIMATE.md` Studio + Training + Savings Plans FinOps breakdown in `ap-south-1` using live `awspricing` queries.",
+      "expected_alternative_skill": "sagemaker-cost-estimator"
     }
   ]
 }

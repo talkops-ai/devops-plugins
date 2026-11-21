@@ -5,11 +5,11 @@ description: >
   Connect virtual interfaces (VIFs). Use when the user asks whether their Direct
   Connect setup is resilient, whether failover will work, whether the same
   routes/prefixes are advertised across redundant VIFs, why traffic was lost
-  after a VIF or connection failure, or to audit DX BGP route symmetry. Checks
-  both directions (accepted routes received from on-prem and advertised routes
-  sent by AWS) using read-only Direct Connect APIs and deterministic ipaddress
-  CIDR containment and residual math via connected MCP tools. Complements
-  Layer-1/2 checks (redundant connections, diverse locations/devices).
+  after a VIF or connection failure, to audit DX BGP route symmetry, or about
+  Direct Connect VIF fast-failover BFD timers and SiteLink inter-POP VIF
+  resilience. Checks both directions (accepted routes from on-prem and advertised
+  routes from AWS) using read-only Direct Connect APIs and deterministic
+  ipaddress CIDR containment/residual math via connected MCP tools.
 metadata:
   version: "1.1.0"
   author: abed-kayyali
@@ -49,7 +49,7 @@ Read [references/cidr-coverage-and-mcp-collection.md](references/cidr-coverage-a
   - `default_route_present` (`0.0.0.0/0`, `::/0`): report separately and **never** allow a default route to suppress specific prefix gap/residual findings!
 - **Intentional BGP Traffic Engineering Is NOT a Gap:** Identical prefixes with different `AS_PATH` prepending, `MED`, or DX local-preference communities (`7224:7300` High / `7224:7200` Medium / `7224:7100` Low) represent deliberate active/passive path steering — not a coverage gap.
 - **LAG Caveat:** A LAG (`dxcon`/`dxlag`) is **one logical connection**; a single VIF on a LAG provides link redundancy, **not** Layer-3 VIF redundancy.
-- **Route-View Convergence Lag (`1–14 minutes`):** `ListVirtualInterfaceRoutes` is eventually consistent after BGP changes. If a VIF has BGP `up` but an empty or suspiciously tiny `accepted` table while its peer is full, flag **both** the empty-VIF risk AND the **1–14 minute convergence-lag caveat** (recommending a confirmation re-run after ~15 minutes before declaring a permanent gap).
+- **Route-View Convergence Lag (`1–14 minutes`) & Snapshot Timestamp:** `ListVirtualInterfaceRoutes` is eventually consistent after BGP changes. Always **record the exact point-in-time snapshot timestamp (`UTC`)** in the report; if a VIF has BGP `up` but an empty or suspiciously tiny `accepted` table while its peer is full (or right after a route change), flag **both** the empty-VIF failover blackhole risk AND the **1–14 minute convergence-lag caveat**, explicitly recommending **recording the point-in-time snapshot timestamp and re-running the check after ~15 minutes** before declaring newly modified prefixes permanent gaps.
 - **Quotas That Mimic Gaps:** Flag route counts near **200 advertised prefixes** (IPv4+IPv6 combined per DXGW↔TGW transit VIF association; 5,000 on Cloud WAN) or **100 accepted prefixes** per BGP family on private/transit VIFs (adjustable to 1,000 via prefix controls; exceeding the limit drops the BGP session `DOWN` rather than silently truncating routes!).
 
 ---

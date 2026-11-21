@@ -1,8 +1,8 @@
 {
   "skill_name": "euc-observability-and-troubleshooting",
   "companion_skills": [
-    "amazon-appstream-and-workspaces-web",
     "amazon-workspaces-administration",
+    "amazon-appstream-and-workspaces-web",
     "amazon-workspaces-agent-access"
   ],
   "queries": [
@@ -11,50 +11,87 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `euc-observability-and-troubleshooting` to design, validate, and troubleshoot euc observability and troubleshooting."
+      "prompt": "Triage why 15 Amazon WorkSpaces desktops went `UNHEALTHY` (`AWS/WorkSpaces` `Unhealthy >= 1`) and `InSessionLatency` spiked above `250 ms`."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through production best practices and operational guardrails for euc observability and troubleshooting (`euc-observability-and-troubleshooting`)."
+      "prompt": "Debug why new KMS-encrypted WorkSpaces fail in `ERROR` state during Active Directory join via AD Connector."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Set up CloudWatch alarms and EventBridge session-state logging for `AWS/WorkSpaces` and `AWS/AppStream` (`InsufficientCapacityError`, `InSessionLatency`, `Unhealthy`)."
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need an operational review and step-by-step runbook covering: Diagnose and remediate AWS End User Computing (WorkSpaces, AppStream 2.0, WorkSpaces Secure Browser) issues: in-session latency, unhealthy workspace states, Active Directory join a"
+      "prompt": "Users logging into our pooled virtual desktops stare at a black screen for 3 minutes and get a temporary profile because FSLogix `.vhdx` containers fail to mount from FSx."
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the critical failure modes, configuration checks, and verification commands for euc observability and troubleshooting?"
+      "prompt": "Every weekday at 9:00 AM our AppStream 2.0 fleet throws `InsufficientCapacityError` before auto-scaling catches up — diagnose and fix it."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "WSP webcam audio turned choppy right after a branch firewall rule blocked UDP port 4195 — verify what happened and how WorkSpaces Global Accelerator helps."
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our euc observability and troubleshooting setup in read-only mode."
+      "prompt": "Check customer ENI (`eth1`) ports (`53`, `88`, `389/636`, `445`), subnet `AvailableIpAddressCount`, OU permissions, and KMS grants for failing WorkSpaces launches."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Stream `WorkSpaces Access`, `AppStream 2.0 Session State Change`, and WorkSpaces Secure Browser `UserAccessLoggingSettings` events into our SIEM."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Remediate sustained `88%` `CPUUsage` and `92%` `MemoryUsage` across 40 developer WorkSpaces without wiping user volumes."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Configure and troubleshoot amazon appstream and workspaces web exclusively without touching euc observability and troubleshooting.",
-      "expected_alternative_skill": "amazon-appstream-and-workspaces-web"
+      "prompt": "Debug `dcv session not ready` and `client_disconnected` errors when a Python AI agent connects to `https://agentaccess-mcp.us-east-1.api.aws/mcp`.",
+      "expected_alternative_skill": "amazon-workspaces-agent-access"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+      "prompt": "Compare AWS Managed Microsoft AD, AD Connector, and IAM Identity Center when designing a greenfield WorkSpaces Personal and WorkSpaces Pools deployment.",
+      "expected_alternative_skill": "amazon-workspaces-administration"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Package a Windows desktop app into an S3 VHD App Block for an AppStream 2.0 Elastic Fleet.",
+      "expected_alternative_skill": "amazon-appstream-and-workspaces-web"
     }
   ]
 }

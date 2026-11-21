@@ -1,11 +1,11 @@
 {
   "skill_name": "amazon-documentdb",
   "companion_skills": [
-    "amazon-aurora-mysql",
-    "amazon-aurora-postgresql",
     "amazon-dynamodb",
-    "amazon-elasticache",
-    "amazon-keyspaces"
+    "amazon-neptune",
+    "rds-oss",
+    "dms-data-migration-execution",
+    "aws-database"
   ],
   "queries": [
     {
@@ -13,49 +13,84 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `amazon-documentdb` to help me design, validate, and troubleshoot amazon documentdb."
+      "prompt": "Provision a production Amazon DocumentDB 8.0 Serverless cluster and run the 41-check Well-Architected review."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Diagnose a slow COLLSCAN query on Amazon DocumentDB using explain(), compound indexes, and BufferCacheHitRatio."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for amazon documentdb (`amazon-documentdb`)."
+      "prompt": "Plan a DMS Full Load + CDC migration from self-managed MongoDB 6.0 to Amazon DocumentDB 8.0."
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Manages Amazon DocumentDB end-to-end — serverless-on-8.0 cluster setup, TLS/VPC/driver config, flexible-schema and vector-search data modeling, MongoDB compatibility assessment, DM"
+      "prompt": "Our Lambda function times out on port 27017 with MongoServerSelectionError when connecting with global-bundle.pem and replicaSet=rs0."
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Does AWS's managed MongoDB-compatible database support $graphLookup and wildcard indexes on nested product attributes?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating amazon documentdb?"
+      "prompt": "Compare HNSW vs IVFFlat indexes for $vectorSearch RAG embeddings on our managed JSON document cluster."
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our amazon documentdb setup in read-only mode and highlight top risks."
+      "prompt": "Audit all docdb clusters in ap-south-1 for KMS encryption, TLS enforcement, and audit/profiler CloudWatch logs."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Design a cross-region headless DR setup for our MongoDB-compatible cluster with <1s storage replication lag."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Check whether switching our write-heavy JSON document cluster to I/O-Optimized storage saves money."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot amazon aurora mysql exclusively without touching amazon documentdb."
+      "prompt": "Design a single-table Amazon DynamoDB schema with GSIs and native SearchVectors."
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Migrate a Cassandra 4.0 keyspace to Amazon Keyspaces and check LWT batch compatibility."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure JSONB indexing and CREATE INDEX ASYNC on Amazon Aurora DSQL."
     }
   ]
 }

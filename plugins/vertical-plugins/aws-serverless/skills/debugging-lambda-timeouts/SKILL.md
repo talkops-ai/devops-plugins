@@ -1,10 +1,12 @@
 ---
 name: debugging-lambda-timeouts
-description: Debugs AWS Lambda function timeout failures by systematically analyzing function configuration, CloudWatch logs and metrics, VPC/networking, cold starts, memory constraints, and downstream dependencies to identify root causes with actionable fixes. Use when a Lambda function is timing out or approaching its timeout limit.
+description: "Debugs AWS Lambda function timeout failures by systematically analyzing function configuration, CloudWatch logs and metrics, VPC/networking, cold starts, memory constraints, and downstream dependencies to identify root causes with actionable fixes. Use when a Lambda function is timing out or approaching its timeout limit. Query live AWS state via MCP tools only (never raw aws CLI)."
 version: 1
 ---
 
 # Debugging Lambda Timeouts
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, caller/account verification (`sts:GetCallerIdentity`), resource inspection, logs/metrics queries, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___call_aws` / `aws___run_script`, `cloudwatch`, `cloudtrail`, `prometheus`, `dynamodb`, `serverless`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**.
 
 ## Overview
 

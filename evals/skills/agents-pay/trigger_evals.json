@@ -1,11 +1,11 @@
 {
   "skill_name": "agents-pay",
   "companion_skills": [
-    "agentcore-observability-setup",
-    "agentcore-ops-review",
     "agents-build",
     "agents-connect",
-    "agents-debug"
+    "agents-harden",
+    "agents-get-started",
+    "agentcore-ops-review"
   ],
   "queries": [
     {
@@ -13,50 +13,87 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `agents-pay` to design, validate, and troubleshoot agents pay."
+      "prompt": "My coding agent hit a 402 Payment Required response while calling an x402-protected API — how do I let the agent pay for content capped at $5 per session using AgentCore Payments?"
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through production best practices and operational guardrails for agents pay (`agents-pay`)."
+      "prompt": "Walk me through configuring `~/.agents-pay/config.json` with `max_per_payment_usd` and minting an operator-approved AgentCore payment session."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Audit our AgentCore Payments setup in ap-south-1 and explain why `ProcessPayment` failed when our agent tried to settle an x402 challenge."
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need an operational review and step-by-step runbook covering: Use when THIS agent needs to pay for x402-protected content at runtime: hitting a paywall mid-task, settling it via AgentCore Payments, and applying operator-defined spend limits. "
+      "prompt": "Why did my agent refuse to pay (`exit 2`, `refused: true`) when fetching a paywalled research endpoint on Base Sepolia?"
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the critical failure modes, configuration checks, and verification commands for agents pay?"
+      "prompt": "How do we lock down IAM roles so our autonomous runtime agent can sign x402 micro-payments within a session budget but can never create its own payment sessions?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "We ran `agentcore add payment-connector` with `--provision-mode QUICK_CREATE` for our operator wallet and `agentcore deploy` rolled back with `SubscriptionRequiredException`."
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our agents pay setup in read-only mode."
+      "prompt": "During an overnight market-research task, a tool call to `https://data.vendor.io/v1/feed` came back HTTP 402 with a `PAYMENT-REQUIRED` header asking for 100000 USDC units on `eip155:84532`. How should our agent handle settling that safely?"
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Our Playwright browser helper hit a paid article wall and needs a payment header attached without exposing raw `PAYMENT-SIGNATURE` tokens or article prompt-injections to the LLM context."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Security review flagged that an agent with shell access tried setting `PAYMENT_SESSION_ID` in env vars to switch sessions — verify how our runtime x402 policy file prevents session swapping."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Configure and troubleshoot agentcore observability setup exclusively without touching agents pay.",
-      "expected_alternative_skill": "agentcore-observability-setup"
+      "prompt": "Connect our AgentCore Gateway to an internal Salesforce OpenAPI spec using 2-legged OAuth client credentials and attach Cedar tool policies.",
+      "expected_alternative_skill": "agents-connect"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+      "prompt": "Lock down inbound JWT authentication, VPC private subnets, and KMS encryption on our AgentCore Runtime before production launch.",
+      "expected_alternative_skill": "agents-harden"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Run a full Well-Architected operational review of our AgentCore runtimes, gateways, and long-term memory ingestion error rates across regions.",
+      "expected_alternative_skill": "agentcore-ops-review"
     }
   ]
 }

@@ -34,6 +34,12 @@ Bedrock operates across two control planes. Both must be assessed.
 | Cost discriminator | No marker in USAGE_TYPE | `-mantle-` substring in USAGE_TYPE |
 | Cross-region inference | Yes - Geographic (`us.`, `eu.`, `apac.` prefixes) and Global (`global.` prefix) | No (in-region only) |
 
+## MCP-Only Execution & Read-Only Safety
+
+- **MCP-Only Live Discovery & Docs:** Execute **all** live AWS discovery, Standard Bedrock / Mantle / AgentCore inspection, CloudWatch metric & alarm queries, Service Quotas checks, IAM/SCP/VPC reviews, Cost Explorer/pricing lookups, and documentation searches **exclusively via connected MCP tools**: `aws-mcp` (`aws___run_script` using read-only `await call_boto3(...)`, `aws___search_documentation`, `aws___read_documentation`), `agentcore` (`search_agentcore_docs`, `fetch_agentcore_doc`, `list_agent_runtimes`, `get_agent_runtime`, etc.), `strands-agents` (`search_docs`, `fetch_doc`, `find_integrations`), `cloudwatch`, `appsignals`, `cloudtrail`, `awspricing`, `awsiac`, and `awsknowledge`.
+- **Zero Raw CLI Execution, Strictly Read-Only & Secret-Safe:** **Never** run raw `aws ...` or `agentcore ...` CLI commands in Bash/`run_command` to query or mutate live AWS accounts (present CLI/IaC remediation commands in Markdown strictly as operator reference snippets). **Never** invoke live mutations (`create_*`, `update_*`, `delete_*`, `InvokeAgentRuntime`, `InvokeModel`) and **never** read plaintext secrets (`secretsmanager:GetSecretValue`, `ssm:GetParameter` with `WithDecryption=True`, `.env` values, or raw memory record contents).
+- **Edge-Case Documentation Fallback:** For unmapped AWS/Bedrock/Mantle/AgentCore edge cases (e.g., Covered Model retention rules or new CRIS prefixes), run 1–2 focused queries via `awsknowledge`, `aws-mcp`, `agentcore`, or `strands-agents` documentation search tools.
+
 ## When to Use
 
 Activate this skill when the user asks to:
@@ -216,6 +222,8 @@ For Mantle GPT-5.x (where `BurnDownConsumed` does not emit):
 | Any `InvocationThrottles` > 0 in 7 days | HIGH |
 | Any model's peak >70% with growth trend | HIGH |
 | No CRIS enabled + >50% utilization (Standard only, N/A Mantle) | MEDIUM |
+
+Always state the resulting overall readiness **Verdict (`READY` / `READY WITH ACTIONS` / `NOT READY`)** alongside D3 quota calculations (`>= 1 CRITICAL` finding immediately yields **`NOT READY`**).
 
 Note: CRIS is detectable via inference profile prefixes in ModelId - `us.`, `eu.`, `apac.` (geographic) or `global.` (global). Absence of any prefix means single-region only.
 

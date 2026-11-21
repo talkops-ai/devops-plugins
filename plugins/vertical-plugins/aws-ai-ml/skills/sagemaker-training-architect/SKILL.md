@@ -19,6 +19,12 @@ metadata:
 
 Covers the entire spectrum of custom, distributed, multimodal, and AutoML training on Amazon SageMaker AI beyond Serverless LLM recipes.
 
+## MCP-Only Execution & Read-Only Safety
+
+- **MCP-Only Live Queries:** Execute **all** live AWS discovery, Bedrock/SageMaker control-plane checks, pricing lookups, IaC compliance checks, CloudWatch telemetry queries, and documentation searches **exclusively via connected MCP tools**: `aws-mcp` (`aws___run_script` using read-only `await call_boto3(...)`, `aws___search_documentation`, `aws___read_documentation`), `sagemaker` (`describe_hp_cluster`), `agentcore`, `strands-agents`, `cloudwatch`, `awspricing` (`get_pricing`, `get_bedrock_patterns`), `awsiac`, and `awsknowledge`. Offline pure-Python bundled helper scripts in `scripts/*.py` that perform local math/schema rendering without live AWS credentials are permitted when inspecting local inputs, whereas live AWS API queries must go through MCP rather than raw `aws` CLI or boto3 shell scripts.
+- **Strict Read-Only & Secret Safety:** **Never** run raw `aws ...` (not even `aws sts get-caller-identity` — always query `sts.GetCallerIdentity` inside `aws___run_script`) CLI commands in Bash/`run_command`, **never** mutate live AWS resources (`Create*`, `Update*`, `Delete*`, `InvokeModel`, `CreateEndpoint` — refuse unapproved mutations and **always include a reviewable operator `CreateTrainingJob` / Estimator configuration snippet** alongside the safe approval-gated submission and checkpoint recovery workflow), and **never** read or expose plaintext secrets (`secretsmanager:GetSecretValue`, `ssm:GetParameter` with `WithDecryption=True`, or `.env` API keys).
+- **Unmapped Edge Cases:** Query `awsknowledge` / `aws-mcp` documentation search tools (`aws___search_documentation`, `aws___read_documentation`) with 1–2 focused queries before recommending unverified DLC containers or training parameters.
+
 ## When to Activate
 
 - User wants to run a standard **SageMaker Managed Training Job (`CreateTrainingJob`)** or use the **SageMaker Python SDK v3 `@remote` decorator**
@@ -61,7 +67,7 @@ Whenever you generate a SageMaker training script or job configuration, enforce 
 5. **Managed Warm Pools for Rapid Iteration**:
    - During interactive hyperparameter tuning or script debugging, set `keep_alive_period_in_seconds=1800` (30 minutes) so subsequent training jobs reuse the warm container environment in < 30 seconds instead of waiting 4–6 minutes for instance provisioning.
 6. **VPC Isolation, KMS Encryption & MLflow Tracking**:
-   - Pass `subnets`, `security_group_ids`, `volume_kms_key`, `output_kms_key`, and `encrypt_inter_container_traffic=True`.
+   - Always set `EnableInterContainerTrafficEncryption=True` (`encrypt_inter_container_traffic=True`) alongside `subnets`, `security_group_ids`, `volume_kms_key`, and `output_kms_key` on every `CreateTrainingJob` / Estimator configuration.
    - Pass `MLFLOW_TRACKING_URI` (from `manage-mlflow`) in `environment` to log metrics and artifacts automatically.
 
 Read `references/distributed-training-and-automl.md` for complete, copy-pasteable code templates.

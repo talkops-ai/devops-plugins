@@ -1,61 +1,95 @@
 {
   "skill_name": "troubleshooting-application-failures",
   "companion_skills": [
-    "arc-region-switch",
-    "aws-billing-and-cost-management",
-    "aws-cloudformation",
-    "aws-compute",
-    "aws-deployment"
+    "debugging-lambda-timeouts",
+    "live-site-incident-postmortem",
+    "querying-aws-cloudwatch",
+    "verify-and-rollback"
   ],
   "queries": [
     {
-      "id": "trig-exp-01",
+      "id": "trig-pos-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `troubleshooting-application-failures` to help me design, validate, and troubleshoot troubleshooting application failures."
+      "prompt": "Our `order-service` application in `ap-south-1` is throwing 500 errors \u2014 discover its CloudWatch Log Groups and analyze error patterns and stack traces."
     },
     {
-      "id": "trig-exp-02",
+      "id": "trig-pos-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for troubleshooting application failures (`troubleshooting-application-failures`)."
+      "prompt": "Run CloudWatch Logs Insights queries across `/aws/apigateway/*`, `/aws/lambda/*`, and `/aws/ecs/*` to find the root cause of our application failure."
     },
     {
-      "id": "trig-imp-01",
+      "id": "trig-pos-03",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Troubleshoots failing applications by discovering and analyzing CloudWatch log groups to identify error patterns, root causes, and actionable solutions. Use when an application is"
+      "prompt": "Use CloudWatch Logs Insights `pattern` and `diff` commands to isolate new exceptions introduced during an application outage."
     },
     {
-      "id": "trig-imp-02",
+      "id": "trig-pos-04",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating troubleshooting application failures?"
+      "prompt": "Diagnose why `/aws/lambda/billing-sync` stopped receiving new CloudWatch log streams even though `Errors` metrics are firing."
     },
     {
-      "id": "trig-ctx-01",
+      "id": "trig-pos-05",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our troubleshooting application failures setup in read-only mode and highlight top risks."
+      "prompt": "Correlate cascading `SSL certificate expired`, HikariCP pool timeouts, and ALB 504 errors from our application CloudWatch logs."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot arc region switch exclusively without touching troubleshooting application failures."
+      "prompt": "Run Athena SQL queries on VPC Flow Logs in `s3tablescatalog/aws-cloudwatch`."
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Create a multi-region AWS CloudTrail trail with S3 storage."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure an encrypted SNS topic and email subscription for a CloudWatch CPU alarm."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write PromQL queries for Kubernetes pod CPU throttling in AMP."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Add Amazon Cognito PKCE login to a React web app."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure AWS Direct Connect BGP peering and SiteLink."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Use `asm-exec` to inject Secrets Manager credentials into `psql`."
     }
   ]
 }

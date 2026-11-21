@@ -1,61 +1,95 @@
 {
   "skill_name": "debugging-lambda-timeouts",
   "companion_skills": [
-    "amazon-eventbridge-event-bus",
-    "amazon-eventbridge-scheduler-and-pipes",
-    "amazon-sqs-sns-async-messaging",
-    "api-gateway",
-    "aws-lambda"
+    "aws-lambda",
+    "aws-serverless",
+    "troubleshooting-application-failures",
+    "lambda-event-source-mappings-esm"
   ],
   "queries": [
     {
-      "id": "trig-exp-01",
+      "id": "trig-pos-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `debugging-lambda-timeouts` to help me design, validate, and troubleshoot debugging lambda timeouts."
+      "prompt": "Our `order-enrichment` AWS Lambda function in `ap-south-1` is hitting `Task timed out after 30.00 seconds` \u2014 systematically debug the root cause."
     },
     {
-      "id": "trig-exp-02",
+      "id": "trig-pos-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for debugging lambda timeouts (`debugging-lambda-timeouts`)."
+      "prompt": "Diagnose why our VPC-attached Lambda hangs until timeout when calling S3 `PutObject` even though RDS queries finish in 15ms."
     },
     {
-      "id": "trig-imp-01",
+      "id": "trig-pos-03",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Debugs AWS Lambda function timeout failures by systematically analyzing function configuration, CloudWatch logs and metrics, VPC/networking, cold starts, memory constraints, and do"
+      "prompt": "Analyze CloudWatch `Duration`, `Max Memory Used`, and cold-start metrics for a Lambda function approaching its timeout limit."
     },
     {
-      "id": "trig-imp-02",
+      "id": "trig-pos-04",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating debugging lambda timeouts?"
+      "prompt": "Why does our Node.js callback Lambda hang until timeout after `callback(null, res)` when keeping a global Redis connection open?"
     },
     {
-      "id": "trig-ctx-01",
+      "id": "trig-pos-05",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our debugging lambda timeouts setup in read-only mode and highlight top risks."
+      "prompt": "Review this Python Lambda code and configuration to figure out why 10% of invocations time out under burst load."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot amazon eventbridge event bus exclusively without touching debugging lambda timeouts."
+      "prompt": "Connect an existing Lambda function to a new API Gateway REST API with `AWS_PROXY` and CORS."
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Design a single-table DynamoDB schema using `aws-dynamodb-mcp` and validate against DynamoDB Local."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure AWS Transit Gateway inter-Region peering and Network Firewall east-west inspection."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Set up a multi-region AWS CloudTrail trail encrypted with KMS."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Migrate a legacy Windows IIS .NET app to Amazon ECS using AWS App2Container."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Create a Route 53 failover routing policy backed by an HTTPS health check."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a blameless Correction of Errors (COE) postmortem with a 5-Whys timeline."
     }
   ]
 }

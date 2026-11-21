@@ -1,11 +1,11 @@
 {
   "skill_name": "agents-harden",
   "companion_skills": [
-    "agentcore-observability-setup",
-    "agentcore-ops-review",
-    "agents-build",
     "agents-connect",
-    "agents-debug"
+    "agents-optimize",
+    "agents-build",
+    "agents-debug",
+    "agentcore-ops-review"
   ],
   "queries": [
     {
@@ -13,50 +13,87 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `agents-harden` to design, validate, and troubleshoot agents harden."
+      "prompt": "Walk our AgentCore project through the production hardening checklist — IAM scoping, inbound JWT auth, KMS CMK encryption, and session timeouts."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through production best practices and operational guardrails for agents harden (`agents-harden`)."
+      "prompt": "Lock down inbound authentication on our AgentCore Runtime endpoint so only our backend or Cognito `allowedAudience` callers can invoke it."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Optimize cold starts on our AgentCore Runtime (`< 100 MB` package budget and warm-pool singletons) and configure `StopRuntimeSession` lifecycle settings."
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need an operational review and step-by-step runbook covering: Use when preparing your agent for production — IAM scoping, inbound auth (JWT, SigV4), secrets management, cold start optimization, session lifecycle, rate limiting, input validati"
+      "prompt": "Audit `app/` for direct outbound `httpx` calls and `os.getenv` secrets before we take our agent live in `ap-south-1`."
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the critical failure modes, configuration checks, and verification commands for agents harden?"
+      "prompt": "Why do Cognito access tokens with `client_id` return HTTP 403 against `allowedAudience`, and why did our PingFederate `discoveryUrl` fail RFC 8414 issuer validation?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Plan `maxVms` session quota headroom, `idleRuntimeSessionTimeout`, and `<retrieved_memory_untrusted>` prompt-injection defenses before our 500-user launch."
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our agents harden setup in read-only mode."
+      "prompt": "AppSec blocked our AgentCore production release because our execution role still has `foundation-model/*`, no `aws:SourceAccount` trust condition, and `MCPClient` initialized at module scope."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "We're going live Friday with a PCI-scoped payment support agent — verify KMS CMK requirements, input length bounds, and `InvokeAgentRuntimeCommand` isolation."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "How do we keep an AgentCore microVM alive during a background job (`add_async_task`) while aggressively reclaiming idle sessions after chat end?"
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Configure and troubleshoot agentcore observability setup exclusively without touching agents harden.",
-      "expected_alternative_skill": "agentcore-observability-setup"
+      "prompt": "Author Cedar `forbid` and `permit` tool-restriction policies (`Target___tool`) on our AgentCore Gateway Policy Engine and store an outbound Jira API key.",
+      "expected_alternative_skill": "agents-connect"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+      "prompt": "Set up `Builtin.Faithfulness` and `@custom_code_based_evaluator` CI/CD quality gates with 2% online eval sampling in `agentcore.json`.",
+      "expected_alternative_skill": "agents-optimize"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Wire multi-agent A2A specialist delegation on port `9000` using `StrandsA2AExecutor` and `@requires_access_token(auth_flow='M2M')`.",
+      "expected_alternative_skill": "agents-build"
     }
   ]
 }

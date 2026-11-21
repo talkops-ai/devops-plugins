@@ -4,7 +4,7 @@ description: >
   Package, validate, and deploy serverless applications using AWS SAM CLI or AWS CDK.
   Triggers on requests involving template.yaml, sam init, sam build, sam deploy, AWS Lambda
   functions, AWS Lambda Web Adapter, Event Source Mappings (ESMs) for SQS/Kinesis/DynamoDB/Kafka,
-  API Gateway HTTP or REST APIs, or CloudFront cache invalidations.
+  API Gateway HTTP or REST APIs, or CloudFront cache invalidations. Query live AWS state via MCP tools only (never raw aws CLI).
 ---
 
 # Serverless & AWS SAM Deployment Skill

@@ -1,13 +1,11 @@
 ---
 name: verify-and-rollback
-description: >
-  Day-2 post-deployment readiness verification, CloudWatch alarm and log triage, CloudFormation
-  failure root-cause analysis, and safe stack or service rollback. Triggers after any AWS
-  deployment completes, when a CloudFormation stack fails or enters ROLLBACK_IN_PROGRESS, or when
-  an application exhibits 5xx errors, unhealthy targets, or active CloudWatch alarms post-deploy.
+description: "Day-2 post-deployment readiness verification, CloudWatch alarm and log triage, CloudFormation failure root-cause analysis, and safe stack or service rollback. Triggers after any AWS deployment completes, when a CloudFormation stack fails or enters ROLLBACK_IN_PROGRESS, or when an application exhibits 5xx errors, unhealthy targets, or active CloudWatch alarms post-deploy. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # Post-Deployment Verification, Observability Triage & Rollback Skill
+
+> **MCP-Only Live AWS Execution:** Execute ALL live AWS API discovery, account/region preflight checks (`sts:GetCallerIdentity`), stack/cluster/resource inspection, pricing (`awspricing`/`billing`), IaC validation (`awsiac`), and documentation lookups (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___run_script` `call_boto3`, `awsknowledge`, `awsiac`, `awspricing`, `eks`, `ecs`, `cloudwatch`) — **never invoke raw `aws ...` CLI commands in shell (`run_command`)**. Offline local linters/synthesizers (`cdk synth`, `terraform validate`, `python3`) may run locally without mutating live AWS.
 
 ## Security and Scope Constraints (MANDATORY)
 

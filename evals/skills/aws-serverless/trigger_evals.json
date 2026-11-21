@@ -1,61 +1,95 @@
 {
   "skill_name": "aws-serverless",
   "companion_skills": [
-    "app-data-layer-remediation",
-    "aws-billing-and-cost-management",
-    "aws-containers",
-    "aws-lambda-microvms",
-    "aws-transform"
+    "aws-lambda",
+    "serverless-data-and-file-processing",
+    "lambda-event-source-mappings-esm",
+    "debugging-lambda-timeouts"
   ],
   "queries": [
     {
-      "id": "trig-exp-01",
+      "id": "trig-pos-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `aws-serverless` to help me design, validate, and troubleshoot aws serverless."
+      "prompt": "Should we orchestrate our new order-fulfillment saga with AWS Step Functions or AWS Lambda Durable Functions?"
     },
     {
-      "id": "trig-exp-02",
+      "id": "trig-pos-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for aws serverless (`aws-serverless`)."
+      "prompt": "Fix CORS errors on API Gateway `401`/`504` responses and explain why `ReservedConcurrentExecutions: 5` pushed healthy SQS messages into our DLQ."
     },
     {
-      "id": "trig-imp-01",
+      "id": "trig-pos-03",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Builds, deploys, manages, debugs, configures, and optimizes serverless applications on AWS using Lambda, API Gateway, Step Functions, EventBridge, and SAM/CDK. Covers cold starts,"
+      "prompt": "Compare EventBridge Scheduler, EventBridge Pipes, and EventBridge Event Buses for our event-driven architecture."
     },
     {
-      "id": "trig-imp-02",
+      "id": "trig-pos-04",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating aws serverless?"
+      "prompt": "Secure a public AWS Lambda Function URL behind CloudFront Origin Access Control (OAC) with `AuthType: AWS_IAM`."
     },
     {
-      "id": "trig-ctx-01",
+      "id": "trig-pos-05",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our aws serverless setup in read-only mode and highlight top risks."
+      "prompt": "Compare API Gateway HTTP API v2 vs REST API v1 for WAF support, usage plans, and native JWT authorizers."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot app data layer remediation exclusively without touching aws serverless."
+      "prompt": "Configure BGP communities and Link Aggregation Groups (LAG) on AWS Direct Connect."
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Migrate a COBOL mainframe batch workload using Rocket Software Enterprise Server."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Query VPC Flow Logs exported to S3 Tables Iceberg format (`s3tablescatalog/aws-cloudwatch`) in Athena."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Set up Db2 pureScale or HADR on Amazon RDS for Db2."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Create a multi-region AWS Transit Gateway peering attachment with Network Firewall east-west inspection."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Audit Security Hub V2 OCSF Exposure findings and GuardDuty `AttackSequence:` alerts."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure Route 53 DNS Firewall domain blocklists across accounts with Route 53 Profiles."
     }
   ]
 }

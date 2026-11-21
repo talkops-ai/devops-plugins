@@ -1,11 +1,11 @@
 {
   "skill_name": "agent-advisor",
   "companion_skills": [
+    "agents-get-started",
+    "agents-deploy",
     "ai-to-bedrock",
-    "architect-for-startups",
-    "azure-to-aws",
-    "contextual-offers-for-startups",
-    "gcp-to-aws"
+    "llm-to-bedrock",
+    "amazon-bedrock"
   ],
   "queries": [
     {
@@ -13,50 +13,87 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `agent-advisor` to design, validate, and troubleshoot agent advisor."
+      "prompt": "Score and compare AWS runtimes (`AgentCore`, `ECS`, `EKS`, `Lambda`, `Lambda MicroVMs`) for our Python LangGraph multi-agent system with 40-minute sessions and estimate monthly AWS cost."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through production best practices and operational guardrails for agent advisor (`agent-advisor`)."
+      "prompt": "Plan the migration of our Temporal-orchestrated AI agents to AWS — compare Temporal Cloud vs self-hosted EKS + Aurora and pick the right worker compute runtime."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We already run our CrewAI agent on ECS Fargate and want to add AgentCore Memory, Gateway, and Evaluations without migrating compute — guide us through `add_capabilities`."
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need an operational review and step-by-step runbook covering: Entry point for AI-agent work on AWS: pick a runtime, plan a migration for existing workloads, and build an executable POC — one phased flow. Triggers on: which runtime for my agen"
+      "prompt": "Should our 10-hour GPU-assisted research agent run on AgentCore MicroVMs, AgentCore Instances, ECS EC2, or EKS?"
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the critical failure modes, configuration checks, and verification commands for agent advisor?"
+      "prompt": "Can we rewrite our `@workflow.defn` Temporal agent workflows into AWS Step Functions and run Temporal long-polling workers on standard AWS Lambda?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Which AWS compute service is most cost-effective for 100,000 interactive 20-minute AI agent sessions that spend 85% of their time blocked waiting on LLM responses?"
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our agent advisor setup in read-only mode."
+      "prompt": "Decide between AgentCore `harness` vs `framework_on_runtime` and `microvms` vs `instances` for our multi-agent LangGraph app, then scope a safe Terraform POC."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Evaluate whether our GCP Cloud Run app with a FastAPI CRUD backend and a single `openai.chat.completions` call needs an agent runtime or should be redirected to an infra/LLM migration workflow."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Review our proposed agent POC Terraform where Lambda Function URL has `authorization_type = \"NONE\"` and Kubernetes injects Temporal TLS PEM certs into `TEMPORAL_TLS_CERT_PATH` via `secretKeyRef`."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Configure and troubleshoot ai to bedrock exclusively without touching agent advisor.",
-      "expected_alternative_skill": "ai-to-bedrock"
+      "prompt": "Rewrite our Python `openai` and `google-genai` SDK calls onto Amazon Bedrock `Converse` and `bedrock-mantle` (`gpt-5.6-terra`) on a git branch.",
+      "expected_alternative_skill": "llm-to-bedrock"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+      "prompt": "Fine-tune Qwen-2.5-7B on SageMaker Serverless Model Customization using `RLVRTrainer` and validate custom LLM-as-Judge evaluation metrics.",
+      "expected_alternative_skill": "aws-ai-ml"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Investigate why our live AgentCore Runtime is throwing 5xx errors and `PolicyDenyCount` spikes in CloudWatch GenAI Observability.",
+      "expected_alternative_skill": "agents-debug"
     }
   ]
 }

@@ -69,16 +69,21 @@ codes with `get-service-quota` and `request-service-quota-increase`.
 
 | Quota Name | Quota Code | Default | Unit |
 |-----------|-----------|---------|------|
-| Fargate On-Demand resource count | L-790F3D0E | 500 | None |
-| Fargate Spot resource count | L-36FBB829 | 500 | None |
+| Fargate On-Demand vCPU resource count | L-3032A538 | 6 | vCPU |
+| Fargate On-Demand resource count (legacy) | L-790F3D0E | 500 | None |
+| Fargate Spot vCPU / resource count | L-36FBB829 | 6 | vCPU |
 
 ## Amazon DynamoDB
 
 | Quota Name | Quota Code | Default | Unit |
 |-----------|-----------|---------|------|
 | Maximum number of tables | L-F98FE922 | 2500 | None |
-| Account-level read throughput limit (on-demand, per region) | L-B5A90E5F | 40000 | RCU |
-| Account-level write throughput limit (on-demand, per region) | L-4CF20C20 | 40000 | WCU |
+| Table-level read throughput limit | L-CF0CBE56 | 40000 | RCU |
+| Table-level write throughput limit | L-AB614373 | 40000 | WCU |
+| Account-level read throughput limit (provisioned, per region) | L-34F6A552 | 80000 | RCU |
+| Account-level write throughput limit (provisioned, per region) | L-34F8CCC8 | 80000 | WCU |
+| Account-level read throughput limit (on-demand, legacy) | L-B5A90E5F | 40000 | RCU |
+| Account-level write throughput limit (on-demand, legacy) | L-4CF20C20 | 40000 | WCU |
 
 ## AWS CloudFormation
 

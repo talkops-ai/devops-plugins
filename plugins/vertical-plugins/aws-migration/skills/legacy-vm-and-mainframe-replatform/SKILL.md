@@ -1,9 +1,11 @@
 ---
 name: legacy-vm-and-mainframe-replatform
-description: "Guides legacy VM containerization via AWS App2Container (A2C 5-stage workflow for Java and .NET to ECS, EKS Standard/Auto Mode, App Runner) standalone and via AWS MGN SSM automation. Directs mainframe modernization via AWS Transform (aws-transform-mcp), comparing AWS Blu Age automated refactoring vs Rocket Software replatforming with EBCDIC-to-ASCII and dataset conversion. Prohibits M2 Managed Runtime for new customers."
+description: "Guides legacy VM containerization via AWS App2Container (A2C 5-stage workflow for Java and .NET to ECS, EKS, App Runner), AWS MGN SSM automation, and stateful long-lived VM replatforming onto AWS Lambda MicroVMs (/ready, /validate, /run snapshot hooks). Directs mainframe modernization via AWS Transform (Blu Age refactoring vs Rocket Software replatforming, EBCDIC-to-ASCII, VSAM conversion; prohibits M2 Managed Runtime for new customers). Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # Legacy VM & Mainframe Replatforming
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, caller/account verification (`sts:GetCallerIdentity`), resource inspection, logs/metrics queries, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___call_aws` / `aws___run_script`, `cloudwatch`, `cloudtrail`, `prometheus`, `dynamodb`, `serverless`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**.
 
 ## Overview
 

@@ -1,11 +1,11 @@
 {
   "skill_name": "agents-connect",
   "companion_skills": [
-    "agentcore-observability-setup",
-    "agentcore-ops-review",
     "agents-build",
-    "agents-debug",
-    "agents-deploy"
+    "agents-harden",
+    "agents-get-started",
+    "agents-pay",
+    "agents-debug"
   ],
   "queries": [
     {
@@ -13,50 +13,87 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `agents-connect` to design, validate, and troubleshoot agents connect."
+      "prompt": "Connect my AgentCore agent to an external Jira MCP server and a Lambda tool target through AgentCore Gateway."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through production best practices and operational guardrails for agents connect (`agents-connect`)."
+      "prompt": "Author a Cedar policy on our AgentCore Gateway Policy Engine so only `finance_lead` users can call the `issue_refund` tool."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "How do I store an outbound third-party API key and OAuth client credentials in AgentCore so they aren't `None` or exposed in env vars after deploy?"
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need an operational review and step-by-step runbook covering: Use when connecting your agent to external APIs, tools, or services via Gateway, or restricting tool access with Cedar policies. Handles gateway setup, target types, outbound auth "
+      "prompt": "Should our agent call our 40-endpoint Stripe OpenAPI spec directly via `httpx` in Python, or register it as a Gateway target with semantic tool search?"
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the critical failure modes, configuration checks, and verification commands for agents connect?"
+      "prompt": "Wire Request and Response Interceptor Lambdas on our AgentCore Gateway to inject verified JWT tenant IDs and scrub PII from tool outputs."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Implement Two-Step On-Behalf-Of (OBO) RFC 8693 token exchange with KMS asymmetric signing so our agent passes caller identity to downstream APIs."
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our agents connect setup in read-only mode."
+      "prompt": "We tried configuring outbound `api-key` auth on an `mcp-server` target in `agentcore.json` and got a schema error — what's the supported way to pass that key?"
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "After attaching a Cedar Policy Engine in `ENFORCE` mode, every single tool call on our Gateway started returning `DENY`, and our `Target__tool` action string didn't match."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Our downstream MCP target returned JSON-RPC `-32022` when sent `MCP-Protocol-Version: 2026-07-28` — how should our Gateway target `protocolConfiguration` handle negotiation safely?"
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Configure and troubleshoot agentcore observability setup exclusively without touching agents connect.",
-      "expected_alternative_skill": "agentcore-observability-setup"
+      "prompt": "Lock down inbound `CUSTOM_JWT` `allowedAudience` authentication, KMS CMK encryption, and cold-start singleton initialization so only our mobile app can call our AgentCore Runtime.",
+      "expected_alternative_skill": "agents-harden"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+      "prompt": "Configure private subnets, NAT Gateway routing, and VPC Endpoints (`ecr.api`, `ecr.dkr`, `s3`, `logs`) so our AgentCore Runtime in `networkMode: VPC` can reach outbound endpoints.",
+      "expected_alternative_skill": "agents-build"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Create and host a brand-new Python MCP server project from scratch using `agentcore create --protocol MCP`.",
+      "expected_alternative_skill": "agents-get-started"
     }
   ]
 }

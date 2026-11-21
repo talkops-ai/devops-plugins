@@ -4,9 +4,8 @@ description: >
   Generate validated AWS architecture diagrams as draw.io XML using official AWS4 icon libraries.
   Use whenever the user asks to create, generate, design, or visualize AWS architecture diagrams,
   cloud infrastructure diagrams, or system design visuals from a codebase (CDK, CloudFormation,
-  SAM, Terraform) or from scratch. Exports .drawio files with automatic validation.
+  SAM, Terraform) or from scratch. Exports .drawio files with automatic validation. Query live AWS state via MCP tools only (never raw aws CLI).
 argument-hint: "[describe your architecture or say 'analyze' to scan codebase]"
-allowed-tools: Bash, Write, Read, Glob, Grep
 user-invocable: true
 ---
 
@@ -58,13 +57,13 @@ Load these reference files before emitting XML:
 ### Step 4: Validate, Fix & Generate Preview URL
 
 1. Write the uncompressed `<mxfile><diagram><mxGraphModel>` XML to `./docs/<name>.drawio`.
-2. The `PostToolUse` hook automatically runs post-processing and `validate_drawio.py`. If errors are reported, fix and rewrite until `VALIDATION PASSED`.
-3. Run the badge overlap fixer and generate the browser preview URL:
+2. The `PostToolUse` hook automatically runs post-processing and `validate_drawio.py`. You can also invoke the validator directly (`python3 skills/aws-architecture-diagram/scripts/lib/validate_drawio.py ./docs/<filename>.drawio` or `${PLUGIN_ROOT}/scripts/lib/validate_drawio.py`). If errors are reported, fix and rewrite until `VALIDATION PASSED`.
+3. Run the badge overlap fixer and generate the browser preview URL (pass `--open` ONLY if the user explicitly asks to launch a browser window):
    ```bash
-   python3 ${PLUGIN_ROOT}/scripts/lib/fix_step_badges.py ./docs/<filename>.drawio
-   python3 ${PLUGIN_ROOT}/scripts/lib/drawio_url.py ./docs/<filename>.drawio --open
+   python3 skills/aws-architecture-diagram/scripts/lib/fix_step_badges.py ./docs/<filename>.drawio
+   python3 skills/aws-architecture-diagram/scripts/lib/drawio_url.py ./docs/<filename>.drawio
    ```
-4. Present the file path, included services, validation status, clickable `app.diagrams.net` preview URL, and concise alt text (<100 chars).
+4. Present the file path, included services, validation status, clickable `app.diagrams.net` preview URL, and concise alt text (target 50–80 chars so it stays strictly <100 chars).
 
 ## Critical XML & Layout Invariants
 

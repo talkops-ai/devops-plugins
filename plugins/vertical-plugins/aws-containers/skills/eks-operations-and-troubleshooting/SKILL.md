@@ -1,9 +1,11 @@
 ---
 name: eks-operations-and-troubleshooting
-description: Diagnose and remediate Amazon EKS production incidents across Pod lifecycle failures (CrashLoopBackOff, OOMKilled, ImagePullBackOff, Pending/Unschedulable), Karpenter and EKS Auto Mode node provisioning, VPC CNI IP exhaustion, CoreDNS latency, EBS/EFS CSI volume mounts, and EKS Pod Identity/IRSA. Use when the user asks about EKS troubleshooting, Kubernetes pod failures, node NotReady states, Karpenter consolidation, or EKS cluster upgrades.
+description: "Diagnose and remediate Amazon EKS production incidents across Pod lifecycle failures (CrashLoopBackOff, OOMKilled, ImagePullBackOff, Pending/Unschedulable), Karpenter and EKS Auto Mode node provisioning, VPC CNI IP exhaustion, CoreDNS latency, EBS/EFS CSI volume mounts, and EKS Pod Identity/IRSA. Use when the user asks about EKS troubleshooting, Kubernetes pod failures, node NotReady states, Karpenter consolidation, or EKS cluster upgrades. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # Amazon EKS Operations & Production Troubleshooting Guide
+
+> **MCP-Only Live AWS Execution:** Execute ALL live AWS API discovery, account/region preflight checks (`sts:GetCallerIdentity`), stack/cluster/resource inspection, pricing (`awspricing`/`billing`), IaC validation (`awsiac`), and documentation lookups (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___run_script` `call_boto3`, `awsknowledge`, `awsiac`, `awspricing`, `eks`, `ecs`, `cloudwatch`) — **never invoke raw `aws ...` CLI commands in shell (`run_command`)**. Offline local linters/synthesizers (`cdk synth`, `terraform validate`, `python3`) may run locally without mutating live AWS.
 
 Use this skill whenever triaging or operating workloads on **Amazon EKS** (Standard Managed Node Groups, Karpenter, Fargate, or **EKS Auto Mode**). Always combine the `eks` MCP server with `cloudwatch`, `prometheus`, and `cloudtrail` for full-stack correlation.
 

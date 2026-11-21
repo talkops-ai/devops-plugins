@@ -1,61 +1,95 @@
 {
   "skill_name": "querying-aws-cloudwatch",
   "companion_skills": [
-    "arc-region-switch",
-    "aws-billing-and-cost-management",
-    "aws-cloudformation",
-    "aws-compute",
-    "aws-deployment"
+    "troubleshooting-application-failures",
+    "auditing-cloudtrail-forensics",
+    "setting-up-cloudtrail-multi-region",
+    "prometheus-and-grafana-sre"
   ],
   "queries": [
     {
-      "id": "trig-exp-01",
+      "id": "trig-pos-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `querying-aws-cloudwatch` to help me design, validate, and troubleshoot querying aws cloudwatch."
+      "prompt": "Run Athena SQL queries on VPC Flow Logs and WAF logs exported to Apache Iceberg tables in `s3tablescatalog/aws-cloudwatch`."
     },
     {
-      "id": "trig-exp-02",
+      "id": "trig-pos-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for querying aws cloudwatch (`querying-aws-cloudwatch`)."
+      "prompt": "Enable CloudWatch Logs S3 Tables integration (`observabilityadmin create-s3-table-integration`) with KMS encryption and Lake Formation permissions."
     },
     {
-      "id": "trig-imp-01",
+      "id": "trig-pos-03",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Runs SQL queries on CloudWatch Logs data exported as Apache Iceberg tables in S3 Tables. Covers VPC Flow Logs, WAF logs, CloudFront access logs, Route 53 resolver logs, Network Fir"
+      "prompt": "Correlate VPC Flow Logs (`amazon_vpc__flow`) with S3 object journal tables in Athena using CloudWatch S3 Tables."
     },
     {
-      "id": "trig-imp-02",
+      "id": "trig-pos-04",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating querying aws cloudwatch?"
+      "prompt": "Fix `CATALOG_NOT_FOUND` on `s3tablescatalog/aws-cloudwatch` and inspect schemas with `glue get-tables` before writing SQL."
     },
     {
-      "id": "trig-ctx-01",
+      "id": "trig-pos-05",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our querying aws cloudwatch setup in read-only mode and highlight top risks."
+      "prompt": "Query `amazon_eks__audit` and `amazon_route53resolver__query` system tables with SQL in Athena."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot arc region switch exclusively without touching querying aws cloudwatch."
+      "prompt": "Discover application CloudWatch Log Groups and debug stack traces for a failing payment API."
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Create a multi-region AWS CloudTrail trail with S3 storage."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Set up an encrypted SNS topic for CloudWatch alarm email notifications."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write PromQL queries against Amazon Managed Service for Prometheus."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Add Amazon Cognito PKCE login to a React web app."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure AWS Direct Connect BGP peering and SiteLink."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Run an AWS Well-Architected Framework scorecard review."
     }
   ]
 }

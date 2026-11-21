@@ -6,7 +6,7 @@
 
 > **Resolving the file system's security groups (SEC-01, SEC-02, SEC-08).** FSx for NetApp ONTAP
 > attaches its security groups to the **elastic network interfaces (ENIs)** it creates — there is no
-> security-group field on the file system itself. Resolve them from observed data: read
+> security-group field on the file system itself. Resolve them from observed data — and **explicitly state this `NetworkInterfaceIds -> DescribeNetworkInterfaces -> SecurityGroups` resolution path in your security findings**: read
 > `NetworkInterfaceIds` from `fsx describe-file-systems`, call `ec2 describe-network-interfaces
 > --network-interface-ids <those IDs>`, and read each interface's `Groups[].GroupId`. Feed those group
 > IDs to `ec2 describe-security-groups`. If `NetworkInterfaceIds` is absent or the ENI lookup fails, the

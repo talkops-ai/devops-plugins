@@ -1,61 +1,95 @@
 {
   "skill_name": "aws-well-architected-review",
   "companion_skills": [
-    "app-data-layer-remediation",
-    "aws-billing-and-cost-management",
-    "aws-containers",
-    "aws-lambda-microvms",
-    "aws-serverless"
+    "aws-threat-modeling",
+    "aws-finops-and-cost",
+    "aws-security",
+    "iac-architecture-advisor"
   ],
   "queries": [
     {
-      "id": "trig-exp-01",
+      "id": "trig-pos-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `aws-well-architected-review` to help me design, validate, and troubleshoot aws well architected review."
+      "prompt": "Perform an AWS Well-Architected Framework maturity scorecard (`score` mode) across all 6 pillars for our ECS + RDS workload."
     },
     {
-      "id": "trig-exp-02",
+      "id": "trig-pos-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for aws well architected review (`aws-well-architected-review`)."
+      "prompt": "Run a quick question-level AWS Well-Architected review (WAR) on our payment architecture with Eisenhower-prioritized remediation."
     },
     {
-      "id": "trig-imp-01",
+      "id": "trig-pos-03",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Performs a full AWS Well-Architected Framework review evaluating every framework question across all pillars discovered from the live AWS documentation by analyzing code, IaC, and"
+      "prompt": "Execute a Security and Reliability pillar-scoped AWS Well-Architected review against our Terraform codebase citing canonical `SEC` and `REL` BP IDs."
     },
     {
-      "id": "trig-imp-02",
+      "id": "trig-pos-04",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating aws well architected review?"
+      "prompt": "Assess our API Gateway + Lambda + DynamoDB service against the AWS Well-Architected Serverless Applications Lens."
     },
     {
-      "id": "trig-ctx-01",
+      "id": "trig-pos-05",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our aws well architected review setup in read-only mode and highlight top risks."
+      "prompt": "Evaluate our cloud readiness and cross-pillar trade-offs across Operational Excellence, Security, Reliability, Performance, Cost, and Sustainability."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot app data layer remediation exclusively without touching aws well architected review."
+      "prompt": "Run the 41-check `wa_review.py` script specifically for our Amazon DocumentDB 8.0 cluster."
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Execute a STRIDE threat model with `.threatmodel/` DFD export and OWASP LLM controls."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Write PromQL multi-window SLO burn-rate alerts in Amazon Managed Service for Prometheus."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Run Athena SQL queries on VPC Flow Logs in `s3tablescatalog/aws-cloudwatch`."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Set up a multi-region AWS CloudTrail trail with S3 storage."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure AWS Direct Connect BGP peering and SiteLink."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Use `asm-exec` to inject Secrets Manager credentials into `psql`."
     }
   ]
 }

@@ -1,11 +1,13 @@
 ---
 name: aws-security
-description: "Covers AWS security services and workflows — Security Hub V2 (OCSF) findings, connectors, aggregators, automation rules, and security posture summaries; Security Hub CSPM (V1/ASFF) controls and compliance standards; GuardDuty threat findings; Inspector vulnerability findings; Macie sensitive data findings; Detective investigation; and Security Lake configuration and data aggregation. Applicable when questions involve security posture, Exposure findings, CSPM failed controls, threat findings, vulnerability findings, sensitive data findings, automation rules, or cross-service security configuration across AWS environments. Procedures use standard AWS CLI syntax and work with or without the AWS MCP server."
+description: "Covers AWS security services and workflows — Security Hub V2 (OCSF) findings, connectors, aggregators, automation rules, and security posture summaries; Security Hub CSPM (V1/ASFF) controls and compliance standards; GuardDuty threat findings; Inspector vulnerability findings; Macie sensitive data findings; Detective investigation; and Security Lake configuration and data aggregation. Applicable when questions involve security posture, Exposure findings, CSPM failed controls, threat findings, vulnerability findings, sensitive data findings, automation rules, or cross-service security configuration across AWS environments. Procedures use standard AWS CLI syntax and work with or without the AWS MCP server. Query live AWS state via MCP tools only (never raw aws CLI)."
 metadata:
   version: "1"
 ---
 
 # AWS Security
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, caller/account verification (`sts:GetCallerIdentity`), resource inspection, logs/metrics queries, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___call_aws` / `aws___run_script`, `cloudwatch`, `cloudtrail`, `prometheus`, `dynamodb`, `serverless`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**.
 
 **STOP — Do not answer from general knowledge.** Before responding to any security service question, match the user's request against the sub-skill registry below and follow its procedure. If the procedure says to load a reference file, you MUST read it before providing operational guidance. Never skip the routing step.
 

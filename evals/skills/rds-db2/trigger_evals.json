@@ -1,11 +1,11 @@
 {
   "skill_name": "rds-db2",
   "companion_skills": [
-    "amazon-aurora-mysql",
-    "amazon-aurora-postgresql",
-    "amazon-documentdb",
-    "amazon-dynamodb",
-    "amazon-elasticache"
+    "rds-oracle",
+    "rds-sqlserver",
+    "rds-oss",
+    "dms-schema-conversion",
+    "dms-data-migration-execution"
   ],
   "queries": [
     {
@@ -13,49 +13,84 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `rds-db2` to help me design, validate, and troubleshoot rds db2."
+      "prompt": "Restore a multi-part IBM Db2 backup from S3 into Amazon RDS for Db2 using rdsadmin.restore_database and rollforward_database."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Create a cross-region DR standby replica for Amazon RDS for Db2 using --replica-mode mounted."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for rds db2 (`rds-db2`)."
+      "prompt": "Plan a near-zero-downtime migration from mainframe IBM Db2 for z/OS to Amazon RDS for Db2."
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Provisions, connects, migrates, and operates Amazon RDS for Db2. Applies when provisioning with IBM customer and site IDs (License Manager, BYOL, GovCloud), connecting over TLS, fi"
+      "prompt": "Our Db2 client fails with SQL30082N reason 24 USERNAME AND/OR PASSWORD INVALID after Secrets Manager rotated the RDS master password."
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Can we lift and shift unfenced external C and COBOL stored procedures onto managed Db2 on AWS, or rewrite to SQL PL / sqlj.install_jar?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating rds db2?"
+      "prompt": "Fix GSKit SSL errors on TCP port 50443 and AD Kerberos domain-join RPC port issues for our Db2 RDS instance."
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our rds db2 setup in read-only mode and highlight top risks."
+      "prompt": "Audit ap-south-1 for db2-ae and db2-se RDS instances and check BYOK KMS encryption and S3_INTEGRATION roles."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Configure Db2 audit log archival to S3 and compare BYOL vs AWS Marketplace licensing for db2-ae."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Why does AWS SCT reject Db2 for z/OS as a source and require ADB2GEN + Q Replication instead?"
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot amazon aurora mysql exclusively without touching rds db2."
+      "prompt": "Configure Oracle Data Pump S3_INTEGRATION and CMAN connection pooling on RDS for Oracle."
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Set up Always On Availability Groups and native .bak S3 restores on RDS for SQL Server."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Replatform legacy COBOL batch JCL jobs onto AWS Mainframe Modernization managed runtime."
     }
   ]
 }

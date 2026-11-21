@@ -4,13 +4,13 @@
     {
       "id": "eval-01-io-optimized-cost-advisory",
       "prompt": "We are running an Aurora PostgreSQL cluster in ap-south-1 with 2 db.r6g.2xlarge instances, 800 GiB of storage, and 1,200 million monthly I/O requests. Check our ap-south-1 environment and pricing, and tell me whether we should switch to Aurora I/O-Optimized or stay on Standard storage with a full monthly cost breakdown.",
-      "expected_output": "Activates the amazon-aurora-postgresql skill, uses connected MCP tools or bundled skill tools in read-only mode against ap-south-1, and presents a side-by-side monthly cost comparison for 2x db.r6g.2xlarge (800 GiB storage, 1,200M I/Os): Aurora Standard (~$2,052.26/mo: $1,724.26 compute, $88.00 storage, $240.00 I/O) vs Aurora I/O-Optimized (~$2,421.54/mo: $2,241.54 compute, $180.00 storage, $0.00 I/O). Notes that I/O is ~11.7%–12.7% of the Standard total (below the ~25% breakeven threshold) and recommends staying on Aurora Standard.",
+      "expected_output": "Activates the amazon-aurora-postgresql skill, uses connected MCP tools or bundled skill tools in read-only mode against ap-south-1, and presents a side-by-side monthly cost comparison for 2x db.r6g.2xlarge (800 GiB storage, 1,200M I/Os): Aurora Standard (~$2,052.26/mo: $1,724.26 compute, $88.00 storage, $240.00 I/O) vs Aurora I/O-Optimized (~$2,421.54/mo: $2,241.54 compute, $180.00 storage, $0.00 I/O). Notes that I/O is ~11.7%\u201312.7% of the Standard total (below the ~25% breakeven threshold) and recommends staying on Aurora Standard.",
       "files": [],
       "expectations": [
         "Activates the amazon-aurora-postgresql skill and performs only read-only operations in ap-south-1",
         "Uses connected AWS MCP tools (rather than raw aws CLI shell commands when an MCP tool is available) to query AWS state or pricing",
         "Includes a side-by-side monthly cost breakdown comparing Aurora Standard and Aurora I/O-Optimized across compute, storage, I/O, and total cost in ap-south-1",
-        "States I/O cost as a percentage of the Standard total (~11.7%–12.7%), compares it against the ~25% breakeven threshold, and recommends staying on Aurora Standard"
+        "States I/O cost as a percentage of the Standard total (~11.7%\u201312.7%), compares it against the ~25% breakeven threshold, and recommends staying on Aurora Standard"
       ]
     },
     {
@@ -20,7 +20,7 @@
       "files": [],
       "expectations": [
         "Activates the amazon-aurora-postgresql skill and performs only read-only operations in ap-south-1",
-        "Uses connected AWS MCP tools when querying AWS pricing or cluster metadata instead of raw aws CLI shell commands",
+        "Uses bundled offline analyzer scripts (`acu_calculator.py`) and/or connected AWS MCP tools (with zero raw aws CLI shell commands) to evaluate ap-south-1 pricing",
         "Provides concrete ACU sizing recommendations (min ACU 3.5, max ACU 16.0, typical ACU 6.0, peak ACU 12.0) for the 35% P95 / 72% max CPU workload",
         "Presents a side-by-side monthly cost comparison between Provisioned db.r6g.xlarge (~$486.43/mo) and Serverless v2 (~$843.40/mo) in ap-south-1 and states the recommendation as not_recommended"
       ]
@@ -32,7 +32,7 @@
       "files": [],
       "expectations": [
         "Activates the amazon-aurora-postgresql skill and performs only read-only pricing/offering lookups in ap-south-1",
-        "Uses connected AWS MCP tools when querying AWS pricing or offerings instead of raw aws CLI shell commands",
+        "Uses bundled offline analyzer scripts (`commitment_pricing_analyzer.py`) and/or connected AWS MCP tools (with zero raw aws CLI shell commands) to evaluate ap-south-1 commitment pricing",
         "Definitively states that db.r6g is not eligible for Database Savings Plans and recommends migrating to db.r7g or db.r8g to unlock Database Savings Plan eligibility",
         "Explains that 3-year Database Savings Plans do not exist for Aurora (DSP is 1-year No Upfront only) and presents a comparison table showing On-Demand vs 1-year and 3-year Reserved Instances with monthly costs and savings percentages"
       ]
@@ -95,13 +95,13 @@
     },
     {
       "id": "eval-09-high-cpu-and-slow-query-triage",
-      "prompt": "Our Aurora PostgreSQL writer instance in ap-south-1 suddenly spiked to 95% CPU and application queries are timing out. I'm new to AWS database monitoring — how do I check in AWS and inside PostgreSQL whether this is caused by missing indexes, lock contention, or a bad query plan, and what exact read-only diagnostic SQL queries should I run?",
+      "prompt": "Our Aurora PostgreSQL writer instance in ap-south-1 suddenly spiked to 95% CPU and application queries are timing out. I'm new to AWS database monitoring \u2014 how do I check in AWS and inside PostgreSQL whether this is caused by missing indexes, lock contention, or a bad query plan, and what exact read-only diagnostic SQL queries should I run?",
       "expected_output": "Activates the relevant database skill(s), explains how to triage the spike in AWS using CloudWatch (`CPUUtilization`, `DBLoad`, `DatabaseConnections`) and Performance Insights (`DBLoad` vs `Max vCPU`, top wait events such as `CPU`, `LWLock:BufferMapping`, `Lock:transactionid`, `IO:DataFileRead`), and provides concrete read-only PostgreSQL SQL queries against `pg_stat_activity` (active and blocking sessions), `pg_locks`, `pg_stat_statements` (top CPU/time-consuming queries), and `EXPLAIN (ANALYZE, BUFFERS)`.",
       "files": [],
       "expectations": [
         "Activates the amazon-aurora-postgresql skill (and/or db-observability-and-wait-triage) and performs only read-only operations",
         "Explains how to use Performance Insights (`DBLoad` vs `Max vCPU` and wait events such as `CPU`, `LWLock`, `Lock`, `IO`) and CloudWatch metrics to isolate the bottleneck",
-        "Provides concrete read-only SQL diagnostic queries using `pg_stat_activity`, `pg_locks`, `pg_stat_statements`, and `EXPLAIN (ANALYZE, BUFFERS)`"
+        "Provides concrete read-only SQL diagnostic queries using `pg_stat_activity` (with `pg_blocking_pids` and/or `pg_locks`), `pg_stat_statements`, and `EXPLAIN (ANALYZE, BUFFERS)`"
       ]
     },
     {
@@ -129,10 +129,10 @@
     {
       "id": "eval-12-pgvector-rag-similarity-search-setup",
       "prompt": "Our team is building a RAG application and needs to store and query 5 million 1536-dimensional OpenAI embeddings. Can we use Aurora PostgreSQL in ap-south-1 for vector similarity search instead of buying a separate vector database? Show how to set up `pgvector`, how to choose between HNSW and IVFFlat indexes, and which PostgreSQL / Aurora settings help speed up index builds and queries.",
-      "expected_output": "Activates the amazon-aurora-postgresql skill, confirms native `pgvector` support on Aurora PostgreSQL, provides the SQL to enable and use `pgvector` (`CREATE EXTENSION IF NOT EXISTS vector;`, `vector(1536)` column, and distance operators `<=>` cosine, `<->` L2, `<#>` inner product), compares HNSW (`m`, `ef_construction`, `hnsw.ef_search` — higher recall and query speed, no training step required, higher memory usage) vs IVFFlat (`lists`, `ivfflat.probes` — faster build/lower memory, requires data present before indexing), and recommends tuning `maintenance_work_mem`, `max_parallel_maintenance_workers`, and considering Aurora Optimized Reads (`r6gd`/`r8gd` NVMe cache) when working sets exceed buffer cache.",
+      "expected_output": "Activates the amazon-aurora-postgresql skill, confirms native `pgvector` support on Aurora PostgreSQL, provides the SQL to enable and use `pgvector` (`CREATE EXTENSION IF NOT EXISTS vector;`, `vector(1536)` column, and distance operators `<=>` cosine, `<->` L2, `<#>` inner product), compares HNSW (`m`, `ef_construction`, `hnsw.ef_search` \u2014 higher recall and query speed, no training step required, higher memory usage) vs IVFFlat (`lists`, `ivfflat.probes` \u2014 faster build/lower memory, requires data present before indexing), and recommends tuning `maintenance_work_mem`, `max_parallel_maintenance_workers`, and considering Aurora Optimized Reads (`r6gd`/`r8gd` NVMe cache) when working sets exceed buffer cache.",
       "files": [],
       "expectations": [
-        "Activates the amazon-aurora-postgresql skill and provides concrete SQL for enabling `pgvector` (`CREATE EXTENSION vector`), defining a `vector(1536)` column, and querying with `pgvector` distance operators (`<=>`, `<->`, `<#>`)",
+        "Activates the amazon-aurora-postgresql skill and provides concrete SQL for enabling `pgvector` (`CREATE EXTENSION`), defining a `vector(1536)` or `halfvec(1536)` column, and querying with `pgvector` distance operators (`<=>`, `<#>`, and/or `<->`)",
         "Compares HNSW (`m`, `ef_construction`, `hnsw.ef_search`) vs IVFFlat (`lists`, `ivfflat.probes`) across recall/latency, memory footprint, and build behavior",
         "Recommends concrete PostgreSQL and Aurora tuning parameters for vector workloads (`maintenance_work_mem`, `max_parallel_maintenance_workers`, `shared_buffers`, and/or Aurora Optimized Reads)"
       ]
@@ -195,12 +195,12 @@
     {
       "id": "eval-18-migrating-rds-postgresql-to-aurora-postgresql",
       "prompt": "We currently run a 1.5 TB standard Amazon RDS for PostgreSQL 15 instance in ap-south-1 and want to migrate it to Aurora PostgreSQL with minimal production downtime. What are the supported migration paths from RDS PostgreSQL to Aurora PostgreSQL, and how do they compare in terms of downtime, complexity, and rollback safety?",
-      "expected_output": "Activates the amazon-aurora-postgresql skill, compares the supported RDS PostgreSQL -> Aurora PostgreSQL migration methods: (1) **Aurora Read Replica** created directly from the source RDS PostgreSQL instance and promoted to standalone Aurora cluster once `ReplicaLag` is zero (low downtime of a few minutes), (2) **RDS Blue/Green Deployment** or **PostgreSQL Logical Replication / AWS DMS** (near-zero downtime with safe pre-cutover testing and instant rollback by keeping the source RDS instance untouched), and (3) **RDS Snapshot Migration** (`migrate-snapshot` / restore snapshot to Aurora — simplest, but highest downtime).",
+      "expected_output": "Activates the amazon-aurora-postgresql skill, compares the supported RDS PostgreSQL -> Aurora PostgreSQL migration methods: (1) **Aurora Read Replica** created directly from the source RDS PostgreSQL instance and promoted to standalone Aurora cluster once `ReplicaLag` is zero (low downtime of a few minutes), (2) **RDS Blue/Green Deployment** or **PostgreSQL Logical Replication / AWS DMS** (near-zero downtime with safe pre-cutover testing and instant rollback by keeping the source RDS instance untouched), and (3) **RDS Snapshot Migration** (`migrate-snapshot` / restore snapshot to Aurora \u2014 simplest, but highest downtime).",
       "files": [],
       "expectations": [
         "Activates the amazon-aurora-postgresql skill and compares multiple migration paths from RDS for PostgreSQL to Aurora PostgreSQL (Aurora Read Replica promotion, Blue/Green or Logical Replication / DMS, and Snapshot restore)",
         "Compares the expected downtime, prerequisites, and rollback characteristics of each migration path for a 1.5 TB database",
-        "Outlines pre-migration and cutover validation steps (checking extensions, parameter compatibility, replication lag, and stopping writes before cutover)"
+        "Outlines cutover steps (monitoring replication lag to zero and stopping application writes on the source RDS instance before cutover)"
       ]
     },
     {
@@ -222,7 +222,7 @@
       "expectations": [
         "Activates the amazon-aurora-postgresql skill and uses connected AWS MCP tools in read-only mode to check ap-south-1 state or pricing",
         "Explains the major hidden Aurora PostgreSQL cost drivers: Storage I/O (`StorageIOUsage` and the 25% I/O-Optimized threshold), backup/snapshot storage exceeding 100% of cluster volume size (`Aurora:BackupUsage`), Serverless v2 ACU scaling runaway (`ServerlessDatabaseCapacity`), and extended Performance Insights / CloudWatch log retention",
-        "Provides a concrete diagnostic checklist mapping Cost Explorer usage types and CloudWatch metrics (`VolumeReadIOPs`, `VolumeWriteIOPs`, `VolumeBytesUsed`, `ServerlessDatabaseCapacity`) to each cost driver"
+        "Provides a concrete diagnostic checklist mapping Cost Explorer usage types and CloudWatch metrics (`VolumeReadIOPs`, `VolumeWriteIOPs`, `ServerlessDatabaseCapacity`, and storage/backup metrics such as `VolumeBytesUsed` or `TotalBackupStorageBilled`/`BackupRetentionPeriodStorageUsed`) to each cost driver"
       ]
     }
   ]

@@ -16,7 +16,7 @@ This skill has two operational modes: (1) **advisory** — pricing math is local
 The skill does not create, read, write, or transmit credentials.
 
 - You MUST NOT prompt the user to enter AWS access keys or Cassandra passwords into the chat.
-- The user runs `aws configure`, `ada credentials update`, or their cluster-specific authentication flow **outside** the skill before capturing diagnostics.
+- The user runs `aws configure`, or their cluster-specific authentication flow **outside** the skill before capturing diagnostics.
 - You SHOULD recommend storing service-specific credentials (username/password for Keyspaces) in AWS Secrets Manager with automatic rotation enabled, rather than in application configuration files or environment variables.
 - When the target is Amazon Keyspaces itself (e.g., for a TCO self-comparison), link the user to [Keyspaces IAM authentication](https://docs.aws.amazon.com/keyspaces/latest/devguide/programmatic.credentials.html) and the [SigV4 authentication plugin](https://docs.aws.amazon.com/keyspaces/latest/devguide/programmatic.credentials.html#programmatic.credentials.SigV4) rather than walking them through it in this skill.
 

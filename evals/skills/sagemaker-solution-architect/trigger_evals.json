@@ -1,11 +1,11 @@
 {
   "skill_name": "sagemaker-solution-architect",
   "companion_skills": [
-    "aiml-access-diagnostics",
-    "aiml-gpu-training-cluster-investigation",
-    "bedrock-adoption-readiness",
-    "bedrock-operation-review",
-    "dataset-evaluation"
+    "aws-ai-ml",
+    "sagemaker-cost-estimator",
+    "sagemaker-domain-vpc-iac",
+    "sagemaker-training-architect",
+    "sagemaker-inference-architect"
   ],
   "queries": [
     {
@@ -13,50 +13,87 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `sagemaker-solution-architect` to design, validate, and troubleshoot sagemaker solution architect."
+      "prompt": "How should we architect an end-to-end enterprise ML platform on Amazon SageMaker AI in `ap-south-1` grounded in the Well-Architected Machine Learning Lens (`ARCHITECTURE.md`)?"
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through production best practices and operational guardrails for sagemaker solution architect (`sagemaker-solution-architect`)."
+      "prompt": "Evaluate Bedrock vs SageMaker vs Lambda/Textract for our 4 proposed AI initiatives and pick the optimal training compute tier (Tier A–D) and hosting pattern."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Compare `ml.g5`, `ml.g6e` (`L40S`), `ml.p4d`, `ml.p5`, `ml.trn2`, and `ml.inf2` VRAM/EFA trade-offs and design our Responsible AI + ML Lens blueprint."
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need an operational review and step-by-step runbook covering: Designs end-to-end Amazon SageMaker AI architectures grounded in the AWS Well-Architected Machine Learning Lens and Responsible AI Lens. Performs structured discovery across modali"
+      "prompt": "We're starting a new multi-modal fraud + computer-vision ML initiative — help us decide which training and serving options fit our SLAs before writing any code."
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the critical failure modes, configuration checks, and verification commands for sagemaker solution architect?"
+      "prompt": "Should our team use Autopilot AutoMLv2, Serverless FM Customization, Managed Spot Training Jobs, or SageMaker HyperPod for our workload?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Design the high-level ML storage I/O (`FastFile` WebDataset vs FSx for Lustre), security boundary, and specialist implementation roadmap for our banking ML workload."
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our sagemaker solution architect setup in read-only mode."
+      "prompt": "Our VP of Engineering wants to spin up a 32-node HyperPod cluster just to do RAG over 10,000 internal Confluence docs — review whether we even need SageMaker and write an architecture recommendation."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "We need an `ARCHITECTURE.md` covering clinical bias/explainability governance, `ap-south-1` regional availability constraints, and compute sizing for our radiology + EHR platform."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Contrast the payload, timeout, and concurrency limits across all 8 SageMaker hosting options so our architecture review board picks the right pattern."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Configure and troubleshoot aiml access diagnostics exclusively without touching sagemaker solution architect.",
-      "expected_alternative_skill": "aiml-access-diagnostics"
+      "prompt": "Write the AWS CDK TypeScript `CfnDomain`, `CfnUserProfile`, and `CfnSpace` code with self-referencing TCP `2049` security groups and validate via `cfn-guard`.",
+      "expected_alternative_skill": "sagemaker-domain-vpc-iac"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+      "prompt": "Calculate exact monthly dollar TCO in `COST_ESTIMATE.md` for 15 Studio users and 3 `ml.g5.12xlarge` endpoints in `ap-south-1` using live `awspricing` calls.",
+      "expected_alternative_skill": "sagemaker-cost-estimator"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write the PyTorch `train.py` script freezing `vision_encoder` on `facebook/sam-vit-base` with `DiceFocalLoss` and `/opt/ml/checkpoint` Spot resume.",
+      "expected_alternative_skill": "sagemaker-training-architect"
     }
   ]
 }

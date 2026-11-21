@@ -1,61 +1,97 @@
 {
   "skill_name": "aws-cdk",
   "companion_skills": [
-    "aws-brownfield-migration",
-    "aws-cloudformation",
-    "aws-crossplane",
+    "aws-blocks",
+    "aws-terraform",
+    "aws-pulumi",
     "aws-deployment",
-    "aws-finops-and-cost"
+    "verify-and-rollback",
+    "setting-up-cloudtrail-multi-region"
   ],
   "queries": [
     {
-      "id": "trig-exp-01",
+      "id": "trig-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `aws-cdk` to help me design, validate, and troubleshoot aws cdk."
+      "prompt": "Write an AWS CDK v2 TypeScript stack with L2 constructs, `cdk-nag` `AwsSolutionsChecks`, and unit tests using `Template.fromStack`."
     },
     {
-      "id": "trig-exp-02",
+      "id": "trig-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for aws cdk (`aws-cdk`)."
+      "prompt": "Fix `Export cannot be deleted as it is in use` cross-stack deadlock between two AWS CDK stacks."
     },
     {
-      "id": "trig-imp-01",
+      "id": "trig-03",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Authors, deploys, and troubleshoots AWS infrastructure using CDK with TypeScript or Python. Covers best practices, stack architecture, and construct patterns. Applies when writing"
+      "prompt": "How do I refactor nested constructs in AWS CDK without changing CloudFormation logical IDs and replacing our RDS database?"
     },
     {
-      "id": "trig-imp-02",
+      "id": "trig-04",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating aws cdk?"
+      "prompt": "Compare `cdk deploy --hotswap-fallback` vs standard CloudFormation deployments and troubleshoot `/cdk-bootstrap/hnb659fds/version not found`."
     },
     {
-      "id": "trig-ctx-01",
+      "id": "trig-05",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our aws cdk setup in read-only mode and highlight top risks."
+      "prompt": "Migrate our legacy `@aws-cdk/core` v1 packages to `aws-cdk-lib` v2 and use `node.defaultChild` L1 escape hatches."
     },
     {
-      "id": "trig-neg-01",
-      "quadrant": "near_miss_negative",
-      "split": "train",
-      "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot aws brownfield migration exclusively without touching aws cdk."
-    },
-    {
-      "id": "trig-neg-02",
+      "id": "trig-06",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Write a dual-provider Terraform 1.9 module using `hashicorp/aws` and `hashicorp/awscc` with `.tftest.hcl` unit tests."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Author a Pulumi TypeScript `ComponentResource` wired with Pulumi ESC dynamic OIDC credentials and CrossGuard policies."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Scaffold a new full-stack Next.js app using `npx @aws-blocks/create-blocks-app my-app --template nextjs`."
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure AWS CodeDeploy blue/green ECS deployment groups with automatic CloudWatch alarm rollback."
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Analyze slow PostgreSQL queries using `pg_stat_statements` and Performance Insights wait events on RDS."
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure Route 53 latency-based routing and DNSSEC signing on our public hosted zone."
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Create a multi-region AWS CloudTrail organization trail encrypted with KMS."
     }
   ]
 }

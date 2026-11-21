@@ -342,7 +342,10 @@ Confirm the `Value` field reflects the new limit.
 ## Multi-Quota Check (Bulk Assessment)
 
 When a recommendation involves provisioning multiple resource types, or for proactive
-capacity planning, check all relevant quotas for the service:
+capacity planning:
+
+1. **Read [references/common-quota-codes.md](references/common-quota-codes.md) first** and query known service quota codes directly via `GetServiceQuota` so critical quotas are never missed (for example: Fargate On-Demand `L-790F3D0E` / `L-3032A538` and Fargate Spot `L-36FBB829`; DynamoDB maximum tables `L-F98FE922` and **On-Demand account-level read/write throughput limits `L-B5A90E5F` and `L-4CF20C20`** alongside table-level limits).
+2. **Always paginate `ListServiceQuotas` (`NextToken`):** `ListServiceQuotas` defaults to 20 quotas per page and silently omits quotas on page 2+ (such as DynamoDB On-Demand account-level limits) if called without `NextToken` pagination! Always loop `NextToken` until exhausted when listing quotas in `aws___run_script`:
 
 ```bash
 aws service-quotas list-service-quotas \
@@ -350,8 +353,7 @@ aws service-quotas list-service-quotas \
   --region <region>
 ```
 
-For each quota that has a `UsageMetric`, calculate utilization. Report any quotas
-at 70%+ utilization as part of a comprehensive capacity report.
+For each quota (and projected pre-launch workload sizing), calculate utilization (`%`), classify risk (`Low <70%`, `Medium 70%–84%`, `High 85%–94%`, `Critical 95%–100%`, `Exhausted =100%`), and recommend `1.5x` pre-launch increases for any quota reaching `>= 85%`.
 
 ---
 

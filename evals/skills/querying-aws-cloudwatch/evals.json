@@ -2,13 +2,84 @@
   "skill_name": "querying-aws-cloudwatch",
   "evals": [
     {
-      "id": "eval-01-how-do-we-write-a-single-amazon-athena-sql-query",
-      "prompt": "How do we write a single Amazon Athena SQL query that performs a cross-catalog `JOIN` between CloudWatch S3 access/trail logs in `\"s3tablescatalog/aws-cloudwatch\"` and an S3 Inventory / metadata Iceberg table stored in a separate S3 table bucket catalog (`\"s3tablescatalog/my-security-tables\"`)?",
-      "expected_output": "Demonstrates querying across two distinct Glue/S3 Tables catalogs in a single Athena SQL statement (`\"s3tablescatalog/aws-cloudwatch\".\"<namespace>\".\"<log_table>\"` joined with `\"s3tablescatalog/my-security-tables\".\"<namespace>\".\"<metadata_table>\"`) and notes the required Lake Formation / Glue catalog permissions on both table buckets.",
-      "files": [],
+      "id": "eval-01-live-ap-south-1-s3tables-aws-cloudwatch-bucket-and-schema-check",
+      "prompt": "Check `ap-south-1` in our live AWS account (read-only) to see whether the **CloudWatch Logs S3 Tables (`aws-cloudwatch` Iceberg table bucket)** integration is configured (`s3tables:ListTableBuckets` / namespaces), and write the exact `glue get-tables` + Athena SQL query to inspect top rejected VPC Flow Log connections once enabled.",
       "expectations": [
-        "Writes a single Athena SQL query joining a table in `\"s3tablescatalog/aws-cloudwatch\"` with a table in `\"s3tablescatalog/my-security-tables\"` using full 3-part `\"catalog\".\"database\".\"table\"` references",
-        "Notes that the querying principal must have Lake Formation / Glue `SELECT` and `Describe` permissions on both S3 table bucket catalogs"
+        "Activates the querying-aws-cloudwatch skill and checks `s3tables:ListTableBuckets` in `ap-south-1` via connected AWS MCP tools with zero raw `aws` CLI shell commands",
+        "Includes the mandatory `glue get-tables --catalog-id \"<ACCOUNT>:s3tablescatalog/aws-cloudwatch\" --database-name \"amazon_vpc__flow\"` schema discovery step BEFORE writing SQL, and writes valid Athena SQL against `\"s3tablescatalog/aws-cloudwatch\".\"amazon_vpc__flow\".\"<table>\"` (`WHERE action = 'REJECT'`)",
+        "Explicitly reminds the user that S3 Tables integration has **no backfill** (only captures log events received *after* association) and confirms Athena workgroup/output settings before running queries"
+      ]
+    },
+    {
+      "id": "eval-02-decision-tree-when-to-use-s3tables-sql-vs-logs-insights-vs-tailing-vs-alarms",
+      "prompt": "Route these 5 engineer requests using our CloudWatch System Tables decision tree (say clearly whether to use S3 Tables SQL or a better tool and why): (1) JOIN last week's VPC Flow Logs with S3 Journal object-creation metadata by source IP, (2) tail live container stdout logs during a deployment right now, (3) quick regex search over 15 minutes of a custom Lambda log group, (4) trigger a PagerDuty alert within 60 seconds when `OutOfMemory` appears, and (5) query WAF logs from 3 months ago BEFORE S3 Tables integration was enabled.",
+      "expectations": [
+        "Activates the querying-aws-cloudwatch skill",
+        "Routes (1) -> **Yes: CloudWatch S3 Tables SQL in Athena** (`\"s3tablescatalog/aws-cloudwatch\"` JOIN `\"s3tablescatalog/aws-s3\"`), and routes (2)-(5) -> **No** with exact alternatives: (2) `logs start-live-tail` / `filter-log-events`, (3) **CloudWatch Logs Insights** (faster ad-hoc), (4) **CloudWatch Metric Filters + CloudWatch Alarms**, and (5) **CloudWatch Logs / Logs Insights** (because S3 Tables has **no historical backfill** prior to association!)"
+      ]
+    },
+    {
+      "id": "eval-03-enabling-s3-table-integration-with-confused-deputy-iam-and-dual-kms-principals",
+      "prompt": "Walk through enabling the **CloudWatch Logs S3 Tables integration** (`observabilityadmin create-s3-table-integration` + `logs associate-source-to-s3-table-integration`) for `aws_waf__logs` and `amazon_eks__audit` in `ap-south-1` encrypted with a Customer Managed KMS Key \u2014 including the service role trust/permissions policy AND the **two KMS service principals** required!",
+      "expectations": [
+        "Activates the querying-aws-cloudwatch skill",
+        "Prefers **specific data source associations** over wildcard `{\"name\": \"*\", \"type\": \"*\"}`, configures `logs.amazonaws.com` service role trust policy with `aws:SourceAccount` + `aws:SourceArn` (`logs:integrateWithS3Table`), and grants **BOTH required KMS Key Policy service principals**: **`systemtables.cloudwatch.amazonaws.com`** AND **`maintenance.s3tables.amazonaws.com`** (for Iceberg compaction/maintenance!)"
+      ]
+    },
+    {
+      "id": "eval-04-waf-and-route53-resolver-cross-source-athena-sql-correlation",
+      "prompt": "An incident responder wants to correlate blocked inbound IPs in **AWS WAF Logs** (`aws_waf__logs`) with outbound DNS lookups in **Route 53 Resolver Query Logs** (`amazon_route53resolver__query`) in Athena over CloudWatch S3 Tables. Show the mandatory `get-tables` schema checks and Athena SQL query structure.",
+      "expectations": [
+        "Activates the querying-aws-cloudwatch skill",
+        "Includes `aws glue get-tables --catalog-id \"<ACCOUNT>:s3tablescatalog/aws-cloudwatch\"` on **both** `aws_waf__logs` and `amazon_route53resolver__query` namespaces first (mandatory constraint!), then provides Athena SQL querying `\"s3tablescatalog/aws-cloudwatch\".\"aws_waf__logs\".\"<table>\"` (`action = 'BLOCK'`) and `\"s3tablescatalog/aws-cloudwatch\".\"amazon_route53resolver__query\".\"<table>\"`, reminding to confirm Athena workgroup + SSE-KMS output bucket and noting no backfill"
+      ]
+    },
+    {
+      "id": "eval-05-lake-formation-column-level-pii-security-and-catalog-grants",
+      "prompt": "Junior data analysts need Athena `SELECT` access to `amazon_cloudfront__access` and `aws_waf__logs` in `s3tablescatalog/aws-cloudwatch` to build traffic reports, WITHOUT seeing sensitive client IP (`c_ip` / `httpRequest`) or header columns! Show how **AWS Lake Formation** column-level permissions and `s3tablescatalog` federation enforce this.",
+      "expectations": [
+        "Activates the querying-aws-cloudwatch skill",
+        "Uses AWS Lake Formation column-level grants (`lakeformation grant-permissions` against `CatalogId: \"<ACCOUNT_ID>:s3tablescatalog/aws-cloudwatch\"` with `ColumnWildcard.ExcludedColumnNames` stripping sensitive PII columns such as client IPs/cookies/headers) + SSE-KMS encrypted Athena workgroup output bucket + CloudTrail auditing on `StartQueryExecution`"
+      ]
+    },
+    {
+      "id": "eval-06-troubleshooting-catalog-not-found-empty-namespaces-and-schema-mismatch",
+      "prompt": "Diagnose four errors hit by teams setting up CloudWatch System Tables in Athena: (1) `CATALOG_NOT_FOUND: s3tablescatalog/aws-cloudwatch`, (2) `aws-cloudwatch` table bucket exists, yet `s3tables list-namespaces` returns `[]`, (3) `AccessDeniedException` running `SELECT` in Athena despite `AmazonAthenaFullAccess`, and (4) `COLUMN_NOT_FOUND` on a query copied from a blog post.",
+      "expectations": [
+        "Activates the querying-aws-cloudwatch skill",
+        "Diagnoses all 4 cleanly: (1) S3 Tables analytics integration (`s3tablescatalog`) not yet registered/enabled in Glue/Lake Formation, (2) no data sources associated yet OR zero new log events ingested since association (no backfill!), (3) missing **Lake Formation `SELECT` + `DESCRIBE` grants** (and KMS `Decrypt` if CMK-encrypted) on `s3tablescatalog/aws-cloudwatch`, and (4) schemas vary per source/updates \u2014 run `glue get-tables` on the namespace first!"
+      ]
+    },
+    {
+      "id": "eval-07-eks-audit-and-bedrock-agent-logs-namespace-investigation",
+      "prompt": "Which CloudWatch S3 Tables namespaces correspond to **Amazon EKS Audit Logs**, **Bedrock Agent Logs**, **VPC Lattice Access Logs**, and **AWS Network Firewall Logs**, and what prerequisite step + retention/deletion lifecycle behaviors apply to those Iceberg tables?",
+      "expectations": [
+        "Activates the querying-aws-cloudwatch skill",
+        "Maps all four CloudWatch S3 Tables namespace names (`amazon_eks__audit`, `aws_bedrock_agent_core__logs`, `amazon_vpclattice__access`, and `aws_networkfirewall__logs`), specifies the `\"s3tablescatalog/aws-cloudwatch\".\"<namespace>\".\"<table>\"` identifier format, and requires discovering exact table/column schemas via `glue get-tables` before authoring SQL"
+      ]
+    },
+    {
+      "id": "eval-08-correlating-vpc-flow-logs-with-s3-tables-journal-metadata",
+      "prompt": "Write the schema-discovery command and cross-catalog Athena SQL query joining **VPC Flow Logs** (`amazon_vpc__flow`) with **S3 Metadata Journal Tables** (`s3tablescatalog/aws-s3`) to identify accepted VPC connections from the same `srcaddr` that created new objects in bucket `corp-sensitive-exports`.",
+      "expectations": [
+        "Activates the querying-aws-cloudwatch skill",
+        "Runs/includes `aws glue get-tables --catalog-id \"<ACCOUNT>:s3tablescatalog/aws-cloudwatch\" --database-name \"amazon_vpc__flow\" --region <REGION>` first, then joins `\"s3tablescatalog/aws-cloudwatch\".\"amazon_vpc__flow\".\"<table>\"` (`f.action = 'ACCEPT'`) with `\"s3tablescatalog/aws-s3\".\"b_corp-sensitive-exports\".\"journal\"` (`j.record_type = 'CREATE'`) on `f.srcaddr = j.source_ip_address` (confirming workgroup/output location and no-backfill caveat)"
+      ]
+    },
+    {
+      "id": "eval-09-security-guardrail-avoid-wildcard-datasource-and-unencrypted-athena-results",
+      "prompt": "A developer ran `associate-source-to-s3-table-integration --data-source '{\"name\": \"*\", \"type\": \"*\"}'` without a KMS key and configured Athena to dump CSV query results containing raw Cognito/WAF client IPs and user agents into a public unencrypted S3 bucket! Audit every security flaw and provide the hardened configuration.",
+      "expectations": [
+        "Activates the querying-aws-cloudwatch skill",
+        "Flags wildcard `*/*` association (automatically exposing all current and future sensitive vended logs in SQL tables \u2014 replace with explicit per-source associations), enforces KMS CMK encryption (`systemtables.cloudwatch.amazonaws.com` + `maintenance.s3tables.amazonaws.com`), locks down the Athena results bucket (`BlockPublicAccess` + SSE-KMS workgroup enforcement), and restricts sensitive PII columns in Lake Formation"
+      ]
+    },
+    {
+      "id": "eval-10-awsknowledge-cloudwatch-s3-tables-iceberg-compaction-and-pricing",
+      "prompt": "Query AWS documentation via connected AWS documentation tools to confirm how **CloudWatch Logs S3 Tables integration** handles Apache Iceberg automatic table maintenance/compaction and how storage vs query pricing works.",
+      "expectations": [
+        "Queries connected AWS documentation MCP tools (`awsknowledge`, `aws-mcp`, or `awsiac`) with zero raw `aws` CLI commands",
+        "Confirms AWS manages Apache Iceberg table creation and automatic small-file compaction (`maintenance.s3tables.amazonaws.com`) in the AWS-managed `aws-cloudwatch` table bucket at **no additional S3 Tables storage/maintenance charge** beyond CloudWatch Logs ingestion/storage, while SQL queries are billed separately by the query engine (e.g., Amazon Athena data scanned)"
       ]
     }
   ]

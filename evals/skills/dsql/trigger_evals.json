@@ -1,11 +1,11 @@
 {
   "skill_name": "dsql",
   "companion_skills": [
-    "amazon-aurora-mysql",
     "amazon-aurora-postgresql",
-    "amazon-documentdb",
+    "rds-oss",
     "amazon-dynamodb",
-    "amazon-elasticache"
+    "aws-database",
+    "db-ha-dr-and-schema-evolution"
   ],
   "queries": [
     {
@@ -13,49 +13,84 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `dsql` to help me design, validate, and troubleshoot dsql."
+      "prompt": "Migrate our PostgreSQL DDL to Amazon Aurora DSQL using CREATE INDEX ASYNC, JSONB arrays, and UUID primary keys."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Implement Optimistic Concurrency Control (OCC) SQLSTATE 40001 retry logic and AWS IAM GRANT custom roles on Aurora DSQL."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for dsql (`dsql`)."
+      "prompt": "Configure an Amazon Aurora DSQL multi-region active-active cluster with two linked endpoints and a witness Region."
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Build with Aurora DSQL — manage schemas, execute queries, handle migrations, diagnose query plans, diagnose cluster performance, load data, and develop applications with a serverle"
+      "prompt": "Why did our distributed Postgres cluster on AWS reject synchronous CREATE INDEX, COLLATE \"C\", and TRUNCATE TABLE?"
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Bulk-load 5 million CSV rows using aurora-dsql-loader without hitting the 3,000-row / 10 MiB per-transaction ceiling."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating dsql?"
+      "prompt": "Set up aurora-dsql-python-connector with short-lived SigV4 tokens and scoped DbConnect role mapping."
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our dsql setup in read-only mode and highlight top risks."
+      "prompt": "Check via MCP whether Aurora DSQL is available in ap-south-1 and list any DSQL clusters in us-east-1 and eu-west-1."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Design composite tenant-scoped foreign keys (tenant_id, project_id) on DSQL while avoiding parent-row OCC 40001 aborts."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Safely change an INTEGER column to NUMERIC(18,4) on a 500k-row DSQL table using shadow-table migration."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot amazon aurora mysql exclusively without touching dsql."
+      "prompt": "Set up pgvector HNSW embeddings and PL/pgSQL triggers on an Aurora PostgreSQL 16 Serverless v2 cluster."
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Configure DynamoDB Global Tables Multi-Region Strong Consistency (MRSC) with PartitionKey and SortKey."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Set up RDS Proxy connection pooling in front of standalone RDS PostgreSQL 16."
     }
   ]
 }

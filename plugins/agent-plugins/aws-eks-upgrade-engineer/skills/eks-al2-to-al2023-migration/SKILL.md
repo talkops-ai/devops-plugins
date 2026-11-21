@@ -1,9 +1,11 @@
 ---
 name: eks-al2-to-al2023-migration
-description: Audits Amazon Linux 2 (AL2) Managed Node Groups, Self-Managed Auto Scaling Groups, Custom AMIs, and Karpenter EC2NodeClass resources ahead of EKS 1.33+ AL2 deprecation; translates legacy /etc/eks/bootstrap.sh flags into nodeadm NodeConfig (node.eks.aws/v1alpha1) MIME multipart user data; checks cgroup v2, IMDSv2 hop-limit=2, and containerd 2.x compatibility; and generates zero-downtime parallel node-group cutover plans.
+description: "Audits Amazon Linux 2 (AL2) Managed Node Groups, Self-Managed Auto Scaling Groups, Custom AMIs, and Karpenter EC2NodeClass resources ahead of EKS 1.33+ AL2 deprecation; translates legacy /etc/eks/bootstrap.sh flags into nodeadm NodeConfig (node.eks.aws/v1alpha1) MIME multipart user data; checks cgroup v2, IMDSv2 hop-limit=2, and containerd 2.x compatibility; and generates zero-downtime parallel node-group cutover plans. Do NOT use for EKS Extended Support billing/EOS date calendars, Karpenter CRD v1 Helm upgrades without AL2-to-AL2023 migration, or post-upgrade rollback triage. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # Amazon EKS AL2 to AL2023 Node Migration
+
+> **MCP-Only Live AWS Execution:** Execute ALL live AWS API discovery, cluster/nodegroup/launch-template inspection, and documentation lookups strictly via connected MCP tools (`aws-mcp`, `aws-api`, `eks`, `aws-documentation-mcp`, `cloudwatch`, `awspricing`) — **never invoke raw `aws ...` CLI commands in shell (`run_command`)**.
 
 Strictly **read-only** assessment and migration planning skill for transitioning Amazon EKS worker nodes from **Amazon Linux 2 (AL2)** (deprecated / unsupported starting EKS `1.33+`) to **Amazon Linux 2023 (AL2023)**.
 

@@ -1,11 +1,13 @@
 ---
 name: aws-deployment
-description: "Configures CI/CD and GitOps pipelines for AWS infrastructure and workloads using AWS CodePipeline V2, CodeBuild, CodeDeploy, CodeConnections, and CodeArtifact, as well as GitHub Actions and GitLab CI with AWS OIDC federation, Atlantis PR automation for Terraform, Pulumi Neo/GitHub Actions workflows, and ArgoCD/Flux sync waves for Crossplane."
+description: "Configures CI/CD and GitOps pipelines for AWS infrastructure and workloads using AWS CodePipeline V2, CodeBuild, CodeDeploy, CodeConnections, and CodeArtifact, as well as GitHub Actions and GitLab CI with AWS OIDC federation, Atlantis PR automation for Terraform, Pulumi Neo/GitHub Actions workflows, and ArgoCD/Flux sync waves for Crossplane. Query live AWS state via MCP tools only (never raw aws CLI)."
 metadata:
   version: "2"
 ---
 
 # AWS CI/CD & Multi-Engine GitOps Delivery
+
+> **MCP-Only Live AWS Execution:** Execute ALL live AWS API discovery, account/region preflight checks (`sts:GetCallerIdentity`), stack/cluster/resource inspection, pricing (`awspricing`/`billing`), IaC validation (`awsiac`), and documentation lookups (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___run_script` `call_boto3`, `awsknowledge`, `awsiac`, `awspricing`, `eks`, `ecs`, `cloudwatch`) — **never invoke raw `aws ...` CLI commands in shell (`run_command`)**. Offline local linters/synthesizers (`cdk synth`, `terraform validate`, `python3`) may run locally without mutating live AWS.
 
 **Works best with** the `aws-mcp`, `awsiac`, `terraform`, and `pulumi` MCP servers for validating pipeline definitions and inspecting deployment state.
 

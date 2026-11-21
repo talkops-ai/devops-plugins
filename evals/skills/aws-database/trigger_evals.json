@@ -1,11 +1,11 @@
 {
   "skill_name": "aws-database",
   "companion_skills": [
-    "amazon-aurora-mysql",
     "amazon-aurora-postgresql",
-    "amazon-documentdb",
     "amazon-dynamodb",
-    "amazon-elasticache"
+    "amazon-neptune",
+    "dsql",
+    "db-observability-and-wait-triage"
   ],
   "queries": [
     {
@@ -13,49 +13,84 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `aws-database` to help me design, validate, and troubleshoot aws database."
+      "prompt": "Help us choose the right AWS operational database across Aurora, DSQL, DynamoDB, DocumentDB, and Neptune and estimate TCO."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Compare monthly AWS pricing across DynamoDB On-Demand, Aurora Serverless v2, and RDS Multi-AZ for a new SaaS backend."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for aws database (`aws-database`)."
+      "prompt": "Generate a database selection requirements.json handoff artifact for our multi-region payments workload."
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Principal Database Architect router and FinOps evaluator for AWS databases — choosing, comparing, estimating TCO, getting started with, or operating any AWS operational database. R"
+      "prompt": "Match four microservices (cart key-value, fraud graph, IoT metrics, multi-region ledger) to purpose-built AWS databases."
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Which AWS database options let us store vector embeddings alongside operational data vs adding an in-memory semantic cache?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating aws database?"
+      "prompt": "Assess our portfolio of Oracle EE and SQL Server databases for RDS vs RDS Custom vs Aurora Babelfish modernization."
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our aws database setup in read-only mode and highlight top risks."
+      "prompt": "Audit our ap-south-1 AWS account across RDS, Aurora, DynamoDB, and ElastiCache to inventory our operational databases."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "What is the ownership boundary between operational AWS databases and an Apache Iceberg + Redshift analytical lakehouse, including Zero-ETL?"
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Route three database tickets covering IO:XactSync wait spikes, online DDL, and Oracle-to-Postgres DMS migration."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot amazon aurora mysql exclusively without touching aws database."
+      "prompt": "Write an AWS Glue PySpark job to compact small Parquet files into Apache Iceberg S3 Tables."
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Configure an Amazon CloudFront distribution with WAFv2 rate-based rules in front of an ALB."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Set up EKS Karpenter NodePools for spot and on-demand Graviton worker nodes."
     }
   ]
 }

@@ -2,15 +2,89 @@
   "skill_name": "creating-secrets-using-best-practices",
   "evals": [
     {
-      "id": "eval-01-our-platform-engineering-team-is-standardizing-a",
-      "prompt": "Our platform engineering team is standardizing AWS Secrets Manager templates across the company. Provide: (1) the mandatory `<environment>/<application>/<purpose>` naming convention and 6 required governance tags, (2) the standard JSON `SecretString` structure for all 4 secret types (`database`, `api-key`, `oauth`, and `custom`), and (3) how to pass the secret payload safely to `aws secretsmanager create-secret` without leaking it into shell history or process listings.",
-      "expected_output": "Provides the hierarchical naming pattern, 6 required governance tags, JSON schemas for all 4 secret types, and the `chmod 600` + `file://` + `shred -u` / `rm -P` file-based secret creation workflow.",
-      "files": [],
+      "id": "eval-01-missing-parameters-upfront-prompt-and-secret-type-validation",
+      "prompt": "Create a new production secret in AWS Secrets Manager following best practices.",
       "expectations": [
-        "Specifies the `<environment>/<application>/<purpose>` naming convention and the required governance tags (`Environment`, `Application`, `Owner`, `CostCenter`, `ManagedBy`, and `RotationEnabled` or `SecretType`)",
-        "Provides the JSON schemas for all 4 secret types: `database` (`host`, `username`, `password`, `engine`, `port`, `dbname`), `api-key` (`api_key`/`key`, `service_name`/`provider`, `endpoint`, and optional `api_secret`/metadata), `oauth` (`client_id`, `client_secret`, `token_url`, `scopes`), and `custom`",
-        "Warns against passing plaintext secrets inline via `--secret-string '{...}'` on the CLI command line because CLI arguments are recorded in `~/.bash_history`/`~/.zsh_history` and visible in `ps aux`",
-        "Shows the safe temporary file workflow: `umask 077` / `chmod 600`, passing `--secret-string file:///tmp/secret-payload.json`, and immediately shredding/deleting (`shred -u` or `rm -P`) the file after `create-secret`"
+        "Activates the creating-secrets-using-best-practices skill",
+        "Requests all required parameters upfront in a single prompt (`secret_name`, `secret_description`, `secret_type` [`database`, `api-key`, `oauth`, or `custom`], `aws_region`, and secure secret input handling without echoing plaintext secrets in logs/outputs) alongside optional defaults (`kms_key_id`, `enable_rotation=true`, `rotation_interval=30`, `recovery_window=30`, `allowed_principals`, `tags`)",
+        "Executes zero mutating KMS/Secrets Manager API calls before obtaining required parameters and user confirmation"
+      ]
+    },
+    {
+      "id": "eval-02-dedicated-kms-cmk-policy-with-kms-viaservice-for-secrets-manager",
+      "prompt": "Write the dedicated Customer Managed KMS Key policy and `secretsmanager:CreateSecret` workflow for a `database` secret `prod/orders/aurora-pg` in `ap-south-1` (account `111122223333`) accessed by `arn:aws:iam::111122223333:role/orders-ecs-task-role`, explaining why `kms:ViaService` is critical.",
+      "expectations": [
+        "Activates the creating-secrets-using-best-practices skill",
+        "Enables annual KMS key rotation (`enable-key-rotation`) and writes a KMS Key Policy preserving account root/key-admin access while scoping `kms:GenerateDataKey`, `kms:Decrypt`, and `kms:DescribeKey` with **`kms:ViaService: \"secretsmanager.ap-south-1.amazonaws.com\"`** (so principals cannot call `kms:Decrypt` directly bypassing Secrets Manager audit/IAM controls!)",
+        "Never logs or echoes plaintext secret values in outputs"
+      ]
+    },
+    {
+      "id": "eval-03-four-secret-type-json-schemas-database-apikey-oauth-custom",
+      "prompt": "Show the recommended structured JSON secret schemas (using non-sensitive `<REDACTED>` placeholders \u2014 never real credentials!) for all four supported `secret_type` categories: `database`, `api-key`, `oauth`, and `custom`, and explain why standard keys (`engine`, `host`, `port`, `username`, `password`, `dbname`) matter for AWS Secrets Manager rotation.",
+      "expectations": [
+        "Activates the creating-secrets-using-best-practices skill",
+        "Presents clean placeholder JSON schemas for all 4 types (`database` with standard AWS rotation keys `engine`, `host`, `port`, `username`, `password`, `dbname`; `api-key`; `oauth` with `client_id`, `client_secret`, `token_url`/scopes; and `custom`) with zero real secrets",
+        "Explains that AWS-managed and Lambda rotation templates expect the exact canonical `database` JSON field names (`username`, `password`, `engine`, `host`, `port`)"
+      ]
+    },
+    {
+      "id": "eval-04-automatic-30day-rotation-four-step-lambda-state-machine-and-vpc-networking",
+      "prompt": "We enabled 30-day automatic rotation on an RDS PostgreSQL secret in a private isolated VPC, and rotation immediately failed with `TimeoutError` inside the rotation Lambda! Explain the 4-step Secrets Manager rotation protocol (`createSecret`, `setSecret`, `testSecret`, `finishSecret`) AND every VPC/SG/IAM requirement for the rotation Lambda.",
+      "expectations": [
+        "Activates the creating-secrets-using-best-practices skill",
+        "Details the 4-step rotation lifecycle (`createSecret` writes `AWSPENDING` -> `setSecret` updates DB user -> `testSecret` verifies login with `AWSPENDING` -> `finishSecret` moves `AWSCURRENT` label to the new version and `AWSPREVIOUS` to the old)",
+        "Diagnoses the private VPC `TimeoutError`: the VPC-attached rotation Lambda MUST reach **BOTH** the private RDS port (`5432` SG rule) **AND** the **`com.amazonaws.<region>.secretsmanager` Interface VPC Endpoint** (or NAT Gateway) over HTTPS `443`, plus `secretsmanager.amazonaws.com` `lambda:InvokeFunction` permission and KMS `Decrypt`+`GenerateDataKey`"
+      ]
+    },
+    {
+      "id": "eval-05-least-privilege-secret-resource-policy-and-explicit-https-enforcement",
+      "prompt": "Author a least-privilege IAM Identity Policy + Secrets Manager Resource Policy (`put-resource-policy`) for `arn:aws:secretsmanager:ap-south-1:111122223333:secret:prod/payments/stripe-*` ensuring ONLY `arn:aws:iam::111122223333:role/payments-worker` can read `AWSCURRENT`, requiring TLS/HTTPS, and blocking wildcard secret enumeration.",
+      "expectations": [
+        "Activates the creating-secrets-using-best-practices skill",
+        "Scopes `secretsmanager:GetSecretValue` + `DescribeSecret` strictly to the exact secret ARN with `secretsmanager:VersionStage = AWSCURRENT` (and `kms:Decrypt` on the dedicated KMS key ARN), enforces `aws:SecureTransport: false` `Deny` (HTTPS-only), and avoids `secretsmanager:*` on `*`"
+      ]
+    },
+    {
+      "id": "eval-06-lifecycle-governance-30day-recovery-window-tagging-and-force-delete-guardrail",
+      "prompt": "A developer wants to run `aws secretsmanager delete-secret --secret-id prod/partner/oauth --force-delete-without-recovery` to clean up an old secret immediately! Explain Secrets Manager's recovery window (`7\u201330` days), mandatory tagging governance, and safe retirement checks before deletion.",
+      "expectations": [
+        "Activates the creating-secrets-using-best-practices skill and warns strongly against `--force-delete-without-recovery` in production (permanent, unrecoverable immediate destruction if any service still reads it!)",
+        "Recommends checking CloudTrail `GetSecretValue` / `LastAccessedDate` (`DescribeSecret`) first, scheduling standard deletion with a **`30-day` recovery window (`--recovery-window-in-days 30`)** so `restore-secret` can recover immediately if an unknown consumer breaks, and applying lifecycle/ownership tags"
+      ]
+    },
+    {
+      "id": "eval-07-live-ap-south-1-readonly-kms-and-secret-posture-check-before-creation",
+      "prompt": "Check our caller identity and inspect `ap-south-1` in read-only mode (`secretsmanager:ListSecrets` metadata only \u2014 NEVER `GetSecretValue`!) to see if any secrets exist without automatic rotation or customer-managed KMS keys (`KmsKeyId`), and summarize best-practice remediation without mutating anything.",
+      "expectations": [
+        "Activates the creating-secrets-using-best-practices skill and calls `sts:GetCallerIdentity` + metadata-only `secretsmanager:ListSecrets` in `ap-south-1` via connected AWS MCP tools with zero raw `aws` CLI shell commands and zero `GetSecretValue` calls",
+        "Accurately reports live `ap-south-1` findings (cleanly reporting 0 secrets if none exist) and summarizes dedicated CMK + 30-day rotation + CloudTrail auditing checks",
+        "Makes zero mutating AWS calls"
+      ]
+    },
+    {
+      "id": "eval-08-troubleshooting-secret-access-denied-iam-vs-kms-generate-data-key-on-put",
+      "prompt": "Our CI rotation job has `secretsmanager:PutSecretValue` AND `kms:Decrypt` on the secret's dedicated KMS key, yet calling `PutSecretValue` fails with `AccessDeniedException: ... is not authorized to perform: kms:GenerateDataKey`! Explain why reading vs writing/rotating a CMK-encrypted secret requires different KMS actions.",
+      "expectations": [
+        "Activates the creating-secrets-using-best-practices skill",
+        "Identifies the root cause: while reading (`GetSecretValue`) uses `kms:Decrypt`, writing a new secret version (`PutSecretValue` / `CreateSecret` / `UpdateSecret`) generates a new KMS data key via envelope encryption and requires **`kms:GenerateDataKey`** (plus `kms:Decrypt` and `kms:DescribeKey` during rotation) on the Customer Managed KMS Key",
+        "Provides the concrete IAM policy and KMS key policy guidance granting `kms:GenerateDataKey` (scoped to the secret/CMK) for the rotation/writer role"
+      ]
+    },
+    {
+      "id": "eval-09-alternating-users-dual-account-zero-downtime-db-secret-rotation",
+      "prompt": "When our 12 ECS tasks cache a database connection pool and Secrets Manager rotates the single database user's password every 30 days (`SingleUser` strategy), active tasks briefly fail new connections with `password authentication failed` until their cache refreshes! How does Secrets Manager's **`AlternatingUsers` (two-user clone)** rotation strategy eliminate rotation downtime completely?",
+      "expectations": [
+        "Activates the creating-secrets-using-best-practices skill",
+        "Contrasts `SingleUser` rotation (changes the active user's password in place) against **`AlternatingUsers` rotation** (maintains `userA` and `userB` with identical grants; rotates the **inactive** user's password in `AWSPENDING`, tests it, flips `AWSCURRENT` to the newly rotated user, while existing cached pools using `AWSPREVIOUS` continue working uninterrupted!)"
+      ]
+    },
+    {
+      "id": "eval-10-awsknowledge-managed-rotation-without-customer-lambda-vs-lambda-rotation",
+      "prompt": "Query AWS documentation via connected AWS documentation tools to compare Secrets Manager **Managed Rotation for RDS (`ManageMasterUserPassword: true` / AWS-managed rotation without deploying a customer Lambda)** versus **Lambda-backed rotation (`RotateSecret` with `RotationLambdaARN`)**.",
+      "expectations": [
+        "Queries connected AWS documentation MCP tools (`awsknowledge`, `aws-mcp`, or `awsiac`) with zero raw `aws` CLI commands",
+        "Contrasts **RDS-managed master user password rotation** (`ManageMasterUserPassword=true` \u2014 AWS manages the secret and rotates credentials natively without customer VPC rotation Lambdas!) against **Lambda-backed rotation** (required for non-master application DB users, `AlternatingUsers` strategy, OAuth/API keys, and custom targets)"
       ]
     }
   ]

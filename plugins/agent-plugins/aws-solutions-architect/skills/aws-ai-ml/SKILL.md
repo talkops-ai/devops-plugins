@@ -1,20 +1,14 @@
 ---
 name: aws-ai-ml
 description: >
-  Selects, deploys, and customizes AI models on Amazon SageMaker. Fine-tuning
-  (SFT, DPO, RLVR, RLAIF), model selection, dataset preparation, evaluation,
-  deployment to SageMaker endpoints or Bedrock, inference optimization and
-  endpoint diagnostics. Covers the full lifecycle from planning through
-  production. Use when fine-tuning models on SageMaker, choosing/selecting which
-  base model to customize or fine-tune from SageMaker Hub, finding a model to
-  deploy without fine-tuning, transforming datasets for training, checking data
-  readiness, evaluating model quality, deploying to endpoints, benchmarking or
-  optimizing inference, setting up IAM roles and S3 buckets for training jobs,
-  or managing a SageMaker Managed MLflow app. Also use to check endpoint health,
-  diagnose failures, debug latency or errors, or view container logs and
-  CloudWatch metrics. Covers Serverless Model Customization, Nova and OSS
-  deployment paths, and PySDK v3. NOT for Ground Truth labeling, Feature Store,
-  or general-purpose AWS infrastructure.
+  Selects, deploys, and customizes AI models on Amazon SageMaker across the full
+  lifecycle: planning, JumpStart Hub model selection, dataset validation and
+  transformation, Serverless Model Customization fine-tuning (SFT, DPO, RLVR,
+  RLAIF), baseline and custom-metric evaluation, deployment to SageMaker
+  endpoints or Bedrock (Nova and OSS paths), inference optimization/benchmarking,
+  IAM/S3 PySDK v3 setup, Managed MLflow, and endpoint health/log/metric
+  diagnostics. NOT for Ground Truth labeling, Feature Store, or general-purpose
+  AWS infrastructure. Query live AWS state via MCP tools only (never raw aws CLI).
 metadata:
   version: "4"
 ---
@@ -22,6 +16,12 @@ metadata:
 # AWS AI/ML Model Customization
 
 Domain expertise for fine-tuning and deploying models on Amazon SageMaker. Covers the full model customization lifecycle from planning through production deployment.
+
+## MCP-Only Execution & Read-Only Safety
+
+- **MCP-Only Live Queries:** Execute **all** live AWS discovery, Bedrock/SageMaker control-plane checks, pricing lookups, IaC compliance checks, CloudWatch telemetry queries, and documentation searches **exclusively via connected MCP tools**: `aws-mcp` (`aws___run_script` using read-only `await call_boto3(...)`, `aws___search_documentation`, `aws___read_documentation`), `sagemaker` (`describe_hp_cluster`), `agentcore`, `strands-agents`, `cloudwatch`, `awspricing` (`get_pricing`, `get_bedrock_patterns`), `awsiac`, and `awsknowledge`. Offline pure-Python bundled helper scripts in `scripts/*.py` that perform local math/schema rendering without live AWS credentials are permitted when inspecting local inputs, whereas live AWS API queries must go through MCP rather than raw `aws` CLI or boto3 shell scripts (emit CLI/SDK commands in markdown for operator runbooks only).
+- **Strict Read-Only & Secret Safety:** **Never** run raw `aws ...` (not even `aws sts get-caller-identity` — always query `sts.GetCallerIdentity` inside `aws___run_script`) CLI commands in Bash/`run_command`, **never** mutate live AWS resources (`Create*`, `Update*`, `Delete*`, `InvokeModel`, `CreateEndpoint` — refuse unapproved mutations and present a safe, approval-gated plan with verification and rollback steps), and **never** read or expose plaintext secrets (`secretsmanager:GetSecretValue`, `ssm:GetParameter` with `WithDecryption=True`, or `.env` API keys).
+- **Unmapped Edge Cases:** Query `awsknowledge` / `aws-mcp` documentation search tools (`aws___search_documentation`, `aws___read_documentation`) with 1–2 focused queries before recommending unverified parameters (when discussing JumpStart or endpoint deployments, always include endpoint teardown/cleanup reminders such as `delete_endpoint` to prevent idle GPU charges).
 
 ## Routing
 
@@ -33,11 +33,11 @@ Match the user's intent to the appropriate reference folder and load only that c
 | Define the business problem, success criteria, or use case spec | [references/use-case-specification/](references/use-case-specification/) | User says "define my use case", "capture requirements", "what should I decide up front", or as default first step in any plan. Skip only if user explicitly declines. |
 | Select or change a base model | [references/model-selection/](references/model-selection/) | User asks which model to use, mentions a model name or family, or wants to evaluate what's available. **Always activate model-selection even for known model names** because the exact Hub model ID must be resolved. **Recommended:** route to use-case-specification first to capture requirements — this produces better filtering results. Routing to use-case-specification first is not required if user provides a specific model name/ID or declines. If intent is ambiguous (fine-tune vs deploy as-is), model-selection MUST confirm which path before proceeding. Base model filtering for deployment MUST go through select-for-deployment.md and its scripts for any final recommendation. |
 | Choose a fine-tuning technique (SFT, DPO, RLVR, RLAIF) | [references/finetuning-technique/](references/finetuning-technique/) | User has decided to fine-tune and needs to choose a technique, or technique needs validation against the selected model's recipes. Requires a base model to be selected first. |
-| Validate dataset quality and format | [references/dataset-evaluation/](references/dataset-evaluation/) | User says "is my dataset okay", "check my training data", "I have my own data", or before starting any fine-tuning job. |
+| Validate dataset quality and format | [references/dataset-evaluation/](references/dataset-evaluation/) | User says "is my dataset okay", "check my training data", "I have my own data", or before starting any fine-tuning job. Always recommend validating JSONL schemas locally (`format_detector.py`) **prior to uploading to S3**. |
 | Transform or convert a dataset between formats | [references/dataset-transformation/](references/dataset-transformation/) | User says "transform", "convert", "reformat", or dataset schema needs to change. Always use this rather than writing inline transformation code. |
 | Generate fine-tuning code and start training | [references/finetuning/](references/finetuning/) | User says "start training", "fine-tune my model", "I'm ready to train", or plan reaches the finetuning step. Supports SFT, DPO, RLVR, RLAIF trainers. |
 | Evaluate or benchmark a trained model | [references/model-evaluation/](references/model-evaluation/) | User says "evaluate my model", "run a benchmark", "test model performance", "compare models". Supports LLM-as-Judge and Custom Scorer. |
-| Deploy, benchmark, or optimize a model on an endpoint or Bedrock | [references/model-deployment/](references/model-deployment/) | User says "deploy my model", "create an endpoint", or "make it available" (plain deploy) — or, for the inference-optimization sub-workflows on SageMaker Real-Time Endpoints only, "benchmark my endpoint" / "compare benchmark runs" (benchmarking), or states a performance/cost/latency/throughput goal for a new deployment such as "find the cheapest instance" (recommendations). Handles Nova vs OSS deployment pathways. |
+| Deploy, benchmark, or optimize a model on an endpoint or Bedrock | [references/model-deployment/](references/model-deployment/) | User says "deploy my model", "create an endpoint", or "make it available" (plain deploy) — or, for inference-optimization sub-workflows on SageMaker Real-Time Endpoints only, "benchmark my endpoint" / "compare benchmark runs", or states a performance/cost/latency/throughput goal (when explaining speculative decoding + compilation, cover TTFT/TPOT gains, draft-model acceptance rate, **and GPU memory overhead** alongside baseline benchmark comparison). Handles Nova vs OSS deployment pathways. |
 | Set up IAM roles, S3 buckets, SDK configuration | [references/sdk-getting-started/](references/sdk-getting-started/) | User says "set up", "getting started", "check my environment", "configure SDK", or as first step in any plan involving SageMaker training/evaluation/deployment. |
 | Manage project directory and artifacts | [references/directory-management/](references/directory-management/) | Starting a new project, resuming existing one, or when PLAN.md needs to be associated with a project directory. |
 | Set up, update, or delete a SageMaker Managed MLflow app | [references/manage-mlflow/](references/manage-mlflow/) | User says "set up MLflow", "create MLflow app", "update my MLflow app", "delete my MLflow app", "I need an MLflow server", asks "what is SageMaker MLflow", or a workflow needs an MLflow backend and none is connected. |
@@ -46,5 +46,5 @@ Match the user's intent to the appropriate reference folder and load only that c
 ## Rules
 
 - **Progressive disclosure.** Load only the reference folder relevant to the current user intent. Do not load all references at once.
-- **Best-effort help.** If the user's request falls outside this skill's references, do not dead-end the conversation. Help them using general AWS knowledge and documentation, and inform the user that the guidance is not covered by this skill's validated workflows.
-- **Usage attribution.** Before running any AWS CLI command or packaged script, set `export AWS_SDK_UA_APP_ID=AWSSkill-SageMaker`.
+- **Best-effort help & scope clarity.** When clarifying scope boundaries (excluding SageMaker Ground Truth labeling workforces, SageMaker Feature Store, and general AWS infrastructure, and routing Bedrock Knowledge Bases to `amazon-bedrock`), explicitly summarize `aws-ai-ml`'s covered lifecycle (**JumpStart model selection**, **`SFT`/`DPO`/`RLVR`/`RLAIF` Serverless Model Customization**, **dataset & model evaluation**, **JumpStart/fine-tuned endpoint deployment**, and **inference optimization**) before offering best-effort general guidance.
+- **Usage attribution.** Include `export AWS_SDK_UA_APP_ID=AWSSkill-SageMaker` in operator CLI/SDK runbooks and local helper workflows (all live AWS API checks performed by the agent must use connected MCP tools).

@@ -1,11 +1,11 @@
 {
   "skill_name": "agents-get-started",
   "companion_skills": [
-    "agentcore-observability-setup",
-    "agentcore-ops-review",
     "agents-build",
     "agents-connect",
-    "agents-debug"
+    "agents-debug",
+    "agents-deploy",
+    "agents-harden"
   ],
   "queries": [
     {
@@ -13,50 +13,87 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `agents-get-started` to design, validate, and troubleshoot agents get started."
+      "prompt": "Help me get started with Amazon Bedrock AgentCore and scaffold a hello-world Strands agent project."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through production best practices and operational guardrails for agents get started (`agents-get-started`)."
+      "prompt": "Compare Strands vs LangGraph vs GoogleADK for a brand-new `agentcore create` project and show the exact CLI flags."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "How do I create and host a new MCP server on AgentCore Runtime and what local port does `agentcore dev` use?"
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need an operational review and step-by-step runbook covering: Use when a developer wants to create a new agent project or get started with AgentCore. Handles framework selection, project scaffolding, first deploy, and first invocation. Trigge"
+      "prompt": "We want to build our very first AI agent on AWS with zero boilerplate — should we start with declarative AgentCore Harness or native Python?"
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the critical failure modes, configuration checks, and verification commands for agents get started?"
+      "prompt": "What are the naming character limits for `agentcore create --name` and how do we wrap a CrewAI or Java Spring AI app as a BYO container?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Walk me through running the local AgentCore dev server without accidentally deploying billable cloud resources."
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our agents get started setup in read-only mode."
+      "prompt": "Kickoff day for our new internal IT helpdesk bot in `ap-south-1` — we have Node 22 and `uv` installed and want to bootstrap a clean AgentCore repo from scratch."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Our team copied a v0.2 `agentcore.json` with a top-level `\"agents\"` array for a new project and wants it updated to the v0.4.0+ schema before scaffolding."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "We're evaluating whether to build our new claims-processing agent using Hybrid LangGraph + Strands or pure Strands on AgentCore."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Configure and troubleshoot agentcore observability setup exclusively without touching agents get started.",
-      "expected_alternative_skill": "agentcore-observability-setup"
+      "prompt": "Connect our existing AgentCore agent to a remote Jira MCP server using 2-legged OAuth and restrict destructive tools with Cedar policies.",
+      "expected_alternative_skill": "agents-connect"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+      "prompt": "We are migrating an existing Classic Amazon Bedrock Agent (`agent-id` + action groups) to AgentCore — compare Strands vs LangGraph for the import.",
+      "expected_alternative_skill": "agents-build"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Lock down inbound `CUSTOM_JWT` `allowedAudience` authentication, KMS CMK encryption, and `StopRuntimeSession` timeouts before going live.",
+      "expected_alternative_skill": "agents-harden"
     }
   ]
 }

@@ -1,61 +1,95 @@
 {
   "skill_name": "lambda-event-source-mappings-esm",
   "companion_skills": [
-    "amazon-eventbridge-event-bus",
-    "amazon-eventbridge-scheduler-and-pipes",
-    "amazon-sqs-sns-async-messaging",
-    "api-gateway",
-    "aws-auth-and-environment-preflight"
+    "connecting-lambda-to-dynamodb",
+    "aws-lambda",
+    "aws-serverless",
+    "debugging-lambda-timeouts"
   ],
   "queries": [
     {
-      "id": "trig-exp-01",
+      "id": "trig-pos-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `lambda-event-source-mappings-esm` to help me design, validate, and troubleshoot lambda event source mappings esm."
+      "prompt": "Tune our Kinesis and DynamoDB Stream Lambda Event Source Mapping (`ParallelizationFactor`, `BisectBatchOnFunctionError`, `MaximumRetryAttempts`, and `ReportBatchItemFailures`)."
     },
     {
-      "id": "trig-exp-02",
+      "id": "trig-pos-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for lambda event source mappings esm (`lambda-event-source-mappings-esm`)."
+      "prompt": "Troubleshoot an Amazon MSK SASL/SCRAM Lambda Event Source Mapping stuck in `PROBLEM: Connection error` (`AmazonMSK_` secret prefix and KMS CMK)."
     },
     {
-      "id": "trig-imp-01",
+      "id": "trig-pos-03",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Configure, optimize, and troubleshoot AWS Lambda Event Source Mappings (ESMs) across Amazon SQS, Kinesis Data Streams, DynamoDB Streams, Amazon MSK, and self-managed Apache Kafka u"
+      "prompt": "Configure `FilterCriteria` and `ProvisionedPollerConfig` (`MinimumPollers`) on our SQS and Kafka Lambda Event Source Mappings to cut invocation costs."
     },
     {
-      "id": "trig-imp-02",
+      "id": "trig-pos-04",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating lambda event source mappings esm?"
+      "prompt": "Why did returning `itemIdentifier: null` in `ReportBatchItemFailures` retry our entire SQS batch, and what does S3 vs SQS `DestinationConfig.OnFailure` store?"
     },
     {
-      "id": "trig-ctx-01",
+      "id": "trig-pos-05",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our lambda event source mappings esm setup in read-only mode and highlight top risks."
+      "prompt": "Fix rising `IteratorAgeMilliseconds` caused by a poison-pill record on our DynamoDB Stream ESM."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot amazon eventbridge event bus exclusively without touching lambda event source mappings esm."
+      "prompt": "Connect an existing Lambda function to an API Gateway REST API with `AWS_PROXY`."
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Route S3 uploads > 6 MB to ECS Fargate and <= 6 MB to Lambda via Step Functions."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure AWS Route 53 Resolver inbound and outbound endpoints for hybrid DNS."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Audit GuardDuty findings and Inspector CVE summaries across our AWS account."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Set up AWS Direct Connect MACsec encryption on a 100 Gbps dedicated port."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Author a blameless incident COE postmortem with 5-Whys analysis."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Migrate Hibernate JPA Oracle queries (`ROWNUM`, `DECODE`, `SYSDATE`) to Aurora PostgreSQL."
     }
   ]
 }

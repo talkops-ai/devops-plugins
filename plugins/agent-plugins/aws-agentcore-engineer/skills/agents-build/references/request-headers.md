@@ -70,6 +70,7 @@ Then `agentcore deploy`. The `$schema` URL at the top of the file (`https://sche
 - **Header value size:** up to 4 KB per header
 - **Names are case-sensitive** — list them exactly as they'll be sent
 - **Changes take effect after the next deploy** of the runtime
+- **Security rule — NEVER pass secrets in custom/allowlisted headers:** Never transmit API keys, database passwords, OAuth client secrets, or bearer credentials via `requestHeaderAllowlist` or `X-Amzn-Bedrock-AgentCore-Runtime-Custom-*` headers (which are intended for non-secret metadata like tenant IDs, correlation IDs, `traceparent`, and `A2A-Version`). Authenticate callers with the runtime `Authorization` header (SigV4 or Inbound JWT authorizer) and fetch downstream secrets via AgentCore Identity or AWS Secrets Manager.
 
 If you hit the 20-header cap, combine related data into one JSON-encoded header rather than using many separate ones.
 

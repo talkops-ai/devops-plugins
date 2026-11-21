@@ -2,94 +2,94 @@
   "skill_name": "aws-terraform",
   "companion_skills": [
     "aws-cdk",
-    "aws-cloudformation",
     "aws-pulumi",
-    "aws-crossplane"
+    "aws-brownfield-migration",
+    "aws-iam-and-security"
   ],
   "queries": [
     {
-      "id": "trigger-01",
+      "id": "trig-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Configure a Terraform `versions.tf` and `providers.tf` using the dual `hashicorp/aws` + `hashicorp/awscc` provider strategy and an S3 backend with `use_lockfile = true`."
+      "prompt": "Configure a Terraform 1.10 `backend \"s3\"` with `use_lockfile = true` and dual `hashicorp/aws` + `hashicorp/awscc` providers."
     },
     {
-      "id": "trigger-02",
-      "quadrant": "explicit",
-      "split": "train",
-      "should_trigger": true,
-      "prompt": "Write a `.tftest.hcl` unit test suite using `mock_provider \"aws\" {}` and `command = plan` to test variable validation and tag propagation in our Terraform module."
-    },
-    {
-      "id": "trigger-03",
-      "quadrant": "explicit",
-      "split": "train",
-      "should_trigger": true,
-      "prompt": "Refactor our root Terraform resources into a child module and convert `count` to `for_each` using declarative `moved` blocks without destroying live infrastructure."
-    },
-    {
-      "id": "trigger-04",
+      "id": "trig-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Discover unmanaged AWS resources using a Terraform 1.14+ `.tfquery.hcl` `list` block and generate `import {}` blocks with `terraform query -generate-config-out=imported.tf`."
+      "prompt": "Write `.tftest.hcl` unit tests using `mock_provider \"aws\"` and refactor `count` to `for_each` using `moved {}` blocks."
     },
     {
-      "id": "trigger-05",
-      "quadrant": "explicit",
+      "id": "trig-03",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Use Terraform `ephemeral` resources and `password_wo` write-only attributes so RDS passwords never enter `terraform.tfstate`."
+    },
+    {
+      "id": "trig-04",
+      "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Author `.tfstack.hcl` and `.tfdeploy.hcl` files for a multi-region, multi-account Terraform Stacks deployment with `identity_token \"aws\"` OIDC."
+      "prompt": "Design a multi-region deployment using Terraform Stacks (`.tfstack.hcl` and `.tfdeploy.hcl`) and detach an old bucket with `removed { lifecycle { destroy = false } }`."
     },
     {
-      "id": "trigger-06",
-      "quadrant": "explicit",
-      "split": "val",
+      "id": "trig-05",
+      "quadrant": "contextual",
+      "split": "train",
       "should_trigger": true,
-      "prompt": "Write a Sentinel / `.policy.hcl` policy-as-code check and `data \"aws_iam_policy_document\"` following the HashiCorp Terraform Style Guide."
+      "prompt": "Gate our OpenTofu CI pipeline with `tflint`, `trivy`, and OPA Rego policies against `terraform show -json tfplan`."
     },
     {
-      "id": "trigger-07",
-      "quadrant": "near_miss_negative",
-      "split": "train",
-      "should_trigger": false,
-      "prompt": "Write an AWS CDK v2 TypeScript construct with `AwsSolutionsChecks` and resolve a cross-stack deadly embrace with `CrossStackReferences`."
-    },
-    {
-      "id": "trigger-08",
-      "quadrant": "near_miss_negative",
-      "split": "train",
-      "should_trigger": false,
-      "prompt": "Author a Crossplane `CompositeResourceDefinition` (XRD) and `spec.mode: Pipeline` Composition for Upbound `provider-aws-s3`."
-    },
-    {
-      "id": "trigger-09",
+      "id": "trig-06",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Persist resource design rationale under `Metadata.com.aws.cloudformation.Context` and add the `aws-cloudformation@3` attribution marker to a CloudFormation YAML template."
+      "prompt": "Write an AWS CDK v2 TypeScript stack with `AwsSolutionsChecks` and `Template.fromStack` assertions."
     },
     {
-      "id": "trigger-10",
-      "quadrant": "near_miss_negative",
-      "split": "val",
-      "should_trigger": false,
-      "prompt": "Migrate a Lovable React + Supabase prototype to AWS using `python3 scripts/launch_with_aws.py`."
-    },
-    {
-      "id": "trigger-11",
+      "id": "trig-07",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Build an audio equalizer filter bank in Web Audio API using biquad filter nodes."
+      "prompt": "Author a Pulumi TypeScript `ComponentResource` with `pulumi.runtime.setMocks` tests."
     },
     {
-      "id": "trigger-12",
+      "id": "trig-08",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a regular expression in Perl to parse RFC 5322 email headers."
+      "prompt": "Write a Crossplane `CompositeResourceDefinition` (XRD) and validate with `crossplane render`."
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Scaffold a Next.js app with `npx @aws-blocks/create-blocks-app my-app`."
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure Babelfish TDS port `1433` on Aurora PostgreSQL for a SQL Server migration."
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Analyze CloudWatch Logs Insights slow API queries and set up an SNS alarm notification."
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Review our AWS Marketplace SaaS tenant onboarding `ResolveCustomer` flow."
     }
   ]
 }

@@ -1,19 +1,18 @@
 ---
 name: aws-backup-coverage-review
-description: AWS Backup coverage and data protection posture review. Determines
-  which backup-eligible resources are protected by AWS Backup and which are not,
-  across all enabled Regions of an account, then evaluates backup plan frequency
-  and retention, cross-Region and cross-account copies, vault encryption and Vault
-  Lock, and per-Region resource type opt-in. Uses read-only control-plane API calls
-  via connected MCP tools and produces a rated report with a coverage matrix and
-  prioritized remediation. Use when a user asks about backup coverage, unprotected
-  or unbacked-up resources, AWS Backup audit or posture, backup plan or vault
-  review, or data protection gaps. Triggers on phrasings like "what is not being
-  backed up", "AWS Backup coverage review", "audit my backup plans", "are my
-  volumes protected", "backup gap analysis", or "review my backup vaults". Do NOT
-  use for restoring data, backup or restore job failure triage, backup cost
-  optimization, or RDS-native automated backups and snapshots taken outside AWS
-  Backup.
+description: AWS Backup coverage, vault architecture, and data protection posture
+  review. Determines which backup-eligible resources are protected by AWS Backup
+  across enabled Regions, evaluates backup plan frequency and retention,
+  cross-Region and cross-account copies, vault encryption, Vault Lock, Logically
+  Air-Gapped Vaults, Multi-party approval (MPA), and per-Region resource opt-in.
+  Uses read-only control-plane API calls via connected MCP tools and produces a
+  rated report with a coverage matrix and prioritized remediation. Use when a user
+  asks about backup coverage, unprotected resources, AWS Backup audit or posture,
+  backup plan or vault review, Logically Air-Gapped Vaults or MPA ransomware
+  controls, or data protection gaps ("what is not being backed up", "AWS Backup
+  coverage review", "audit my backup plans", "are my volumes protected", "review
+  my backup vaults"). Do NOT use for restoring data, backup/restore job failure
+  triage, backup cost optimization, or RDS-native snapshots outside AWS Backup.
 metadata:
   author: vediyappan-kk
   version: "1.1.0"

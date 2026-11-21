@@ -11,42 +11,70 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `amazon-workspaces-agent-access` to design, validate, and troubleshoot amazon workspaces agent access."
+      "prompt": "Connect our Python AI agent to a remote Windows desktop on WorkSpaces Applications via `https://agentaccess-mcp.us-east-1.api.aws/mcp` using `mcp-proxy-for-aws` and `POLLING` mode."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through production best practices and operational guardrails for amazon workspaces agent access (`amazon-workspaces-agent-access`)."
+      "prompt": "Configure `AgentAccessConfig` (`COMPUTER_VISION`, `COMPUTER_INPUT`, `FORWARD_MCP_TOOLS`, `W_1280xH_720`) on an AppStream stack and set up `mcp_server_redirection_config.json`."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Pass an Active Directory SAML assertion via `aws.agentaccess/workspacesApplicationsSamlAssertion` `_meta` to drive a domain-joined WorkSpaces Applications desktop."
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need an operational review and step-by-step runbook covering: Connects AI agents to remote Windows desktop applications on Amazon WorkSpaces Applications (AppStream 2.0) through the managed Agent Access MCP server, and guides reliable desktop"
+      "prompt": "Our computer-use desktop agent on AppStream keeps failing with `dcv session not ready`, `400 Bad Request` on cross-region SigV4, and later `client_disconnected` — how should we handle each?"
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the critical failure modes, configuration checks, and verification commands for amazon workspaces agent access?"
+      "prompt": "Why does `tools/list` on the Agent Access MCP server only return `connection_status` right after `initialize`, and why did `connect_to_desktop` fail with `Unknown tool`?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Cut our Windows GUI automation token burn by batching `left_click`, `type_text`, and `key('super+r')` calls and setting `X-Amzn-AgentAccess-Expire-Streaming-Session-On-Delete: true`."
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our amazon workspaces agent access setup in read-only mode."
+      "prompt": "Write a least-privilege IAM policy for `agentaccess-mcp:InvokeMcp`, `GetScreenshot`, and `CallForwardedTool` scoped with the `agentaccess-mcp:StackArn` condition key."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Expose a local stdio MCP tool on a Windows AppStream host as `forwarded___filesystem___read_file` without hitting UTF-8 BOM or 5-second timeout errors."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Enable `UserControlMode: VIEW_STOP` and CloudTrail data events on `agentaccess-mcp` so human operators can supervise an agent driving an ERP desktop app."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Configure and troubleshoot amazon appstream and workspaces web exclusively without touching amazon workspaces agent access.",
+      "prompt": "Design an Amazon AppStream 2.0 Elastic Fleet with VHD App Blocks on S3 and an Amazon WorkSpaces Secure Browser portal with clipboard DLP controls for human employees.",
       "expected_alternative_skill": "amazon-appstream-and-workspaces-web"
     },
     {
@@ -54,7 +82,16 @@
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+      "prompt": "Provision persistent Amazon WorkSpaces Personal desktops joined to AWS Managed Microsoft AD with WSP and convert underutilized AlwaysOn desktops to AutoStop.",
+      "expected_alternative_skill": "amazon-workspaces-administration"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Triage `AWS/WorkSpaces` `InSessionLatency > 250ms` and `Unhealthy >= 1` alarms alongside AD Connector computer-object OU join failures.",
+      "expected_alternative_skill": "euc-observability-and-troubleshooting"
     }
   ]
 }

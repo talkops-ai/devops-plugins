@@ -200,9 +200,10 @@ spec:
 
 **CRITICAL DIFFERENCES from Self-Managed Karpenter:**
 - `NodeClass` uses `apiVersion: eks.amazonaws.com/v1`, `kind: NodeClass` (NOT `karpenter.k8s.aws/v1` `EC2NodeClass`!).
+- **Configurable `eks.amazonaws.com/v1` `NodeClass` `spec` fields (always list `spec.role` alongside storage/network fields when summarizing `NodeClass` capabilities):** `role` (required IAM node role name or ARN), `subnetSelectorTerms` (`id` or `tags`), `securityGroupSelectorTerms` (`id`, `name`, or `tags`), `ephemeralStorage` (`size`, `iops`, `throughput`, `kmsKeyID`), `snatPolicy` (`Random` | `Disabled` — note `Disabled`, not `None`), `networkPolicy` (`DefaultAllow` | `DefaultDeny`), `networkPolicyEventLogs` (`Enabled` | `Disabled`), and `tags`.
+- **Unsupported on EKS Auto Mode `NodeClass`:** Custom `amiSelectorTerms`, `amiFamily`, and custom bootstrap `userData` do **not** exist on `eks.amazonaws.com/v1` `NodeClass` (AWS manages the hardened OS image automatically; require self-managed `karpenter.k8s.aws/v1` `EC2NodeClass`).
 - Requirement label keys use **`eks.amazonaws.com/instance-category`**, **`eks.amazonaws.com/instance-generation`**, **`eks.amazonaws.com/instance-cpu`** (NOT `karpenter.k8s.aws/*`!).
 - Maximum `expireAfter` on EKS Auto Mode is **`504h` (21 days)** (enforced by AWS).
-- Subnet/Security Group selectors support `id`, `tags`, without requiring custom AMI selectors (AWS manages the hardened OS image automatically).
 
 ```yaml
 apiVersion: eks.amazonaws.com/v1

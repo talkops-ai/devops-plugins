@@ -2,23 +2,89 @@
   "skill_name": "modernization-parity-and-cutover",
   "evals": [
     {
-      "id": "eval-01-provide-a-concise-structured-production-cutover",
-      "prompt": "Provide a concise, structured **Production Cutover & Rollback Runbook** (`references/production-cutover-runbook.md`) directly in your response for cutting over traffic from our legacy Oracle monolith to our modernized ECS Fargate + Aurora PostgreSQL service behind Amazon API Gateway Canary / VPC Lattice in `ap-south-1`. Include: (1) the exact AWS DMS CDC lag verification checks (`CDCLatencyTarget < 5` seconds draining to `0` seconds after write quiesce, `TableStatistics`), (2) the PostgreSQL sequence synchronization SQL (`setval` + `pg_get_serial_sequence`) required after write quiesce, and (3) the 4 progressive canary traffic stages (`1%` 15m -> `10%` 30m -> `50%` 60m -> `100%`) plus the `aws apigateway update-stage` (`path=/canarySettings/percentTraffic,value=0.0`) rollback command.",
-      "expected_output": "Provides the complete 4-phase cutover runbook: (1) Pre-cutover DMS CDC lag check (`CDCLatencyTarget < 5s`, `ValidationState == \"Validated\"`), (2) Legacy write freeze + CDC drain to `0s` + PostgreSQL sequence alignment (`SELECT setval(pg_get_serial_sequence(...), COALESCE((SELECT MAX(id) ...), 1), true)`), (3) Staged canary ramp (`1%` for 15m -> `10%` for 30m -> `50%` for 60m -> `100%`), and (4) Instant automated rollback command (`aws apigateway update-stage ... --patch-operations op=replace,path=/canarySettings/percentTraffic,value=0.0`) triggered when `5XXError > 0.5%` or `p95 Latency > 500ms`.",
-      "files": [],
+      "id": "eval-01-zero-big-bang-cutover-guardrail-and-minute-by-minute-runbook",
+      "prompt": "Our project manager wants to do a Friday midnight \"big-bang\" DNS switch from our legacy monolith + Oracle DB to our modernized ECS + Aurora PostgreSQL services (`DMS CDC` running) with only manual QA spot checks done in dev! Enforce the mandatory modernization guardrail and provide the deterministic parity + staged canary cutover & rollback runbook.",
       "expectations": [
-        "Includes the DMS CDC pre-cutover checks (`CDCLatencyTarget < 5` seconds -> drain to `0` seconds after write quiesce) and the exact PostgreSQL `setval(pg_get_serial_sequence(...), MAX(id))` SQL to prevent `23505` primary-key collisions on cutover.",
-        "Details the 4 progressive canary stages (`1%` 15m -> `10%` 30m -> `50%` 60m -> `100%`) and the `aws apigateway update-stage` (`path=/canarySettings/percentTraffic,value=0.0`) rollback command."
+        "Activates the modernization-parity-and-cutover skill and explicitly rejects unverified big-bang cutovers",
+        "Requires proving all 3 parity pillars before cutover (Functional/Contract parity via unit + Testcontainers + Pact/OpenAPI tests, Data/Semantic parity + PostgreSQL `setval(...)` sequence sync, and Performance parity via k6/Gatling p50/p95/p99 baselines + ADOT/CloudWatch)",
+        "Provides the ordered cutover runbook: verify DMS `CDCLatencyTarget < 5s` -> freeze legacy writes -> drain CDC lag to `0s` -> run `SELECT setval(...)` sequence alignment -> progressive canary shift (`1% -> 10% -> 50% -> 100%`) with automated CloudWatch alarm rollback (`5XX > 0.5%` or `p95` breach)"
       ]
     },
     {
-      "id": "eval-02-provide-a-production-ready-k6-load-benchmarking",
-      "prompt": "Provide a production-ready **k6** load benchmarking script that ramps virtual users through warm-up, sustained peak (500 VUs), and cooldown stages while enforcing hard CI/CD exit gates (`p95 < 250ms`, `p99 < 500ms`, `http_req_failed < 0.1%`). Also check our live AWS environment in `ap-south-1` (`sts:GetCallerIdentity` or `cloudwatch:DescribeAlarms`) and explain which ADOT, HikariCP, and Aurora PostgreSQL Performance Insights metrics must be baselined during the load test.",
-      "expected_output": "Runs read-only `aws-mcp` / `cloudwatch` preflight in `ap-south-1`, provides a complete `k6` script with `stages` and `thresholds: { http_req_duration: ['p(95)<250', 'p(99)<500'], http_req_failed: ['rate<0.001'] }`, and details monitoring ADOT distributed traces, HikariCP connection pool saturation (`hikaricp_connections_active`, `pending`), container CPU/GC pauses, and Aurora PostgreSQL Performance Insights (`DBLoad`, `BufferCacheHitRatio`, `CommitLatency`).",
-      "files": [],
+      "id": "eval-02-mainframe-comp3-packed-decimal-and-ebcdic-record-replay-parity",
+      "prompt": "During AWS Blu Age mainframe refactoring of a COBOL interest-calculation batch job (`PIC S9(9)V99 COMP-3`), 0.3% of accounts differ by `$0.01` in Java `double` arithmetic, AND sorted report files fail `diff` because `'100'` sorted after `'ABC'` on z/OS! Diagnose both parity bugs and design the mainframe record-replay equivalence test harness.",
       "expectations": [
-        "Includes a complete k6 script defining ramp `stages` and `thresholds` enforcing `p(95)<250`, `p(99)<500`, and `rate<0.001`.",
-        "Details the observability metrics to baseline across AWS Distro for OpenTelemetry (ADOT), HikariCP connection pools, and Aurora RDS Performance Insights (`DBLoad`, cache hit ratio, commit latency)."
+        "Activates the modernization-parity-and-cutover skill",
+        "Diagnoses floating-point binary rounding drift (`double` vs COBOL `COMP-3` packed decimal) and mandates exact fixed-scale **`BigDecimal`** (`RoundingMode` matching COBOL `ROUNDED` vs truncation semantics) + PostgreSQL `NUMERIC(11,2)`",
+        "Diagnoses EBCDIC (`a-z < A-Z < 0-9`) vs ASCII (`0-9 < A-Z < a-z`) collation mismatch and outlines the 3-step mainframe record-replay harness (capture legacy `SYSIN`/DB/CICS traces -> replay on modernized target -> collation-normalized & `COMP-3`-aware equivalence diff)"
+      ]
+    },
+    {
+      "id": "eval-03-postgresql-sequence-setval-synchronization-at-dms-cutover",
+      "prompt": "Why do newly cut-over Aurora PostgreSQL databases frequently throw `ERROR: duplicate key value violates unique constraint (SQLSTATE 23505)` on the VERY FIRST `INSERT` after AWS DMS finishes CDC replication from Oracle/SQL Server, and what exact SQL script must run during the cutover freeze window?",
+      "expectations": [
+        "Activates the modernization-parity-and-cutover skill",
+        "Explains that AWS DMS replicates table row values (`id = 1..500000`) via `COPY`/CDC **without advancing target PostgreSQL sequences / identity counters** (which stay stuck at `1` or pre-CDC baseline!)",
+        "Provides dynamic PostgreSQL `setval(pg_get_serial_sequence(...), COALESCE(MAX(id), 1))` SQL across all sequence/identity-backed tables executed right after legacy writes freeze and DMS CDC drains to `0`"
+      ]
+    },
+    {
+      "id": "eval-04-testcontainers-ephemeral-postgresql-and-kafka-contract-ci-suite",
+      "prompt": "Our QA environment has a shared mutable PostgreSQL + Kafka server where parallel CI branches corrupt each other's test data. Design an isolated CI parity test suite using **Testcontainers** (`PostgreSQL` + `Kafka`), Flyway migrations, and OpenAPI / Pact consumer-driven contract tests.",
+      "expectations": [
+        "Activates the modernization-parity-and-cutover skill",
+        "Provides a reproducible Testcontainers setup spinning up ephemeral `postgres:16` and `kafka` containers per CI run, applying production Flyway/Liquibase migrations from scratch, and validating both REST API contracts (OpenAPI / Pact) and async Kafka event schemas"
+      ]
+    },
+    {
+      "id": "eval-05-k6-load-benchmarking-and-adot-hikaricp-observability-gates",
+      "prompt": "Author a **k6** load-benchmark script and **ADOT / CloudWatch** observability checklist to prove our modernized microservice meets legacy SLAs (`500` peak VUs, `p95 < 250ms`, `p99 < 500ms`, HTTP error rate `< 0.1%`) before approving production cutover.",
+      "expectations": [
+        "Activates the modernization-parity-and-cutover skill",
+        "Provides a runnable `k6` script with ramp-up, sustained peak (`500` target), cooldown stages, and automated pass/fail `thresholds` (`http_req_duration: ['p(95)<250', 'p(99)<500']`, `http_req_failed: ['rate<0.001']`)",
+        "Checks ADOT distributed traces, HikariCP/DB connection pool saturation, container CPU CFS throttling / JVM GC pauses, and Aurora Performance Insights wait events during the load sweep"
+      ]
+    },
+    {
+      "id": "eval-06-dual-read-shadow-traffic-and-reverse-cdc-rollback-safety",
+      "prompt": "Once we shift 10% canary traffic to the modernized service writing to Aurora PostgreSQL, an engineer asks: \"If we have to roll back to the legacy Oracle database 45 minutes later, won't we lose the 45 minutes of writes committed to Aurora?\" Design the **reverse CDC** fallback architecture so rollback has `RPO = 0`.",
+      "expectations": [
+        "Activates the modernization-parity-and-cutover skill",
+        "Explains the split-brain data-loss trap once writes hit the modernized database, and designs **Reverse CDC replication** (Aurora PostgreSQL logical replication -> AWS DMS / GoldenGate -> legacy Oracle, with loop-prevention markers/transaction tags so changes don't ping-pong infinitely!) kept active throughout the canary bake window before decommissioning legacy"
+      ]
+    },
+    {
+      "id": "eval-07-strangler-fig-routing-apigateway-canary-alb-weighted-vpc-lattice",
+      "prompt": "Compare progressive Strangler-Fig traffic shifting mechanisms on AWS (`API Gateway Stage Canary`, `ALB Weighted Target Groups`, `Amazon VPC Lattice Weighted Target Groups`, and `Route 53 Weighted DNS`) for incremental `1% -> 10% -> 50% -> 100%` cutovers, including why DNS TTL makes Route 53 slower for instant rollback.",
+      "expectations": [
+        "Activates the modernization-parity-and-cutover skill",
+        "Compares L7 proxy-level traffic splitting (`API Gateway Canary`, `ALB Weighted Target Groups`, `VPC Lattice` \u2014 instant `<1s` rollback to `0%` without client DNS caching) against `Route 53 Weighted DNS` (subject to client/ISP DNS resolver TTL caching ignoring `TTL=60s`, delaying emergency rollbacks)"
+      ]
+    },
+    {
+      "id": "eval-08-live-ap-south-1-pre-cutover-dms-and-alarm-readiness-check",
+      "prompt": "Perform a read-only pre-cutover readiness check in `ap-south-1` on our live AWS account inspecting any active AWS DMS replication tasks, API Gateway / ALB resources, and CloudWatch Alarms, and report what pre-cutover gates would pass vs block right now.",
+      "expectations": [
+        "Activates the modernization-parity-and-cutover skill and queries `dms:DescribeReplicationTasks`, `elbv2`/`apigateway`, and `cloudwatch:DescribeAlarms` in `ap-south-1` via connected AWS MCP tools with zero raw `aws` CLI shell commands",
+        "Accurately reports live `ap-south-1` findings (cleanly reporting 0 tasks/alarms if none exist) and maps them against the pre-cutover Go/No-Go checklist",
+        "Makes zero mutating AWS calls"
+      ]
+    },
+    {
+      "id": "eval-09-row-count-and-cryptographic-hash-data-reconciliation-before-cutover",
+      "prompt": "Before freezing writes for cutover on a 2 TB financial ledger migrated from SQL Server to Aurora PostgreSQL, why is `SELECT COUNT(*)` alone completely insufficient to prove data parity, and how should we verify row-level value fidelity?",
+      "expectations": [
+        "Activates the modernization-parity-and-cutover skill",
+        "Explains why `COUNT(*)` misses silent column truncation, timezone shifts (`TIMESTAMP` vs `TIMESTAMPTZ`), `NULL` vs `''` coercion, and `DECIMAL` rounding differences",
+        "Prescribes enabling **AWS DMS Data Validation** (`EnableValidation: true` row-by-row comparison in `awsdms_validation_failures_v1`) plus aggregate financial control totals (`SUM(amount)`, `MIN`/`MAX` timestamps) and bucketed MD5/SHA-256 column-hash checksums across PK ranges"
+      ]
+    },
+    {
+      "id": "eval-10-awsknowledge-aws-dms-data-validation-and-mainframe-app-testing",
+      "prompt": "Query AWS documentation via connected AWS documentation tools to confirm how **AWS DMS Data Validation** (`EnableValidation`, `ValidationOnly` tasks, and `awsdms_validation_failures_v1`) detects source-vs-target drift during ongoing CDC before cutover.",
+      "expectations": [
+        "Queries connected AWS documentation MCP tools (`awsknowledge`, `aws-mcp`, or `awsiac`) with zero raw `aws` CLI commands",
+        "Accurately details AWS DMS Data Validation (`ValidationSettings` / `EnableValidation`, `awsdms_validation_failures_v1`, row-level vs LOB validation limits) and/or AWS Mainframe Modernization Application Testing batch/online equivalence replay capabilities"
       ]
     }
   ]

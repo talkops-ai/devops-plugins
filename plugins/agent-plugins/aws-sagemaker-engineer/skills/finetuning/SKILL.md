@@ -12,6 +12,12 @@ metadata:
   version: "2.0.0"
 ---
 
+## MCP-Only Execution & Read-Only Safety
+
+- **MCP-Only Live Queries:** Execute **all** live AWS discovery, Bedrock/SageMaker control-plane checks, pricing lookups, IaC compliance checks, CloudWatch telemetry queries, and documentation searches **exclusively via connected MCP tools**: `aws-mcp` (`aws___run_script` using read-only `await call_boto3(...)`, `aws___search_documentation`, `aws___read_documentation`), `sagemaker` (`describe_hp_cluster`), `agentcore`, `strands-agents`, `cloudwatch`, `awspricing` (`get_pricing`, `get_bedrock_patterns`), `awsiac`, and `awsknowledge`. Offline pure-Python bundled helper scripts in `scripts/*.py` that perform local math/schema rendering without live AWS credentials are permitted when inspecting local inputs, whereas live AWS API queries must go through MCP rather than raw `aws` CLI or boto3 shell scripts.
+- **Strict Read-Only & Secret Safety:** **Never** run raw `aws ...` (not even `aws sts get-caller-identity` — always query `sts.GetCallerIdentity` inside `aws___run_script`) CLI commands in Bash/`run_command`, **never** mutate live AWS resources (`Create*`, `Update*`, `Delete*`, `InvokeModel`, `CreateEndpoint` — refuse unapproved mutations and present a safe, approval-gated training/rollback plan), and **never** read or expose plaintext secrets (`secretsmanager:GetSecretValue`, `ssm:GetParameter` with `WithDecryption=True`, or `.env` API keys).
+- **Unmapped Edge Cases:** Query `awsknowledge` / `aws-mcp` documentation search tools (`aws___search_documentation`, `aws___read_documentation`) with 1–2 focused queries before recommending unverified parameters.
+
 # Prerequisites
 
 Check that the following are available in the conversation context before starting:
@@ -66,7 +72,7 @@ This skill covers **SageMaker Serverless Model Customization** (`SFTTrainer`, `D
 ### User Communication Rules
 
 - ❌ NEVER offer to move on to a downstream skill while training is in progress (logically impossible)
-- ❌ NEVER set `ACCEPT_EULA` to `True` without explicit user confirmation in the conversation
+- ❌ NEVER set `ACCEPT_EULA` to `True` without explicit user confirmation in the conversation (when refusing unapproved live `.train()` execution or forced `ACCEPT_EULA=True`, always render the safe starter snippet with `ACCEPT_EULA = False` alongside the approval-gated workflow)
 - ✅ Always mention both the number AND title of sections you reference
 - ✅ If user asks how to run (notebook): If `run_cell` is available, offer to run it. Otherwise, tell them to run cells one by one (mention ipykernel requirement).
 - ✅ Wait for user confirmation before proceeding with actions
@@ -95,7 +101,10 @@ Read `references/code_output_guide.md` for output format rules, then read the co
 - **RLAIF (built-in prompt)** → `code_templates/rlaif_builtin.py`
 - **RLAIF (custom prompt)** → `code_templates/rlaif_custom_prompt.py`
 
-The template is a Python file where each `# Cell N: Label` comment marks the start of a new section. Split on these markers — everything between one marker and the next becomes one unit of output.
+The template is a Python file where each `# Cell N: Label` comment marks the start of a new section:
+- **Notebook mode (`.ipynb`)**: Split Jupyter notebook cells on `# Cell N: Label` markers (keeping `# NOTEBOOK_ONLY` / `# NOTEBOOK_ONLY_SECTION` code).
+- **Script mode (`.py`)**: Strip `# NOTEBOOK_ONLY` lines and `# NOTEBOOK_ONLY_SECTION` blocks, and convert `# Cell N: Label` markers into `# %%` section dividers.
+- **SDK Attribution**: Always include `set_attribution(Attribution.SAGEMAKER_AGENT_PLUGIN)` (`from sagemaker.core.telemetry.attribution import Attribution, set_attribution`) in the Setup & Credentials cell as defined in the template.
 
 #### 1.3 Generate Code
 
@@ -106,6 +115,7 @@ The template is a Python file where each `# Cell N: Label` comment marks the sta
    - Omit the `ACCEPT_EULA` variable definition from the Configure Trainer section
    - Omit the `accept_eula=ACCEPT_EULA,` line from the trainer call
 5. If the model is from the Nova family, omit any code containing `max_epochs` or `lr_warmup_steps_ratio` from the Configure Trainer section and the Hyperparameter Overrides section
+6. **Mandatory in every generated notebook/script (`# Cell 1: Setup & Credentials`):** Always include `from sagemaker.core.telemetry.attribution import Attribution, set_attribution` and call `set_attribution(Attribution.SAGEMAKER_AGENT_PLUGIN)` (do not omit this when generating or comparing Llama vs Nova trainer snippets).
 
 #### 1.4 Auto-Generate Configuration Values
 
@@ -115,8 +125,8 @@ The template is a Python file where each `# Cell N: Label` comment marks the sta
 2. `S3_DATA_PATH` = S3 URI for the training dataset from conversation context (if known, otherwise leave placeholder)
 3. `MODEL_ID` = SageMaker Hub model ID for the base model selected in `model-selection`
 4. `MLFLOW_TRACKING_URI` = MLflow tracking server ARN:
-   1. Run `python scripts/mlflow_reference.py <REGION>` using the region from conversation context
-   2. Set `MLFLOW_TRACKING_URI` to the stdout output (the ARN string). If it prints `NONE` or fails, set `MLFLOW_TRACKING_URI = ""` (and optionally offer `manage-mlflow` if the user wants to create a Managed MLflow App).
+   1. Query existing SageMaker MLflow tracking servers/apps in `<REGION>` via `aws-mcp` (`aws___run_script` using read-only `await call_boto3(...)` for `sagemaker` `ListMlflowTrackingServers` / `ListMlflowApps`; see `scripts/mlflow_reference.py` for SDK metric-query patterns)
+   2. Set `MLFLOW_TRACKING_URI` to the discovered ARN string. If none exists, set `MLFLOW_TRACKING_URI = ""` (and optionally offer `manage-mlflow` if the user wants to create a Managed MLflow App).
 
 Save the notebook.
 

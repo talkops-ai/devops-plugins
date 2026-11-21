@@ -1,61 +1,95 @@
 {
   "skill_name": "aws-iam-and-security",
   "companion_skills": [
-    "aws-brownfield-migration",
     "aws-cdk",
-    "aws-cloudformation",
-    "aws-crossplane",
-    "aws-deployment"
+    "aws-terraform",
+    "deploy",
+    "preflight-discovery"
   ],
   "queries": [
     {
-      "id": "trig-exp-01",
+      "id": "trig-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `aws-iam-and-security` to help me design, validate, and troubleshoot aws iam and security."
+      "prompt": "Audit our Terraform IAM policies for wildcard `iam:PassRole` privilege escalation, Confused Deputy missing `aws:SourceArn`, and plaintext RDS passwords in `.tfstate`."
     },
     {
-      "id": "trig-exp-02",
+      "id": "trig-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for aws iam and security (`aws-iam-and-security`)."
+      "prompt": "Design an AWS IAM Permissions Boundary for delegated CDK developers and combine SCPs with Resource Control Policies (RCPs) for an org data perimeter."
     },
     {
-      "id": "trig-imp-01",
+      "id": "trig-03",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Authors least-privilege AWS IAM policies, Permission Boundaries, KMS CMK key policies, Secrets Manager dynamic references, and CI/CD OIDC trust relationships across CDK, CloudForma"
+      "prompt": "Gate our CI pipeline with `cfn-guard`, `cdk-nag`, and IAM Access Analyzer `ValidatePolicy` and `CheckNoNewAccess`."
     },
     {
-      "id": "trig-imp-02",
+      "id": "trig-04",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating aws iam and security?"
+      "prompt": "Debug a cross-account `s3:GetObject` + KMS `AccessDenied` across Identity Policy, Bucket Policy, KMS CMK Policy, and VPC Endpoint Policy."
     },
     {
-      "id": "trig-ctx-01",
+      "id": "trig-05",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our aws iam and security setup in read-only mode and highlight top risks."
+      "prompt": "Replace hardcoded ECS `environment` secrets and `aws_iam_access_key` resources in our IaC templates with Secrets Manager injection and IAM roles."
     },
     {
-      "id": "trig-neg-01",
-      "quadrant": "near_miss_negative",
-      "split": "train",
-      "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot aws brownfield migration exclusively without touching aws iam and security."
-    },
-    {
-      "id": "trig-neg-02",
+      "id": "trig-06",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Calculate the monthly cost of `gp3` EBS volumes vs `gp2` and 3-AZ NAT Gateways in `ap-south-1`."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Scaffold a Next.js full-stack web app using `npx @aws-blocks/create-blocks-app my-app`."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Migrate our Python Flask app from Render to AWS using `launch_with_aws.py`."
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Upgrade our AWS SDK for JavaScript v3 S3 client to use `@smithy/signature-v4-multi-region` SigV4a."
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Optimize HNSW vector index `m` and `efConstruction` parameters on Amazon DocumentDB."
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Troubleshoot high `ReadLatency` and hot partitions on an Amazon Keyspaces table."
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write an Amazon Braket OpenQASM 3 bell-state quantum circuit running on SV1."
     }
   ]
 }

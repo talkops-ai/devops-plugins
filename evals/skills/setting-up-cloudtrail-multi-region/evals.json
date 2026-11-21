@@ -2,35 +2,89 @@
   "skill_name": "setting-up-cloudtrail-multi-region",
   "evals": [
     {
-      "id": "eval-01-when-running-aws-cloudtrail-create-trail-in-ap-s",
-      "prompt": "When running `aws cloudtrail create-trail` in `ap-south-1` with `--cloud-watch-logs-log-group-arn` and `--cloud-watch-logs-role-arn`, we got `InvalidCloudWatchLogsRoleArnException` on the first run and then `InvalidCloudWatchLogsLogGroupArnException` when we passed `arn:aws:logs:ap-south-1:123456789012:log-group:CloudTrail/APILogs`. Explain why both errors happen and provide the exact IAM role trust policy, permissions policy, and ARN format required.",
-      "expected_output": "Explains that `InvalidCloudWatchLogsRoleArnException` happens due to IAM propagation delay right after `iam create-role`/`put-role-policy` (requiring a 10–15s wait) or a wrong trust policy, and `InvalidCloudWatchLogsLogGroupArnException` happens when the log group ARN does not match the `describe-log-groups` ARN format (`:*` suffix), and provides the `cloudtrail.amazonaws.com` trust policy and `logs:CreateLogStream` + `logs:PutLogEvents` permissions policy scoped to `log-stream:${account_id}_CloudTrail_${region}*`.",
-      "files": [],
+      "id": "eval-01-missing-parameters-upfront-request-and-cost-warnings",
+      "prompt": "Set up a centralized multi-region AWS CloudTrail trail with CloudWatch Logs integration for our account.",
       "expectations": [
-        "Explains that `InvalidCloudWatchLogsRoleArnException` occurs when IAM role/policy creation has not finished propagating (requiring a ~10–15 second wait after `put-role-policy`) or when `cloudtrail.amazonaws.com` is missing from the trust policy",
-        "Explains that `InvalidCloudWatchLogsLogGroupArnException` occurs when the Log Group ARN omits the required trailing `:*` suffix (e.g., `arn` ending with `:*` vs `logGroupArn` without `:*` in `describe-log-groups`, or `arn:aws:logs:ap-south-1:${account_id}:log-group:CloudTrail/APILogs:*`)",
-        "Provides the least-privilege IAM role permissions policy granting `logs:CreateLogStream` and `logs:PutLogEvents` on `arn:aws:logs:ap-south-1:${account_id}:log-group:CloudTrail/APILogs:log-stream:${account_id}_CloudTrail_ap-south-1*`"
+        "Activates the setting-up-cloudtrail-multi-region skill",
+        "Asks for required parameters upfront (`trail_name`, `s3_bucket_name`, and `region`), lists optional parameters with defaults (`cloudwatch_log_group='CloudTrail/APILogs'`, `enable_data_events=false`, `enable_insights=true`, `kms_key_id`, `tags`), and explicitly flags cost implications for `enable_data_events` and `enable_insights`",
+        "Does not execute mutating S3/CloudTrail creation calls before user confirmation"
       ]
     },
     {
-      "id": "eval-02-how-do-we-enable-cloudtrail-data-events-for-all",
-      "prompt": "How do we enable CloudTrail Data Events (for all S3 objects and Lambda function invocations) and CloudTrail Insights (`ApiCallRateInsight`) on an existing trail in `ap-south-1`, and what are the exact pricing and cost-explosion risks of turning both on in a high-throughput production account?",
-      "expected_output": "Provides `aws cloudtrail put-event-selectors` (with `DataResources` for `AWS::S3::Object` `arn:aws:s3` and `AWS::Lambda::Function` `arn:aws:lambda`) and `aws cloudtrail put-insight-selectors --insight-selectors '[{\"InsightType\": \"ApiCallRateInsight\"}]'`, and warns about the per-100,000 event pricing ($0.10 per 100k data events, $0.35 per 100k write events for Insights) and scoping S3 data events to specific sensitive bucket prefixes.",
-      "files": [],
+      "id": "eval-02-read-only-ap-south-1-precheck-and-complete-multi-region-trail-plan",
+      "prompt": "Check our caller identity and inspect existing CloudTrail trails (`describe-trails` / `get-trail-status`) in `ap-south-1` (read-only), then present the complete step-by-step plan to create a multi-region trail `security-audit-trail` logging to `acme-sec-cloudtrail-logs-2026` and CloudWatch Log Group `CloudTrail/APILogs` with KMS encryption and log file validation \u2014 without creating anything yet.",
       "expectations": [
-        "Provides the `aws cloudtrail put-event-selectors` command with `DataResources` for `AWS::S3::Object` and `AWS::Lambda::Function`",
-        "Provides the `aws cloudtrail put-insight-selectors` command with `InsightType: ApiCallRateInsight`",
-        "Explicitly warns about cost impact (Data Events billed at ~$0.10 per 100,000 events and CloudTrail Insights at ~$0.35 per 100,000 write events) and recommends scoping S3 Data Events to specific high-value buckets/prefixes instead of `arn:aws:s3` account-wide"
+        "Activates the setting-up-cloudtrail-multi-region skill and performs read-only `ap-south-1` pre-checks via connected AWS MCP tools with zero raw `aws` CLI shell commands",
+        "Presents the sequential plan: S3 bucket creation (with versioning, SSE-KMS, lifecycle, and `cloudtrail.amazonaws.com` `s3:GetBucketAcl` + `s3:PutObject` bucket policy with `AWS:SourceArn`), CloudWatch Log Group + scoped IAM Role (`logs:CreateLogStream` + `logs:PutLogEvents`), `create-trail` (`--is-multi-region-trail --enable-log-file-validation --include-global-service-events`), and `start-logging`",
+        "Pauses explicitly for user approval before executing any mutating resource creation"
       ]
     },
     {
-      "id": "eval-03-during-a-soc2-audit-in-ap-south-1-our-auditor-as",
-      "prompt": "During a SOC2 audit in `ap-south-1`, our auditor asks how we prove that no CloudTrail log files in S3 were modified or deleted after delivery over the past 24 hours. Explain how `--enable-log-file-validation` works (SHA-256 digest files and RSA digital signatures) and give the exact AWS CLI command to cryptographically verify log integrity.",
-      "expected_output": "Explains that `--enable-log-file-validation` causes CloudTrail to write hourly SHA-256 digest files signed with CloudTrail's private key to `AWSLogs/<account_id>/CloudTrail-Digest/`, and provides `aws cloudtrail validate-logs --trail-arn <trail_arn> --start-time <ISO_UTC> --region ap-south-1`.",
-      "files": [],
+      "id": "eval-03-s3-bucket-policy-and-kms-key-policy-for-cloudtrail-confused-deputy",
+      "prompt": "`aws cloudtrail create-trail` just failed with `InsufficientS3BucketPolicyException` and `InsufficientEncryptionPolicyException`! Write the exact **S3 Bucket Policy** and **Customer Managed KMS Key Policy** required for multi-region trail `arn:aws:cloudtrail:ap-south-1:111122223333:trail/org-audit-trail` writing to `s3://corp-audit-logs-111122223333`.",
       "expectations": [
-        "Explains that `--enable-log-file-validation` generates hourly digest files containing SHA-256 hashes of delivered log files and a digital signature chained to the previous digest",
-        "Provides the exact CLI verification command: `aws cloudtrail validate-logs --trail-arn <trail_arn> --start-time <timestamp> --region ap-south-1`"
+        "Activates the setting-up-cloudtrail-multi-region skill",
+        "Writes the S3 Bucket Policy granting `cloudtrail.amazonaws.com` `s3:GetBucketAcl` on `arn:aws:s3:::corp-audit-logs-111122223333` AND `s3:PutObject` on `arn:aws:s3:::corp-audit-logs-111122223333/AWSLogs/111122223333/*` (`s3:x-amz-acl = bucket-owner-full-control`) conditioned on **`aws:SourceArn = arn:aws:cloudtrail:ap-south-1:111122223333:trail/org-audit-trail`**",
+        "Writes the KMS Key Policy granting `cloudtrail.amazonaws.com` `kms:GenerateDataKey*` (`kms:EncryptionContext:aws:cloudtrail:arn` + `aws:SourceArn` condition) and `kms:DescribeKey`"
+      ]
+    },
+    {
+      "id": "eval-04-cloudwatch-logs-integration-iam-role-and-logs-insights-security-queries",
+      "prompt": "Write the least-privilege IAM Role (`AssumeRolePolicyDocument` + inline permissions \u2014 NO `*FullAccess`!) allowing CloudTrail to stream events into CloudWatch Log Group `CloudTrail/APILogs` in `ap-south-1`, plus 3 CloudWatch Logs Insights queries for (1) `AccessDenied` / unauthorized calls, (2) `Root` account activity, and (3) IAM / Security Group changes.",
+      "expectations": [
+        "Activates the setting-up-cloudtrail-multi-region skill",
+        "Scopes the CloudTrail->CloudWatch Logs IAM role trust policy to `cloudtrail.amazonaws.com` (with `aws:SourceAccount`/`aws:SourceArn`) and grants ONLY `logs:CreateLogStream` and `logs:PutLogEvents` on `arn:aws:logs:ap-south-1:<account>:log-group:CloudTrail/APILogs:log-stream:*` (explicitly forbidding `*FullAccess` managed policies)",
+        "Provides 3 syntactically valid CloudWatch Logs Insights queries covering `errorCode` (`AccessDenied*`/`UnauthorizedOperation`), `userIdentity.type = \"Root\"`, and IAM/SG mutating `eventName`s"
+      ]
+    },
+    {
+      "id": "eval-05-troubleshooting-trail-created-but-not-logging-and-missing-cloudwatch-events",
+      "prompt": "An engineer ran `aws cloudtrail create-trail --name prod-trail --s3-bucket-name my-logs --is-multi-region-trail` 2 hours ago, yet S3 is completely empty, AND after fixing that, events from `ap-east-1` (Hong Kong opt-in region) still haven't shown up after 20 minutes! Diagnose both.",
+      "expectations": [
+        "Activates the setting-up-cloudtrail-multi-region skill",
+        "Explains (1): **`create-trail` creates the trail in `IsLogging: false` state by default \u2014 you MUST call `aws cloudtrail start-logging --name prod-trail`** (and verify `get-trail-status` `IsLogging=true`, `LatestDeliveryError`, and `LatestCloudWatchLogsDeliveryError`; allow 5\u201315 min for initial CloudWatch delivery)",
+        "Explains (2): propagation/delivery for **opt-in Regions** can normally take several hours (up to 24 hours on initial setup) once the opt-in region is enabled"
+      ]
+    },
+    {
+      "id": "eval-06-data-events-and-cloudtrail-insights-cost-and-advanced-event-selectors",
+      "prompt": "Before enabling `enable_data_events=true` and `enable_insights=true` on our multi-region CloudTrail trail in an account running a Lambda invoked 50,000 times/second and an S3 bucket receiving 20,000 `GetObject`/sec, explain the exact cost blast radius and how **Advanced Event Selectors (`put-event-selectors`)** scope Data Events safely!",
+      "expectations": [
+        "Activates the setting-up-cloudtrail-multi-region skill",
+        "Warns that S3/Lambda **Data Events** ($0.10 per 100,000 events) and **CloudTrail Insights** ($0.35 per 100,000 write management events analyzed) are paid features where `70,000 data events/sec` would cost hundreds of thousands of dollars per month if enabled blanket-wide!",
+        "Uses **Advanced Event Selectors** (`AdvancedEventSelectors` filtering `eventCategory = Data` ONLY on crown-jewel S3 bucket ARNs and/or `readOnly = false` write-only `PutObject`/`DeleteObject` operations, excluding high-frequency public/telemetry buckets)"
+      ]
+    },
+    {
+      "id": "eval-07-s3-bucket-lifecycle-glacier-transition-and-object-lock-compliance",
+      "prompt": "Design the S3 storage lifecycle and tamper-protection posture for a multi-region CloudTrail audit bucket that must retain searchable hot logs for 90 days, archive for 7 years for SOC2/PCI compliance, and block even account admins from silently deleting audit logs.",
+      "expectations": [
+        "Activates the setting-up-cloudtrail-multi-region skill",
+        "Configures `BlockPublicAccess` (all 4 settings `true`), `BucketVersioning=Enabled`, **S3 Object Lock** (Governance or Compliance WORM retention) / cross-account dedicated Log Archive account, SSE-KMS encryption, TLS-only bucket policy, `--enable-log-file-validation`, and S3 Lifecycle rules (`Standard` 90d -> `Glacier Instant Retrieval` / `Glacier Deep Archive` through 7 years + abort incomplete multipart uploads)"
+      ]
+    },
+    {
+      "id": "eval-08-single-region-vs-multi-region-trail-and-include-global-service-events",
+      "prompt": "Why did our single-region CloudTrail trail in `ap-south-1` miss an attacker creating an IAM `Administrator` user (`iam:CreateUser` in `us-east-1`) AND spinning up GPU crypto-mining EC2 instances in `sa-east-1` (S\u00e3o Paulo)?",
+      "expectations": [
+        "Activates the setting-up-cloudtrail-multi-region skill",
+        "Explains both blind spots: (1) AWS global service events (`IAM`, `STS` global, `CloudFront`, `Route 53`) log in `us-east-1` requiring `--include-global-service-events`, and (2) attackers intentionally target unused Regions like `sa-east-1` when `--is-multi-region-trail` is not enabled (`update-trail --is-multi-region-trail --include-global-service-events`)"
+      ]
+    },
+    {
+      "id": "eval-09-cis-benchmark-cloudwatch-metric-filters-on-cloudtrail-log-group",
+      "prompt": "Once CloudTrail delivers management events to our CloudWatch Log Group `CloudTrail/APILogs`, which high-priority **CloudWatch Metric Filters** should we attach on Day 1 for real-time CIS security alerting?",
+      "expectations": [
+        "Activates the setting-up-cloudtrail-multi-region skill",
+        "Recommends core CIS CloudWatch Metric Filters + Alarms: Root account usage (`{ $.userIdentity.type = \"Root\" && $.userIdentity.invokedBy NOT EXISTS && $.eventType != \"AwsServiceEvent\" }`), CloudTrail config tampering (`StopLogging` / `DeleteTrail` / `UpdateTrail`), Console sign-in without MFA / failed console logins, IAM policy/key changes, and Security Group/NACL/S3 bucket policy changes"
+      ]
+    },
+    {
+      "id": "eval-10-awsknowledge-organization-trail-vs-account-trail-delegated-admin",
+      "prompt": "Query AWS documentation via connected AWS documentation tools to compare a single-account Multi-Region Trail against an **AWS Organizations Multi-Region Trail (`--is-organization-trail`)**, including how **Delegated Administrator** registration (`register-organization-delegated-admin`) lets the Security Tooling account manage the Org Trail without daily Management Account access.",
+      "expectations": [
+        "Queries connected AWS documentation MCP tools (`awsknowledge`, `aws-mcp`, or `awsiac`) with zero raw `aws` CLI commands",
+        "Contrasts a single-account trail against an **Organization Trail** (`--is-organization-trail`, automatically covers all existing and future member accounts across all Regions in `AWSLogs/<OrgId>/<AccountId>/...`, immutable by member-account admins!) and explains delegating administration to a dedicated Security/Audit member account (`cloudtrail register-organization-delegated-admin`)"
       ]
     }
   ]

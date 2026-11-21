@@ -1,6 +1,6 @@
 ---
 name: aws-marketplace-saas-architecture
-description: "Design and deploy end-to-end AWS Marketplace SaaS and Container control planes: tenant registration landing pages, Step Functions onboarding workflows, DynamoDB tenant-to-CustomerIdentifier mapping, and least-privilege IAM roles for EKS Pod Identity, ECS Task Roles, and Lambda."
+description: "Design and deploy end-to-end AWS Marketplace SaaS and Container control planes: tenant registration landing pages, Step Functions onboarding workflows, DynamoDB tenant-to-CustomerIdentifier/LicenseArn mapping, and least-privilege IAM roles for EKS Pod Identity, ECS Task Roles, and Lambda. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # AWS Marketplace SaaS & Container Control Plane Architecture

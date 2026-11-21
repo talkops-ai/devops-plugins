@@ -1,15 +1,13 @@
 ---
 name: aws-secrets-manager
-description: >
-  Secret safety for AWS Secrets Manager, secret management, credentials, API keys,
-  tokens, and passwords. Prevents AI agents from directly fetching secret values
-  and teaches runtime dynamic references with asm-exec so plaintext never enters
-  the LLM context window.
+description: "Runtime secret-consumption safety for AI agents using AWS Secrets Manager and asm-exec dynamic references so plaintext credentials, API keys, tokens, and passwords never enter the LLM context window. Do NOT use when creating or provisioning brand-new Secrets Manager secrets with KMS CMKs, rotation schedules, or recovery windows (use creating-secrets-using-best-practices instead). Query live AWS state via MCP tools only (never raw aws CLI)."
 metadata:
   version: "1"
 ---
 
 # Using Secrets Safely with Agents
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, caller/account verification (`sts:GetCallerIdentity`), resource inspection, logs/metrics queries, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___call_aws` / `aws___run_script`, `cloudwatch`, `cloudtrail`, `prometheus`, `dynamodb`, `serverless`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**.
 
 ## Overview
 

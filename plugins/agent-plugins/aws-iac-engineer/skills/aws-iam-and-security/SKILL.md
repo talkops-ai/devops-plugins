@@ -1,9 +1,11 @@
 ---
 name: aws-iam-and-security
-description: Authors least-privilege AWS IAM policies, Permission Boundaries, KMS CMK key policies, Secrets Manager dynamic references, and CI/CD OIDC trust relationships across CDK, CloudFormation, Terraform, Pulumi, and Crossplane; validates with IAM Access Analyzer and shift-left IaC security scanners.
+description: "Authors least-privilege AWS IAM policies, Permission Boundaries, KMS CMK key policies, Secrets Manager dynamic references, and CI/CD OIDC trust relationships across CDK, CloudFormation, Terraform, Pulumi, and Crossplane; validates with IAM Access Analyzer and shift-left IaC security scanners. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # AWS IAM, Encryption & Shift-Left IaC Security
+
+> **MCP-Only Live AWS Execution:** Execute ALL live AWS API discovery, account/region preflight checks (`sts:GetCallerIdentity`), stack/cluster/resource inspection, pricing (`awspricing`/`billing`), IaC validation (`awsiac`), and documentation lookups (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___run_script` `call_boto3`, `awsknowledge`, `awsiac`, `awspricing`, `eks`, `ecs`, `cloudwatch`) — **never invoke raw `aws ...` CLI commands in shell (`run_command`)**. Offline local linters/synthesizers (`cdk synth`, `terraform validate`, `python3`) may run locally without mutating live AWS.
 
 Use this skill whenever authoring or reviewing IAM roles, policies, trust relationships, KMS Customer Managed Keys (CMKs), Secrets Manager/SSM integrations, or security-group/WAF perimeters inside any IaC engine.
 

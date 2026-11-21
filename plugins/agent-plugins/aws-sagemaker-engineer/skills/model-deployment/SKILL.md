@@ -16,6 +16,12 @@ metadata:
 
 Identifies the correct deployment pathway based on model characteristics and generates deployment code. Also provides inference optimization sub-workflows for benchmarking endpoint performance and getting deployment recommendations, and delegates custom/advanced inference topologies to `sagemaker-inference-architect`.
 
+## MCP-Only Execution & Read-Only Safety
+
+- **MCP-Only Live Queries:** Execute **all** live AWS discovery, Bedrock/SageMaker control-plane checks, pricing lookups, IaC compliance checks, CloudWatch telemetry queries, and documentation searches **exclusively via connected MCP tools**: `aws-mcp` (`aws___run_script` using read-only `await call_boto3(...)`, `aws___search_documentation`, `aws___read_documentation`), `sagemaker` (`describe_hp_cluster`), `agentcore`, `strands-agents`, `cloudwatch`, `awspricing` (`get_pricing`, `get_bedrock_patterns`), `awsiac`, and `awsknowledge`. Offline pure-Python bundled helper scripts in `scripts/*.py` that perform local math/schema rendering without live AWS credentials are permitted when inspecting local inputs, whereas live AWS API queries must go through MCP rather than raw `aws` CLI or boto3 shell scripts.
+- **Strict Read-Only & Secret Safety:** **Never** run raw `aws ...` (not even `aws sts get-caller-identity` — always query `sts.GetCallerIdentity` inside `aws___run_script`) CLI commands in Bash/`run_command`, **never** mutate live AWS resources (`Create*`, `Update*`, `Delete*`, `InvokeModel`, `CreateEndpoint` — refuse unapproved mutations and present a safe, approval-gated deployment/rollback plan), and **never** read or expose plaintext secrets (`secretsmanager:GetSecretValue`, `ssm:GetParameter` with `WithDecryption=True`, or `.env` API keys).
+- **Unmapped Edge Cases:** Query `awsknowledge` / `aws-mcp` documentation search tools (`aws___search_documentation`, `aws___read_documentation`) with 1–2 focused queries before recommending unverified parameters.
+
 ## Scope
 
 ### Validated SDK v3 Deployment Pathways (Steps 1–6)
@@ -32,7 +38,7 @@ Identifies the correct deployment pathway based on model characteristics and gen
 
 **Optimization applicability**:
 
-- **Regions**: `us-east-1`, `us-west-2`, `us-east-2`, `ap-northeast-1`, `eu-west-1`, `ap-southeast-1`, `eu-central-1`. Confirm current availability in the [SageMaker AI Region availability docs](https://docs.aws.amazon.com/sagemaker/latest/dg/regions-quotas.html).
+- **Regions**: `us-east-1`, `us-west-2`, `us-east-2`, `ap-northeast-1`, `eu-west-1`, `ap-southeast-1`, `eu-central-1`. Confirm current availability in the [SageMaker AI Region availability docs](https://docs.aws.amazon.com/sagemaker/latest/dg/regions-quotas.html). In unsupported regions such as **`ap-south-1`** (where Nova LoRA, Bedrock Custom Model Import, and Step 0 Benchmarking/Recommendations are unavailable), deploy supported JumpStart base models directly or route custom `ap-south-1` hosting (`model.tar.gz`, FFT, `InferenceComponent` bin-packing, Scale-to-Zero) to **`sagemaker-inference-architect`**.
 - **Benchmarking**: SageMaker Managed Inference endpoints — OpenAI ChatCompletions-compatible out of the box, plus custom (non-OpenAI) formats via template mode.
 - **Recommendations**: OSS base models in HuggingFace format (not Nova or LoRA adapters; deploys to SageMaker endpoints).
 
@@ -120,7 +126,7 @@ If the training job was Full Fine-Tuned (FFT, `peft_config: null` in `.hydra/con
 
 | Model Type                  | Eligible Targets   |
 | --------------------------- | ------------------ |
-| OSS (fine-tuned LoRA)       | SageMaker, Bedrock |
+| OSS (fine-tuned LoRA)       | SageMaker, Bedrock (Bedrock CMI requires **`merge_weights: true`** during training, `< 200 GB` text / `< 100 GB` multimodal, in `us-east-1`, `us-east-2`, `us-west-2`, or `eu-central-1`) |
 | Nova (fine-tuned)           | SageMaker, Bedrock |
 | JumpStart foundation (base) | SageMaker          |
 

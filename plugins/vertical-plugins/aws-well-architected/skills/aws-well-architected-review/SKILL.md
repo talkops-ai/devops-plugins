@@ -1,9 +1,11 @@
 ---
 name: aws-well-architected-review
-description: Performs a full AWS Well-Architected Framework review evaluating every framework question across all pillars discovered from the live AWS documentation by analyzing code, IaC, and configurations to produce evidence-backed findings with Eisenhower-prioritized remediation. Supports full reviews (every framework best practice with BP ID citations), quick reviews (question-level), pillar-scoped reviews, score-mode reviews (a maturity scorecard with per-pillar scores and filtered findings), and lens-specific reviews using lenses discovered from the live AWS documentation. Triggers on mentions of Well-Architected review, WA review, WAR, pillar assessment, architecture review across pillars, workload assessment, cloud readiness evaluation, or a Well-Architected score, grade, or scorecard request. Does not apply to single-pillar deep-dives, learning WA concepts, ADRs, or migration readiness assessments.
+description: "Performs a full AWS Well-Architected Framework review evaluating every framework question across all pillars discovered from the live AWS documentation by analyzing code, IaC, and configurations to produce evidence-backed findings with Eisenhower-prioritized remediation. Supports full reviews (every framework best practice with BP ID citations), quick reviews (question-level), pillar-scoped reviews, score-mode reviews (a maturity scorecard with per-pillar scores and filtered findings), and lens-specific reviews using lenses discovered from the live AWS documentation. Triggers on mentions of Well-Architected review, WA review, WAR, pillar assessment, architecture review across pillars, workload assessment, cloud readiness evaluation, or a Well-Architected score, grade, or scorecard request. Does not apply to single-pillar deep-dives, learning WA concepts, ADRs, or migration readiness assessments. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # Well-Architected Review
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, caller/account verification (`sts:GetCallerIdentity`), resource inspection, logs/metrics queries, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___call_aws` / `aws___run_script`, `cloudwatch`, `cloudtrail`, `prometheus`, `dynamodb`, `serverless`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**.
 
 ## Overview
 

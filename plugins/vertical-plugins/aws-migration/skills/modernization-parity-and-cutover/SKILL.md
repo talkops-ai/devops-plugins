@@ -1,9 +1,11 @@
 ---
 name: modernization-parity-and-cutover
-description: "Engineers functional, data, and performance parity for modernized workloads using automated unit tests, Testcontainers (PostgreSQL, Kafka), REST/event contract tests, mainframe batch/online record-replay equivalence testing (EBCDIC collation, COMP-3 precision), Gatling/k6 load baselines, OpenTelemetry/CloudWatch observability, and a deterministic Production Cutover & Rollback Runbook."
+description: "Engineers functional, data, and performance parity for modernized workloads using automated unit tests, Testcontainers (PostgreSQL, Kafka), REST/event contract tests, mainframe batch/online record-replay equivalence testing (EBCDIC collation, COMP-3 precision), Gatling/k6 load baselines, OpenTelemetry/CloudWatch observability, and a deterministic Production Cutover & Rollback Runbook. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # Modernization Parity & Production Cutover
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, caller/account verification (`sts:GetCallerIdentity`), resource inspection, logs/metrics queries, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___call_aws` / `aws___run_script`, `cloudwatch`, `cloudtrail`, `prometheus`, `dynamodb`, `serverless`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**.
 
 ## Overview
 

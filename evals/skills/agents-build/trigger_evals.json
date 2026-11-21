@@ -1,11 +1,11 @@
 {
   "skill_name": "agents-build",
   "companion_skills": [
-    "agentcore-observability-setup",
-    "agentcore-ops-review",
+    "agents-get-started",
     "agents-connect",
-    "agents-debug",
-    "agents-deploy"
+    "agents-pay",
+    "agents-harden",
+    "agents-debug"
   ],
   "queries": [
     {
@@ -13,50 +13,87 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `agents-build` to design, validate, and troubleshoot agents build."
+      "prompt": "Add cross-session Long-Term Memory (`SEMANTIC` and `USER_PREFERENCE`) to our existing Strands AgentCore project."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through production best practices and operational guardrails for agents build (`agents-build`)."
+      "prompt": "Configure VPC networking (`networkMode: VPC`), multi-agent A2A delegation, and custom request header passthrough on our existing AgentCore agent."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Wire `AgentCorePaymentsPlugin` with per-end-user embedded wallets and MPP Tempo support into the SaaS agent we're building."
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need an operational review and step-by-step runbook covering: Use to extend an existing agent project with memory, app integration, VPC, multi-agent, migration, model, browser, code interpreter, payments, or resource removal. Triggers: \"add m"
+      "prompt": "How do I invoke my deployed AgentCore Runtime with streaming responses from a Python FastAPI backend without hitting API Gateway's 29-second timeout?"
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the critical failure modes, configuration checks, and verification commands for agents build?"
+      "prompt": "Migrate our Classic Amazon Bedrock Agent (`agent-id` + action groups) to AgentCore and compare Strands vs LangGraph for the migrated project."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Add the AgentCore Code Interpreter sandbox and Browser tool with same-account S3 session recordings to our research agent, and show how to tear down resources cleanly later."
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our agents build setup in read-only mode."
+      "prompt": "Our existing AgentCore agent needs to reach an internal RDS database inside `vpc-0abc123` in Mumbai (`ap-south-1`) — check our subnets and endpoints and show the `networkConfig` setup."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Our orchestrator agent isn't forwarding `X-Amzn-Bedrock-AgentCore-Runtime-Custom-Tenant` or calling our specialist A2A agent on port 9000."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Users complain our deployed support bot forgets preferences across conversations when we pass `session_id='chat-1'` — fix our AgentCore Memory integration."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Configure and troubleshoot agentcore observability setup exclusively without touching agents build.",
-      "expected_alternative_skill": "agentcore-observability-setup"
+      "prompt": "Connect our agent to an external ServiceNow OpenAPI spec via AgentCore Gateway and restrict destructive tools with Cedar policies.",
+      "expected_alternative_skill": "agents-connect"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+      "prompt": "My coding agent just hit an HTTP 402 Payment Required paywall mid-task — configure `~/.agents-pay/config.json` so this agent can pay up to $0.25 per request.",
+      "expected_alternative_skill": "agents-pay"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Scaffold a brand-new hello-world AgentCore project from scratch using `agentcore create`.",
+      "expected_alternative_skill": "agents-get-started"
     }
   ]
 }

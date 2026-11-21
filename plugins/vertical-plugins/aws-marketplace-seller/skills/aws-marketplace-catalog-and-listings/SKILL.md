@@ -1,6 +1,6 @@
 ---
 name: aws-marketplace-catalog-and-listings
-description: "Author, update, and automate AWS Marketplace product listings (SaaS, Container/EKS/ECS, AMI, and GenAI Agent/Model products) using the AWS Marketplace Catalog API (StartChangeSet), SNS entitlement/subscription notifications, and AWS Marketplace Entitlement Service (GetEntitlements)."
+description: "Author, update, and automate AWS Marketplace product listings (SaaS, Container/EKS/ECS, AMI, and GenAI Agent/Model products) using the AWS Marketplace Catalog API (StartChangeSet, ListEntities, DescribeEntity), SNS entitlement/subscription notifications, and AWS Marketplace Entitlement Service (GetEntitlements). Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # AWS Marketplace Catalog & Product Listings
@@ -42,7 +42,7 @@ All Catalog API calls **must** target `us-east-1` (`--region us-east-1`). Change
    - Common SaaS/Container change types:
      - `CreateProduct` / `UpdateInformation` (title, description, logo, support, categories)
      - `AddDimension` / `UpdateDimensions` (metered or contract usage dimensions)
-     - `AddDeliveryOptions` / `UpdateDeliveryOptions` (SaaS Fulfillment URL, ECR repository + Helm chart / ECS task template, or AMI ID + access role)
+     - `AddDeliveryOptions` / `UpdateDeliveryOptions` (SaaS Fulfillment URL; ECR repository + Helm chart / ECS task template; or `AmiSource` with `AmiId`, `AccessRoleArn`, `UserName`, `OperatingSystemName`/`OperatingSystemVersion`, **`Architecture`** (`x86_64`/`arm64`), `RecommendedInstanceType`, and minimal `SecurityGroups`)
      - `UpdateTargeting` (restrict visibility to buyer AWS Account IDs during staging/testing)
      - `ReleaseProduct` (publish limited/public product)
 

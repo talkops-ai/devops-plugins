@@ -2,10 +2,10 @@
   "skill_name": "arize-incident-investigation",
   "companion_skills": [
     "agentcore-observability-setup",
+    "agents-debug",
+    "agents-optimize",
     "agentcore-ops-review",
-    "agents-build",
-    "agents-connect",
-    "agents-debug"
+    "bedrock-operation-review"
   ],
   "queries": [
     {
@@ -13,42 +13,70 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `arize-incident-investigation` to design, validate, and troubleshoot arize incident investigation."
+      "prompt": "Investigate why our production RAG agent's hallucination monitor triggered in Arize AX and isolate the root cause from OpenInference spans."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through production best practices and operational guardrails for arize incident investigation (`arize-incident-investigation`)."
+      "prompt": "Use Arize AX MCP tools to triage a sudden LLM token and cost spike in our `customer-copilot` Arize project over the last 2 hours."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Check Arize AX spans, eval task runs, and Prompt Hub versions to find out why our agent's eval score dropped after 14:00 UTC."
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need an operational review and step-by-step runbook covering: Investigates production incidents in LLM applications and AI agents traced in Arize AX, using the Arize AX MCP server tools (not the ax CLI). Use when an incident or operations age"
+      "prompt": "An Arize monitor paged on-call for elevated `status_code = 'ERROR'` on `attributes.openinference.span.kind = 'LLM'` — find the earliest onset and compare against pre-incident baseline traces."
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the critical failure modes, configuration checks, and verification commands for arize incident investigation?"
+      "prompt": "Did a `production` label change in Arize Prompt Hub or a `DECISION_JUDGE_EVALUATION` judge failure cause our QA score regression today?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Reconstruct the parent-child OpenInference trace tree for `context.trace_id = '9f1c2e...'` in Arize to see whether `RETRIEVER` or `LLM` spans caused the 19s latency."
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our arize incident investigation setup in read-only mode."
+      "prompt": "PagerDuty fired from Arize AX: `llm_latency_p95` breached threshold in space `sp_prod_01`. Walk through the trace comparison and tell us if it's an agent loop or a downstream DB slowdown."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Customers are reporting garbled answers since this morning and all our LLM traces, online eval labels, and managed prompts live in Arize AX — find what changed."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why is `list_spans` rejecting `span_kind = 'TOOL'` and missing our decision-judge eval tasks while we debug today's Arize production incident?"
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Configure and troubleshoot agentcore observability setup exclusively without touching arize incident investigation.",
+      "prompt": "Validate CloudWatch Transaction Search (`xray:GetTraceSegmentDestination`) and X-Ray log-group resource policies for our AgentCore Runtime in ap-south-1.",
       "expected_alternative_skill": "agentcore-observability-setup"
     },
     {
@@ -56,7 +84,16 @@
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+      "prompt": "Add `Builtin.Faithfulness` and `@custom_code_based_evaluator` CI/CD quality gates to our local `agentcore.json` project.",
+      "expected_alternative_skill": "agents-optimize"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Run a 5-pillar Well-Architected Bedrock review of our Guardrail intervention rates, Provisioned Throughput, and Prompt Caching offload in ap-south-1.",
+      "expected_alternative_skill": "bedrock-operation-review"
     }
   ]
 }

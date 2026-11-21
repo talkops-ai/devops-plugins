@@ -1,11 +1,11 @@
 {
   "skill_name": "rds-oss",
   "companion_skills": [
-    "amazon-aurora-mysql",
     "amazon-aurora-postgresql",
-    "amazon-documentdb",
-    "amazon-dynamodb",
-    "amazon-elasticache"
+    "amazon-aurora-mysql",
+    "rds-sqlserver",
+    "amazon-neptune",
+    "db-ha-dr-and-schema-evolution"
   ],
   "queries": [
     {
@@ -13,49 +13,84 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `rds-oss` to help me design, validate, and troubleshoot rds oss."
+      "prompt": "Run the RDS upgrade advisor for our standalone RDS MySQL 8.0 instance and recommend the next stable version."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Compare 1-year and 3-year Reserved Instances vs Database Savings Plans for 2x db.r7g.2xlarge RDS PostgreSQL instances."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for rds oss (`rds-oss`)."
+      "prompt": "Provision a production-ready standalone Amazon RDS MariaDB instance with gp3, KMS CMK, and TLS enforced."
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Advises on Amazon RDS open-source engines (MySQL, MariaDB, PostgreSQL) for instance creation, upgrade planning, commitment pricing, proxy evaluation, and Blue/Green deployments. Ha"
+      "prompt": "We run PgBouncer in transaction mode in front of RDS Postgres\u2014is there any reason to switch to RDS Proxy?"
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Safely change a VARCHAR column to INT on RDS MySQL 8.0 using Blue/Green Deployments without breaking binlog replication."
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating rds oss?"
+      "prompt": "Should we deploy RDS Multi-AZ DB Instance or RDS Multi-AZ DB Cluster with 2 readable standbys for PostgreSQL 16?"
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our rds oss setup in read-only mode and highlight top risks."
+      "prompt": "Audit standalone RDS MySQL, MariaDB, and Postgres instances in ap-south-1 for public access, gp3, and Secrets Manager master passwords."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Our MySQL 8.0 RDS fleet is approaching end of Standard Support\u2014explain Extended Support vCPU charges vs upgrading to 8.4."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Configure MARIADB_AUDIT_PLUGIN and KMS-encrypted CloudWatch log exports on standalone RDS MySQL."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot amazon aurora mysql exclusively without touching rds oss."
+      "prompt": "Configure Aurora PostgreSQL Serverless v2 ACU scaling and Aurora Backtrack vs Fast Cloning."
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Set up Always On Availability Groups and native S3 .bak backup/restore on RDS for SQL Server Enterprise."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Model a Gremlin property graph on Amazon Neptune for fraud ring detection."
     }
   ]
 }

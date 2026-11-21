@@ -1,10 +1,12 @@
 ---
 name: setting-up-cloudwatch-alarm-notifications
-description: Sets up notification channels for CloudWatch alarms using SNS topics and subscriptions. Always use this skill when configuring alarm notifications — it creates encrypted SNS topics, configures topic policies for CloudWatch access, sets up email/SMS/webhook subscriptions, and links alarms to notification actions with proper security controls.
+description: "Sets up notification channels for CloudWatch alarms using SNS topics and subscriptions. Always use this skill when configuring alarm notifications — it creates encrypted SNS topics, configures topic policies for CloudWatch access, sets up email/SMS/webhook subscriptions, and links alarms to notification actions with proper security controls. Query live AWS state via MCP tools only (never raw aws CLI)."
 version: 1
 ---
 
 # Setting Up CloudWatch Alarm Notifications
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, caller/account verification (`sts:GetCallerIdentity`), resource inspection, logs/metrics queries, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___call_aws` / `aws___run_script`, `cloudwatch`, `cloudtrail`, `prometheus`, `dynamodb`, `serverless`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**.
 
 ## Overview
 

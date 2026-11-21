@@ -2,14 +2,86 @@
   "skill_name": "legacy-vm-and-mainframe-replatform",
   "evals": [
     {
-      "id": "eval-01-our-core-insurance-policy-administration-system",
-      "prompt": "Our core insurance policy-administration system runs on an IBM z/OS mainframe (COBOL 6, CICS BMS screens, Db2 z/OS, VSAM KSDS files, and nightly JCL batch jobs), and we are targeting AWS `ap-south-1`. We have 100% of the source code and copybooks, and our CTO wants to completely exit COBOL skills and evolve the product rapidly in Java. First run a read-only check in `ap-south-1` via `aws-mcp` (`m2:ListApplications`, `ecs:ListClusters`, `stepfunctions:ListStateMachines`). Second, state the mandatory 2026 guardrail regarding AWS Mainframe Modernization (M2) Managed Runtime, and design the target **AWS Blu Age** automated refactoring architecture via AWS Transform.",
-      "expected_output": "Enforces the 2026 guardrail that the standalone AWS Mainframe Modernization (M2) Managed Runtime Environment is closed to new customers and routes through AWS Transform for mainframe (`aws-transform-mcp`) using **AWS Blu Age**, detailing how COBOL/CICS/BMS transform to Java 17/21 + Spring Boot + Angular on Amazon ECS/EKS, how Db2/VSAM migrate to Amazon Aurora PostgreSQL (EBCDIC to UTF-8/ASCII, `COMP-3` to `NUMERIC`/`BigDecimal`), and how JCL batch orchestrates via Groovy/Spring Batch + AWS Step Functions + EventBridge Scheduler.",
-      "files": [],
+      "id": "eval-01-app2container-5-stage-workflow-for-linux-tomcat-and-windows-iis",
+      "prompt": "We have 14 legacy Linux Apache Tomcat 9 VMs and 8 Windows Server IIS .NET Framework VMs with no Dockerfiles and scarce original developers. Walk through the exact 5-stage **AWS App2Container (A2C)** workflow (`init` -> `inventory` -> `analyze` -> `containerize` -> `generate app-deployment`) to containerize them onto Amazon ECS Fargate or Amazon EKS Auto Mode without modifying source code.",
       "expectations": [
-        "Performs read-only discovery in `ap-south-1` via `aws-mcp` (`m2:ListApplications`, `ecs:ListClusters`, `stepfunctions:ListStateMachines`) without mutating resources.",
-        "Explicitly states the mandatory 2026 guardrail: the standalone AWS Mainframe Modernization (M2) Managed Runtime Environment is closed to new customers, and directs mainframe modernization to AWS Transform (`aws-transform-mcp`).",
-        "Details the AWS Blu Age refactoring architecture: COBOL/CICS/BMS -> Java 17/21 Spring Boot + Angular on ECS/EKS, VSAM/Db2 -> Aurora PostgreSQL (ASCII/UTF-8), and JCL -> Groovy/Spring Batch orchestrated by AWS Step Functions."
+        "Activates the legacy-vm-and-mainframe-replatform skill",
+        "Walks through the 5-stage AWS App2Container (`app2container`) workflow (`init` -> `analyze` -> `containerize` -> `generate app-deployment` -> `deploy`) across Linux Java Tomcat and Windows .NET IIS servers",
+        "Covers OS/runtime container requirements (Linux containers on ECS/EKS vs Windows kernel build matching `ltsc2019`/`ltsc2022` and gMSA considerations for Windows IIS workloads)"
+      ]
+    },
+    {
+      "id": "eval-02-mainframe-2026-guardrail-prohibit-m2-managed-runtime-blu-age-vs-rocket",
+      "prompt": "Our enterprise architect proposed onboarding a brand-new **AWS Mainframe Modernization (M2) Managed Runtime Environment** in our AWS account this quarter to host 400 IBM z/OS COBOL + CICS + JCL + VSAM programs. Apply the mandatory 2026 mainframe guardrail and compare the two supported **AWS Transform for mainframe** modernization paths.",
+      "expectations": [
+        "Activates the legacy-vm-and-mainframe-replatform skill and explicitly flags that the standalone **AWS Mainframe Modernization (M2) Managed Runtime Environment is closed to new customers**",
+        "Routes mainframe modernization through **AWS Transform for mainframe (`aws-transform-mcp`)**, comparing **(1) Automated Refactoring via AWS Blu Age** (transforms COBOL/PL/I/CICS/JCL to cloud-native Java 17/21 + Spring Boot + Angular/React on ECS/EKS + Aurora PostgreSQL, full ASCII) against **(2) Replatforming via Rocket Software (formerly Micro Focus Enterprise Server)** (preserves COBOL/PL/I compiled for Linux x86/Graviton on EC2/ECS, dynamic EBCDIC <-> ASCII utilities, VSAM mapped to EFS/FSx/RDS)"
+      ]
+    },
+    {
+      "id": "eval-03-aws-mgn-post-launch-ssm-automated-containerization-pipeline",
+      "prompt": "During a 200-VM data center evacuation using **AWS Application Migration Service (AWS MGN)**, how do we automate App2Container discovery and containerization immediately upon EC2 cutover/test launch using AWS Systems Manager?",
+      "expectations": [
+        "Activates the legacy-vm-and-mainframe-replatform skill",
+        "Configures the target EC2 launch template IAM instance profile with `ApplicationTransformationAnalyzerPolicy` (and SSM permissions) and enables the AWS MGN post-launch SSM Automation Document **`AWSMGN-App2Container-Containerize`** to run inventory, analysis, and containerization automatically post-launch"
+      ]
+    },
+    {
+      "id": "eval-04-stateful-long-lived-vm-service-to-lambda-microvms-ready-validate-hooks",
+      "prompt": "We have a legacy stateful TCP/WebSocket pricing engine on a VM that takes 45 seconds to warm an in-memory reference cache at boot, listens on a custom TCP port, and runs sessions lasting up to 4 hours. Standard 15-minute stateless Lambda won't fit. Explain how **AWS Lambda MicroVMs** (`aws-lambda-microvms`) handles this and what `/ready` and `/validate` hooks must do.",
+      "expectations": [
+        "Activates the legacy-vm-and-mainframe-replatform skill",
+        "Explains AWS Lambda MicroVMs (`CreateMicrovmImage`) lifecycle endpoints: **`/ready`** (signals cache/state warmup is complete), **`/validate`** (runs smoke tests/prefetching prior to snapshot capture), and **`/run`** (serves requests post-restore with fresh DB/secret connections)"
+      ]
+    },
+    {
+      "id": "eval-05-ebcdic-to-ascii-collation-and-vsam-dataset-mapping-in-mainframe-replatform",
+      "prompt": "When replatforming an IBM z/OS COBOL batch suite with **Rocket Software** (or refactoring with **AWS Blu Age**), why does `ORDER BY customer_code` return rows in a DIFFERENT order after converting EBCDIC to ASCII, and how are sequential, VSAM KSDS/ESDS/RRDS, and GDG datasets mapped on AWS?",
+      "expectations": [
+        "Activates the legacy-vm-and-mainframe-replatform skill",
+        "Explains the **EBCDIC vs ASCII sort-order reversal**: in EBCDIC, lowercase `<` uppercase `<` digits (`a..z < A..Z < 0..9`), whereas in ASCII, digits `<` uppercase `<` lowercase (`0..9 < A..Z < a..z`) \u2014 breaking binary searches/`MERGE` logic unless EBCDIC collation (`ICU` custom collation or Rocket EBCDIC mode) is configured!",
+        "Maps mainframe datasets (VSAM KSDS/ESDS/RRDS, sequential QSAM, GDGs) to Rocket indexed files on **Amazon EFS / Amazon FSx** or relational tables on **Amazon Aurora PostgreSQL / RDS**"
+      ]
+    },
+    {
+      "id": "eval-06-jcl-batch-job-modernization-to-step-functions-or-enterprise-server",
+      "prompt": "How are mainframe **JCL (Job Control Language)** nightly batch job streams (conditional `COND` / `IF/THEN/ELSE` return-code branching, sort/merge `DFSORT`/`ICETOOL`, and GDG generation rollovers) modernized in **AWS Blu Age** refactoring versus **Rocket Software** replatforming?",
+      "expectations": [
+        "Activates the legacy-vm-and-mainframe-replatform skill",
+        "Contrasts **AWS Blu Age** (converts JCL steps into Groovy/Java Spring Batch scripts orchestrated by **AWS Step Functions** / AWS Batch / Control-M with return-code conditional branching) against **Rocket Software Enterprise Server** (executes native JCL directly inside its batch initiator subsystem with `DFSORT`/`SYNCSORT` compatibility and cataloged GDG support)"
+      ]
+    },
+    {
+      "id": "eval-07-a2c-split-mode-worker-machine-for-restricted-production-vms",
+      "prompt": "Our security team forbids installing Docker or building container images directly on live production JBoss/WebLogic VMs! Can **AWS App2Container** still containerize those apps without installing Docker on the source production VM? Show the exact two-machine (`Application Server` vs `Worker Machine`) split workflow.",
+      "expectations": [
+        "Activates the legacy-vm-and-mainframe-replatform skill",
+        "Details App2Container's **two-host split workflow**: run lightweight read-only `inventory` + `extract` (`app2container extract --application-id ...` pushing encrypted `.tar` archive to S3) on the source Application Server (no Docker required on prod VM!), then run `analyze`, `containerize`, and `generate app-deployment` on an isolated **Worker Machine** (EC2 instance with Docker installed)"
+      ]
+    },
+    {
+      "id": "eval-08-live-ap-south-1-mgn-ecs-eks-target-readiness-check",
+      "prompt": "Run a read-only check in `ap-south-1` on our live AWS account for AWS Application Migration Service (`mgn`) initialization/source servers and target container platforms (ECS/EKS/ECR), and summarize what prerequisites are needed before running an App2Container -> ECS Fargate replatforming pilot in `ap-south-1`.",
+      "expectations": [
+        "Activates the legacy-vm-and-mainframe-replatform skill and queries `mgn`, `ecs`, `eks`, and `ecr` in `ap-south-1` via connected AWS MCP tools with zero raw `aws` CLI shell commands",
+        "Accurately reports live `ap-south-1` state (including uninitialized `mgn` or 0 resources cleanly) and lists A2C pilot prerequisites (encrypted S3 workspace bucket, ECR repo, VPC private subnets, IAM role)",
+        "Makes zero mutating AWS calls"
+      ]
+    },
+    {
+      "id": "eval-09-when-app2container-cannot-containerize-unsupported-vm-workloads",
+      "prompt": "Evaluate which of these 4 legacy VMs are good candidates for **AWS App2Container** versus needing a different migration strategy: (1) Java 11 Spring Boot / Tomcat on RHEL 8, (2) ASP.NET 4.8 on IIS Windows Server 2019, (3) a custom C++ kernel-driver appliance requiring USB dongles and raw Layer-2 promiscuous NIC access, and (4) a stateful Oracle 19c database server.",
+      "expectations": [
+        "Activates the legacy-vm-and-mainframe-replatform skill",
+        "Identifies (1) Java/Tomcat on Linux and (2) ASP.NET IIS on Windows Server as supported A2C candidates, while ruling out (3) kernel-driver/hardware-dongle C++ appliances (rehost via MGN to EC2 bare-metal/dedicated or refactor) and (4) stateful Oracle DB servers (migrate to RDS/Aurora via DMS rather than containerizing the DB VM with A2C)"
+      ]
+    },
+    {
+      "id": "eval-10-awsknowledge-aws-transform-for-mainframe-and-dotnet-capabilities",
+      "prompt": "Query AWS documentation via connected AWS documentation tools to confirm how **AWS Transform** (`AWS Transform for mainframe` and `AWS Transform for .NET`) accelerates mainframe COBOL analysis/decomposition and legacy Windows `.NET Framework` -> cross-platform `.NET` Linux porting.",
+      "expectations": [
+        "Activates the legacy-vm-and-mainframe-replatform skill and queries connected AWS documentation MCP tools (`awsknowledge`, `aws-mcp`, or `awsiac`)",
+        "Accurately summarizes **AWS Transform for mainframe** (agentic codebase discovery, dependency mapping, domain decomposition, documentation, and Blu Age / refactoring workflows) and **AWS Transform for .NET** (porting legacy Windows-only `.NET Framework` apps to modern cross-platform `.NET` on Linux/Graviton containers to eliminate Windows Server licensing)"
       ]
     }
   ]

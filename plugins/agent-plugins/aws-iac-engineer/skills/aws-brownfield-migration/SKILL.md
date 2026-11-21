@@ -1,9 +1,11 @@
 ---
 name: aws-brownfield-migration
-description: Discovers unmanaged live AWS resources via Cloud Control API (aws-mcp) and CloudFormation IaC Generator, and executes zero-downtime brownfield imports and cross-engine migrations into Terraform/OpenTofu, AWS CDK, CloudFormation, Crossplane, and Pulumi.
+description: "Discovers unmanaged live AWS resources via Cloud Control API (aws-mcp) and CloudFormation IaC Generator, and executes zero-downtime brownfield imports and cross-engine migrations into Terraform/OpenTofu, AWS CDK, CloudFormation, Crossplane, and Pulumi. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # AWS Brownfield Discovery, Import & Cross-Engine Migration
+
+> **MCP-Only Live AWS Execution:** Execute ALL live AWS API discovery, account/region preflight checks (`sts:GetCallerIdentity`), stack/cluster/resource inspection, pricing (`awspricing`/`billing`), IaC validation (`awsiac`), and documentation lookups (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___run_script` `call_boto3`, `awsknowledge`, `awsiac`, `awspricing`, `eks`, `ecs`, `cloudwatch`) — **never invoke raw `aws ...` CLI commands in shell (`run_command`)**. Offline local linters/synthesizers (`cdk synth`, `terraform validate`, `python3`) may run locally without mutating live AWS.
 
 Use this skill whenever bringing existing, console-created ("ClickOps"), or drifted live AWS resources under Infrastructure-as-Code management, or migrating between IaC engines without downtime or resource replacement.
 

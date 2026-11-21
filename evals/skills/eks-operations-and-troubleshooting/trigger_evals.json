@@ -1,61 +1,95 @@
 {
   "skill_name": "eks-operations-and-troubleshooting",
   "companion_skills": [
-    "arc-region-switch",
-    "aws-billing-and-cost-management",
-    "aws-cloudformation",
-    "aws-compute",
-    "aws-deployment"
+    "aws-containers",
+    "aws-networking-and-compute",
+    "verify-and-rollback",
+    "aws-crossplane"
   ],
   "queries": [
     {
-      "id": "trig-exp-01",
+      "id": "trig-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `eks-operations-and-troubleshooting` to help me design, validate, and troubleshoot eks operations and troubleshooting."
+      "prompt": "Pods in production on our Amazon EKS cluster are stuck in `CrashLoopBackOff` (`OOMKilled` exit code 137) and `Pending` (`volume node affinity conflict`) \u2014 help us triage."
     },
     {
-      "id": "trig-exp-02",
+      "id": "trig-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for eks operations and troubleshooting (`eks-operations-and-troubleshooting`)."
+      "prompt": "Diagnose 5-second DNS latency spikes in CoreDNS (`ndots:5`) and `ErrImagePull` PrivateLink timeouts on our EKS worker nodes."
     },
     {
-      "id": "trig-imp-01",
+      "id": "trig-03",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Diagnose and remediate Amazon EKS production incidents across Pod lifecycle failures (CrashLoopBackOff, OOMKilled, ImagePullBackOff, Pending/Unschedulable), Karpenter and EKS Auto"
+      "prompt": "Fix `AccessDenied` on `sts:AssumeRoleWithWebIdentity` (IRSA) and `169.254.170.23` EKS Pod Identity failures in Kubernetes."
     },
     {
-      "id": "trig-imp-02",
+      "id": "trig-04",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating eks operations and troubleshooting?"
+      "prompt": "Audit our EKS `Deployment` YAML for cascading `livenessProbe` database anti-patterns, missing `PodDisruptionBudget`, and `NotReady` PLEG node failures."
     },
     {
-      "id": "trig-ctx-01",
+      "id": "trig-05",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our eks operations and troubleshooting setup in read-only mode and highlight top risks."
+      "prompt": "Check EKS Cluster Insights (`UPGRADE_READINESS`) and explain how to debug pods on immutable EKS Auto Mode nodes without SSH."
     },
     {
-      "id": "trig-neg-01",
-      "quadrant": "near_miss_negative",
-      "split": "train",
-      "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot arc region switch exclusively without touching eks operations and troubleshooting."
-    },
-    {
-      "id": "trig-neg-02",
+      "id": "trig-06",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Plan an Amazon Linux 2 to Amazon Linux 2023 Elastic Beanstalk Blue/Green CNAME swap."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Author a Crossplane `CompositeResourceDefinition` (XRD) and test it offline with `crossplane render`."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Migrate our AWS SDK for JavaScript v2 Lambda code to modular `@aws-sdk/client-dynamodb` v3."
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Scaffold a Next.js full-stack web app with `npx @aws-blocks/create-blocks-app my-app`."
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Convert SQL Server stored procedures to Aurora PostgreSQL Babelfish TDS."
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Calculate Reserved Instance vs Database Savings Plans pricing for Aurora PostgreSQL."
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Set up an AWS Marketplace SaaS contract registration page with `ResolveCustomer`."
     }
   ]
 }

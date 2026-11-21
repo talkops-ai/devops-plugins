@@ -1,11 +1,10 @@
 {
   "skill_name": "contextual-offers-for-startups",
   "companion_skills": [
-    "agent-advisor",
-    "ai-to-bedrock",
+    "knowledge-base-for-startups",
     "architect-for-startups",
-    "azure-to-aws",
-    "gcp-to-aws"
+    "start-building-for-startups",
+    "prompt-library-for-startups"
   ],
   "queries": [
     {
@@ -13,50 +12,87 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `contextual-offers-for-startups` to design, validate, and troubleshoot contextual offers for startups."
+      "prompt": "Format a contextual AWS Activate partner offer footer line with `?source=ide-startupAdvisor-claude` for a finalized Amazon Cognito recommendation."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through production best practices and operational guardrails for contextual offers for startups (`contextual-offers-for-startups`)."
+      "prompt": "Audit whether a contextual AWS Activate partner offer should be appended or suppressed when a startup already runs Pinecone or emitted Terraform in `gcp-to-aws`."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Mute contextual AWS Activate partner offers for this session and explain how mute persistence differs in the AWS Startup Advisor VS Code extension."
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need an operational review and step-by-step runbook covering: Surfaces a single, genuinely relevant AWS Activate partner offer as optional context AFTER another AWS Startup Advisor skill has finalized its recommendation, plan, or build — neve"
+      "prompt": "How do the per-response, 1-per-5-messages, and 2-per-session frequency caps and deterministic tie-breaker rules govern appending Activate partner offers after recommendations?"
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the critical failure modes, configuration checks, and verification commands for contextual offers for startups?"
+      "prompt": "Why shouldn't a Datadog Activate offer line be appended under an Amazon CloudWatch recommendation for a pre-revenue MVP founder?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Build the tracked `[Redeem ->]` URL attribution token (`ide-startupAdvisor-<host>`) across Cursor, Kiro, Codex, and VS Code without altering the destination path."
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our contextual offers for startups setup in read-only mode."
+      "prompt": "Review this blockquote promo card pitching two unrelated Activate offers after an S3 recommendation against the merit-first single-italic-line offer rules."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Generate the post-recommendation Activate offer line for a pre-Series-B startup deploying a LangChain agent that asked for LangSmith tracing."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Compare standard named-product offer formatting against transparent-alternative offer formatting under an AWS-native merit pick."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Configure and troubleshoot agent advisor exclusively without touching contextual offers for startups.",
-      "expected_alternative_skill": "agent-advisor"
+      "prompt": "What are the eligibility requirements and credit amounts for AWS Activate Founders versus AWS Activate Portfolio, and how does a VC become an Activate Provider?",
+      "expected_alternative_skill": "knowledge-base-for-startups"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+      "prompt": "Give me a copy-paste AI coding System Prompt from the AWS Startups Prompt Library for a RAG chatbot with Claude on Bedrock.",
+      "expected_alternative_skill": "prompt-library-for-startups"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Our production ALB in `us-east-1` is returning 502 errors after a deploy — run root-cause triage with AWS DevOps Agent.",
+      "expected_alternative_skill": "operate-on-aws"
     }
   ]
 }

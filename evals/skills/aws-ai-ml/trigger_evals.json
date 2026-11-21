@@ -2,10 +2,10 @@
   "skill_name": "aws-ai-ml",
   "companion_skills": [
     "amazon-bedrock",
-    "aws-adr-generator",
-    "aws-architecture-diagramming",
-    "aws-billing-and-cost-management",
-    "aws-blocks"
+    "finetuning",
+    "model-deployment",
+    "sagemaker-training-architect",
+    "agent-advisor"
   ],
   "queries": [
     {
@@ -13,42 +13,70 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `aws-ai-ml` to design, validate, and troubleshoot aws ai ml."
+      "prompt": "Plan an end-to-end SageMaker Serverless Model Customization workflow in `us-west-2` — help me shortlist a medium open-weights JumpStart model, run baseline evaluation first, fine-tune with `RLVRTrainer`, and deploy an optimized endpoint."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through production best practices and operational guardrails for aws ai ml (`aws-ai-ml`)."
+      "prompt": "Validate my custom LLM-as-Judge `CustomMetric` rating scale definitions and `nova_sft` vs `verl` JSONL dataset schemas for SageMaker Python SDK v3 (`sagemaker>=3.17.0,<4.0`)."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Can we run SageMaker Serverless Model Customization (`SFT` / `DPO` / `RLAIF`) and SageMaker Inference Optimization (`start_benchmark`) in `ap-south-1`, or which regions are supported?"
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need an operational review and step-by-step runbook covering: Selects, deploys, and customizes AI models on Amazon SageMaker. Fine-tuning (SFT, DPO, RLVR, RLAIF), model selection, dataset preparation, evaluation, deployment to SageMaker endpo"
+      "prompt": "Why did our SageMaker serverless evaluation job reject our `Amazon Nova Pro` LLM-as-Judge config and complain about mixed `floatValue` and `stringValue` in `ratingScale`?"
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the critical failure modes, configuration checks, and verification commands for aws ai ml?"
+      "prompt": "`pip install 'sagemaker>=3.17.0,<4.0'` failed with a dependency conflict in our conda env — is it safe to install with `--no-deps` or `sagemaker[train]` for `SFTTrainer`?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "How do I choose between `SFT`, `DPO`, `RLVR`, and `RLAIF` on SageMaker when my SQL generation task has an automated unit-test verifier instead of human preference pairs?"
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Ahead of our `us-east-1` production release in account `123456789012`, audit our aws ai ml setup in read-only mode."
+      "prompt": "Filter SageMaker JumpStart models for medium (`11B-70B`) summarization and code-generation models and pick a GPU instance tier when default hosting labels are missing."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Check whether my `{\"prompt\", \"completion\"}` JSONL dataset works for both Qwen SFT and Amazon Nova SFT in SageMaker Serverless Model Customization."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Benchmark speculative decoding and compilation on our deployed JumpStart LLM endpoint in `us-east-1` before promoting the optimized model to production."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Configure and troubleshoot amazon bedrock exclusively without touching aws ai ml.",
+      "prompt": "Build an Amazon Bedrock `Converse` RAG pipeline with Managed Knowledge Bases (`AgenticRetrieveStream`), version-pinned Guardrails, and `2,048`-token Claude Sonnet 4.6 prompt caching.",
       "expected_alternative_skill": "amazon-bedrock"
     },
     {
@@ -56,7 +84,16 @@
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a responsive CSS grid layout and SVG hover transition for a static marketing page."
+      "prompt": "Score AgentCore vs ECS vs EKS vs Lambda vs Lambda MicroVMs for migrating our Temporal-orchestrated Python agents to AWS.",
+      "expected_alternative_skill": "agent-advisor"
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Rewrite our Node.js OpenRouter `@ai-sdk` and Python `openai` SDK repository onto Amazon Bedrock Converse and `bedrock-mantle` with a 90-day model EOL check.",
+      "expected_alternative_skill": "ai-to-bedrock"
     }
   ]
 }

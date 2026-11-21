@@ -1,174 +1,145 @@
----
-_phase: design
-_title: "Design AWS Architecture"
-_requires_phase: clarify
-_input:
-  - azure-resource-inventory.json
-  - azure-resource-clusters.json
-  - preferences.json
-_knowledge:
-  - { file: knowledge/design/fast-path-services.json }
-  - { file: references/shared/schema-design-aws.md }
-  - { file: knowledge/design/azure-region-map.json }
-  - { file: knowledge/design/appservice-eb-sizing.json, _when: "the inventory contains a Microsoft.Web/serverfarms resource" }
-  - { file: knowledge/design/vm-ec2-sizing.json, _when: "the inventory contains a Microsoft.Compute/virtualMachines or virtualMachineScaleSets resource, or an AKS node pool whose vm_size must be resolved" }
-  - { file: knowledge/design/aks-eks-sizing.json, _when: "the inventory contains a Microsoft.ContainerService/managedClusters resource" }
-  - { file: knowledge/design/flexible-server-rds-sizing.json, _when: "the inventory contains a Microsoft.DBforPostgreSQL/* or Microsoft.DBforMySQL/* resource" }
-  - { file: knowledge/design/cosmos-dynamodb-conversion.json, _when: "the inventory contains a Microsoft.DocumentDB/databaseAccounts resource whose kind is GlobalDocumentDB — the Core (SQL) API only" }
-  - { file: knowledge/design/disk-ebs-sizing.json, _when: "the inventory contains a Microsoft.Compute/disks resource" }
-  - { file: knowledge/estimate/rightsizing-thresholds.json, _when: "observed utilization exists — an RDfA rollup or az monitor metrics — so a size can be MEASURED rather than looked up" }
-  - { file: references/shared/schema-design-aws-ai.md, _when: "ai-workload-profile.json exists in $MIGRATION_DIR" }
-  - { file: references/design-refs/ai.md, _when: "ai-workload-profile.json exists AND (summary.ai_source is 'other' or absent, OR any workloads[] capability is document_extraction, image_analysis, or speech_transcription)" }
-  - { file: references/vendored/ai/ai-openai-to-bedrock.md, _when: "ai-workload-profile.json exists AND summary.ai_source is azure_openai, openai, or both" }
-  - { file: references/vendored/ai/ai-anthropic-to-bedrock.md, _when: "ai-workload-profile.json exists AND summary.ai_source is anthropic or both" }
-  - { file: references/vendored/ai/ai-migration-guardrails.md, _when: "ai-workload-profile.json exists AND agentic_profile.is_agentic is true" }
-  - { file: references/vendored/ai/design-ref-agentic-to-agentcore.md, _when: "agentic_profile.is_agentic is true AND ai_constraints.agentic.migration_approach is strands" }
-  - { file: references/vendored/ai/design-ref-harness.md, _when: "agentic_profile.is_agentic is true AND ai_constraints.agentic.migration_approach is harness" }
-  - { file: references/vendored/ai/bedrock-quotas.md, _when: "ai-workload-profile.json exists" }
-  - { file: references/vendored/ai/ai-model-lifecycle.md, _when: "ai-workload-profile.json exists" }
-_fragments:
-  - _id: infra
-    _trigger: { _always: true }
-    _file: phases/design/design-infra.md
-  - _id: ai
-    _trigger: { _when: "ai-workload-profile.json exists in $MIGRATION_DIR" }
-    _file: phases/design/design-ai.md
-_assemble:
-  _file: phases/design/design-assemble.md
-_produces:
-  - aws-design.json
-  - aws-design-ai.json
-_advances_to: estimate
-_re_entry_guard:
-  _stale_if_completed: estimate
-  _stale_artifact: estimation-infra.json
-  _on_reentry: stop_unless_confirmed
-  _on_confirm: reset_downstream_to_pending
-_preconditions:
-  - _check_phase_completed: clarify
-    _on_failure: _halt_and_inform
-  - _check_single_active_phase: true
-    _on_failure: _halt_and_inform
-  - _check_file_exists: [azure-resource-inventory.json, azure-resource-clusters.json, preferences.json]
-    _on_failure: _unrecoverable
-  - _validate_json: [azure-resource-inventory.json, azure-resource-clusters.json, preferences.json]
-    _on_failure: _unrecoverable
-_postconditions:
-  - _check_file_exists: aws-design.json
-    _on_failure: _halt_and_inform
-  - _validate_json: aws-design.json
-    _on_failure: _halt_and_inform
-  - _assert: "aws-design.json has phase == 'design' and a valid timestamp; services[] is present (empty only if every resource was deferred or skipped)"
-    _on_failure: _halt_and_inform
-  - _assert: "every services[] entry has service_id, azure_id, azure_type, aws_service, aws_config, confidence, and rationale; confidence is one of deterministic, measured, inferred, billing_inferred"
-    _on_failure: _halt_and_inform
-  - _assert: "every entry whose confidence is 'deterministic' matches a row in the Direct Mappings table, and no pattern constraint changed its aws_service — a pattern may narrow rubric candidates and may never override a deterministic mapping"
-    _on_failure: _halt_and_inform
-  - _assert: "every cluster in azure-resource-clusters.json appears in clusters[] with pattern_id, pattern_status, a cluster-level rationale, and constraints_imposed; target_architecture is a real string when pattern_status is 'recognized' and is null otherwise — a plausible architecture string written while design-refs/patterns.md is absent is the failure this checks for"
-    _on_failure: _halt_and_inform
-  - _assert: "no Microsoft.Web/sites resource has an entry in services[], deferred[], or pending_rubric[] unless preferences.json records an explicit isolation split for its plan — function apps included; the compute line belongs to the Microsoft.Web/serverfarms plan, and every serverfarms entry carries hosted_app_azure_ids and sizing_source"
-    _on_failure: _halt_and_inform
-  - _assert: "every resource in the inventory is accounted for EXACTLY ONCE: mapped in services[], deferred in deferred[], held in pending_rubric[] because its rubric file is absent, or recorded in warnings[] as a skip or as an edge-bearing config source that was consumed"
-    _on_failure: _halt_and_inform
-  - _assert: "iac_metadata.untranslated_types is empty; a type Discover could not name is treated as cost-bearing and STOPs the design, because the skill cannot demonstrate that a resource it could not identify is free"
-    _on_failure: _halt_and_inform
-  - _assert: "every deferred[] entry carries aws_service 'Deferred — specialist engagement' and a reason, and carries NO confidence field — a deferral did not come from a rubric"
-    _on_failure: _halt_and_inform
-  - _assert: "AWS App Runner does not appear as a target anywhere in aws-design.json"
-    _on_failure: _halt_and_inform
-  - _assert: "every entry whose confidence is 'measured' cites the utilization evidence that backed it"
-    _on_failure: _halt_and_inform
-  - _assert: "WHEN ai-workload-profile.json exists: aws-design-ai.json exists, validates, and has metadata.ai_source equal to the profile's summary.ai_source. WHEN the profile is absent the AI fragment does not run and this is vacuously satisfied"
-    _on_failure: _halt_and_inform
-  - _assert: "WHEN aws-design-ai.json exists: every design_blocks[] row has exactly one of target_bedrock_model / target_aws_service non-null (XOR), and every document_extraction/image_analysis/speech_transcription row has target_bedrock_model null, a non-null target_aws_service, and honest_assessment 'not_applicable' — per references/shared/schema-design-aws-ai.md"
-    _on_failure: _halt_and_inform
-  - _assert: "WHEN aws-design-ai.json exists AND summary.ai_source is azure_openai or openai: every source model that is available on Bedrock and carried by the target region maps to itself with model_change false — not to a Claude/Nova substitute; and no proprietary openai.gpt-* model ID is paired with a converse/bedrock-runtime migration path"
-    _on_failure: _halt_and_inform
-  - _assert: "WHEN aws-design-ai.json exists: regional_warnings[] and multi_model_warnings[] are present (empty is fine); agentic_design is present only when agentic_profile.is_agentic is true; and App Runner appears nowhere"
-    _on_failure: _halt_and_inform
-_forbids_files:
-  - README.md
-  - "*.txt"
-  - "terraform/**"
-  - MIGRATION_GUIDE.md
-  - estimation-infra.json
----
+# Phase 3: Design AWS Architecture (Orchestrator)
 
-# Phase 3: Design AWS Architecture
+**Execute ALL steps in order. Do not skip or optimize.**
 
-## Orientation
+## Prerequisites
 
-Turn the inventory, the clusters, and the confirmed preferences into
-`aws-design.json`. Two product goals have to hold at once, and they pull against each
-other the moment a workload-level decision disagrees with a per-resource one:
+1. Read `$MIGRATION_DIR/.phase-status.json`. If missing, invalid, or `phases.clarify` is not exactly `"completed"`: **STOP**. Output: "Phase 2 (Clarify) not completed or phase state is missing/invalid. Run `references/phases/clarify/clarify.md` until Clarify finishes and `.phase-status.json` shows `phases.clarify`: `completed`."
+2. Read `$MIGRATION_DIR/preferences.json`. If missing: **STOP**. Output: "Phase 2 (Clarify) not completed. Run Phase 2 first."
 
-1. **Holistic** — the output describes workloads, not independent rows.
-2. **Pre-determined where there is no ambiguity** — an unambiguous service is not
-   routed through a rubric that could reason its way to a different answer.
+Check which discovery artifacts exist in `$MIGRATION_DIR/`:
 
-The precedence order below is what reconciles them.
+- `gcp-resource-inventory.json` (IaC discovery ran)
+- `gcp-resource-clusters.json` (IaC discovery ran)
+- `billing-profile.json` (billing discovery ran)
+- `ai-workload-profile.json` (AI workloads detected)
 
-## Precedence order
+If **none** of these artifacts exist: **STOP**. Output: "No discovery artifacts found. Run Phase 1 (Discover) first."
 
-1. **Skip Mappings** — not a target at all.
-2. **Specialist gates → `Deferred`.** "We do not know" must never be overridden by
-   anything below it.
-3. **Eliminators** — hard technical blockers. Lambda's 15-minute ceiling is physics,
-   not a preference.
-4. **Direct Mappings → `deterministic`** — the pre-determined recommendations.
-5. **Pattern constraint** — the holistic layer, applied to whatever is left.
-6. **Six-criteria rubric** — chooses _within_ the pattern's candidate set:
-   Eliminators, Operational Model, User Preference, Feature Parity, Cluster Context,
-   Simplicity, applied in order, first match wins.
-7. **Preferred-target substitution.**
-8. **Post-selection** — right-sizing from measured utilization, then CPU
-   architecture.
+## Routing Rules
 
-> **INVARIANT: a pattern may never change a `deterministic` mapping's target. It may
-> only choose among rubric candidates.**
+### Infrastructure Design (IaC-based)
 
-If a pattern could override a fast-path row, the `deterministic` tier would stop
-meaning anything and its user-facing label ("Standard pairing") would be false. So a
-genuine pattern/fast-path conflict is evidence the row does not belong in Direct
-Mappings — the fix is to demote the row, never to let the pattern win.
+IF `gcp-resource-inventory.json` AND `gcp-resource-clusters.json` both exist:
 
-Right-sizing is **post-selection, not a seventh criterion.** The six criteria select
-a _service_ and never touch capacity; adding a seventh would break "apply in order,
-first match wins". Each rubric file gets an additive `## Right-Sizing` section,
-structurally parallel to `## CPU Architecture`.
+→ Load `design-infra.md`
 
-## Status — build step 5 (both passes, partial)
+Produces: `aws-design.json`
 
-**Pass 1 and pass 2 both run.** `knowledge/design/fast-path-services.json` carries the
-disposition table; eight rubrics are on disk — `compute.md`, `database.md`,
-`networking.md`, `messaging.md`, `analytics.md`, `storage.md`, `identity.md` and
-`fast-path.md`. A resource routed by `index.md` to a category file that is **not** on disk
-still halts rather than being improvised; `ai.md` is on disk (the AI-workload rubric);
-only `licensing.md`, `gpu-hpc.md` and `patterns.md` are still to come.
+### Billing-Only Design (fallback)
 
-**Check the filesystem, not this paragraph.** A status list in prose goes stale the moment a
-file lands, and the halt decision reads from disk. If this list and `ls` disagree, `ls` is
-right and this list is the bug.
+IF `billing-profile.json` exists with **non-empty `services[]`** AND `gcp-resource-inventory.json` does **NOT** exist:
 
-Still absent: `patterns.md` and the cluster-level `data-pipeline` gate.
-Clustering itself is real; only pattern recognition is outstanding, so every
-cluster carries `pattern_status: "catalog_absent"`. The category rubrics named
-above and the AI design route (`design-ai.md`) are on disk. Sizing tables under
-`knowledge/design/` are on disk; look them up rather than treating them as future.
+→ Load `design-billing.md`
 
-**A missing SIZING table is treated more softly than a missing RUBRIC file, on purpose.**
-Without `appservice-eb-sizing.json` the design still names Elastic Beanstalk and states a
-dev-tier instance size as a default; without `compute.md` it would have to invent the
-service choice. The first degrades a number's precision, the second fabricates the answer.
+Produces: `aws-design-billing.json`
 
-The `_postconditions` encode the FINISHED contract, so some still fail by construction —
-a halted design does not account for every resource. That is intended: the gate reports
-the skill's gap loudly rather than letting a plausible mapping pass for a real one.
+> A **skip-record** `billing-profile.json` (empty `services[]`, non-empty `warnings[]` — every billing file was an unrecognized non-GCP export) does **NOT** trigger the billing-only route: there is nothing to map, and a $0 design over zero services is not a real result. Treat it as "no billing signal" and rely on the IaC or AI route instead.
 
-## Step: Run the phase
+### AI Workload Design
 
-1. Order clusters by tier: network/identity/secrets → data → compute → edge.
-2. Run each fragment whose `_trigger` holds.
-3. Run `design-assemble.md`.
-4. Evaluate `_postconditions`. On all-pass emit `HANDOFF_OK`; on any failure emit
-   `GATE_FAIL` and stop.
+IF `ai-workload-profile.json` exists:
+
+→ Load `design-ai.md`
+
+Produces: `aws-design-ai.json`
+
+### Mutual Exclusion
+
+- **design-infra** and **design-billing** never both run (billing-only is the fallback when no IaC exists).
+- **design-ai** runs independently of either design-infra or design-billing (no shared state). Run it after the infra/billing design completes.
+
+## Phase Completion
+
+Before marking Design complete, enforce route output gates (fail closed):
+
+1. Determine which design routes ran:
+   - IaC route: `gcp-resource-inventory.json` AND `gcp-resource-clusters.json` exist
+   - Billing-only route: `billing-profile.json` exists **with non-empty `services[]`** AND `gcp-resource-inventory.json` does NOT exist (a skip-record profile — empty `services[]`, non-empty `warnings[]` — does not count)
+   - AI route: `ai-workload-profile.json` exists
+2. Require at least one route to be active. If none active: STOP.
+3. For each active route, require its expected artifact:
+   - IaC route -> `aws-design.json`
+   - Billing-only route -> `aws-design-billing.json`
+   - AI route -> `aws-design-ai.json`
+4. If any active route is missing its expected output: STOP and output: "Design route [name] did not produce required artifact(s). Re-run the failed sub-design before completing Phase 3."
+
+## Completion Handoff Gate (Fail Closed)
+
+Load `shared/handoff-gates.md`. **Re-read from disk** each active route artifact before checking.
+
+**Re-entry guard:** If `estimation-infra.json` (or sibling estimate artifacts) exists and `phases.estimate` is `"completed"`: STOP unless the user explicitly confirms re-running Design. Emit `GATE_FAIL | phase=design | field=estimation-infra.json | reason=stale_downstream`.
+
+**On any route gate FAIL:** Emit `GATE_FAIL | phase=design | field=<artifact> | reason=missing`. **Do NOT modify artifacts to pass the gate.** **Do NOT update `.phase-status.json`.**
+
+**On PASS:** Emit `HANDOFF_OK | phase=design | artifacts=<comma-separated active design files>`.
+
+### Inner workshop reprice — skip state transition
+
+When Design is invoked from `workshop-refresh.md` (inner reprice): rewrite the
+active design artifact(s) (`aws-design.json` and siblings as applicable), then
+**return to the workshop loop**. Do **not** emit `HANDOFF_OK`, do **not** set
+`phases.design` to `"in_progress"` or re-stamp `"completed"`, do **not** change
+`current_phase`, and do **not** treat Estimate as stale for a Generate reset
+unless the user is already past Generate (see workshop-refresh stale-Generate
+guard). Leave `phases.design` and `phases.estimate` as `"completed"` and
+`current_phase` at `"estimate"` while `phases.workshop` is `"in_progress"`.
+
+### Design summary card (outer runs only — before the phase-status update)
+
+After outer-run `HANDOFF_OK`, present a compact card built from the design artifact(s) so the user sees what Design decided before costs arrive. Chat only — not a file:
+
+```
+### Your AWS architecture at a glance
+
+| GCP service | AWS target | How we chose this |
+| ----------- | ---------- | ----------------- |
+| [top 3-5 PRIMARY mappings] | [aws_service] | [Standard pairing / Tailored to your setup / Estimated from billing only] |
+
+[If any resource is "Deferred — specialist engagement":]
+Deferred (specialist engagement): [service names] — excluded from automated design and estimated AWS monthly run rate.
+
+What Estimate answers next: your GCP baseline vs estimated AWS monthly cost
+(three scenarios), per-service breakdown, and the migrate/stay recommendation.
+```
+
+Use the user-facing vocabulary from `design-refs/fast-path.md` for "How we chose this" (**Standard pairing** / **Tailored to your setup** / **Estimated from billing only**) — never raw `deterministic`/`inferred` enum values. Cap the table at 5 rows ("+ N more in the design artifact"). Skip this card entirely on inner workshop reprices.
+
+After the card, use the Phase Status Update Protocol
+(read-merge-write) to update `.phase-status.json` — **in the same turn** as the
+output message below:
+
+- Set `phases.design` to `"completed"`
+- Set `current_phase` to `"estimate"`
+
+Output to user: "Phase 3 of 6 complete (Design). AWS architecture designed. Remaining: Estimate → Generate (+ optional Feedback). Next artifact: estimation-infra.json (and estimation-ai.json for AI workloads). Proceeding to Phase 4: Estimate Costs."
+
+_Breadcrumbs are emitted only after outer-run `HANDOFF_OK` — never on `GATE_FAIL`, never from inner workshop reprices._
+
+## Reference Files
+
+Sub-design files may reference rubrics in `design-refs/`:
+
+- `design-refs/index.md` — GCP type → rubric file lookup
+- `design-refs/fast-path.md` — Direct (table) mappings vs rubric path; **User-facing vocabulary** for presenting `confidence` to users (**Standard pairing** / **Tailored to your setup** / **Estimated from billing only**)
+- `design-refs/compute.md` — Compute service rubric
+- `design-refs/elastic-beanstalk.md` — Elastic Beanstalk reference (App Engine, managed platform)
+- `design-refs/database.md` — Database service rubric
+- `design-refs/storage.md` — Storage service rubric
+- `design-refs/networking.md` — Networking service rubric
+- `design-refs/messaging.md` — Messaging service rubric
+- `design-refs/ai.md` — AI/ML service rubric
+
+## Scope Boundary
+
+**This phase covers architecture mapping ONLY.**
+
+FORBIDDEN — Do NOT include ANY of:
+
+- Cost calculations or pricing estimates
+- Execution timelines or migration schedules
+- Terraform or IaC code generation
+- Risk assessments or rollback procedures
+- Team staffing or resource allocation
+
+**Your ONLY job: Map GCP resources to AWS services. Nothing else.**

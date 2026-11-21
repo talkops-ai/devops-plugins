@@ -35,12 +35,8 @@ if [[ ! -f "$FILE_PATH" ]]; then
     exit 0
 fi
 
-# Ensure defusedxml is available (required for safe XML parsing)
-# See scripts/requirements.txt or plugin README for installation instructions
-python3 -c "import defusedxml" 2>/dev/null || {
-  echo '{"systemMessage": "Missing required dependency: defusedxml. Install it with: pip3 install defusedxml>=0.7.1"}'
-  exit 0
-}
+# Note: All Python validators/fixers below gracefully fall back to xml.etree.ElementTree
+# when defusedxml is not installed in the system Python environment.
 
 # Step 0: Run post-processing fixers BEFORE validation
 # This fixes badge overlaps, external actor placement, and legend sizing

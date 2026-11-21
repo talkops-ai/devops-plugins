@@ -38,6 +38,12 @@ generate the exact remediation for every gap.
 This skill is **read-only**. It validates and generates configuration/commands. The customer decides
 whether to apply them. Never mutate IAM, resources, or configuration.
 
+## MCP-Only Execution & Read-Only Safety
+
+- **MCP-Only Live Discovery & Docs:** Execute **all** live AWS discovery, AgentCore runtime/gateway/memory inspection, CloudWatch/X-Ray telemetry/log/trace queries, IAM/Lambda/ECS/EKS configuration checks, and documentation lookups **exclusively via connected MCP tools**: `aws-mcp` (`aws___run_script` using read-only `await call_boto3(...)`, `aws___search_documentation`, `aws___read_documentation`), `agentcore` (`search_agentcore_docs`, `fetch_agentcore_doc`, `list_agent_runtimes`, `get_agent_runtime`, etc.), `strands-agents` (`search_docs`, `fetch_doc`, `find_integrations`), `cloudwatch`, `appsignals`, `cloudtrail`, `awspricing`, `awsiac`, and `awsknowledge`.
+- **Zero Raw CLI Execution, Strictly Read-Only & Secret-Safe:** **Never** run raw `aws ...` or `agentcore ...` CLI commands in Bash/`run_command` to query or mutate live AWS accounts (present remediation CLI/SDK commands in Markdown strictly as operator reference snippets). **Never** invoke live mutations (`create_*`, `update_*`, `delete_*`, `put_*`, `InvokeAgentRuntime`, `InvokeModel`) and **never** read plaintext secrets (`secretsmanager:GetSecretValue`, `ssm:GetParameter` with `WithDecryption=True`, `.env` values, or raw memory record contents — always recommend `secretsmanager:DescribeSecret` to verify secret existence/metadata without reading secret values).
+- **Edge-Case Documentation Fallback:** For unmapped AWS/AgentCore/ADOT observability edge cases, run 1–2 focused queries via `agentcore`, `strands-agents`, `awsknowledge`, or `aws-mcp` documentation search tools.
+
 ## When to Use
 
 Activate when the user asks to:
@@ -102,7 +108,7 @@ The complete check catalog with APIs, log-group patterns, and pass/fail logic is
 3. **Spans flowing (VERIFY, Tier 1):** check the `spans` log stream in the agent's log group (unified destination) or the shared `aws/spans` log group. No spans despite invocations → CRITICAL (points to Transaction Search disabled or missing instrumentation).
 4. **Session metrics emitting (VERIFY, Tier 1):** `cloudwatch:ListMetrics` namespace `bedrock-agentcore`. Absent → MEDIUM.
 5. **Runtime tracing / span destination (VERIFY, Tier 2):** `bedrock-agentcore:GetAgentRuntime` → inspect env for `UNIFIED_TRACES_DESTINATION_ENABLED` and `DISABLE_ADOT_OBSERVABILITY`. Starting **2026-07-20**, newly created agents in supported AWS Regions default to the unified span destination (the agent's own log group) — `UNIFIED_TRACES_DESTINATION_ENABLED=false` is now the opt-out. Agents created before that date remain on shared `aws/spans` unless opted in. If ADOT observability disabled unintentionally → HIGH.
-6. **X-Ray resource policy on log group (VERIFY, Tier 2):** `logs:DescribeResourcePolicies` — must allow `xray.amazonaws.com` to `logs:PutLogEvents` on the agent's log group. **Applies by default for agents created after 2026-07-20 in supported Regions**, since unified span destination is the new default (per the [AgentCore release notes](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/release-notes.html)). Mark N/A only when the agent was created before 2026-07-20 and still delivers to shared `aws/spans`, or the customer has explicitly opted out via `UNIFIED_TRACES_DESTINATION_ENABLED=false`. Missing → HIGH.
+6. **X-Ray resource policy on log group (VERIFY, Tier 2):** `logs:DescribeResourcePolicies` — must allow `xray.amazonaws.com` to `logs:PutLogEvents` on the agent's log group (remediate via `aws logs put-resource-policy --policy-name TransactionSearchAccess --policy-document ...`; and enable Transaction Search via `aws xray update-trace-segment-destination --destination CloudWatchLogs`). **Applies by default for agents created after 2026-07-20 in supported Regions**, since unified span destination is the new default (per the [AgentCore release notes](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/release-notes.html)). Mark N/A only when the agent was created before 2026-07-20 and still delivers to shared `aws/spans`, or the customer has explicitly opted out via `UNIFIED_TRACES_DESTINATION_ENABLED=false`. Missing → HIGH.
 7. **Code-level instrumentation (PRESCRIBE):** cannot read source. If spans are absent, prescribe: `aws-opentelemetry-distro>=0.10.0` (**≥0.18.0** for unified span destination) + `boto3` in `requirements.txt`; launch with `opentelemetry-instrument python main.py` (container `CMD ["opentelemetry-instrument","python","main.py"]`); framework tracing enabled (e.g. Strands tracer, `opentelemetry-instrumentation-langchain`); session id via `X-Amzn-Bedrock-AgentCore-Runtime-Session-Id`.
 
 ### 3.3 Memory & Gateway resources
@@ -110,7 +116,7 @@ The complete check catalog with APIs, log-group patterns, and pass/fail logic is
 - **PRESCRIBE:** console log-delivery + tracing toggle, or the `put_delivery_source`/`put_delivery_destination`/`create_delivery` SDK sequence (see `references/remediation-memory-gateway.md`).
 
 ### 3.4 Built-in tools (code interpreter, browser)
-- **PRESCRIBE-first:** no service logs by default. Prescribe custom log output + a log destination, and custom headers (`X-Amzn-Trace-Id`, `traceparent`) on the tool APIs.
+- **PRESCRIBE-first:** no service logs by default (`B1`/`B2`). Prescribe custom log output + a log destination, and propagate correlation headers (`X-Amzn-Trace-Id`, W3C `traceparent`, and session header `X-Amzn-Bedrock-AgentCore-Runtime-Session-Id`) on `Start*`/`Invoke*`/`Stop*` tool API calls (`B3`).
 - **VERIFY (Tier 1):** if the customer emits logs, confirm the target log group is receiving data.
 
 ### 3.5 Non-runtime hosts
@@ -129,8 +135,7 @@ ADOT **Collector is not supported** — use the ADOT SDK or the Lambda Layer onl
 
 ## Step 4: Generate the Readiness Report
 
-Produce a shareable artifact named `agentcore-observability-review-<target>-<YYYY-MM-DD>.md`
-(`<target>` = agent/runtime id or a user-supplied label).
+**Always render the complete Markdown readiness report directly inline in your final response** (including Header, Executive summary verdict `✅ READY` / `⚠️ GAPS` / `❌ NOT CONFIGURED`, the `VERIFY`/`PRESCRIBE` Findings table with `CRITICAL`/`HIGH`/`MEDIUM`/`LOW`/`INFO` severities, and copy-pasteable Remediation commands — never rely solely on linking an external artifact file). If the user also requests saving a file, name it `agentcore-observability-review-<target>-<YYYY-MM-DD>.md` (`<target>` = agent/runtime id or a user-supplied label).
 
 Sections:
 - **Header** — account, region, host, surfaces assessed, permission tier reached, date.

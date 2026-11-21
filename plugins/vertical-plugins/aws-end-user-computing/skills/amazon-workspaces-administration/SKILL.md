@@ -1,6 +1,6 @@
 ---
 name: amazon-workspaces-administration
-description: "Provision, administer, and optimize Amazon WorkSpaces Personal and WorkSpaces Pools fleets: directory services (AWS Managed Microsoft AD, AD Connector, IAM Identity Center), custom bundles and image lifecycle, WorkSpaces Streaming Protocol (WSP), AutoStop vs AlwaysOn cost optimization, and multi-region standby DR."
+description: "Provision, administer, and optimize Amazon WorkSpaces Personal and WorkSpaces Pools fleets: directory services (AWS Managed Microsoft AD, AD Connector, IAM Identity Center), custom bundles and image lifecycle, WorkSpaces Streaming Protocol (WSP), AutoStop vs AlwaysOn cost optimization, and multi-region standby DR. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # Amazon WorkSpaces Personal & WorkSpaces Pools Administration
@@ -17,7 +17,8 @@ Use this skill for end-to-end architecture, provisioning, directory integration,
 
 ## 2. Fleet Provisioning & Bundle Sizing Best Practices
 
-- **Protocol**: Always standardize on **WSP (WorkSpaces Streaming Protocol)** (`UserVolumeEncryptionEnabled=true`, `RootVolumeEncryptionEnabled=true` with customer-managed KMS keys) for adaptive UDP/TCP streaming, webcam/USB redirection, and smart card support.
+- **Protocol & KMS Encryption**: Always standardize on **WSP (WorkSpaces Streaming Protocol)** (`UserVolumeEncryptionEnabled=true`, `RootVolumeEncryptionEnabled=true` with customer-managed KMS keys whose key policy grants `kms:CreateGrant`, `kms:Encrypt`, `kms:Decrypt`, and `kms:GenerateDataKeyWithoutPlaintext` to `workspaces.amazonaws.com` / `kms:ViaService`) for adaptive UDP/TCP streaming, webcam/USB redirection, and smart card support.
+- **Image Lifecycle (`Image Checker` & `MigrateWorkspace` vs `RebuildWorkspace`)**: Run **Image Checker** before creating custom golden images (`CreateWorkspaceImage`). Roll out new custom bundles with **`MigrateWorkspace`** (switches to the new bundle while preserving recent `D:\` user data; still advise backing up critical files to FSx/folder redirection), rather than `RebuildWorkspaces` (resets `C:\` on the same bundle and restores `D:\` only from the last automatic 12-hour snapshot, losing unsnapshotted changes) or `RebootWorkspaces` (OS restart only).
 - **Running Mode & Cost Optimization**:
   - **AutoStop** (hourly billing + small monthly storage fee): Best for part-time, contractor, or burst users (<80 hours/month). Configure `RunningModeAutoStopTimeoutInMinutes` (e.g., `60`).
   - **AlwaysOn** (flat monthly rate): Best for full-time employees (>80 hours/month).

@@ -1,61 +1,95 @@
 {
   "skill_name": "aws-secrets-manager",
   "companion_skills": [
-    "auditing-cloudtrail-forensics",
-    "aws-auth",
+    "creating-secrets-using-best-practices",
     "aws-iam",
     "aws-security",
-    "aws-threat-modeling"
+    "aws-iam-and-security"
   ],
   "queries": [
     {
-      "id": "trig-exp-01",
+      "id": "trig-pos-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `aws-secrets-manager` to help me design, validate, and troubleshoot aws secrets manager."
+      "prompt": "Pass our database credentials from AWS Secrets Manager into `psql` and `mysql` using `asm-exec` and `{{resolve:secretsmanager:...}}` without exposing plaintext to the agent."
     },
     {
-      "id": "trig-exp-02",
+      "id": "trig-pos-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for aws secrets manager (`aws-secrets-manager`)."
+      "prompt": "Explain how `asm-exec` resolves `{{resolve:secretsmanager:...}}` via Secrets Manager Agent (`localhost:2773`) and SigV4 `aws-mcp` without local CLI stdout leaks."
     },
     {
-      "id": "trig-imp-01",
+      "id": "trig-pos-03",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Secret safety for AWS Secrets Manager, secret management, credentials, API keys, tokens, and passwords. Prevents AI agents from directly fetching secret values and teaches runtime"
+      "prompt": "Troubleshoot `asm-exec: MCP resolution failed: HTTP 401` and empty-string JSON key resolution errors."
     },
     {
-      "id": "trig-imp-02",
+      "id": "trig-pos-04",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating aws secrets manager?"
+      "prompt": "Run a Docker container locally with Secrets Manager credentials injected at runtime so secret values never enter LLM chat context."
     },
     {
-      "id": "trig-ctx-01",
+      "id": "trig-pos-05",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our aws secrets manager setup in read-only mode and highlight top risks."
+      "prompt": "Resolve a cross-region `ap-south-1` secret in `asm-exec` when `AWS_REGION` defaults to `us-east-1`."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot auditing cloudtrail forensics exclusively without touching aws secrets manager."
+      "prompt": "Create a brand-new secret in AWS Secrets Manager with a dedicated KMS CMK, 30-day Lambda rotation, and recovery window."
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Add Amazon Cognito PKCE authentication to a React frontend."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Fix the `ForAllValues` vacuous truth bug in an AWS IAM policy."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Audit CloudTrail Lake events for root account console logins."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure AWS WAF Bot Control Targeted rules on CloudFront."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Set up an encrypted SNS topic for CloudWatch alarm notifications."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Run PromQL queries against Amazon Managed Service for Prometheus."
     }
   ]
 }

@@ -234,8 +234,14 @@ After completing the review (single or fleet):
 ## Critical Rules
 
 - **READ ONLY.** This skill only performs read-only control-plane API calls and
-  CloudWatch metric reads. It never runs write/update/create/delete operations, and
-  never reads file/share data over SMB. See the allowlist in
+  CloudWatch metric reads. It never runs write/update/create/delete operations,
+  never reads file/share data over SMB, and **never** calls
+  `secretsmanager:GetSecretValue` or `ssm:GetParameter` with `WithDecryption=True`
+  to inspect Active Directory service-account passwords. When diagnosing AD join or
+  `MISCONFIGURED` issues, recommend safe metadata-only verification via
+  `fsx:DescribeFileSystems` (`FailureDetails`), `secretsmanager:DescribeSecret`
+  (rotation/change timestamps only), and the AWS Systems Manager runbook
+  `AWSSupport-ValidateFSxWindowsADConfig`. See the allowlist in
   `references/data-collection.md`.
 - **No interpretation without data.** Every finding must be backed by collected
   data. If a check returned `AccessDenied`, `ToolingFailure`, or `InsufficientData`,

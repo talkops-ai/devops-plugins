@@ -1,9 +1,11 @@
 ---
 name: aws-crossplane
-description: Designs, authors, renders, and validates production-grade Crossplane v1.20 / v2 control-plane configurations targeting AWS with the Upbound provider-family-aws ecosystem, IRSA/Pod Identity DeploymentRuntimeConfig, XRDs, Pipeline-mode Compositions, and offline crossplane render/validate loops.
+description: "Designs, authors, renders, and validates production-grade Crossplane v1.20 / v2 control-plane configurations targeting AWS with the Upbound provider-family-aws ecosystem, IRSA/Pod Identity DeploymentRuntimeConfig, XRDs, Pipeline-mode Compositions, and offline crossplane render/validate loops. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # AWS Crossplane Control-Plane Engineering
+
+> **MCP-Only Live AWS Execution:** Execute ALL live AWS API discovery, account/region preflight checks (`sts:GetCallerIdentity`), stack/cluster/resource inspection, pricing (`awspricing`/`billing`), IaC validation (`awsiac`), and documentation lookups (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___run_script` `call_boto3`, `awsknowledge`, `awsiac`, `awspricing`, `eks`, `ecs`, `cloudwatch`) — **never invoke raw `aws ...` CLI commands in shell (`run_command`)**. Offline local linters/synthesizers (`cdk synth`, `terraform validate`, `python3`) may run locally without mutating live AWS.
 
 Use this skill whenever authoring, validating, importing, or debugging **Crossplane** control-plane manifests (`Provider`, `DeploymentRuntimeConfig`, `ProviderConfig`, `CompositeResourceDefinition` / XRD, `Composition`, `Claim`) targeting AWS via the **Upbound `provider-family-aws`** ecosystem.
 

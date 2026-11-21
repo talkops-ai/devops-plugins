@@ -1,9 +1,11 @@
 ---
 name: prometheus-and-grafana-sre
-description: Query Amazon Managed Service for Prometheus (AMP) using PromQL, design multi-window multi-burn-rate SLO alerting rules, troubleshoot EKS/ECS container and node telemetry, and build Amazon Managed Grafana (AMG) operational dashboards. Use when the user asks about PromQL queries, AMP workspaces, node_exporter/kube-state-metrics/cAdvisor metrics, Prometheus recording or alerting rules, or Grafana dashboards.
+description: "Query Amazon Managed Service for Prometheus (AMP) using PromQL, design multi-window multi-burn-rate SLO alerting rules, troubleshoot EKS/ECS container and node telemetry, and build Amazon Managed Grafana (AMG) operational dashboards. Use when the user asks about PromQL queries, AMP workspaces, node_exporter/kube-state-metrics/cAdvisor metrics, Prometheus recording or alerting rules, or Grafana dashboards. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # Amazon Managed Service for Prometheus (AMP) & Grafana (AMG) SRE Guide
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, caller/account verification (`sts:GetCallerIdentity`), resource inspection, logs/metrics queries, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___call_aws` / `aws___run_script`, `cloudwatch`, `cloudtrail`, `prometheus`, `dynamodb`, `serverless`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**.
 
 Use this skill when investigating container/Kubernetes incidents via Amazon Managed Service for Prometheus (`prometheus` MCP server), writing PromQL queries for Four Golden Signals or USE metrics, designing multi-window multi-burn-rate SLO alerts, or auditing scrape/cardinality health.
 

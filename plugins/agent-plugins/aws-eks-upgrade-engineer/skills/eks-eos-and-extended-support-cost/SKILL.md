@@ -1,9 +1,11 @@
 ---
 name: eks-eos-and-extended-support-cost
-description: Discovers Amazon EKS clusters across AWS regions approaching or currently in EKS Extended Support, verifies live Kubernetes version Standard vs Extended Support end-of-support dates via aws-documentation-mcp, queries live Extended Support hourly surcharge rates via awspricing, and builds a prioritized multi-quarter upgrade savings roadmap.
+description: "Discovers Amazon EKS clusters across AWS regions approaching or currently in EKS Extended Support, verifies live Kubernetes version Standard vs Extended Support end-of-support (EOS) dates, calculates monthly and annualized Extended Support surcharges via AWS Pricing MCP, and produces a prioritized multi-cluster upgrade wave roadmap. Do NOT use for AL2 /etc/eks/bootstrap.sh to nodeadm AL2023 user-data migration, Karpenter/add-on version sequencing, or post-upgrade PodEvictionFailure/rollback triage. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # EKS End-of-Support (EOS) & Extended Support Cost Analysis
+
+> **MCP-Only Live AWS Execution:** Execute ALL live AWS API discovery, EKS release-calendar documentation lookups, and regional pricing queries strictly via connected MCP tools (`aws-mcp`, `aws-api`, `eks`, `aws-documentation-mcp`, `awspricing`, `cloudwatch`) — **never invoke raw `aws ...` CLI commands in shell (`run_command`)**.
 
 Strictly **read-only** multi-region EKS fleet discovery and FinOps surcharge analysis skill.
 

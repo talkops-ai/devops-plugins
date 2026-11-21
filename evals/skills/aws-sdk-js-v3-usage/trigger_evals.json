@@ -1,61 +1,95 @@
 {
   "skill_name": "aws-sdk-js-v3-usage",
   "companion_skills": [
-    "amazon-bedrock",
-    "aws-adr-generator",
-    "aws-ai-ml",
-    "aws-architecture-diagramming",
-    "aws-billing-and-cost-management"
+    "aws-cdk",
+    "aws-blocks",
+    "aws-iam-and-security",
+    "aws-containers"
   ],
   "queries": [
     {
-      "id": "trig-exp-01",
+      "id": "trig-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `aws-sdk-js-v3-usage` to help me design, validate, and troubleshoot aws sdk js v3 usage."
+      "prompt": "Migrate our Node.js AWS SDK v2 `AWS.S3` and `DocumentClient` `.promise()` code to modular AWS SDK for JavaScript v3 (`@aws-sdk/client-s3` and `@aws-sdk/lib-dynamodb`)."
     },
     {
-      "id": "trig-exp-02",
+      "id": "trig-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for aws sdk js v3 usage (`aws-sdk-js-v3-usage`)."
+      "prompt": "Stream a 5 GB multipart upload to S3 using `@aws-sdk/lib-storage` `Upload` and generate presigned URLs with `@aws-sdk/s3-request-presigner`."
     },
     {
-      "id": "trig-imp-01",
+      "id": "trig-03",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: AWS SDK for JavaScript v3 development patterns. Use when writing JavaScript or TypeScript code that uses AWS services via @aws-sdk/* packages (aws-sdk-js-v3), or when asked about s"
+      "prompt": "Tune `NodeHttpHandler` `maxSockets`, `retryMode: 'adaptive'`, and `AbortSignal.timeout` on our TypeScript `DynamoDBClient`."
     },
     {
-      "id": "trig-imp-02",
+      "id": "trig-04",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating aws sdk js v3 usage?"
+      "prompt": "Enable SigV4a (`@aws-sdk/signature-v4-multi-region`) for an S3 Multi-Region Access Point and fix `removeUndefinedValues` in `DynamoDBDocumentClient`."
     },
     {
-      "id": "trig-ctx-01",
+      "id": "trig-05",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our aws sdk js v3 usage setup in read-only mode and highlight top risks."
+      "prompt": "Replace manual `NextToken` loops with `paginateQuery` and catch typed `ServiceException` `$metadata.requestId` errors in AWS SDK JS v3."
     },
     {
-      "id": "trig-neg-01",
-      "quadrant": "near_miss_negative",
-      "split": "train",
-      "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot amazon bedrock exclusively without touching aws sdk js v3 usage."
-    },
-    {
-      "id": "trig-neg-02",
+      "id": "trig-06",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Write a Python `boto3` S3 multipart upload script using `TransferConfig`."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Synthesize an AWS CDK v2 TypeScript stack provisioning an S3 bucket and DynamoDB table."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Design a single-table DynamoDB partition key and GSI access-pattern matrix for orders."
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure GitHub Actions OIDC credentials with `aws-actions/configure-aws-credentials@v4`."
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Troubleshoot BGP session flaps on an AWS Transit Gateway VPN attachment."
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure RDS for SQL Server Always On Availability Groups in Multi-AZ."
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Audit GuardDuty findings and CloudTrail events after an EC2 instance compromise."
     }
   ]
 }

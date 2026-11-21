@@ -1,150 +1,83 @@
-# Observability Setup
+# Observability — Startup Decision Guide
 
-Set up logging, tracing, and monitoring for your AgentCore agent.
+## Stage-Based Recommendation
 
-## What's auto-enabled
+### Pre-PMF (Seed / <$1M ARR)
 
-AgentCore automatically enables:
+- **CloudWatch only. No Datadog, no New Relic, no Grafana Cloud.** Third-party observability tools cost $15-50/host/month and grow linearly. At this stage, CloudWatch + Embedded Metric Format is sufficient and covered by AWS credits.
+- **3 metrics, 3 alarms, 1 dashboard.** Error rate, p99 latency, and request count. That's it. You don't need 47 dashboards for 1 service.
+- **Log retention: 7 days dev, 30 days prod.** The default "never expire" will silently accumulate $50-200/month in log storage within 6 months.
+- **Skip X-Ray until you have 3+ services.** Tracing a monolith tells you nothing useful. Tracing across service boundaries is where it helps.
 
-- **X-Ray tracing** — every invocation generates a trace
-- **CloudWatch logging** — agent logs ship to CloudWatch
+### Post-PMF / Growth ($1M-$10M ARR)
 
-These are on by default whether you're running **deployed** (`agentcore deploy` + invoke) or **locally** (`agentcore dev`). The dev server auto-instruments your agent with the AWS OpenTelemetry distro the same way the deployed runtime does; opt out with `agentcore dev --no-traces`.
+- Add X-Ray or OpenTelemetry when you have 3+ services and debugging cross-service issues takes >1 hour.
+- Consider Datadog/New Relic ONLY if CloudWatch Logs Insights becomes too slow for your team's debugging workflow. The convenience costs 5-10x.
+- Increase log retention to 90 days prod when you have compliance requirements.
+- Add anomaly detection on request count and latency (needs 2 weeks of baseline data).
 
-Two prerequisites for the local path to work end-to-end:
+### Scale ($10M+ ARR)
 
-1. **AWS credentials available locally** — the OTEL exporter needs them to ship spans.
-2. **CloudWatch Transaction Search is enabled on the account** (one-time setup per account) — see "Viewing traces" below. Without it, spans are ingested but not searchable, so `agentcore traces list` and `agentcore run eval --session-id` return empty.
+- OpenTelemetry for vendor-neutral instrumentation.
+- Centralized observability platform decision (CloudWatch vs third-party based on team size and budget).
+- This is when the Datadog bill becomes justified ($50K+/year but saves engineering time at 20+ engineers).
 
-After deploy, AgentCore Runtime also auto-instruments the container (the default CMD wraps the app with `opentelemetry-instrument`). You don't need to configure OTEL in your code for either path — but you do need your agent code to be instrumented correctly.
+## Cost Traps
 
-## Ensuring logs appear in CloudWatch
+| Trap                                  | Impact                                                                                                | Fix                                                                                                    |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Log retention: never expire (default) | $0.03/GB/month storage — grows forever. 100GB/month of logs = $36/year in year 1, $72 in year 2, etc. | Set retention policy on creation. 30 days prod.                                                        |
+| Custom metrics via PutMetricData      | $0.30/metric/month + $0.01/1000 API calls                                                             | Use Embedded Metric Format in Lambda — creates metrics from logs at zero API cost                      |
+| High-cardinality custom metrics       | Dimensions multiply: 100 users × 10 endpoints = 1000 metrics = $300/month                             | Use Logs Insights for high-cardinality analysis, reserve metrics for low-cardinality aggregates        |
+| X-Ray 100% sampling in prod           | $5.00/million traces recorded + storage                                                               | Sample: 1/sec + 5% additional. For startups this is usually enough.                                    |
+| Datadog before $5M ARR                | $15-50/host/month + $1.70/million log events. 10 containers + logs = $500-2000/month easily           | CloudWatch is included in AWS credits. Switch when team size (>10 engineers) justifies the UX premium. |
+| CloudWatch Dashboards                 | $3/dashboard/month — sounds small, proliferates fast                                                  | 1 dashboard per service max. Use automatic dashboards for exploration.                                 |
+| Contributor Insights                  | $0.02/rule/100 log events evaluated. High-volume logs = surprise bill                                 | Enable only on specific log groups for incident investigation, disable after                           |
 
-Three things must be true for logs to appear:
+## Counterintuitive Advice
 
-### 1. OTEL entrypoint wrapper in Dockerfile
+- **Fewer alarms = faster response.** 3 well-chosen alarms that always require action beat 30 alarms that are "probably fine." Every alarm should have a runbook. If you can't write the runbook, delete the alarm.
+- **Alarm on symptoms, not causes.** "Error rate >1%" tells you something is broken. "CPU >80%" tells you... maybe nothing is wrong. Users feel symptoms, not causes.
+- **CloudWatch Logs Insights is underrated.** Startups reach for Elasticsearch/Datadog because they assume CloudWatch is limited. Logs Insights with structured JSON logging handles 95% of debugging queries for teams under 20 engineers.
+- **Embedded Metric Format is the single most important observability feature for Lambda-based startups.** It turns log lines into metrics at zero additional cost. You get custom metrics for free.
+- **Don't build a "golden dashboard" until you've been in production for 3 months.** You'll build the wrong dashboard on day 1 because you don't know what fails yet. Start with the 3 basics and add panels as you learn from incidents.
 
-Your Dockerfile CMD must use the OpenTelemetry wrapper:
+## Minimum Viable Observability
 
-```dockerfile
-CMD ["opentelemetry-instrument", "python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
-```
+### Seed Stage Checklist
 
-For CodeZip builds, this is handled automatically. For Container builds, you must add it.
+- [ ] Structured JSON logging (enables Logs Insights queries)
+- [ ] Log retention set on all log groups (7d dev, 30d prod)
+- [ ] 3 alarms: error rate, p99 latency, 5xx count (SNS → email/Slack)
+- [ ] 1 dashboard: request count, error rate, latency p99
+- [ ] Lambda: use Embedded Metric Format for custom metrics (free)
+- [ ] CloudTrail enabled (default trail — free for management events)
 
-### 2. IAM permissions for CloudWatch and X-Ray
+### Post-PMF Additions
 
-Your runtime execution role needs:
+- [ ] X-Ray sampling on API Gateway + Lambda (1/sec + 5%)
+- [ ] Anomaly detection on request count (catches traffic drops = outage)
+- [ ] DLQ monitoring alarms (ApproximateNumberOfMessagesVisible > 0)
+- [ ] Composite alarm for service health (error rate AND latency breach)
+- [ ] Log retention 90 days in prod
 
-```json
-{
-  "Effect": "Allow",
-  "Action": [
-    "logs:CreateLogGroup",
-    "logs:CreateLogStream",
-    "logs:PutLogEvents",
-    "xray:PutTraceSegments",
-    "xray:PutTelemetryRecords"
-  ],
-  "Resource": "*"
-}
-```
+## When to Graduate
 
-### 3. Use the `logging` module, not `print()`
+| Trigger                                                  | Action                                                                                                        |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| First customer-facing outage you can't diagnose in 30min | Investigate it now with `operate-on-aws` (AWS DevOps Agent), then add X-Ray tracing so the next one is easier |
+| Debugging takes >1hr regularly                           | Increase log retention, add structured fields                                                                 |
+| 3+ services with cross-service calls                     | Distributed tracing (X-Ray or OTEL)                                                                           |
+| 10+ engineers needing observability                      | Evaluate Datadog/New Relic (UX justifies cost)                                                                |
+| SOC2 audit                                               | 90-day log retention, CloudTrail in all accounts                                                              |
+| Monthly observability bill >$500 on CloudWatch           | Audit: log retention, custom metrics cardinality, unused dashboards                                           |
 
-AgentCore captures structured logs via the Python `logging` module. `print()` statements go to stdout but are not captured by the OTEL pipeline.
+## Credits Consideration
 
-```python
-import logging
-logger = logging.getLogger(__name__)
+CloudWatch costs (logs, metrics, dashboards, X-Ray) are covered by AWS Activate credits. While you have credits:
 
-# Good — captured by CloudWatch
-logger.info("Processing request", extra={"session_id": session_id})
+- Don't optimize log retention aggressively — keep 90 days everywhere for debugging convenience
+- Use X-Ray at higher sampling rates to build intuition about your system
+- Create dashboards freely for learning
 
-# Bad — not captured
-print(f"Processing request {session_id}")
-```
-
-## Viewing traces
-
-Traces show the full execution path of one agent invocation — model calls, tool calls, and timing.
-
-```bash
-# List recent traces
-agentcore traces list --runtime <AgentName> --since 1h --limit 10
-
-# Get a specific trace
-agentcore traces get <traceId> --runtime <AgentName>
-```
-
-**Trace delay:** Traces appear **~10 seconds** after invocation (previously 30–60s). Don't panic if they're not immediate, and don't bake longer waits into scripts — older skills and docs that say "30–60 seconds" or "2–5 minutes" are stale.
-
-Also verify **Transaction Search** is enabled in CloudWatch — this is a prerequisite for trace visibility in the console.
-
-## Viewing logs
-
-```bash
-# Stream recent logs
-agentcore logs --runtime <AgentName> --since 30m
-
-# Filter by level
-agentcore logs --runtime <AgentName> --level error --since 1h
-
-# Search for specific text
-agentcore logs --runtime <AgentName> --query "timeout" --since 2h
-```
-
-## CloudWatch dashboard
-
-For production agents, set up a CloudWatch dashboard with:
-
-- Invocation count and error rate
-- P50/P90/P99 latency
-- Memory and CPU utilization
-- Error log count by type
-
-These metrics are available in the `AWS/BedrockAgentCore` namespace after deploy.
-
-## Multi-account observability
-
-If your agents are spread across accounts (typical setup: separate prod / staging / dev accounts), use **CloudWatch cross-account observability** to view metrics, traces, and logs from one central monitoring account.
-
-The setup order matters — do it in this sequence or the console won't show source-account data:
-
-1. **Pick a monitoring account.** This is where you'll view everything. Often a central observability account, not a workload account.
-2. **Configure the monitoring account first.** CloudWatch console → Settings → Monitoring account configuration → Configure. Choose which telemetry types to share (enable Metrics **and** Logs — traces go through X-Ray's own cross-account mechanism).
-3. **Link each source account.** Either via AWS Organizations (if your accounts are in one) or via individual linking. Source accounts must accept the link.
-4. **Deploy AgentCore agents in the source accounts with observability enabled** — same default OTEL wrap-up as single-account. No code changes needed.
-5. **View from the monitoring account.** AgentCore Observability in the CloudWatch console now shows data from all linked accounts side-by-side, identified by source account ID.
-
-**Order-of-operations trap:** if you deploy agents in source accounts *before* linking, the telemetry still flows correctly — it just won't be visible from the monitoring account until the link is active. You don't need to redeploy, just wait a few minutes after linking.
-
-**Traces:** cross-account trace viewing uses X-Ray's existing cross-account sharing model. If the CloudWatch cross-account link is set up correctly for Logs and Metrics but traces don't show, check X-Ray's cross-account config separately.
-
-**IAM:** no extra IAM on the agent execution roles for cross-account observability. The cross-account feature operates at the CloudWatch/X-Ray layer, not at the source of the telemetry.
-
-See [cross-account observability](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability-cross-account.html) for the current console flow and edge cases.
-
-## Exporting OpenTelemetry Spans to Third-Party Backends (OTLP)
-
-While CloudWatch GenAI Observability and X-Ray are enabled by default, AgentCore Runtime uses standard OpenTelemetry (`gen_ai.*` semantic conventions) and can export traces directly to **Langfuse**, **MLflow**, **Elastic APM**, **Dynatrace**, or **Arize Phoenix** via standard OTLP environment variables on the runtime:
-
-| Environment Variable | Purpose | Example Value |
-| :--- | :--- | :--- |
-| `OTEL_EXPORTER_OTLP_PROTOCOL` | Transport encoding | `http/protobuf` |
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | Collector / backend OTLP URL | `https://us.cloud.langfuse.com/api/public/otel` |
-| `OTEL_EXPORTER_OTLP_HEADERS` | Auth headers (inject from AgentCore Identity / Secrets Manager, never hardcode) | `Authorization=Basic <base64-credentials>` |
-| `OTEL_RESOURCE_ATTRIBUTES` | Service and environment tags | `service.name=my-agent,deployment.environment=prod` |
-
-> [!IMPORTANT]
-> For unit testing locally with `pytest`, always disable the OTel exporter so tests do not block on network timeouts:
-> ```bash
-> OTEL_SDK_DISABLED=true pytest
-> ```
-
-## Cross-references
-
-- If logs aren't appearing at all, check the three requirements above or use `agents-debug`
-- For AIOps multi-signal incident correlation (`cloudwatch`, `appsignals`, `cloudtrail`), load [`../../agents-debug/references/aiops-runbooks.md`](../../agents-debug/references/aiops-runbooks.md)
-- For production observability setup, see `agents-harden`
-- For measuring agent quality (not just operational health), load [`references/evals.md`](evals.md)
+Set a calendar reminder 6 months before credits expire to implement cost-optimized retention policies.

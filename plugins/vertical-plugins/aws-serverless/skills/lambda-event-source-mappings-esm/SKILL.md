@@ -1,9 +1,11 @@
 ---
 name: lambda-event-source-mappings-esm
-description: Configure, optimize, and troubleshoot AWS Lambda Event Source Mappings (ESMs) across Amazon SQS, Kinesis Data Streams, DynamoDB Streams, Amazon MSK, and self-managed Apache Kafka using aws-serverless-mcp (esm_guidance, esm_optimize, esm_kafka_troubleshoot). Covers batching, ParallelizationFactor, BisectBatchOnFunctionError, OnFailure destinations, FilterCriteria, Provisioned Pollers, and Kafka VPC/SASL-SCRAM debugging.
+description: "Configure, optimize, and troubleshoot AWS Lambda Event Source Mappings (ESMs) across Amazon SQS, Kinesis Data Streams, DynamoDB Streams, Amazon MSK, and self-managed Apache Kafka using aws-serverless-mcp (esm_guidance, esm_optimize, esm_kafka_troubleshoot). Covers batching, ParallelizationFactor, BisectBatchOnFunctionError, OnFailure destinations, FilterCriteria, Provisioned Pollers, and Kafka VPC/SASL-SCRAM debugging. Query live AWS state via MCP tools only (never raw aws CLI)."
 ---
 
 # AWS Lambda Event Source Mappings (ESM) Optimization & Troubleshooting
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, caller/account verification (`sts:GetCallerIdentity`), resource inspection, logs/metrics queries, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___call_aws` / `aws___run_script`, `cloudwatch`, `cloudtrail`, `prometheus`, `dynamodb`, `serverless`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**.
 
 Design, validate, tune, and debug Lambda Event Source Mappings (ESMs) for queues and streams using the specialized `aws-serverless-mcp` ESM tools (`esm_guidance`, `esm_optimize`, `esm_kafka_troubleshoot`).
 

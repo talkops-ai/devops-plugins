@@ -183,6 +183,8 @@ db.categories.find({ _id: { $in: doc.ancestors } })
 db.categories.find({ ancestors: "cat1" })
 ```
 
+For moderate-depth hierarchies where materialized paths don't fit, perform **application-level recursive/iterative `$lookup`** (bounded breadth-first queries in application code); for deep, variable-length, or many-to-many graph traversals, use **Amazon Neptune**.
+
 ### `$facet` (verify current support status — workaround below)
 Check the [MongoDB API compatibility page](https://docs.aws.amazon.com/documentdb/latest/developerguide/mongo-apis.html) before advising. If unsupported: split into separate aggregation pipelines and merge results in application code.
 

@@ -1,61 +1,95 @@
 {
   "skill_name": "triaging-cloud-security-posture",
   "companion_skills": [
+    "hardening-iac-and-perimeter",
+    "scanning-with-aws-security-agent",
     "auditing-cloudtrail-forensics",
-    "diff-scanning-with-aws-security-agent",
-    "engineering-iam-least-privilege",
-    "enrich-with-aws-security-agent",
-    "executing-synthetic-release-tests"
+    "aws-security"
   ],
   "queries": [
     {
-      "id": "trig-exp-01",
+      "id": "trig-pos-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `triaging-cloud-security-posture` to help me design, validate, and troubleshoot triaging cloud security posture."
+      "prompt": "Run a multi-service cloud security posture sweep across Security Hub, GuardDuty, Inspector2, and AWS Config in `ap-south-1`."
     },
     {
-      "id": "trig-exp-02",
+      "id": "trig-pos-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for triaging cloud security posture (`triaging-cloud-security-posture`)."
+      "prompt": "Triage our CRITICAL Security Hub FSBP failures and Inspector ECR CVEs and map their resource ARNs directly to our Terraform and Dockerfiles."
     },
     {
-      "id": "trig-imp-01",
+      "id": "trig-pos-03",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Aggregates, correlates, and remediates cloud security posture (CSPM) findings and runtime threats across AWS Security Hub (CIS, FSBP), Amazon GuardDuty, Amazon Inspector (ECR, Lamb"
+      "prompt": "Deduplicate these overlapping GuardDuty, AWS Config, and Security Hub alerts into P0/P1/P2 priority tiers and patch the IaC."
     },
     {
-      "id": "trig-imp-02",
+      "id": "trig-pos-04",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating triaging cloud security posture?"
+      "prompt": "Fix these active Amazon Inspector `fixAvailable=YES` CVEs across our Lambda functions and ECR container images."
     },
     {
-      "id": "trig-ctx-01",
+      "id": "trig-pos-05",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our triaging cloud security posture setup in read-only mode and highlight top risks."
+      "prompt": "Check our AWS account's CSPM posture for active CRITICAL/HIGH misconfigurations and GuardDuty runtime threats."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
-      "split": "train",
+      "split": "val",
       "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot auditing cloudtrail forensics exclusively without touching triaging cloud security posture."
+      "prompt": "Upload our local `./checkout-service` source directory to AWS Security Agent and run a managed code vulnerability scan."
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Write a greenfield Terraform VPC module with private subnets, NAT Gateways, and VPC Flow Logs from scratch."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Query CloudTrail `LookupEvents` to find which IAM principal modified `prod-payments-role` between 02:00 and 03:00 UTC."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Translate our EKS AL2 `/etc/eks/bootstrap.sh` user data to AL2023 `nodeadm` `NodeConfig`."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Calculate Aurora PostgreSQL I/O-Optimized vs Standard breakeven pricing in `ap-south-1`."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure Route 53 latency-based routing and DNSSEC signing on our hosted zone."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Debug why our SQS-triggered Lambda function is timing out at 30 seconds."
     }
   ]
 }

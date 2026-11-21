@@ -1,6 +1,6 @@
 ---
 name: amazon-braket
-description: Runs quantum computing workflows on AWS through Amazon Braket — discovering devices (QPUs and simulators) and their availability, building gate-model circuits and analog Hamiltonian programs, submitting quantum tasks, program sets and hybrid jobs, looking up prices, and capping spend with spending limits. Applies to any request about quantum computing, quantum hardware, quantum simulation, AHS, OpenQASM, or running a quantum algorithm on AWS.
+description: Core Amazon Braket SDK, pricing, and control-plane workflows — discovering QPUs and simulators across Braket regions (SearchDevices, GetDevice, deviceCapabilities, executionWindows, RETIRED/OFFLINE status), querying AmazonBraket Price List productFamily rates (Quantum Task, Quantum Task-Shot, Simulator Task), building OpenQASM 3.0 gate circuits and Analog Hamiltonian Simulation (AHS) programs, batching with ProgramSet vs AwsQuantumTaskBatch, analytical shots=0 result types, local emulators, pulse control, and Braket Direct reservations. Query live AWS state via MCP tools only (never raw aws CLI).
 metadata:
   version: "1"
 ---
@@ -33,10 +33,9 @@ Additional notes:
 
 These rules apply to every Braket request, whatever it involves.
 
-1. **The Amazon Braket Python SDK (`pip install amazon-braket-sdk`, imported as `braket`) is the primary entry point.** Prefer it for every operation including Braket API operations, and understand what it covers by reading the [docs](https://amazon-braket-sdk-python.readthedocs.io/en/stable/) or inspecting the SDK's modules locally.
-    - Use local execution tools for running the Braket SDK, such as `shell` with `python3 -c "<code>"`.
+1. **The Amazon Braket Python SDK (`pip install amazon-braket-sdk`, imported as `braket`) is the primary entry point for generated application code.** Prefer it when authoring user scripts (`AwsDevice`, `Circuit`, `ProgramSet`, `@hybrid_job`, `Tracker`), and confirm signatures against the [docs](https://amazon-braket-sdk-python.readthedocs.io/en/stable/) or `awsknowledge`.
 
-1. **The AWS MCP server is recommended for executing any other AWS API calls in this skill**, especially operations not present in the Python SDK, although not required. Note: the AWS MCP's `run_script` tool executes code in a minimal sandbox without Braket libraries, so prefer using other tools for code execution, especially when using the Braket SDK.
+1. **Always use connected MCP servers (`aws-mcp` `aws___run_script` `call_boto3`, `aws___get_regional_availability`, `awspricing`, `awsknowledge`, `cloudwatch`) for live AWS discovery and pricing — NEVER execute raw `aws` CLI commands in shell (`run_command`).** Note: `aws___run_script` executes read-only `call_boto3('braket', ...)` calls (`search_devices`, `get_device`, `search_quantum_tasks`, `search_jobs`, `search_spending_limits`) in a sandbox without `amazon-braket-sdk`, so use `call_boto3` for live AWS control-plane discovery and never launch billable `CreateQuantumTask` / `CreateJob` or mutating `CreateSpendingLimit` / `DeleteSpendingLimit` calls without explicit user approval.
 
 1. **A small set of primitives composes every workflow** — see [Primitives](#primitives) for the vocabulary and the reference for each.
 

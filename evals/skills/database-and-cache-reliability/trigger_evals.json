@@ -1,11 +1,11 @@
 {
   "skill_name": "database-and-cache-reliability",
   "companion_skills": [
-    "arc-region-switch",
-    "aws-billing-and-cost-management",
-    "aws-cloudformation",
-    "aws-compute",
-    "aws-deployment"
+    "db-observability-and-wait-triage",
+    "amazon-elasticache",
+    "amazon-dynamodb",
+    "db-ha-dr-and-schema-evolution",
+    "amazon-sqs-sns-async-messaging"
   ],
   "queries": [
     {
@@ -13,49 +13,84 @@
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `database-and-cache-reliability` to help me design, validate, and troubleshoot database and cache reliability."
+      "prompt": "Diagnose ElastiCache EngineCPUUtilization at 98% with Evictions spiking and prevent a cache stampede onto Aurora."
     },
     {
       "id": "trig-exp-02",
       "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Stabilize an SQS ApproximateAgeOfOldestMessage spike and 40k DLQ backlog caused by downstream RDS timeouts."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for database and cache reliability (`database-and-cache-reliability`)."
+      "prompt": "Cut Aurora Multi-AZ failover recovery time from 60s DNS TTL down to 3-8 seconds using the AWS Advanced JDBC/Python Wrapper."
     },
     {
       "id": "trig-imp-01",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Diagnose and remediate production stateful data-plane and queue reliability incidents across Amazon RDS/Aurora (DBLoad wait events, max_connections exhaustion, RDS Proxy pinning, r"
+      "prompt": "1,500 Lambda containers exhausted max_connections on Postgres and RDS Proxy shows 80% session pinning during an incident."
     },
     {
       "id": "trig-imp-02",
       "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Why is DynamoDB throttling base-table PutItem calls at 20% WCU while OnlineIndexThrottleEvents spikes on a GSI?"
+    },
+    {
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating database and cache reliability?"
+      "prompt": "Design a staging AWS FIS chaos game-day testing Aurora cluster failover and Valkey primary failover with Stop Conditions."
     },
     {
       "id": "trig-ctx-01",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our database and cache reliability setup in read-only mode and highlight top risks."
+      "prompt": "Audit ap-south-1 CloudWatch alarms across RDS, DynamoDB, ElastiCache, and SQS for reliability saturation risks."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Safely redrive 50,000 SQS DLQ messages with StartMessageMoveTask MaxNumberOfMessagesPerSecond after fixing DB locks."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Prevent Aurora reader restarts when bulk batch updates push AuroraReplicaLag over 8 seconds."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot arc region switch exclusively without touching database and cache reliability."
+      "prompt": "Convert SQL Server T-SQL schemas to Aurora PostgreSQL using AWS DMS Schema Conversion."
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Set up ARC Region Switch Route 53 DNS routing controls for stateless ALB failover."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Calculate 1-year vs 3-year RDS MySQL Reserved Instances using rds_commitment_pricing_analyzer.py."
     }
   ]
 }

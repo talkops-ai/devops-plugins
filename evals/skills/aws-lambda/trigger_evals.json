@@ -1,61 +1,95 @@
 {
   "skill_name": "aws-lambda",
   "companion_skills": [
-    "amazon-eventbridge-event-bus",
-    "amazon-eventbridge-scheduler-and-pipes",
-    "amazon-sqs-sns-async-messaging",
-    "api-gateway",
-    "aws-auth-and-environment-preflight"
+    "aws-serverless",
+    "debugging-lambda-timeouts",
+    "lambda-event-source-mappings-esm",
+    "connecting-lambda-to-api-gateway"
   ],
   "queries": [
     {
-      "id": "trig-exp-01",
+      "id": "trig-pos-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `aws-lambda` to help me design, validate, and troubleshoot aws lambda."
+      "prompt": "Build a TypeScript AWS Lambda function with AWS CDK and AWS Lambda Powertools idempotency."
     },
     {
-      "id": "trig-exp-02",
+      "id": "trig-pos-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for aws lambda (`aws-lambda`)."
+      "prompt": "Deploy a FastAPI app on AWS Lambda using AWS Lambda Web Adapter with response streaming."
     },
     {
-      "id": "trig-imp-01",
+      "id": "trig-pos-03",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Design, build, deploy, test, and debug serverless applications with AWS Lambda. Triggers on phrases like: Lambda function, event source, serverless application, API Gateway, EventB"
+      "prompt": "Why did my Python Lambda fail with `invalid ELF header` when built on macOS without `sam build --use-container`?"
     },
     {
-      "id": "trig-imp-02",
+      "id": "trig-pos-04",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating aws lambda?"
+      "prompt": "Check our `ap-south-1` Lambda `GetAccountSettings` concurrency limits and review module-level state reuse risks."
     },
     {
-      "id": "trig-ctx-01",
+      "id": "trig-pos-05",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our aws lambda setup in read-only mode and highlight top risks."
+      "prompt": "Configure AWS Lambda SnapStart `afterRestore` hooks and compare Lambda 6 MB sync vs 200 MB streaming payload limits."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot amazon eventbridge event bus exclusively without touching aws lambda."
+      "prompt": "Configure AWS Direct Connect MACsec Layer-2 encryption and BGP BFD timers."
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Set up an AWS Shield Advanced protection group and SRT proactive engagement."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Convert COBOL CICS programs to Java Spring Boot using AWS Blu Age."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Run PromQL multi-window multi-burn-rate SLO queries against Amazon Managed Service for Prometheus."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Perform a 6-pillar AWS Well-Architected Framework scorecard review."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure Db2 HADR standby instances on Amazon RDS for Db2."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Enable DNSSEC KSK signing on a public Route 53 hosted zone."
     }
   ]
 }

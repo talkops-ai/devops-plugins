@@ -23,7 +23,7 @@
 
 > Execute commands using available tools from the AWS MCP server when connected — it provides sandboxed execution, audit logging, and observability. When the MCP server is not available, fall back to the AWS CLI or shell as needed.
 
-- You MUST resolve `aws_account_id` by running `aws sts get-caller-identity` and extracting the `Account` field
+- You MUST resolve `aws_account_id` by calling `sts:GetCallerIdentity` via MCP (`aws-mcp`) and extracting the `Account` field
 - You MUST present one phase at a time — do NOT ask for all parameters at once
 - You MUST confirm each resource was created successfully before moving to the next phase
 - You MUST show a running summary of collected values at the start of each new phase
@@ -56,7 +56,7 @@ Ask:
 
 **Constraints:**
 
-- Resolve `aws_account_id` by running `aws sts get-caller-identity` and extracting the `Account` field
+- Resolve `aws_account_id` by calling `sts:GetCallerIdentity` via MCP (`aws-mcp`) and extracting the `Account` field
 - Ask the customer which AWS region to use. Do NOT attempt to infer it from the STS response. Store as `aws_region`.
 - If region resolution fails, ask the customer to provide it manually
 - The project name MUST be between 1 and 25 characters, start with a lowercase letter or number, and contain only lowercase letters, numbers, and hyphens. Validate this before proceeding. If the customer provides uppercase characters, auto-lowercase the name and inform them. (The 25-character limit ensures the derived S3 bucket name `<project_name>-sc-bucket-<account_id>-<region>` stays within the 63-character S3 bucket name limit even for the longest AWS region names.)

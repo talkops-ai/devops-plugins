@@ -14,7 +14,13 @@ metadata:
 
 # Endpoint Diagnostics
 
-Collects diagnostic information from a SageMaker endpoint using documented AWS APIs (`scripts/collect_diagnostics.py`) and the `cloudwatch` MCP server. Returns endpoint status, CloudWatch metrics, and recent container logs for root-cause interpretation.
+Collects diagnostic information from a SageMaker endpoint using connected MCP tools (`aws-mcp` and `cloudwatch`) following the canonical metric/log specifications in `scripts/collect_diagnostics.py`. Returns endpoint status, CloudWatch metrics, and recent container logs for root-cause interpretation.
+
+## MCP-Only Execution & Read-Only Safety
+
+- **MCP-Only Live Queries:** Execute **all** live AWS discovery, Bedrock/SageMaker control-plane checks, pricing lookups, IaC compliance checks, CloudWatch telemetry queries, and documentation searches **exclusively via connected MCP tools**: `aws-mcp` (`aws___run_script` using read-only `await call_boto3(...)`, `aws___search_documentation`, `aws___read_documentation`), `sagemaker` (`describe_hp_cluster`), `agentcore`, `strands-agents`, `cloudwatch`, `awspricing` (`get_pricing`, `get_bedrock_patterns`), `awsiac`, and `awsknowledge`. Offline pure-Python bundled helper scripts in `scripts/*.py` that perform local math/schema rendering without live AWS credentials are permitted when inspecting local inputs, whereas live AWS API queries must go through MCP rather than raw `aws` CLI or boto3 shell scripts (`scripts/collect_diagnostics.py` defines the exact read-only query specification and serves as an operator standalone utility).
+- **Strict Read-Only & Secret Safety:** **Never** run raw `aws ...` (not even `aws sts get-caller-identity` — always query `sts.GetCallerIdentity` inside `aws___run_script`) CLI commands in Bash/`run_command`, **never** mutate live AWS resources (`Create*`, `Update*`, `Delete*`, `InvokeModel`, `CreateEndpoint` — refuse unapproved mutations and present a safe, approval-gated remediation/rollback plan), and **never** read or expose plaintext secrets (`secretsmanager:GetSecretValue`, `ssm:GetParameter` with `WithDecryption=True`, or `.env` API keys).
+- **Unmapped Edge Cases:** Query `awsknowledge` / `aws-mcp` documentation search tools (`aws___search_documentation`, `aws___read_documentation`) with 1–2 focused queries before recommending unverified parameters.
 
 ## Prerequisites
 
@@ -26,7 +32,7 @@ Collects diagnostic information from a SageMaker endpoint using documented AWS A
 1. **Read-only**: No mutations — only `DescribeEndpoint`, `DescribeInferenceComponent`, `GetMetricData`, and `FilterLogEvents` / `cloudwatch` MCP queries.
 2. **Deterministic**: Collects structured facts first; the agent provides root-cause interpretation and remediation guidance.
 3. **Graceful degradation**: Each collection step is independent; failures in one do not block others.
-4. **Multi-Variant & InferenceComponent Aware**: `collect_diagnostics.py` collects instance-level metrics (CPU, Memory, GPU) for the first `ProductionVariant` automatically; when the endpoint hosts multiple `ProductionVariants` or `InferenceComponents`, supplement with `cloudwatch` MCP queries scoped by `VariantName` or `InferenceComponentName` (`InvocationsPerCopy`, `ModelLatency`, `OverheadLatency`) and inspect `/aws/sagemaker/InferenceComponents/<ic-name>`.
+4. **Multi-Variant & InferenceComponent Aware**: `collect_diagnostics.py` collects instance-level metrics (CPU, Memory, GPU) for the first `ProductionVariant` automatically; when the endpoint hosts multiple `ProductionVariants` or `InferenceComponents`, supplement with `cloudwatch` MCP queries scoped by `VariantName` or `InferenceComponentName` (`InvocationsPerCopy`, **`NoCapacityInvocationFailures`**, `ModelLatency`, `OverheadLatency`) and inspect `/aws/sagemaker/InferenceComponents/<ic-name>`.
 
 ## Trigger
 
@@ -63,7 +69,7 @@ For this step, you need the **endpoint name** and **AWS region**:
 
 ### Step 2: Run diagnostics
 
-Execute `scripts/collect_diagnostics.py` with the endpoint name and region. Do not create a notebook — run the script directly:
+Execute the read-only diagnostic queries defined in `scripts/collect_diagnostics.py` against the endpoint name and region using connected MCP tools (`aws-mcp` `aws___run_script` with read-only `await call_boto3(...)` for `sagemaker` `DescribeEndpoint` / `DescribeInferenceComponent`, plus `cloudwatch` MCP `get_metric_data` and `execute_log_insights_query` / `FilterLogEvents`). For operator standalone Python runbooks, reference `scripts/collect_diagnostics.py`:
 
 ```python
 from collect_diagnostics import collect_endpoint_diagnostics
@@ -84,8 +90,8 @@ Present the collected data to the user and diagnose the failure pattern:
 
 - **`ModelLatency` high vs `OverheadLatency` high**: High `ModelLatency` indicates slow container execution (batch size, uncompiled weights, KV-cache saturation, CPU/GPU bottleneck); high `OverheadLatency` indicates payload serialization/network overhead or cold-start scaling from zero.
 - **`GPUMemoryUtilization > 95%` + container OOM / `CUDA out of memory`**: Recommend lowering `OPTION_MAX_ROLLING_BATCH_SIZE`, enabling tensor parallelism (`OPTION_TENSOR_PARALLEL_DEGREE`), quantizing (AWQ/GPTQ/FP8), or upgrading the instance / `InferenceComponent` `ComputeResourceRequirements.AcceleratorChips`.
-- **`CapacityError` / `InsufficientInstanceCapacity`**: Recommend trying an alternate Availability Zone, switching instance family (`ml.g6` / `ml.g6e` / `ml.inf2` vs `ml.g5`), or checking `Service Quotas`.
-- **Health check timeout (`/ping` failing)**: Check container startup logs for S3 weight download bottlenecks, missing `HF_TOKEN` for gated models, or incompatible CUDA/Neuron driver versions.
+- **`CapacityError` / `InsufficientInstanceCapacity`**: Physical AZ GPU stockout — recommend trying multi-AZ subnets / an alternate Availability Zone, switching instance family (`ml.g6` / `ml.g6e` / `ml.inf2` vs `ml.g5`), **and explicitly verifying `Service Quotas` on the target fallback instance family** before redeploying so it does not hit `ResourceLimitExceeded`.
+- **Health check timeout (`/ping` failing) or `CannotStartContainerError`**: Check container startup logs for S3 weight download bottlenecks, missing `HF_TOKEN` for gated models, or CUDA runtime vs host driver mismatches (e.g., `ml.g5` hosts ship a **CUDA 12.4** driver cap — containers compiled against CUDA 12.6+ fail with `CannotStartContainerError`; pin a `cu124`-compatible DLC or move to `ml.g6`/`ml.g6e`/`ml.p5`).
 
 For any issues found, reference the official AWS troubleshooting guide:
 https://docs.aws.amazon.com/sagemaker/latest/dg/deploy-model-troubleshoot.html

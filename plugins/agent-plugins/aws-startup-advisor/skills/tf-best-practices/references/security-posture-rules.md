@@ -195,7 +195,7 @@ exception.
 
 **Gate mapping:** `no_wildcard_iam`. The gate scans literal policy JSON (heredoc or
 `jsonencode({...})`) in the resources above. `aws_iam_policy_document` **data sources** fail
-open (their statements are HCL blocks, not literal JSON the reader can inspect), and assume-role
+open statically (their statements are HCL blocks, not literal JSON the static reader inspects — though authoring least-privilege rules still prohibit wildcard `Action = "*"` / `Resource = "*"` inside them!), and assume-role
 trust policies on `aws_iam_role` are out of scope — so a scoped data-source policy is never
 falsely flagged.
 

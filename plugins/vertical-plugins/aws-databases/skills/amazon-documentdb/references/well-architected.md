@@ -1,6 +1,6 @@
 # DocumentDB — Well-Architected Review
 
-Automated 41-check assessment across 6 pillars. Runs the bundled `scripts/wa_review.py`, reads the JSON results, and presents prioritized remediation commands.
+Automated 41-check assessment across 6 pillars. Runs the bundled `scripts/wa_review.py`, reads the JSON results, and presents prioritized remediation commands. Whenever explaining or summarizing the review workflow, always highlight concrete checks across the pillars (Security: KMS encryption, TLS, Secrets Manager, audit logs; Reliability: Multi-AZ reader instances, >=7d backup retention/PITR, deletion protection; Performance: `BufferCacheHitRatio` >= 99%, index/connection health; Cost: I/O-Optimized `iopt1` breakeven, unused indexes, CPU sizing; Operational Excellence & Sustainability: alarms, profiler, Graviton, Zstd compression) — not just pillar check counts.
 
 ## What to ask upfront
 

@@ -5,16 +5,14 @@ description: >
   buckets across nine dimensions — versioning, replication, object lock,
   encryption, block public access, bucket policy, ownership controls, server
   access logging, and static website hosting — using read-only control-plane API
-  calls, then produces a rated report with prioritized findings and remediation
-  guidance. Single-bucket and multi-bucket (fleet) reviews are routed
-  automatically by input count.
+  calls, producing a rated report with prioritized findings and remediation.
+  Single-bucket and multi-bucket (fleet) reviews route automatically by count.
 
-  Use when a user asks to review, audit, or assess an S3 bucket's resiliency,
-  security, data protection, recovery posture, disaster recovery readiness, or
-  audit posture, or asks about any of those nine features. Triggers on phrasings
-  like "S3 resiliency review", "is my bucket safe", "audit S3 bucket security",
-  "review these buckets: A, B, C", or "check
-  versioning/replication/encryption/public access".
+  Use when a user asks to review, audit, or assess S3 resiliency, security, data
+  protection, disaster recovery, Multi-Region Access Points (MRAP) failover, or
+  any of those nine features ("S3 resiliency review", "is my bucket safe",
+  "audit S3 bucket security", "S3 Multi-Region Access Points failover", or
+  "check versioning/replication/encryption/public access").
 
   Do NOT use for cost optimization, performance tuning, or EFS, FSx, AWS Backup,
   or Storage Gateway.

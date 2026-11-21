@@ -1,9 +1,11 @@
 ---
 name: connecting-lambda-to-dynamodb
-description: Connects an AWS Lambda function to DynamoDB with IAM roles, stream event source mapping, and read/write permissions. Use when setting up Lambda-DynamoDB integration, processing DynamoDB stream events, or deploying serverless event-driven architectures.
+description: "Connects an AWS Lambda function to DynamoDB with IAM roles, stream event source mapping, and read/write permissions. Use when setting up Lambda-DynamoDB integration, processing DynamoDB stream events, or deploying serverless event-driven architectures. Query live AWS state via MCP tools only (never raw aws CLI)."
 version: 1
 ---
 # Connecting Lambda to DynamoDB
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, caller/account verification (`sts:GetCallerIdentity`), resource inspection, logs/metrics queries, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___call_aws` / `aws___run_script`, `cloudwatch`, `cloudtrail`, `prometheus`, `dynamodb`, `serverless`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**.
 
 ## Overview
 

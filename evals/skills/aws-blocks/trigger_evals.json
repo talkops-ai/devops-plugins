@@ -1,61 +1,95 @@
 {
   "skill_name": "aws-blocks",
   "companion_skills": [
-    "amplify-ai-kit",
-    "amplify-auth-cognito",
-    "amplify-data-appsync",
-    "amplify-functions-cdk",
-    "amplify-hosting-cicd"
+    "aws-cdk",
+    "iac-architecture-advisor",
+    "launch-with-aws",
+    "aws-deployment"
   ],
   "queries": [
     {
-      "id": "trig-exp-01",
+      "id": "trig-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `aws-blocks` to help me design, validate, and troubleshoot aws blocks."
+      "prompt": "Scaffold a new Next.js full-stack app with `npx @aws-blocks/create-blocks-app my-app` and add authentication and S3 upload blocks."
     },
     {
-      "id": "trig-exp-02",
+      "id": "trig-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for aws blocks (`aws-blocks`)."
+      "prompt": "How do I add AWS Blocks to an existing AWS Amplify Gen 2 TypeScript repository without breaking `amplify/backend.ts`?"
     },
     {
-      "id": "trig-imp-01",
+      "id": "trig-03",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Guides building full-stack applications with AWS Blocks — an Infrastructure-from-Code framework. Applies when creating APIs, selecting Building Blocks (KVStore, DistributedTable, D"
+      "prompt": "Show me the available `@aws-blocks/create-blocks-app` templates and how `npx aws-blocks add` copies editable CDK and UI components into my project."
     },
     {
-      "id": "trig-imp-02",
+      "id": "trig-04",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating aws blocks?"
+      "prompt": "Plan a non-overlapping Multi-AZ VPC CIDR and subnet topology for stateful database constructs inside our AWS Blocks application."
     },
     {
-      "id": "trig-ctx-01",
+      "id": "trig-05",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our aws blocks setup in read-only mode and highlight top risks."
+      "prompt": "We want a shadcn-style copy-paste library of full-stack AWS CDK constructs plus React UI components (`aws-blocks`) for rapid prototyping."
     },
     {
-      "id": "trig-neg-01",
-      "quadrant": "near_miss_negative",
-      "split": "train",
-      "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot amplify ai kit exclusively without touching aws blocks."
-    },
-    {
-      "id": "trig-neg-02",
+      "id": "trig-06",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Migrate our existing Heroku Express + PostgreSQL repo to AWS using the `launch_with_aws.py` CLI workflow."
+    },
+    {
+      "id": "trig-07",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Import 15 existing unmanaged S3 buckets and RDS instances into Terraform 1.9 using `import {}` blocks and `-generate-config-out`."
+    },
+    {
+      "id": "trig-08",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write a Crossplane `CompositeResourceDefinition` (XRD) and pipeline-mode `Composition` for provisioning EKS namespaces."
+    },
+    {
+      "id": "trig-09",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Debug why `cdk deploy` failed with `EXPORT_CANNOT_BE_DELETED` when refactoring two AWS CDK v2 stacks."
+    },
+    {
+      "id": "trig-10",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Investigate high `CPUUtilization` and `BufferCacheHitRatio` drops on our production Amazon DocumentDB 5.0 cluster."
+    },
+    {
+      "id": "trig-11",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure AWS Direct Connect BGP communities and MACsec encryption on a 10 Gbps dedicated connection."
+    },
+    {
+      "id": "trig-12",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Analyze our CloudTrail Lake events for unauthorized `AssumeRole` calls from external IP addresses."
     }
   ]
 }

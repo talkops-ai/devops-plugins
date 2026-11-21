@@ -1,61 +1,95 @@
 {
   "skill_name": "shieldadvanced",
   "companion_skills": [
-    "amazon-ec2-image-builder",
-    "aws-backup-coverage-review",
-    "aws-compute",
-    "aws-containers",
-    "aws-finops-and-cost-optimization"
+    "waf",
+    "route53",
+    "transitgateway",
+    "aws-security"
   ],
   "queries": [
     {
-      "id": "trig-exp-01",
+      "id": "trig-pos-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `shieldadvanced` to help me design, validate, and troubleshoot shieldadvanced."
+      "prompt": "Decide whether we need AWS Shield Advanced ($3,000/mo 1-year commitment) vs Shield Standard + AWS WAF, and check our `us-east-1` Shield subscription status."
     },
     {
-      "id": "trig-exp-02",
+      "id": "trig-pos-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for shieldadvanced (`shieldadvanced`)."
+      "prompt": "Enable AWS Shield Advanced Automatic Application Layer DDoS Mitigation (`COUNT` -> `BLOCK`) and Health-Based Detection on our CloudFront distribution."
     },
     {
-      "id": "trig-imp-01",
+      "id": "trig-pos-03",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Configures AWS Shield Advanced for enhanced Distributed Denial of Service (DDoS) protection: subscribing accounts and adding resource protections, enabling automatic application la"
+      "prompt": "Configure Shield Response Team (SRT) `drt.shield.amazonaws.com` access with `aws:SourceAccount` confused-deputy protection and Proactive Engagement."
     },
     {
-      "id": "trig-imp-02",
+      "id": "trig-pos-04",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating shieldadvanced?"
+      "prompt": "Group 12 ALBs into an AWS Shield Advanced Protection Group (`SUM` aggregation) and review `list-attacks` for DDoS Cost Protection credits."
     },
     {
-      "id": "trig-ctx-01",
+      "id": "trig-pos-05",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our shieldadvanced setup in read-only mode and highlight top risks."
+      "prompt": "Protect an internet-facing Network Load Balancer with AWS Shield Advanced via its Elastic IP allocation ARNs."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot amazon ec2 image builder exclusively without touching shieldadvanced."
+      "prompt": "Author an AWS WAFv2 WebACL with Bot Control Targeted rules, Fraud Control, and `x-amzn-waf-*` header stripping."
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Create a Route 53 DNS Firewall rule group blocking C2 domains."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Configure AWS Direct Connect BGP BFD timers and SiteLink."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Segment Dev and Prod VPCs across separate AWS Transit Gateway route tables."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Debug why our Lambda function is timing out in a private VPC."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write PromQL queries for Kubernetes pod memory working set vs limits."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Migrate a legacy Java Tomcat VM to ECS using AWS App2Container."
     }
   ]
 }

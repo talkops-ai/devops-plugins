@@ -1,192 +1,328 @@
----
-_phase: discover
-_title: "Discover Azure Resources"
-_init: true
-_input: workspace
-_fragments:
-  - _id: iac
-    _trigger: { _always: true }
-    _file: phases/discover/discover-iac.md
-  - _id: app-code
-    _trigger: { _when: "source code or a dependency manifest is present in the workspace (.py/.js/.ts/.go/.java/.cs, requirements.txt, package.json, go.mod, pom.xml, *.csproj)" }
-    _file: phases/discover/discover-app-code.md
-  - _id: live
-    _trigger: { _when: "$MIGRATION_DIR/live-capture/manifest.json exists AND is fresh for THIS attempt — i.e. the 'Pre-dispatch main-window action' below ran, the user consented, and (on a re-entry) any manifest from a prior attempt was invalidated per that section's decline rule. This dispatched fragment ONLY parses that directory; it never runs az or prompts. Absent (or invalidated) manifest ⇒ the trigger is false and the fragment does not run." }
-    _file: phases/discover/discover-live.md
-_assemble:
-  _file: phases/discover/discover-assemble.md
-_produces:
-  - azure-resource-inventory.json
-  - azure-resource-clusters.json
-  - ai-workload-profile.json
-_advances_to: clarify
-_interactive: false
-_exec:
-  _agent: rw
-_re_entry_guard:
-  _stale_if_completed: clarify
-  _stale_artifact: preferences.json
-  _on_reentry: stop_unless_confirmed
-  _on_confirm: reset_downstream_to_pending
-_preconditions:
-  - _check_single_active_phase: true
-    _on_failure: _halt_and_inform
-  - _assert: "a live-`az` disposition was recorded for THIS attempt before the entry gate below is evaluated (see 'Pre-dispatch main-window action' immediately below `_preconditions` in the body) — either $MIGRATION_DIR/live-capture/manifest.json exists (consent given, capture attempted), or the live-capture step was skipped/declined/unavailable and no STALE manifest from a prior attempt is left on disk (see the re-entry rule in that same section). This does not require az to be installed or the capture to succeed — only that the attempt-or-skip decision for this run was actually made and, on decline, any earlier manifest was invalidated."
-    _on_failure: _halt_and_inform
-  - _assert: "at least one migratable source is available: an IaC source (a .tf file containing an azurerm_* resource, a .bicep file, or an ARM template whose $schema contains 'deploymentTemplate'), OR application source code / a dependency manifest that the app-code fragment can scan for an AI signal, OR a live-capture manifest ($MIGRATION_DIR/live-capture/manifest.json written by the live-az pre-work above). A workspace with NONE of these — no IaC, no source code, and no successful live capture — is the only unrecoverable case, matching gcp's 'stop only when nothing will produce any artifact'"
-    _on_failure: _unrecoverable
-_postconditions:
-  - _assert: "at least one discovery artifact was produced: azure-resource-inventory.json (when an IaC source was found OR live `az` capture produced resources) OR ai-workload-profile.json (when application code had an AI signal, or a live Cognitive Services / ML signal was captured). This is the completion anchor — an app-code-only run that produced only the AI profile satisfies discover, matching gcp's 'stop only when nothing will produce any artifact'"
-    _on_failure: _halt_and_inform
-  - _assert: "WHEN an IaC source (.tf/.bicep/ARM) was found OR live `az` capture produced at least one resource: azure-resource-inventory.json and azure-resource-clusters.json exist, validate as JSON, and the inventory has at least one resources[] entry with metadata carrying discovery_timestamp, discovery_sources, and subscriptions_discovered. WHEN the run is app-code-only (no IaC source found and no live capture): the inventory and clusters artifacts are ABSENT (not written empty — see discover-assemble.md) and this is vacuously satisfied"
-    _on_failure: _halt_and_inform
-  - _assert: "WHEN azure-resource-inventory.json exists, every resources[] entry has azure_id (a full ARM resource ID), azure_type (a canonical Microsoft.* type string), azure_type_provenance from {table, derived, derived_uncorroborated, user_confirmed}, resource_group, subscription_id, and config — no entry carries a raw azurerm_* type in azure_type"
-  - _assert: "WHEN an IaC dialect (terraform/bicep/arm) contributed to azure-resource-inventory.json, iac_metadata carries derived_types and untranslated_types as separate collections: derived_types lists Terraform types resolved by derivation with a namespace that namespace_routing recognises, and untranslated_types lists ONLY those whose derived namespace was NOT recognised. A type absent from the canonicalization table is DERIVED and retained, never silently dropped — see arm-type-canonicalization.md § Deriving a type that is not listed. WHEN the run is live-only (no IaC dialect contributed), iac_metadata is ABSENT (per schema-discover-azure.md 'present only when a dialect actually contributed') and the live fragment records its own derived types in live_metadata.derived_types instead — this is vacuously satisfied"
-    _on_failure: _halt_and_inform
-  - _assert: "WHEN azure-resource-inventory.json exists, metadata.discovery_sources reflects which sources actually produced data; the iac fragment always runs and may exit empty, so a source appears only when it contributed at least one resource"
-    _on_failure: _halt_and_inform
-  - _assert: "if .tf files containing azurerm_* resources were FOUND in the workspace, resources[] contains at least one entry with source 'terraform'; the same holds independently for 'bicep' and 'arm'"
-    _on_failure: _halt_and_inform
-  - _assert: "no secret VALUES appear anywhere in any produced artifact (inventory OR ai-workload-profile.json) — app settings, connection strings, Key Vault entries, and AI endpoint keys carry NAMES only"
-    _on_failure: _halt_and_inform
-  - _assert: "WHEN azure-resource-inventory.json exists, warnings[] is present on the inventory (empty is fine), and every entry carries a code from the closed vocabulary in schema-discover-azure.md § Warnings, a detail, and an azure_id or identifier"
-  - _assert: "WHEN application code with an AI signal at >= 70% confidence was found: ai-workload-profile.json exists, validates against schema-discover-ai.md, and carries summary.ai_source from {azure_openai, openai, anthropic, both, other} (never gemini), a workloads[] array, and — only when an agentic framework was detected — an agentic_profile. WHEN no AI signal reached 70% (or no source code was found), ai-workload-profile.json is absent and this is vacuously satisfied — its absence is not a failure"
-    _on_failure: _halt_and_inform
-  - _assert: "PRODUCER AGREEMENT: WHEN azure-resource-inventory.json contains a case-insensitive azure_type in {Microsoft.CognitiveServices/accounts, Microsoft.CognitiveServices/accounts/deployments, Microsoft.MachineLearningServices/workspaces}, ai-workload-profile.json MUST exist and validate against schema-discover-ai.md, and infrastructure[] contains every qualifying resource — one entry per resource, in the shape schema-discover-ai.md § infrastructure[] defines for that resource's own source (an IaC-sourced entry keyed by config.tf_address; a live-sourced entry keyed by azure_id, with no address/file). The profile-level fields are computed by OR-ing across ALL qualifying resources in the profile, per schema-discover-ai.md § profile_source and sources_analyzed — NOT assigned exclusively per producer: metadata.sources_analyzed.terraform is true iff AT LEAST ONE qualifying resource is IaC-sourced; metadata.sources_analyzed.live is true iff AT LEAST ONE qualifying resource is live-sourced; summary.inferred_from_iac is true iff AT LEAST ONE qualifying resource is IaC-sourced (both flags may be true simultaneously in a mixed run — this is not a contradiction, it is two true statements about the same profile). metadata.profile_source is iac_cognitive when infrastructure-only (IaC and/or live, no app-code contribution) or merged when app-code also qualified. A Cognitive Services deployment with a literal config.model.name (IaC-sourced) carries that model in models[] with detected_via including terraform; a captured deployment's model field (live-sourced) carries that model in models[] with the live signal recorded via a detection_signals[].method of live_az on that resource's entry (models[].detected_via has no live value per schema-discover-ai.md, so live provenance never goes there). Do NOT require tf_address on a live-sourced infrastructure[] entry, and do NOT force sources_analyzed.terraform or inferred_from_iac to false merely because a DIFFERENT qualifying resource in the same profile was live-sourced — check each flag against the full resource set, not against one resource in isolation. This check is not vacuously satisfied merely because app-code found no AI signal"
-    _on_failure: _halt_and_inform
-  - _assert: "WHEN azure-resource-inventory.json exists, every edges[] entry's type appears in schema-discover-azure.md § Typed edges — a per-dialect ref may map new syntax onto an existing type but may not invent one"
-    _on_failure: _halt_and_inform
-  - _assert: "WHEN azure-resource-clusters.json exists, it has one entry per cluster, each with cluster_id, tier, member azure_ids, and a justification; any cluster justified by edges or by a merge has a non-empty edges[] carrying them, while a cluster justified by the resource-group seed or by a SPLIT legitimately has an empty edges[] — a split is justified by the ABSENCE of a relationship, so there is nothing to show; every inventory resource is either a cluster member or listed in unclustered[]"
-    _on_failure: _halt_and_inform
-_forbids_files:
-  - README.md
-  - discovery-summary.md
-  - "*.txt"
-  - "terraform/**"
-  - preferences.json
----
+# Phase 1: Discover GCP Resources
 
-# Phase 1: Discover Azure Resources
+Lightweight orchestrator that delegates to domain-specific discoverers. Each sub-discovery file is self-contained — it scans for its own input, processes what it finds, and exits cleanly if nothing is relevant.
+**Execute ALL steps in order. Do not skip or deviate.**
 
-## Pre-dispatch main-window action (live `az` consent + capture)
+## Sub-Discovery Files
 
-Run this BEFORE the `_preconditions` gate above is evaluated. `_exec`'s own contract
-already runs `_preconditions` in the main window before dispatch; this is the action
-that produces the state the first `_assert` there checks — it is prose, not a
-`_preconditions` check kind, because the DSL's closed check vocabulary
-(`_check_phase_completed`, `_check_single_active_phase`, `_check_file_exists`,
-`_validate_json`, `_assert`) has no kind for "perform an interactive action," only
-for verifying a predicate. This phase is `_interactive: false` / `_exec: {_agent:
-rw}`, so the dispatched worker cannot prompt for consent or run interactive `az` —
-the consent gate and the actual capture commands MUST run here instead.
+- **discover-iac.md** → `gcp-resource-inventory.json` + `gcp-resource-clusters.json` (if Terraform found); may also write `ai-workload-profile.json` when **Vertex-strong** (see `discover-iac.md` Step 7d)
+- **discover-live.md** → `gcp-resource-inventory.json` + `gcp-resource-clusters.json` from the user's authenticated `gcloud` CLI (read-only, consent-gated); merges into the IaC inventory with drift when both run
+- **discover-app-code.md** → `ai-workload-profile.json` when AI confidence ≥ 70% (may **merge** with an existing `iac_vertex` profile)
+- **discover-billing.md** → `billing-profile.json` (if billing data found)
+- **discover-openai-api.md** → `openai-usage-profile.json` from the OpenAI Admin API (read-only, consent-gated); fills `ai-workload-profile.json` → `current_costs` with real spend when that profile exists
+- **discover-openrouter-api.md** → `openrouter-usage-profile.json` from the OpenRouter API (read-only, consent-gated, provisioning key); per-model usage + spend for an OpenRouter-fronted workload; fills `ai-workload-profile.json` → `current_costs` when that profile exists
 
-**Step 0 — ensure `$MIGRATION_DIR` exists before capturing into it (do this
-FIRST, before the re-entry check below).** This phase carries `_init: true`, and
-`INTERPRETER.md`'s generic `_exec` contract runs `_init` state setup AFTER
-`_preconditions` (§ `_exec`, step 2) — but this action runs BEFORE
-`_preconditions` (see above), and it writes to `$MIGRATION_DIR/live-capture/`,
-which does not exist until `_init` has run. **For this phase specifically,
-reverse that ordering: perform `_init` state setup per `INTERPRETER.md` §
-`_init: true` NOW**, before step 1 below — resolve resume-vs-fresh, set
-`$MIGRATION_DIR`, and (on a fresh run) create the directory, `.gitignore`, and
-`.phase-status.json` exactly as that section specifies. This makes "Step: Run
-the phase" step 1's `_init` call (below) a no-op confirmation for this phase —
-`_init` is idempotent by construction (a resumed run's `_init` setup only reads
-the existing `.phase-status.json` and reuses `$MIGRATION_DIR`; nothing is
-re-created), so running it here and having it "run again" later does not
-double-initialize state or re-prompt resume-vs-fresh. Every other check this
-phase's `_preconditions`/`_postconditions` perform, and the state transition
-itself, still run at their normal point in the MAIN window — only the state
-CREATION step moves earlier, for this phase alone, to break the cycle.
+Multiple artifacts can be produced in a single run — they are not mutually exclusive.
 
-1. **Re-entry check (do this FIRST, before offering consent).** If
-   `$MIGRATION_DIR/live-capture/manifest.json` already exists (this run directory
-   is being reused — a resumed run, or a confirmed re-entry per this phase's
-   `_re_entry_guard`), do NOT silently trust it as this attempt's answer. Re-offer
-   the Step 1 consent gate in `discover-live.md` for THIS attempt. If the user
-   chooses **[A]** (proceed), overwrite the manifest via Part A Steps 0-2 as
-   normal. If the user chooses **[B]** (skip), **delete or rename
-   `live-capture/manifest.json`** (e.g. to `manifest.json.declined`) before
-   continuing — a manifest from an earlier attempt must never survive a fresh
-   decline, since the `live` fragment's `_trigger` is existence-based and would
-   otherwise fire on stale data the user just said not to use.
-2. **No existing manifest.** Run `discover-live.md` Part A (Steps 0-2): preflight
-   `az`, gate consent, and on consent capture the read-only inventory into
-   `$MIGRATION_DIR/live-capture/` + `manifest.json`. OFFER it when there is no
-   `azurerm_*`/Bicep/ARM IaC in the workspace (the common startup case, where live
-   `az` is the primary source), or as an accuracy upgrade alongside IaC.
-3. If `az` is missing, the user declines, or no subscription is reachable, ensure
-   no manifest is present (write nothing on a fresh run; delete per step 1 on a
-   re-entry decline) and continue — the live fragment then no-ops on the absent
-   manifest. This action never fails the phase; it only determines whether
-   `live-capture/manifest.json` is present and current for THIS attempt.
+## Step 0: Initialize Migration State
 
-## Orientation
+0. **Orientation (fresh runs only):** When this is a new migration (no existing `.migration/` runs, or the user chooses Fresh below), open your first response with this block — before any scanning output. Skip it entirely when resuming an existing run (the breadcrumb in the resume message covers position).
 
-Inventory what exists on Azure into `azure-resource-inventory.json` in
-`$MIGRATION_DIR/`, and derive `azure-resource-clusters.json` from it. This phase is
-composed of FRAGMENTS (independent discoverers) plus one ASSEMBLER, declared in the
-frontmatter `_fragments`/`_assemble` — the interpreter runs each fragment whose
-`_trigger` is true (loading its `_file` only then), then the assembler. Read each
-unit file for its own contract; this phase owns only lifecycle and the cross-cutting
-`_postconditions`.
+   > **Here's how this works.** Six phases: I scan your Terraform, app code, or billing data; confirm a few assumptions with you; then design the AWS architecture, price it, and generate everything. Your part is small — most answers come from your own files; you'll typically confirm one summary sheet and answer 2–7 questions. At the end you get a migrate-or-stay recommendation with costs, Terraform for the in-scope workloads, and step-by-step migration scripts. You can stop at any point — progress is saved and I'll resume where you left off.
 
-Two facts the frontmatter cannot express:
+   Do not pad it, restate it later, or block on it — continue directly into discovery in the same turn.
 
-1. **Fragments are additive, not redundant, and they may disagree.** IaC carries
-   _declared intent_ (module structure, naming, what is parameterized, and resources
-   declared but never deployed). Live `az` and RDfA carry _actual state_. When two
-   sources disagree about the same `azure_id`, the assembler records BOTH values and
-   which one won as a drift entry. A disagreement is never silently reconciled — the
-   drift is itself customer-visible value.
+1. Check for existing `.migration/` directory at the project root.
+   - **If existing runs found:** List them with their phase status and ask:
+     - `[A] Resume: Continue with [latest run]`
+     - `[B] Fresh: Create new migration run`
+     - `[C] Cancel`
+   - **If resuming:** Set `$MIGRATION_DIR` to the selected run's directory. Read its `.phase-status.json` and skip to the appropriate phase per the State Machine in SKILL.md.
+   - **If fresh or no existing runs:** Continue to step 2.
+2. Create `.migration/[MMDD-HHMM]/` directory (e.g., `.migration/0226-1430/`) using current timestamp (MMDD = month/day, HHMM = hour/minute). Set `$MIGRATION_DIR` to this new directory.
+3. Create `.migration/.gitignore` file (if not already present) with exact content:
 
-2. **The canonical type vocabulary is ARM, not Terraform.** Four of the five
-   discovery sources speak `Microsoft.*` natively; only Terraform needs translating.
-   That translation happens inside `discover-iac.md`, so every downstream table
-   keys off one vocabulary. `azure_id` is the full ARM resource ID, which embeds
-   subscription and resource group — one field supplies the cluster seed key, the
-   environment scope, and uniqueness with no derivation.
+   ```
+   # Auto-generated migration state (temporary, do not commit)
+   *
+   !.gitignore
+   ```
 
-## Status — Terraform, live `az`, and app code
+   This prevents accidental commits of migration artifacts.
 
-Terraform discovery is real, live `az` discovery is real, and clustering is real:
-`discover-iac.md` (Terraform), `discover-live.md` (live `az` capture + parse), and
-`discover-app-code.md` (AI signal), plus an assembler that writes both artifacts.
+4. Write `.phase-status.json` with exact schema:
 
-The **live `az` path is implemented** (`discover-live.md` — the security contract,
-main-window capture pre-work, and the parsing fragment, in that order). Terraform IaC
-and the live tenant are both real discovery producers; the app-code fragment adds the
-AI signal.
+   ```json
+   {
+     "migration_id": "[MMDD-HHMM]",
+     "run_id": "[fresh random UUID from uuidgen]",
+     "owning_skill": "GCP_TO_AWS",
+     "last_updated": "[ISO 8601 timestamp]",
+     "current_phase": "discover",
+     "phases": {
+       "discover": "in_progress",
+       "clarify": "pending",
+       "design": "pending",
+       "estimate": "pending",
+       "workshop": "pending",
+       "generate": "pending",
+       "feedback": "pending"
+     }
+   }
+   ```
 
-| Lands in | What                                                                                                                                                                                                                   |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| step 2   | Bicep + ARM inside `discover-iac.md`; the `billing` fragment                                                                                                                                                           |
-| step 2   | The `rdfa` fragment (RDfA archive parse). Live `az` has landed (`discover-live.md`)                                                                                                                                    |
-| step 4   | `patterns.md` — pattern RECOGNITION only. Seed / split / merge / tier / primary / roles are implemented in `references/clustering/`; every cluster carries `pattern_status: "catalog_absent"` until the catalog exists |
+   `run_id` is minted once here: run `uuidgen` (or an equivalent random UUID source) and write its output verbatim; never copy a value from an example or a previous run. It is never changed or reused across runs; unlike `migration_id` it carries no timestamp, so it uniquely identifies this run for telemetry and for the plugin-to-web handoff. `owning_skill` is always `GCP_TO_AWS`. If another skill invoked this run (llm-to-bedrock does, for Assess), also set `initiated_by` to that skill's identifier, e.g. `"initiated_by": "LLM_TO_BEDROCK"`.
 
-The live `az` path is NOT a plain fragment. This phase runs under
-`_exec: { _agent: rw }` with `_interactive: false`, and a dispatched worker is
-file-only — it cannot prompt for consent. Live capture is therefore **main-window
-pre-work run BEFORE `_preconditions` is evaluated** (see the "Pre-dispatch
-main-window action" section above the Orientation heading — `_preconditions` itself
-only asserts that this pre-work already happened; it does not perform it, since the
-DSL's closed check-kind vocabulary has no kind for "run an interactive action"),
-writing to `$MIGRATION_DIR/live-capture/`, with the dispatched `live` fragment merely
-parsing that directory (its `_trigger` fires only when a fresh
-`live-capture/manifest.json` exists for this attempt). RDfA needs no such split:
-reading an archive the customer already handed over is not interactive.
+5. Confirm both `.migration/.gitignore` and `.phase-status.json` exist before proceeding to Step 1.
 
-## Step: Run the phase
+## Step 1: Scan for Input Sources and Run Sub-Discoveries
 
-1. Perform `_init` state setup per `INTERPRETER.md` § `_init: true` — **already
-   done** by "Pre-dispatch main-window action" Step 0 above, which runs this
-   same setup earlier (before `_preconditions`) so `$MIGRATION_DIR` exists for
-   live capture. This step is the normal backbone position for `_init` and is
-   listed here for parity with every other phase's "Step: Run the phase" — it is
-   a no-op re-confirmation for THIS phase specifically (idempotent: `$MIGRATION_DIR`
-   is already set, `.phase-status.json` already written), not a second
-   initialization.
-2. Run each fragment whose `_trigger` holds.
-3. Run `discover-assemble.md`.
-4. Evaluate `_postconditions`. On all-pass emit `HANDOFF_OK`; on any failure emit
-   `GATE_FAIL` and stop. Do not patch an artifact to force a gate to pass.
+Scan the project directory for each input type. Only load sub-discovery files when their input files are present.
+
+**1a. Check for Terraform files:**
+Glob for: `**/*.tf`, `**/*.tfvars`, `**/*.tfstate`, `**/.terraform.lock.hcl`
+
+- If found → Load `references/phases/discover/discover-iac.md`
+- If not found → Skip. Log: "No Terraform files found — skipping IaC discovery."
+
+**1b. Check for source code / dependency manifests:**
+Glob for: `**/*.py`, `**/*.js`, `**/*.ts`, `**/*.jsx`, `**/*.tsx`, `**/*.go`, `**/*.java`, `**/*.scala`, `**/*.kt`, `**/*.rs`, `**/requirements.txt`, `**/setup.py`, `**/pyproject.toml`, `**/Pipfile`, `**/package.json`, `**/go.mod`, `**/pom.xml`, `**/build.gradle`
+
+- If found → Load `references/phases/discover/discover-app-code.md`
+- If not found → Skip. Log: "No source code found — skipping app code discovery."
+
+**1c. Check for billing data:**
+Glob for: `**/*billing*.csv`, `**/*billing*.json`, `**/*cost*.csv`, `**/*cost*.json`, `**/*usage*.csv`, `**/*usage*.json`
+
+**Exclude `.migration/**` from these globs** — migration run artifacts (e.g. `openai-usage-profile.json`, `openai-capture/`, `openrouter-usage-profile.json`, `openrouter-capture/`) must never be re-ingested as billing input.
+
+- If not found → Skip. Log: "No billing files found — skipping billing discovery."
+- If found AND **no** Terraform files from 1a → Load `references/phases/discover/discover-billing.md` (billing is the primary source — needs full processing for the billing-only design path).
+- If found AND Terraform files **were** found in 1a → Use lightweight extraction below. Do **not** load `discover-billing.md`.
+
+**Lightweight billing extraction (when IaC is the primary source):**
+
+When Terraform is present, billing data is supplementary — only service-level costs and AI signal detection are needed. Extract via a script to avoid reading the raw file into context.
+
+1. Use Bash to read only the **first line** of the billing file to identify column headers.
+2. Write a script to `$MIGRATION_DIR/_extract_billing.py` (or `.js` / shell — use whatever runtime is available) that:
+   - Reads the billing CSV/JSON file
+   - Groups line items by service description, sums cost per service
+   - Extracts top 3 SKU descriptions per service by cost
+   - Scans service and SKU descriptions (case-insensitive) for AI keywords: `vertex ai`, `ai platform`, `bigquery ml`, `generative ai`, `gemini`, `document ai`, `vision ai`, `speech-to-text`, `natural language`, `dialogflow`, `translation`
+   - Outputs JSON to stdout matching the schema in step 4
+3. Run the script: try `python3 _extract_billing.py` first. If `python3` is not found, try `python _extract_billing.py`. If neither is available, delete the script and fall back to loading `references/phases/discover/discover-billing.md`.
+4. Write the script's JSON output to `$MIGRATION_DIR/billing-profile.json` with this exact schema:
+
+   ```json
+   {
+     "summary": { "total_monthly_spend": 0.00 },
+     "services": [
+       {
+         "gcp_service": "Cloud Run",
+         "monthly_cost": 450.00,
+         "top_skus": [
+           { "sku_description": "Cloud Run - CPU Allocation Time", "monthly_cost": 300.00 }
+         ]
+       }
+     ],
+     "ai_signals": { "detected": false }
+   }
+   ```
+
+   Services sorted descending by `monthly_cost`. Only include services with cost > 0.
+
+5. Delete the script file after successful execution.
+
+**Critical:** Do **not** Read the billing file with the Read tool. Do **not** load `discover-billing.md` or `schema-discover-billing.md`.
+
+**1d. Live discovery (gcloud CLI):**
+Runs AFTER 1a–1c sub-discoveries complete, so its IaC merge sees their output.
+
+- If `$MIGRATION_DIR/live-capture/manifest.json` already exists (a prior capture,
+  e.g. a resumed run) → Load `references/phases/discover/discover-live.md` and
+  execute from its Step 3 (parse the existing captures; skip consent/preflight/
+  capture — they already happened).
+- Else if Terraform files were found in 1a → offer ONCE as an optional cross-check:
+  "I found Terraform covering your infrastructure. Want me to cross-check it
+  against your live GCP project via your authenticated gcloud CLI (read-only,
+  with your consent)? This catches resources managed outside Terraform."
+  On yes → Load `references/phases/discover/discover-live.md`. On no → continue
+  (do not re-ask this run).
+- Else if NO Terraform was found (regardless of whether 1b/1c found app code or
+  billing files — those cannot produce an infrastructure inventory) → offer live
+  discovery as the primary infrastructure source: "No Terraform detected — I can
+  discover your project's infrastructure directly via your authenticated gcloud
+  CLI (read-only, with your consent). Proceed?" On yes → Load
+  `references/phases/discover/discover-live.md`. On no → continue with whatever
+  1b/1c produced (billing-only design path remains the fallback).
+- If, after the offer, NO sub-discovery produced or will produce any artifact
+  (nothing found by 1a–1c AND live was declined or unavailable) → STOP and
+  output: "No GCP sources detected. Provide at least one source type (Terraform
+  files, application code, or billing exports), or re-run and accept live
+  discovery."
+
+**1e. OpenAI usage discovery (Admin API):**
+Runs AFTER 1a–1d complete, so its merge sees any `ai-workload-profile.json`.
+Load `references/phases/discover/discover-openai-api.md` when EITHER condition
+holds; otherwise skip silently:
+
+- `ai-workload-profile.json` exists with `summary.ai_source` of `openai` or
+  `both`
+- No billing files were found in 1c AND the user mentions OpenAI usage/spend
+
+The sub-file's Step 0 consent gate is the single consent point for this source
+— do not pre-ask here (loading the file only presents the gate; declining `[B]`
+exits cleanly and must not be re-asked this run). If
+`$MIGRATION_DIR/openai-capture/manifest.json` already exists (a resumed run),
+execute from its Step 3 (parse the existing captures; consent and capture
+already happened). This source supplements billing files — both may run in the
+same run.
+
+**1f. OpenRouter usage discovery (provisioning-key API):**
+
+Runs AFTER 1a–1d complete, so its merge sees any `ai-workload-profile.json`.
+Load `references/phases/discover/discover-openrouter-api.md` when EITHER
+condition holds; otherwise skip silently:
+
+- the app-code scan detected an OpenRouter transport (`gateway_type: llm_router`
+  with an `openrouter.ai` base URL / `OPENROUTER_API_KEY`)
+- No billing files were found in 1c AND the user mentions OpenRouter usage/spend
+
+The sub-file's Step 0 consent gate is the single consent point for this source
+— do not pre-ask here; declining `[B]` exits cleanly and must not be re-asked
+this run. If `$MIGRATION_DIR/openrouter-capture/manifest.json` already exists (a
+resumed run), check its `/activity` entry's `status` first — `ok` means capture
+already happened cleanly, so execute from Step 3 (parse the existing captures)
+as before; a deliberate `skipped` means the user already abandoned this source
+for this run — exit cleanly with no output and no re-ask, exactly like a Step 0
+consent decline (there is no `activity.json` to parse; do NOT execute Step 3 on
+a `skipped` status); a `failed` status means the prior attempt did NOT complete
+(see `discover-openrouter-api.md` Step 2d's retry rule) — resume from Step 2's
+retry path, not Step 3, since there is no `activity.json` to parse yet. The
+merge SUMS OpenRouter spend with a genuinely
+separate provider's spend (e.g. a Vertex billing CSV, or OpenAI-direct usage that
+did NOT flow through OpenRouter) into `source: "mixed"`. What it must NOT do is add
+a second line for traffic already inside the OpenRouter usage figure — OpenRouter
+is a router, so its `usage` already includes the upstream providers it fronts;
+adding an "openai via openrouter" line on top would double-count. The sub-file's
+merge handles this distinction.
+
+## Step 2: Check Outputs
+
+After all loaded sub-discoveries complete, check what artifacts were produced in `$MIGRATION_DIR/`:
+
+1. Check for output files:
+   - `gcp-resource-inventory.json` — IaC discovery succeeded
+   - `gcp-resource-clusters.json` — IaC discovery produced clusters
+   - `ai-workload-profile.json` — App code discovery (confidence ≥ 70%) and/or IaC Vertex-strong inference (`discover-iac.md` Step 7d)
+   - `billing-profile.json` — Billing data parsed (or, when `services[]` is empty and `warnings[]` is non-empty, a skip record: billing files seen but not a GCP/BigQuery export)
+   - `openai-usage-profile.json` — OpenAI Admin API usage captured
+   - `openrouter-usage-profile.json` — OpenRouter API usage captured
+2. **If NO artifacts were produced** (sub-discoveries ran but produced no output): STOP and output: "Discovery ran but produced no artifacts. Check that your input files contain valid GCP resources and try again."
+3. **Route output gate (fail closed):** For each triggered sub-discovery route, require the expected artifact(s) before completion:
+   - If `discover-iac.md` ran -> require `gcp-resource-inventory.json` and `gcp-resource-clusters.json`
+   - If `discover-app-code.md` ran:
+     - If its Step 4 exit gate applied (overall AI confidence **below** 70%) **and** no `ai-workload-profile.json` exists -> **allow completion** (app-code route may produce no AI profile).
+     - If Step 4 exit applied with confidence below 70% **but** `ai-workload-profile.json` exists with `metadata.profile_source` = `"iac_vertex"` -> **allow completion** (IaC-inferred profile retained).
+     - If execution continued to Steps 5–8 (confidence **≥** 70%) -> **require** `ai-workload-profile.json`.
+   - If `discover-live.md` ran AND capture happened (`$MIGRATION_DIR/live-capture/manifest.json` exists) -> require `gcp-resource-inventory.json` and `gcp-resource-clusters.json`, with `live_metadata` present in the inventory. (If the user declined consent or gcloud was unavailable, the sub-file exited cleanly — no artifact required.)
+   - If full `discover-billing.md` ran OR lightweight billing extraction ran -> require `billing-profile.json`
+   - If `discover-openai-api.md` ran AND capture happened (`$MIGRATION_DIR/openai-capture/manifest.json` exists) -> require `openai-usage-profile.json`; when `ai-workload-profile.json` also exists, require `metadata.sources_analyzed.openai_usage_api` = `true` in it. (If the user declined consent or had no Admin key, the sub-file exited cleanly — no artifact required.)
+   - If `discover-openrouter-api.md` ran AND capture happened (`$MIGRATION_DIR/openrouter-capture/manifest.json` exists) -> check the manifest's `/activity` entry: `status: "ok"` requires `openrouter-usage-profile.json` (and, when `ai-workload-profile.json` also exists, requires `metadata.sources_analyzed.openrouter_usage_api` = `true` in it); `status: "skipped"` requires NO artifact — the user deliberately abandoned this source with no per-model signal to build a profile from, which is a valid terminal outcome, not a failure; `status: "failed"` means the run did not reach a terminal state for this source and must not have completed Discover at all (the sub-file's own resume rule routes back to its retry path before Discover can finish). (If the user declined consent or had no provisioning key at Step 0/1, the sub-file exited cleanly before ever writing a manifest — no artifact required.)
+   - If any triggered route is missing its required artifact(s): STOP and output: "Discover route [name] did not produce required artifacts. Resolve the sub-discovery failure before completing Phase 1."
+
+## Step 3: Migration Preview
+
+Load and execute `references/phases/discover/discover-preview.md` to compute the migration preview. This produces `migration-preview.json` and the preview chat block. Skip only if Step 2 found no artifacts (already STOPped).
+
+## Completion Handoff Gate (Fail Closed)
+
+Load `shared/handoff-gates.md`. **Re-read from disk** every artifact below before checking.
+
+**Re-entry guard:** If `preferences.json` exists and `phases.clarify` is `"completed"`: STOP unless the user explicitly confirms re-running Discover. Emit:
+
+```
+GATE_FAIL | phase=discover | field=preferences.json | reason=stale_downstream
+```
+
+**On confirmed re-entry, before writing this run's new artifacts:** follow
+`shared/handoff-gates.md`'s "Retire stale route artifacts" rule — compare which routes are
+active in the artifacts already on disk against which routes THIS re-run's fresh discovery
+output will support, and delete any route's downstream artifacts (`aws-design-*.json`,
+`estimation-*.json`, `generation-*.json`) that were active before but will no longer be
+supported (e.g. a working billing export replaced by one this sub-file cannot read). This is
+necessary because Design/Estimate/Generate all select their route by file existence, not by
+`.phase-status.json`'s phase flags — resetting the flags alone leaves the stale files in place
+to be silently re-selected.
+
+**Checks (all must PASS):**
+
+1. At least one discovery artifact exists (`gcp-resource-inventory.json`, `ai-workload-profile.json`, or `billing-profile.json`). Neither `openai-usage-profile.json` nor `openrouter-usage-profile.json` satisfies this check on its own — each is a supplement (spend and volumes, no integration or capability detail; see SKILL.md Prerequisites) and cannot anchor a run by itself. A **skip-record** `billing-profile.json` (empty `services[]` **and** non-empty `warnings[]` — every billing file was an unrecognized non-GCP export, per `discover-billing.md`) ALSO does not satisfy this check on its own: it records that billing input was skipped, not parsed. The run must anchor on IaC, code scan, or AI discovery instead.
+2. Route output gates from Step 2 all pass.
+3. If any discovery artifact exists → `migration-preview.json` exists with `complexity_signal` set.
+
+**On any FAIL:** Emit `GATE_FAIL | phase=discover | field=<path> | reason=<missing|invalid|stale_downstream>`. **Do NOT modify artifacts to pass the gate.** **Do NOT update `.phase-status.json`.** Tell the user which sub-discovery to re-run.
+
+**On PASS:** Emit `HANDOFF_OK | phase=discover | artifacts=<comma-separated list of files verified>`.
+
+## Step 4: Update Phase Status
+
+Only after `HANDOFF_OK`. In the **same turn** as the output message below, use the Phase Status Update Protocol (read-merge-write) to update `.phase-status.json`:
+
+- Set `phases.discover` to `"completed"`
+- Set `current_phase` to `"clarify"`
+- Keep all other phase values unchanged unless already advanced by a resumed run
+
+Output to user — build message from whichever artifacts exist:
+
+- If `gcp-resource-inventory.json` exists: "Discovered X total resources across Y clusters."
+- If live discovery ran: "Live discovery captured N resources from project [id]." Plus, when IaC also ran: "Drift check: A resources live but not in Terraform, B in Terraform but not live, C config conflicts (live values used)." Plus, when `live_metadata.unmapped_asset_types` is non-empty: "Skipped M unmapped asset types (top: X, Y, Z) — full list in live_metadata."
+- If `ai-workload-profile.json` exists: "Detected AI workloads (source: [ai_source])."
+- If `billing-profile.json` exists with non-empty `services[]`: "Parsed billing data ($Z/month across N services)." If it is a skip record (empty `services[]`, non-empty `warnings[]`): "Skipped N billing files (not GCP/BigQuery exports) — see billing-profile.json warnings." (never report "$0/month across 0 services" as parsed spend).
+- If `openai-usage-profile.json` exists: "Captured OpenAI usage via Admin API ($X/month across M models)." Plus, when `metadata.capture_warnings` is non-empty: "W usage endpoints failed — affected categories are unknown, not zero (see profile metadata)."
+- If `openrouter-usage-profile.json` exists: "Captured OpenRouter usage via API ($X/month across M models)." Plus, when `metadata.capture_warnings` is non-empty: "W usage endpoints failed — affected categories are unknown, not zero (see profile metadata)."
+
+Append the preview block from Step 3 to the output message below.
+
+Format: "Phase 1 of 6 complete (Discover). [artifact summaries joined by space] [preview block from discover-preview.md Step 6]"
+
+Then: "Remaining: Clarify → Design → Estimate → Generate (+ optional Feedback). Next required step: Phase 2 — Clarify. Load `references/phases/clarify/clarify.md` now. Do not load Design, Estimate, or Generate until Clarify completes and `.phase-status.json` marks `phases.clarify` as `completed`."
+
+_Breadcrumbs are emitted only after outer-run `HANDOFF_OK` — never on `GATE_FAIL`, never from inner workshop reprices._
+
+## Output Files
+
+**Discover phase writes files to `$MIGRATION_DIR/`. Possible outputs (depending on what sub-discoverers find):**
+
+1. `gcp-resource-inventory.json` — from discover-iac.md
+2. `gcp-resource-clusters.json` — from discover-iac.md
+3. `ai-workload-profile.json` — from discover-app-code.md (confidence ≥ 70%, optionally merged) and/or discover-iac.md Step 7d (Vertex-strong IaC only)
+4. `billing-profile.json` — from discover-billing.md
+5. `openai-usage-profile.json` — from discover-openai-api.md (plus `openai-capture/` raw captures inside the gitignored run directory; the transient `.openai-admin-env` key file is deleted by that sub-file's Step 4 and is never a phase output)
+6. `openrouter-usage-profile.json` — from discover-openrouter-api.md (plus `openrouter-capture/` raw captures inside the gitignored run directory; the transient `.openrouter-key-env` key file is deleted by that sub-file's Step 4 and is never a phase output)
+7. `migration-preview.json` — from discover-preview.md (always written when any artifact exists)
+
+**No other files must be created:**
+
+- No README.md
+- No discovery-summary.md
+- No EXECUTION_REPORT.txt
+- No discovery-log.md
+- No documentation or report files
+
+All user communication via output messages only.
+
+## Error Handling
+
+- **Missing `.migration` directory**: Create it (Step 0)
+- **Missing `.migration/.gitignore`**: Create it automatically (Step 0) — prevents accidental commits
+- **No input files found for any sub-discoverer**: STOP with error message (Step 2)
+- **Sub-discoveries ran but produced no artifacts**: STOP with error message (Step 3)
+- **Sub-discoverer fails**: STOP and report exact failure point and which sub-discoverer failed
+- **Output file validation fails**: STOP and report schema errors
+- **Extra files created (README, reports, etc.)**: Failure. Discover must produce ONLY the JSON artifact files.
+
+## Scope Boundary
+
+**This phase covers Discover & Analysis ONLY.**
+
+FORBIDDEN — Do NOT include ANY of:
+
+- AWS service names, recommendations, or equivalents
+- Migration strategies, phases, or timelines
+- Terraform generation for AWS
+- Cost estimates or comparisons
+- Effort estimates
+
+**Your ONLY job: Inventory what exists in GCP. Nothing else.**

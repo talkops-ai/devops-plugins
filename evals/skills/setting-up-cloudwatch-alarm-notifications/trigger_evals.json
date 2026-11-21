@@ -1,61 +1,95 @@
 {
   "skill_name": "setting-up-cloudwatch-alarm-notifications",
   "companion_skills": [
-    "arc-region-switch",
-    "aws-billing-and-cost-management",
-    "aws-cloudformation",
-    "aws-compute",
-    "aws-deployment"
+    "troubleshooting-application-failures",
+    "live-site-incident-postmortem",
+    "prometheus-and-grafana-sre",
+    "setting-up-cloudtrail-multi-region"
   ],
   "queries": [
     {
-      "id": "trig-exp-01",
+      "id": "trig-pos-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Use `setting-up-cloudwatch-alarm-notifications` to help me design, validate, and troubleshoot setting up cloudwatch alarm notifications."
+      "prompt": "Set up an encrypted Amazon SNS topic with email and PagerDuty HTTPS webhook subscriptions and link it to our CloudWatch `HighCPU` alarm (`AlarmActions` and `OKActions`)."
     },
     {
-      "id": "trig-exp-02",
+      "id": "trig-pos-02",
       "quadrant": "explicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Walk me through best practices and production guardrails for setting up cloudwatch alarm notifications (`setting-up-cloudwatch-alarm-notifications`)."
+      "prompt": "Fix `KMSAccessDeniedException` (`cloudwatch.amazonaws.com` blocked by `alias/aws/sns`) and `PendingConfirmation` when configuring CloudWatch alarm SNS notifications."
     },
     {
-      "id": "trig-imp-01",
+      "id": "trig-pos-03",
       "quadrant": "implicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "We need a production-ready operational review and troubleshooting checklist covering: Sets up notification channels for CloudWatch alarms using SNS topics and subscriptions. Always use this skill when configuring alarm notifications — it creates encrypted SNS topics"
+      "prompt": "Safely add SNS `AlarmActions` to an existing CloudWatch alarm via `describe-alarms` -> `put-metric-alarm` without wiping `TreatMissingData` or `DatapointsToAlarm`."
     },
     {
-      "id": "trig-imp-02",
+      "id": "trig-pos-04",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "What are the most common production pitfalls, configuration parameters, and verification steps when operating setting up cloudwatch alarm notifications?"
+      "prompt": "Configure an SNS Topic Access Policy with `aws:SourceArn` confused-deputy guards, SMS E.164 formatting, and Composite Alarm `ActionsSuppressor`."
     },
     {
-      "id": "trig-ctx-01",
+      "id": "trig-pos-05",
       "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "During our `ap-south-1` sprint readiness review, audit our setting up cloudwatch alarm notifications setup in read-only mode and highlight top risks."
+      "prompt": "Compare CloudWatch Alarm -> SNS -> AWS Chatbot Slack notifications vs direct `lambda.alarms.cloudwatch.amazonaws.com` actions."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Help me configure and troubleshoot arc region switch exclusively without touching setting up cloudwatch alarm notifications."
+      "prompt": "Create a multi-region AWS CloudTrail trail logging API calls to S3."
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "Write a pure CSS keyframe bounce animation for a static HTML marketing landing page."
+      "prompt": "Run Athena SQL queries on VPC Flow Logs in `s3tablescatalog/aws-cloudwatch`."
+    },
+    {
+      "id": "trig-neg-03",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Discover CloudWatch Log Groups and analyze Python stack traces for a failing application."
+    },
+    {
+      "id": "trig-neg-04",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Write PromQL `histogram_quantile` queries on Amazon Managed Service for Prometheus."
+    },
+    {
+      "id": "trig-neg-05",
+      "quadrant": "near_miss_negative",
+      "split": "train",
+      "should_trigger": false,
+      "prompt": "Add Amazon Cognito PKCE login to a React frontend."
+    },
+    {
+      "id": "trig-neg-06",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Configure AWS Direct Connect BGP peering and SiteLink."
+    },
+    {
+      "id": "trig-neg-07",
+      "quadrant": "near_miss_negative",
+      "split": "val",
+      "should_trigger": false,
+      "prompt": "Use `asm-exec` to resolve Secrets Manager dynamic references."
     }
   ]
 }

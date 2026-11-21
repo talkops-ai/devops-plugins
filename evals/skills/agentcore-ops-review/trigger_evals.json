@@ -2,53 +2,98 @@
   "skill_name": "agentcore-ops-review",
   "companion_skills": [
     "agentcore-observability-setup",
-    "agents-build",
-    "agents-connect",
+    "bedrock-operation-review",
+    "bedrock-adoption-readiness",
     "agents-debug",
-    "agents-deploy"
+    "agents-harden"
   ],
   "queries": [
     {
-      "id": "trig-pos-01",
+      "id": "trig-exp-01",
       "quadrant": "explicit",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Which skill would help me run an AgentCore operational review? Just name it; do not run it."
+      "prompt": "Run a Well-Architected operational review (ORR) of our Amazon Bedrock AgentCore runtimes, gateways, and memories in ap-south-1."
     },
     {
-      "id": "trig-pos-02",
+      "id": "trig-exp-02",
+      "quadrant": "explicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Perform an AgentCore best-practices health check covering Runtime Resilience, Gateway Health, Memory & Knowledge Effectiveness, and Resource Hygiene."
+    },
+    {
+      "id": "trig-exp-03",
+      "quadrant": "explicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Audit our AgentCore estate for single-AZ VPC runtimes, endpoint version drift, unattached Gateway policy engines, and idle resources."
+    },
+    {
+      "id": "trig-imp-01",
+      "quadrant": "implicit",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "Audit our agent long-term memory pipelines to see if ingestion error rates are above 20% or if provisioned memories have zero extracted records."
+    },
+    {
+      "id": "trig-imp-02",
       "quadrant": "implicit",
       "split": "val",
       "should_trigger": true,
-      "prompt": "Is there a skill available for auditing Amazon Bedrock AgentCore runtimes and memory pipelines against best practices? Answer yes or no with the skill name; do not execute it."
+      "prompt": "Review our deployed AgentCore gateways and runtimes across regions for regional sprawl, duplicate clusters, and single-target gateway SPOFs."
     },
     {
-      "id": "trig-pos-03",
-      "quadrant": "explicit",
+      "id": "trig-imp-03",
+      "quadrant": "implicit",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "Give me a TAM-style operational posture report on our Bedrock AgentCore account with prioritized findings across `AC-RUN`, `GW`, `AC-MEM`, and `AC-UTIL` checks."
+    },
+    {
+      "id": "trig-ctx-01",
+      "quadrant": "contextual",
       "split": "train",
       "should_trigger": true,
-      "prompt": "Name the skill that covers AgentCore runtime resilience, gateway health, and memory effectiveness reviews. Do not run any audit."
+      "prompt": "Ahead of our quarterly architecture review, leadership wants to know if our production AgentCore runtimes, gateways, and long-term memories have hidden reliability SPOFs or abandoned test resources."
+    },
+    {
+      "id": "trig-ctx-02",
+      "quadrant": "contextual",
+      "split": "val",
+      "should_trigger": true,
+      "prompt": "We have 15 AgentCore runtimes and 6 memories deployed since last quarter — check which ones are stuck updating, lagging 3+ versions behind `latestVersion`, or sitting unused."
+    },
+    {
+      "id": "trig-ctx-03",
+      "quadrant": "contextual",
+      "split": "train",
+      "should_trigger": true,
+      "prompt": "FinOps asked if our zero-invocation AgentCore runtimes and memories are wasting money or creating security sprawl — run an operational hygiene assessment."
     },
     {
       "id": "trig-neg-01",
       "quadrant": "near_miss_negative",
       "split": "train",
       "should_trigger": false,
-      "prompt": "Write a Python script that sorts a list of numbers"
+      "prompt": "Bootstrap OpenTelemetry instrumentation, AWS Lambda OTEL Layer wrapper variables, and CloudWatch Transaction Search for an agent that emits zero spans.",
+      "expected_alternative_skill": "agentcore-observability-setup"
     },
     {
       "id": "trig-neg-02",
       "quadrant": "near_miss_negative",
       "split": "val",
       "should_trigger": false,
-      "prompt": "What's the weather forecast for Sydney this weekend?"
+      "prompt": "Run a 5-pillar Bedrock operational review of our Foundation Models, Guardrail intervention rates, Prompt Caching offload %, and Provisioned Throughput.",
+      "expected_alternative_skill": "bedrock-operation-review"
     },
     {
       "id": "trig-neg-03",
       "quadrant": "near_miss_negative",
-      "split": "train",
+      "split": "val",
       "should_trigger": false,
-      "prompt": "Create a CloudFormation template for an S3 bucket"
+      "prompt": "My agent hit an HTTP 402 Payment Required challenge on Base Sepolia — configure `~/.agents-pay/config.json` and per-payment USDC spend caps.",
+      "expected_alternative_skill": "agents-pay"
     }
   ]
 }

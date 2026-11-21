@@ -1,6 +1,8 @@
 node_modules/
 dist/
 build/
+!plugins/**/references/build/
+!plugins/**/references/build/**
 .dprint/
 .ruff_cache/
 .mise/

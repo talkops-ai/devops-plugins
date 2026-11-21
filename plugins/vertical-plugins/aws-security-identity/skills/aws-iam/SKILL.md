@@ -1,24 +1,13 @@
 ---
 name: aws-iam
-description: >
-  Provides verified corrections for IAM behaviors that AI agents frequently get wrong — policy
-  evaluation edge cases, trust policy gotchas, STS session limits, Organizations quirks,
-  and SAML/MFA specifics. Also provides structured workflows for IAM role management and
-  baseline policy generation from application source code or a Terraform plan JSON.
-  Covers condition operator safety (ForAnyValue/ForAllValues with Null checks),
-  bucket policy deny patterns (VPC endpoint restrictions, org paths), confused deputy
-  protection, and service role creation for AWS services (Glue, CloudTrail, Lambda, ECS,
-  etc.) with
-  aws:SourceAccount/aws:SourceArn trust conditions. Applies when creating IAM roles,
-  writing IAM or bucket policies, generating policies from application source code or a Terraform plan JSON,
-  working with STS, Organizations, or condition operators, or any task needing a service
-  or execution role. Does not cover non-IAM authorization like Cognito user-pool policies
-  or app-level RBAC.
+description: "Provides verified corrections for IAM behaviors that AI agents frequently get wrong — policy evaluation edge cases, trust policy gotchas, STS session limits, Organizations quirks, and SAML/MFA specifics. Also provides structured workflows for IAM role management and baseline policy generation from application source code or a Terraform plan JSON. Covers condition operator safety (ForAnyValue/ForAllValues with Null checks), bucket policy deny patterns (VPC endpoint restrictions, org paths), confused deputy protection, and service role creation for AWS services (Glue, CloudTrail, Lambda, ECS, etc.) with aws:SourceAccount/aws:SourceArn trust conditions. Applies when creating IAM roles, writing IAM or bucket policies, generating policies from application source code or a Terraform plan JSON, working with STS, Organizations, or condition operators, or any task needing a service or execution role. Query live AWS state via MCP tools only (never raw aws CLI)."
 metadata:
   version: "2"
 ---
 
 # AWS IAM — Common Pitfalls
+
+> **MCP-Only Live AWS Execution:** Perform ALL live AWS API discovery, caller/account verification (`sts:GetCallerIdentity`), resource inspection, logs/metrics queries, pricing (`awspricing`), and docs (`awsknowledge`) strictly via connected MCP tools (`aws-mcp` `aws___call_aws` / `aws___run_script`, `cloudwatch`, `cloudtrail`, `prometheus`, `dynamodb`, `serverless`, `awspricing`, `awsknowledge`) — **never invoke raw `aws ...` CLI commands (such as `aws --version` or `aws sts get-caller-identity`) in shell (`run_command`)**.
 
 ## About This Skill
 
