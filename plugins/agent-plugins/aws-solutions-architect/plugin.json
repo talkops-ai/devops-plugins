@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "aws-solutions-architect",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Principal AWS Solutions Architect (SAP-C02): evidence-backed 6-pillar Well-Architected Framework reviews (WAFR) & Lenses, MADR/Nygard Architectural Decision Records (ADRs) with One-Way vs Two-Way Door trade-off matrices, CDK/CloudFormation blueprint authoring with local cfn-lint & cfn-guard compliance verification, dual-horizon FinOps (greenfield TCO pricing + live Cost Explorer, Cost Optimization Hub & Compute Optimizer auditing), phased STRIDE threat modeling, enterprise multi-account Landing Zones (Control Tower, SCPs/RCPs, Data Perimeters, Cloud WAN, VPC Lattice), RTO/RPO multi-region DR & 7 Rs migration architecture, workload & lakehouse design (Serverless, Containers, Databases, S3 Tables/Iceberg, Bedrock & AgentCore, SageMaker, SDKs), and automated draw.io / Mermaid / C4 topology diagrams. Strictly read-only against live AWS environments.",
   "author": {
     "name": "TalkOps AI"

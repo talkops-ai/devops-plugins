@@ -1,6 +1,6 @@
 {
   "name": "aws-compute",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "EC2 and PaaS compute skills for the main agent: instance family selection (Graviton4, compute/memory/GPU), Auto Scaling Groups, EC2 Image Builder golden AMIs, Elastic Beanstalk, instance profiles, and CloudWatch/Compute Optimizer right-sizing.",
   "author": {
     "name": "TalkOps AI"

@@ -1,7 +1,7 @@
 {
   "name": "neo4j",
-  "version": "0.2.0",
-  "description": "Official Neo4j 2026.x read-only diagnostics and `A1`\u2013`A12` support runbooks for self-managed Neo4j on Amazon EKS, ECS, and EC2 with bundled Neo4j MCP configuration (`NEO4J_MCP_URL`, `NEO4J_MCP_AUTH`).",
+  "version": "0.3.0",
+  "description": "Official Neo4j 2026.x read-only diagnostics and `A1`–`A12` support runbooks for self-managed Neo4j on Amazon EKS, ECS, and EC2 with bundled Neo4j MCP configuration (`NEO4J_MCP_URL`, `NEO4J_MCP_AUTH`).",
   "author": {
     "name": "Neo4j, Inc.",
     "url": "https://neo4j.com"

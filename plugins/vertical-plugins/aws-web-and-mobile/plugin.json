@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "aws-web-and-mobile",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Full-stack web, mobile, and geospatial engineering for the main agent: AWS Amplify Gen 2 (TypeScript-first Auth/Cognito, Data/AppSync GraphQL, Functions/CDK, Storage/S3, Hosting CI/CD, AI Kit), AWS Blocks, and Amazon Location Service V2 (Maps, Places, Routes, Trackers, Geofences).",
   "author": {
     "name": "TalkOps AI"

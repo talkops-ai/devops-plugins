@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "aws-ai-ml",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Production Generative AI, Agentic AI, and ML engineering for the main agent: Amazon Bedrock (Converse API, Knowledge Bases, Guardrails, LLM migration), Amazon Bedrock AgentCore (Build, Connect, Deploy, Harden, Debug, Optimize, Pay) & Strands Agents, and Amazon SageMaker AI (Training, Inference, Fine-Tuning, MLOps Pipelines, Cost Estimation, Endpoint Diagnostics).",
   "author": {
     "name": "TalkOps AI"

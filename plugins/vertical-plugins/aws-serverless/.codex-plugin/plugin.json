@@ -1,6 +1,6 @@
 {
   "name": "aws-serverless",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Comprehensive serverless engineering skills for the main agent: AWS Lambda (SnapStart, Power Tuning, Durable Functions, Managed Instances), API Gateway, Step Functions, EventBridge (Buses, Scheduler, Pipes), SQS/SNS, Event Source Mappings, DynamoDB single-table modeling, Aurora DSQL, and SAM/CDK deployment.",
   "author": {
     "name": "TalkOps AI"

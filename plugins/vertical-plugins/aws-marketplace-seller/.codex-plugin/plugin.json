@@ -1,6 +1,6 @@
 {
   "name": "aws-marketplace-seller",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "End-to-end AWS Marketplace ISV & Seller engineering for the main agent: Metering & Entitlement APIs (ResolveCustomer, BatchMeterUsage, RegisterUsage, GetEntitlements), Catalog API product listings (StartChangeSet for SaaS, Container, AMI, GenAI), Private Offers & CPPO with Flexible Payment Scheduler, Agreement API, and SaaS control-plane onboarding.",
   "author": {
     "name": "TalkOps AI"

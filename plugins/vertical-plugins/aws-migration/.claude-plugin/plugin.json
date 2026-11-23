@@ -1,6 +1,6 @@
 {
   "name": "aws-migration",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Application, database, and cloud-to-AWS migration skills for the main agent: 7 Rs migration strategy & Strangler Fig decomposition, AWS Transform (.NET, Java, mainframe, SQL), AWS MGN & App2Container, DMS schema conversion & CDC cutover, Babelfish/SQL remediation, and Azure/GCP/Heroku to AWS migrations.",
   "author": {
     "name": "TalkOps AI"

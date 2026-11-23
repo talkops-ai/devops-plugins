@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "aws-messaging-and-streaming",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Event-driven messaging, streaming, and customer communications for the main agent: SQS, SNS, EventBridge (Event Buses, Pipes, Scheduler), Amazon MSK (Kafka), Kinesis Data Streams, Managed Service for Apache Flink, Amazon MQ, and End-User Messaging (SES, SMS, WhatsApp, Push).",
   "author": {
     "name": "TalkOps AI"

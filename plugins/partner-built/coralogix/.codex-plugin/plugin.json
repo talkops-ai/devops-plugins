@@ -1,6 +1,6 @@
 {
   "name": "coralogix",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Official Coralogix DataPrime log/span analytics, PromQL metrics, alerts, cases, service catalog, RUM, AI Center, dashboards, Olly, and TCO data-usage skills with bundled remote MCP configuration (`CORALOGIX_API_KEY`, `CORALOGIX_REGION`).",
   "author": {
     "name": "Coralogix",

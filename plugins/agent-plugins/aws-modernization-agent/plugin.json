@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "aws-modernization-agent",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Principal AWS Modernization Solutions Architect: 7 Rs portfolio assessment, Strangler Fig decomposition (API Gateway Canary + VPC Lattice), AWS Transform (.NET, Java, mainframe COBOL/Blu Age, SQL Server), App2Container & AWS MGN replatforming, DMS Schema Conversion & CDC cutover, application SQL/ORM remediation, and parity verification.",
   "author": {
     "name": "TalkOps AI"

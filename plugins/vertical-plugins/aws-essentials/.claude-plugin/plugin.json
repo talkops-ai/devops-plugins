@@ -1,6 +1,6 @@
 {
   "name": "aws-essentials",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Foundational AWS skills for the main agent: credential & SSO preflight verification, account baseline security/billing hygiene audits, and SDK best practices for Python (Boto3), JavaScript/TypeScript v3, and Swift.",
   "author": {
     "name": "TalkOps AI"

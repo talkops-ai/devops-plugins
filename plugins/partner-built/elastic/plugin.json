@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "elastic",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Official Elastic SRE incident triage, service reliability, Kubernetes investigation, Cloud Security Posture (CSP), and LLM observability skills with bundled Elastic Agent Builder MCP configuration (`ELASTIC_PROJECT`, `ELASTIC_REGION`, `ELASTIC_API_KEY`).",
   "author": {
     "name": "Elastic",

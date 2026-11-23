@@ -1,0 +1,58 @@
+name: Bug Report
+description: Report a bug in a plugin, skill, slash command, safety hook, MCP config, or eval script
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug! For security vulnerabilities or safety-hook bypasses, please use [GitHub Security Advisories](https://github.com/talkops-ai/devops-plugins/security/advisories/new) instead of a public issue.
+
+  - type: dropdown
+    id: host
+    attributes:
+      label: Agent Host / Runtime
+      options:
+        - Claude Code
+        - Codex
+        - Cursor
+        - Gemini CLI / Antigravity
+        - Windsurf / GitHub Copilot
+        - Local Validator / Eval Script (`scripts/`)
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: plugin
+    attributes:
+      label: Affected Plugin / Skill / Component
+      placeholder: "e.g., aws-sre-agent, amazon-aurora-postgresql, aws-mutation-gate.py"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the bug clearly, including what you expected to happen instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to Reproduce
+      placeholder: |
+        1. Install plugin ...
+        2. Run prompt / command ...
+        3. Observe error ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Output / Logs (Sanitized)
+      description: Paste relevant validator output, trace excerpts, or error logs. Please redact any real AWS account IDs, secrets, or tokens.
+      render: shell

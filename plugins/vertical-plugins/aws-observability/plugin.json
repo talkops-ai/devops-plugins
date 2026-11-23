@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "aws-observability",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Full-stack AWS observability and SRE incident triage for the main agent: CloudWatch (Metrics, Logs Insights, Alarms, SLOs, Synthetics Canaries), Application Signals APM, X-Ray, Amazon Managed Prometheus (PromQL burn rates) & Grafana, CloudTrail multi-region auditing, GenAI observability, and COE postmortems.",
   "author": {
     "name": "TalkOps AI"

@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "aws-cost-optimization",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Cloud FinOps and cost engineering for the main agent: Cost Explorer & Anomaly Detection, CUR 2.0 Athena SQL analytics, Compute Optimizer P95/P99 right-sizing, Savings Plans & Reserved Instance commitment modeling, Shift-Left IaC cost estimation, AWS Budgets/Invoicing governance, and waste elimination.",
   "author": {
     "name": "TalkOps AI"

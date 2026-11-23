@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "DevOps and cloud-operations plugins for AI agents. Agent plugins bind skills, commands, hooks, and MCP servers to a named specialist agent; vertical plugins apply skills to the main agent; partner-built plugins wrap third-party integrations.",
-    "version": "0.2.0"
+    "version": "0.3.0"
   },
   "plugins": [
     {
@@ -14,7 +14,7 @@
       "displayName": "AWS AgentCore Engineer",
       "source": "./plugins/agent-plugins/aws-agentcore-engineer",
       "description": "Principal AWS AgentCore and AIOps engineer: architects, scaffolds, deploys, secures, and operates AI agents on Amazon Bedrock AgentCore across Harness/Runtime, Hybrid LangGraph+Strands orchestration, Gateway and MCP 2026-07-28 tools, Two-Step OBO and Request/Response Interceptors, STM/LTM memory with KMS CMKs, Cedar policy engines, Two-Tier CI/CD evaluations, and Day-2 CloudWatch/X-Ray/Application Signals/CloudTrail AIOps.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "ai-agents",
       "keywords": [
         "aws",
@@ -42,7 +42,7 @@
       "displayName": "AWS Amplify Engineer",
       "source": "./plugins/agent-plugins/aws-amplify-engineer",
       "description": "Principal Full-Stack AWS Amplify Gen 2 Engineer: Cognito auth (OAuth/OIDC/SAML/Passkeys/triggers), AppSync/DynamoDB data models (relationships, GSIs, 6 auth modes, custom JS/RDS resolvers), S3 storage (path compiler rules, multi-bucket), Lambda & CDK escape hatches (resourceGroupName, AWS Blocks), Amplify AI Kit on Bedrock (a.conversation, a.generation, RAG), sandboxes, and Amplify Hosting CI/CD.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "fullstack",
       "keywords": [
         "aws",
@@ -70,7 +70,7 @@
       "displayName": "AWS Cloud Security Engineer",
       "source": "./plugins/agent-plugins/aws-cloud-security-engineer",
       "description": "Principal AWS cloud security and identity engineer: IAM policies, roles, Cognito auth boundaries, and Organizations SCP/RCP Data Perimeters; S3 Object Lock, Macie, KMS CMKs/grants, Private CA/mTLS, and Secrets Manager zero-plaintext rotation; VPC/TGW/Network Firewall/DNS Firewall/WAFv2/Shield Advanced perimeters; EKS/ECS/Lambda/EC2 and Bedrock GenAI workload security; AWS STRIDE threat modeling and multi-IaC validation (cfn-guard, cdk-nag, Terraform); Security Hub/GuardDuty/Inspector/Macie/Detective/Security Lake (OCSF) incident triage and CloudTrail forensics; and CIS/FSBP/Well-Architected posture audits.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "security",
       "keywords": [
         "aws",
@@ -100,7 +100,7 @@
       "displayName": "AWS Data Engineer",
       "source": "./plugins/agent-plugins/aws-data-engineer",
       "description": "Principal AWS data-lake, streaming, and analytics engineer: S3 Tables/Apache Iceberg, Glue Data Catalog/Connections/5.1+ PySpark & EMR Serverless ETL, Data Firehose/DMS CDC/Kinesis/MSK/Flink/AppFlow streaming, Athena & Redshift (Provisioned/Serverless), OpenSearch OSIS/ISM, Step Functions/EventBridge & MWAA (Airflow) orchestration, Glue Data Quality (DQDL), Lake Formation governance, and CDK/CloudFormation data IaC.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "data-analytics",
       "keywords": [
         "aws",
@@ -132,7 +132,7 @@
       "displayName": "AWS Database Engineer",
       "source": "./plugins/agent-plugins/aws-database-engineer",
       "description": "Principal AWS Database Architect, Reliability & Migration Engineer: engine selection and FinOps TCO (awspricing), schema/access-pattern and pgvector design, Performance Insights/CloudWatch Database Insights wait-event triage, DMS Schema Conversion and Full Load + CDC execution, Blue/Green & Global Database HA/DR, RDS Proxy multiplexing, online DDL, and Day-2 operations across Aurora DSQL, Aurora/RDS (PostgreSQL, MySQL, MariaDB, Oracle, SQL Server, Db2, RDS Custom), DynamoDB, ElastiCache/MemoryDB, DocumentDB, Neptune, Keyspaces, and Timestream for InfluxDB.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "database",
       "keywords": [
         "aws",
@@ -166,7 +166,7 @@
       "displayName": "AWS Deployment Engineer",
       "source": "./plugins/agent-plugins/aws-deployment-engineer",
       "description": "Principal AWS Deployment & Release Engineer: preflight account/VPC/quota discovery, codebase analysis, target architecture selection (ECS Fargate, ECS Express Mode, Lambda/SAM, Elastic Beanstalk, S3/CloudFront, Amplify Hosting, EC2 ASGs, AWS Batch), progressive delivery strategies (Blue/Green, Canary, Linear, Rolling, Immutable, CloudFront Continuous Deployment, AWS AppConfig feature flags), CI/CD pipelines (CodePipeline V2, CodeBuild, CodeDeploy, GitHub/GitLab OIDC), live FinOps cost estimation, cfn-guard-validated IaC synthesis, validated draw.io AWS4 architecture diagrams, and post-deploy CloudWatch verification and rollback.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "deployment",
       "keywords": [
         "aws",
@@ -198,7 +198,7 @@
       "displayName": "AWS DevSecOps Engineer",
       "source": "./plugins/agent-plugins/aws-devsecops-engineer",
       "description": "Principal AWS DevSecOps Engineer: native CloudWatch/Application Signals/X-Ray/CloudTrail incident root-cause investigations, Security Hub/GuardDuty/Inspector/Config posture triage, least-privilege IAM & Access Analyzer validation, Terraform/CDK/CloudFormation & VPC/WAFv2/KMS/S3 perimeter hardening, AWS Security Agent SAST code/diff scans, STRIDE threat modeling, DAST penetration testing, finding remediation, 5-gate release-readiness reviews, synthetic UAT testing, ECS/EKS/Lambda operations, FinOps cost optimization, and multi-account orchestration.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "devsecops",
       "keywords": [
         "aws",
@@ -227,7 +227,7 @@
       "displayName": "AWS EKS Upgrade Engineer",
       "source": "./plugins/agent-plugins/aws-eks-upgrade-engineer",
       "description": "Principal Amazon EKS Upgrade, Readiness & Lifecycle Engineer: runs strictly read-only, evidence-backed EKS Kubernetes version upgrade assessments combining 0-100% Readiness Scoring (8 areas, hard-blocker caps, HTML/Markdown reports) with 60+-gate AWS EKS Best Practices validation, Karpenter v1 migrations, AL2-to-AL2023 nodeadm migrations, VPC CNI surge capacity sizing, 7-day rollback checks, and Extended Support EOS cost analysis.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "author": {
         "name": "TalkOps AI",
         "url": "https://talkops.ai"
@@ -249,7 +249,7 @@
       "displayName": "AWS FinOps Engineer",
       "source": "./plugins/agent-plugins/aws-finops-engineer",
       "description": "Principal AWS FinOps and Cloud Financial Management (CFM) Engineer: 7-stage forensic cost audits, Cost Explorer & Cost Comparison MoM root-cause analysis, Cost Anomaly & CloudTrail correlation, CUR 2.0 and FOCUS 1.0/1.2+ Athena SQL analytics, Two-Key CloudWatch P95/P99 right-sizing validation (EC2, ASG, EBS, RDS/Aurora, Lambda, ECS/EKS), Compute Optimizer Automation rules, NAT Gateway/Cross-AZ/CloudFront data-transfer optimization, S3 Storage Lens & EBS gp3/io2 storage tuning, Savings Plans & RI commitment portfolio engineering (Effective Savings Rate, Purchase Analyzer simulations), GenAI/Bedrock/Containers/Database unit economics, Shift-Left IaC cost estimation (Infracost, CDK/Terraform pricing, BCM Pricing Calculator, cfn-lint/cfn-guard validation), and multi-account billing governance (Billing Views, Billing Conductor, Cost Categories, Budgets, Invoice Units, Credits, Enterprise Support, Free Tier).",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "finops",
       "keywords": [
         "aws",
@@ -278,7 +278,7 @@
       "displayName": "AWS IaC Engineer",
       "source": "./plugins/agent-plugins/aws-iac-engineer",
       "description": "Principal AWS Infrastructure-as-Code Engineer: architects, authors, validates, estimates cost, deploys, and troubleshoots AWS infrastructure across CDK, CloudFormation, Terraform/OpenTofu (aws + awscc), Pulumi, and Crossplane (Upbound provider-family-aws), with CodePipeline/GitHub Actions/GitLab CI/Atlantis/ArgoCD GitOps delivery and brownfield resource imports.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "infrastructure-as-code",
       "keywords": [
         "aws",
@@ -303,7 +303,7 @@
       "displayName": "AWS Location Engineer",
       "source": "./plugins/agent-plugins/aws-location-engineer",
       "description": "Principal AWS Location Service Engineer & Geospatial Architect: resourceless V2 Maps (`geo-maps`, MapLibre GL JS v5 / Native, 3D terrain/buildings, traffic, political views, static maps), Places V2 (`geo-places`, Autocomplete, Suggest, Geocode `MatchScores`, ReverseGeocode, SearchText, SearchNearby, GetPlace), bulk S3 Parquet Postal Address Validation Jobs (`location:StartJob` `ValidateAddress` for US/CA/UK/AU), Routes V2 (`geo-routes`, CalculateRoutes, CalculateRouteMatrix, CalculateIsolines, OptimizeWaypoints, SnapToRoads, truck & toll routing), stateful fleet Trackers & Geofences (`Geobuf`, `AssociateTrackerConsumer`, `ForecastGeofenceEvents`, `VerifyDevicePosition`, IoT Core MQTT `LocationAction`, EventBridge), V2 API key/Cognito/IAM security, CDK/Terraform/Amplify Gen 2 IaC, FinOps optimization, and migrations from Google Maps, Mapbox, or Legacy AWS Location V1.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "location",
       "keywords": [
         "aws",
@@ -335,7 +335,7 @@
       "displayName": "AWS Modernization Agent",
       "source": "./plugins/agent-plugins/aws-modernization-agent",
       "description": "Principal AWS Modernization Solutions Architect: 7 Rs portfolio assessment, Strangler Fig decomposition (API Gateway Canary + VPC Lattice), AWS Transform (.NET, Java, mainframe COBOL/Blu Age, SQL Server), App2Container & AWS MGN replatforming, DMS Schema Conversion & CDC cutover, application SQL/ORM remediation, and parity verification.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "migration",
       "keywords": [
         "aws",
@@ -360,7 +360,7 @@
       "displayName": "AWS Platform Engineer",
       "source": "./plugins/agent-plugins/aws-platform-engineer",
       "description": "Principal AWS Platform Engineer and Internal Developer Platform (IDP) Architect — translates high-level Developer and QA intent into production-grade, secure-by-default, cost-aware AWS Golden Paths, Infrastructure-as-Code (CDK, CloudFormation, SAM, Terraform), multi-account landing zones (Control Tower, SCPs/RCPs, Shared VPCs, IPAM, VPC Lattice), compute/containers/serverless/networking/storage/messaging/stateful data platforms, and Day-2 SRE incident triage.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "platform",
       "keywords": [
         "aws",
@@ -403,7 +403,7 @@
       "displayName": "AWS SageMaker Engineer",
       "source": "./plugins/agent-plugins/aws-sagemaker-engineer",
       "description": "Principal Amazon SageMaker AI Solutions Architect & ML Platform Engineer: Well-Architected ML design, Studio Domain VpcOnly/PrivateLink/KMS/IAM IaC, pre-provisioning FinOps cost estimation, Foundation Model SFT/DPO/RLVR/RLAIF customization, custom/distributed training (@remote, Estimators, Vision/SAM, DDP/FSDP, Spot, Autopilot v2), production inference (InferenceComponent bin-packing, Scale-to-Zero, LMI/vLLM, Inferentia2, MCE, MME, Serverless, Async, Batch), MLOps Pipelines/Feature Store/Model Registry/MLflow/Catalog SQL, Deployment Guardrails, Model Monitor drift detection, and HyperPod EKS/Slurm operations.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "ai-ml",
       "keywords": [
         "aws",
@@ -429,7 +429,7 @@
       "displayName": "AWS Serverless Engineer",
       "source": "./plugins/agent-plugins/aws-serverless-engineer",
       "description": "Principal AWS Serverless Architect & Engineer: Lambda (Event Functions, Durable Functions, MicroVMs, Managed Instances, Web Adapter), API Gateway (HTTP/REST/WebSocket), Step Functions (Standard/Express/Distributed Map), EventBridge (Buses, Pipes, Scheduler), SQS/SNS async messaging, Event Source Mappings (SQS/Kinesis/DynamoDB/Kafka), DynamoDB access-pattern modeling, Aurora DSQL, Cognito/IAM/WAFv2 security, CloudWatch/X-Ray triage, FinOps cost estimation, and SAM/CDK deployment.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "serverless",
       "keywords": [
         "aws",
@@ -459,7 +459,7 @@
       "displayName": "AWS Solutions Architect",
       "source": "./plugins/agent-plugins/aws-solutions-architect",
       "description": "Principal AWS Solutions Architect (SAP-C02): evidence-backed 6-pillar Well-Architected Framework reviews (WAFR) & Lenses, MADR/Nygard Architectural Decision Records (ADRs) with One-Way vs Two-Way Door trade-off matrices, CDK/CloudFormation blueprint authoring with local cfn-lint & cfn-guard compliance verification, dual-horizon FinOps (greenfield TCO pricing + live Cost Explorer, Cost Optimization Hub & Compute Optimizer auditing), phased STRIDE threat modeling, enterprise multi-account Landing Zones (Control Tower, SCPs/RCPs, Data Perimeters, Cloud WAN, VPC Lattice), RTO/RPO multi-region DR & 7 Rs migration architecture, workload & lakehouse design (Serverless, Containers, Databases, S3 Tables/Iceberg, Bedrock & AgentCore, SageMaker, SDKs), and automated draw.io / Mermaid / C4 topology diagrams. Strictly read-only against live AWS environments.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "architecture",
       "keywords": [
         "aws",
@@ -501,7 +501,7 @@
       "displayName": "AWS SRE Agent",
       "source": "./plugins/agent-plugins/aws-sre-agent",
       "description": "Principal AWS Site Reliability & Production Engineer: live-site incident command, root-cause investigations, and Correction of Errors (COE) postmortems; CloudWatch metrics, alarms, and Logs Insights, Application Signals SLOs, X-Ray/ADOT traces, Amazon Managed Prometheus (PromQL), and CloudTrail change forensics; EKS (pods, Karpenter, Auto Mode, VPC CNI, CoreDNS, IRSA/Pod Identity), ECS/Fargate (stopped tasks, circuit breakers, Express Mode), Lambda/API Gateway/Step Functions, EC2/ASG/ALB, RDS/Aurora/DynamoDB/ElastiCache/SQS, and VPC/TGW/Cloud WAN/Network Firewall diagnostics; Resilience Hub, Fault Injection Service (FIS), and Route 53 ARC (Zonal Shift, Region Switch) engineering; CloudFormation/CDK remediation validation (cfn-lint, cfn-guard); observability/compute FinOps right-sizing; and AWS Support escalation.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "observability",
       "keywords": [
         "aws",
@@ -534,7 +534,7 @@
       "displayName": "AWS Startup Advisor",
       "source": "./plugins/agent-plugins/aws-startup-advisor",
       "description": "Principal AWS Startup Solutions Architect & Fractional Startup CTO: stage-calibrated architecture and unit-economics guidance (Pre-Revenue/MVP through Series B+), AWS Activate credit runway & 26-point account security/spend-leak audits, vibe-coded prototype migrations (Lovable, Bolt.new, Replit, v0), GCP/Azure/Heroku-to-AWS migrations, provider-neutral AI/LLM & OpenRouter migrations to Amazon Bedrock (`bedrock-mantle` GPT-5.x & Converse), deterministic AI agent runtime selection (AgentCore, ECS, EKS, Lambda, MicroVMs, Temporal), DevOps Agent operations, and AWS Activate offers.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "startup",
       "keywords": [
         "aws",
@@ -569,7 +569,7 @@
       "displayName": "Kubernetes Delivery Engineer",
       "source": "./plugins/agent-plugins/kubernetes-delivery-engineer",
       "description": "Principal Kubernetes Application Onboarding, GitOps & Progressive Delivery Engineer: end-to-end workload packaging and release management with Helm (chart discovery, values validation, security scanning, atomic upgrades, rollbacks), GitOps continuous delivery with ArgoCD (repository/project onboarding, sync orchestration, drift remediation, history rollbacks), progressive delivery with Argo Rollouts (Deployment-to-Rollout migration, canary/blue-green strategies, Prometheus AnalysisTemplate gating, experiments), multi-stage freight promotion pipelines with Kargo (Warehouse discovery, Stage DAGs, freight promotion/approval, stage verification), and ingress/traffic routing with Traefik v3 (HTTP/TCP/UDP IngressRoutes, weighted canary services, traffic mirroring, middlewares, TLS/mTLS policies, NGINX annotation migration, and security posture auditing).",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "author": {
         "name": "TalkOps AI"
       },
@@ -597,7 +597,7 @@
       "displayName": "Kubernetes Observability Engineer",
       "source": "./plugins/agent-plugins/kubernetes-observability-engineer",
       "description": "Principal Kubernetes Observability, Telemetry & Monitoring SRE Engineer: full-stack metrics, alerting, distributed tracing, log analytics, and OpenTelemetry pipeline engineering across Prometheus 3.0+ (PromQL 3.0, Native Histograms, OTLP ingestion, RED/SLO multi-burn-rate triage, exemplar extraction, multi-mode rule unit testing & deployment, TSDB cardinality FinOps, zero-knowledge ServiceMonitor/PodMonitor/Probe CRDs, 19-exporter onboarding), Alertmanager (incident correlation, routing tree simulation, inhibition analysis, SP001-SP010 silence governance, missed-notification diagnostics), Grafana Tempo (TraceQL 2.x/3.x & TraceQL Metrics, critical-path latency regression diffs, service topology, TempoStack/TempoMonolithic operator CRs), Grafana Loki 3.x & Loki Operator (discovery-first 4-stage LogQL authoring, structured metadata & Bloom filter FinOps, N-to-1 service error triage, release regression comparison, cross-service trace_id log correlation, Loki Ruler alerting/recording rules, Compactor PII deletion, LokiStack CRDs), and OpenTelemetry on Kubernetes (OpenTelemetryCollector provisioning, auto-instrumentation & eBPF/OBI zero-code telemetry, OTTL cardinality filtering, tail sampling, spanmetrics/servicegraph connectors, and observability security posture auditing).",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "author": {
         "name": "TalkOps AI"
       },
@@ -627,7 +627,7 @@
       "displayName": "AWS AI and Machine Learning",
       "source": "./plugins/vertical-plugins/aws-ai-ml",
       "description": "Production Generative AI, Agentic AI, and ML engineering for the main agent: Amazon Bedrock (Converse API, Knowledge Bases, Guardrails, LLM migration), Amazon Bedrock AgentCore (Build, Connect, Deploy, Harden, Debug, Optimize, Pay) & Strands Agents, and Amazon SageMaker AI (Training, Inference, Fine-Tuning, MLOps Pipelines, Cost Estimation, Endpoint Diagnostics).",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "ai-ml",
       "keywords": [
         "aws",
@@ -652,7 +652,7 @@
       "displayName": "AWS Analytics",
       "source": "./plugins/vertical-plugins/aws-analytics",
       "description": "Modern data lakehouse and analytics engineering for the main agent: S3 Tables (Apache Iceberg), AWS Glue (Catalog, Spark ETL, Data Quality DQDL), Lake Formation governance, Amazon Athena, Amazon Redshift, Amazon OpenSearch, EMR, MWAA (Airflow), Kinesis/MSK streaming ingestion, and system-table auditing.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "data-analytics",
       "keywords": [
         "aws",
@@ -677,7 +677,7 @@
       "displayName": "AWS Compute",
       "source": "./plugins/vertical-plugins/aws-compute",
       "description": "EC2 and PaaS compute skills for the main agent: instance family selection (Graviton4, compute/memory/GPU), Auto Scaling Groups, EC2 Image Builder golden AMIs, Elastic Beanstalk, instance profiles, and CloudWatch/Compute Optimizer right-sizing.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "compute",
       "keywords": [
         "aws",
@@ -699,7 +699,7 @@
       "displayName": "AWS Containers",
       "source": "./plugins/vertical-plugins/aws-containers",
       "description": "Production container operations for the main agent: Amazon EKS (Auto Mode, Karpenter, Pod Identity, VPC CNI, CoreDNS), Amazon ECS (Fargate, Express Mode, circuit breakers, stopped-task triage), ECR build/push, and container runtime security.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "containers",
       "keywords": [
         "aws",
@@ -722,7 +722,7 @@
       "displayName": "AWS Cost Optimization",
       "source": "./plugins/vertical-plugins/aws-cost-optimization",
       "description": "Cloud FinOps and cost engineering for the main agent: Cost Explorer & Anomaly Detection, CUR 2.0 Athena SQL analytics, Compute Optimizer P95/P99 right-sizing, Savings Plans & Reserved Instance commitment modeling, Shift-Left IaC cost estimation, AWS Budgets/Invoicing governance, and waste elimination.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "finops",
       "keywords": [
         "aws",
@@ -745,7 +745,7 @@
       "displayName": "AWS Databases",
       "source": "./plugins/vertical-plugins/aws-databases",
       "description": "Full-lifecycle AWS database engineering for the main agent: Aurora (PostgreSQL, MySQL, DSQL), RDS (PostgreSQL, MySQL, MariaDB, Oracle, SQL Server, Db2), DynamoDB, DocumentDB, ElastiCache (Valkey/Redis/Memcached), Keyspaces, Neptune, Timestream for InfluxDB, Performance Insights wait-event triage, Blue/Green deployments, and DMS migrations.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "database",
       "keywords": [
         "aws",
@@ -769,7 +769,7 @@
       "displayName": "AWS End User Computing",
       "source": "./plugins/vertical-plugins/aws-end-user-computing",
       "description": "AWS End User Computing (EUC) fleet architecture and operations for the main agent: Amazon WorkSpaces Personal & Pools, Active Directory & IAM Identity Center integration, WSP streaming tuning, AutoStop/AlwaysOn cost optimization, Amazon AppStream 2.0 (Elastic, On-Demand, Always-On fleets & Image Builder), WorkSpaces Secure Browser, EUC CloudWatch triage, and WorkSpaces Agent Access.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "end-user-computing",
       "keywords": [
         "aws",
@@ -792,7 +792,7 @@
       "displayName": "AWS Essentials",
       "source": "./plugins/vertical-plugins/aws-essentials",
       "description": "Foundational AWS skills for the main agent: credential & SSO preflight verification, account baseline security/billing hygiene audits, and SDK best practices for Python (Boto3), JavaScript/TypeScript v3, and Swift.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "foundation",
       "keywords": [
         "aws",
@@ -814,7 +814,7 @@
       "displayName": "AWS Infrastructure as Code",
       "source": "./plugins/vertical-plugins/aws-infrastructure-as-code",
       "description": "End-to-end AWS IaC and deployment skills for the main agent: AWS CDK, CloudFormation, Terraform/OpenTofu, Pulumi, Crossplane/ACK, brownfield resource import, preflight discovery, deployment verification/rollback, and vibe-coded app migration.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "infrastructure-as-code",
       "keywords": [
         "aws",
@@ -838,7 +838,7 @@
       "displayName": "AWS Marketplace Seller",
       "source": "./plugins/vertical-plugins/aws-marketplace-seller",
       "description": "End-to-end AWS Marketplace ISV & Seller engineering for the main agent: Metering & Entitlement APIs (ResolveCustomer, BatchMeterUsage, RegisterUsage, GetEntitlements), Catalog API product listings (StartChangeSet for SaaS, Container, AMI, GenAI), Private Offers & CPPO with Flexible Payment Scheduler, Agreement API, and SaaS control-plane onboarding.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "marketplace",
       "keywords": [
         "aws",
@@ -862,7 +862,7 @@
       "displayName": "AWS Messaging and Streaming",
       "source": "./plugins/vertical-plugins/aws-messaging-and-streaming",
       "description": "Event-driven messaging, streaming, and customer communications for the main agent: SQS, SNS, EventBridge (Event Buses, Pipes, Scheduler), Amazon MSK (Kafka), Kinesis Data Streams, Managed Service for Apache Flink, Amazon MQ, and End-User Messaging (SES, SMS, WhatsApp, Push).",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "messaging",
       "keywords": [
         "aws",
@@ -887,7 +887,7 @@
       "displayName": "AWS Migration and Modernization",
       "source": "./plugins/vertical-plugins/aws-migration",
       "description": "Application, database, and cloud-to-AWS migration skills for the main agent: 7 Rs migration strategy & Strangler Fig decomposition, AWS Transform (.NET, Java, mainframe, SQL), AWS MGN & App2Container, DMS schema conversion & CDC cutover, Babelfish/SQL remediation, and Azure/GCP/Heroku to AWS migrations.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "migration",
       "keywords": [
         "aws",
@@ -911,7 +911,7 @@
       "displayName": "AWS Networking",
       "source": "./plugins/vertical-plugins/aws-networking",
       "description": "Enterprise AWS networking and edge perimeter skills for the main agent: multi-AZ VPC design, Transit Gateway, Cloud WAN, VPC Lattice, IPAM, VPC Endpoints/PrivateLink, Direct Connect, Site-to-Site VPN, Route 53, CloudFront, WAF, Shield Advanced, Network Firewall, and Reachability Analyzer diagnostics.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "networking",
       "keywords": [
         "aws",
@@ -935,7 +935,7 @@
       "displayName": "AWS Observability",
       "source": "./plugins/vertical-plugins/aws-observability",
       "description": "Full-stack AWS observability and SRE incident triage for the main agent: CloudWatch (Metrics, Logs Insights, Alarms, SLOs, Synthetics Canaries), Application Signals APM, X-Ray, Amazon Managed Prometheus (PromQL burn rates) & Grafana, CloudTrail multi-region auditing, GenAI observability, and COE postmortems.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "observability",
       "keywords": [
         "aws",
@@ -959,7 +959,7 @@
       "displayName": "AWS Quantum Computing",
       "source": "./plugins/vertical-plugins/aws-quantum-computing",
       "description": "Quantum computing and hybrid algorithm engineering on Amazon Braket for the main agent: OpenQASM 3.0 & Braket SDK circuit design, Managed Simulators (SV1, DM1, TN1), QPU hardware targeting (IonQ, Rigetti, IQM, QuEra), Braket Hybrid Jobs (VQE, QAOA, PennyLane adjoint differentiation), pre-execution shot/task cost governance, and VPC/KMS security.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "quantum",
       "keywords": [
         "aws",
@@ -982,7 +982,7 @@
       "displayName": "AWS Resilience",
       "source": "./plugins/vertical-plugins/aws-resilience",
       "description": "Resilience engineering, disaster recovery, and chaos testing for the main agent: AWS Resilience Hub assessments, AWS Fault Injection Service (FIS) chaos experiments with CloudWatch stop conditions, Route 53 Application Recovery Controller (ARC) zonal shift/region switch, and multi-region RTO/RPO DR architecture.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "resilience",
       "keywords": [
         "aws",
@@ -1006,7 +1006,7 @@
       "displayName": "AWS Security and Identity",
       "source": "./plugins/vertical-plugins/aws-security-identity",
       "description": "Cloud security, identity governance, and incident forensics for the main agent: IAM least-privilege & Access Analyzer, AWS Organizations SCPs/RCPs, KMS & Secrets Manager, Security Hub CSPM (OCSF), GuardDuty & CloudTrail incident triage, WAF/Network Firewall perimeter hardening, container workload security, and STRIDE threat modeling.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "security",
       "keywords": [
         "aws",
@@ -1031,7 +1031,7 @@
       "displayName": "AWS Serverless",
       "source": "./plugins/vertical-plugins/aws-serverless",
       "description": "Comprehensive serverless engineering skills for the main agent: AWS Lambda (SnapStart, Power Tuning, Durable Functions, Managed Instances), API Gateway, Step Functions, EventBridge (Buses, Scheduler, Pipes), SQS/SNS, Event Source Mappings, DynamoDB single-table modeling, Aurora DSQL, and SAM/CDK deployment.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "serverless",
       "keywords": [
         "aws",
@@ -1055,7 +1055,7 @@
       "displayName": "AWS Storage",
       "source": "./plugins/vertical-plugins/aws-storage",
       "description": "Cloud storage architecture, security, and operations for the main agent: Amazon S3 (Storage Lens, Intelligent-Tiering, Object Lock, S3 Tables), EFS performance & mount troubleshooting, EBS gp3/io2, FSx, AWS Backup vault lock, KMS data protection, and cross-region DR replication.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "storage",
       "keywords": [
         "aws",
@@ -1078,7 +1078,7 @@
       "displayName": "AWS Web and Mobile",
       "source": "./plugins/vertical-plugins/aws-web-and-mobile",
       "description": "Full-stack web, mobile, and geospatial engineering for the main agent: AWS Amplify Gen 2 (TypeScript-first Auth/Cognito, Data/AppSync GraphQL, Functions/CDK, Storage/S3, Hosting CI/CD, AI Kit), AWS Blocks, and Amazon Location Service V2 (Maps, Places, Routes, Trackers, Geofences).",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "fullstack",
       "keywords": [
         "aws",
@@ -1102,7 +1102,7 @@
       "displayName": "AWS Well-Architected",
       "source": "./plugins/vertical-plugins/aws-well-architected",
       "description": "Principal Solutions Architecture toolkit for the main agent: AWS Well-Architected Six-Pillar reviews, MADR 3.0 Architecture Decision Records (ADRs), Draw.io & Mermaid architecture diagrams, STRIDE threat modeling, multi-account Landing Zone design, and multi-region DR architecture.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "architecture",
       "keywords": [
         "aws",
@@ -1124,7 +1124,7 @@
       "displayName": "Bronto Log Analytics",
       "source": "./plugins/partner-built/bronto",
       "description": "Official Bronto dataset/collection discovery, SQL-style log search and time-series aggregation, and production error spike investigation skills with bundled remote MCP configuration (`BRONTO_API_KEY`, `BRONTO_REGION`).",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "author": {
         "name": "Bronto",
         "url": "https://bronto.io"
@@ -1143,7 +1143,7 @@
       "displayName": "Coralogix",
       "source": "./plugins/partner-built/coralogix",
       "description": "Official Coralogix DataPrime log/span analytics, PromQL metrics, alerts, cases, service catalog, RUM, AI Center, dashboards, Olly, and TCO data-usage skills with bundled remote MCP configuration (`CORALOGIX_API_KEY`, `CORALOGIX_REGION`).",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "author": {
         "name": "Coralogix",
         "url": "https://coralogix.com"
@@ -1186,7 +1186,7 @@
       "displayName": "Elastic Observability & Security",
       "source": "./plugins/partner-built/elastic",
       "description": "Official Elastic SRE incident triage, service reliability, Kubernetes investigation, Cloud Security Posture (CSP), and LLM observability skills with bundled Elastic Agent Builder MCP configuration (`ELASTIC_PROJECT`, `ELASTIC_REGION`, `ELASTIC_API_KEY`).",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "author": {
         "name": "Elastic",
         "url": "https://www.elastic.co"
@@ -1205,7 +1205,7 @@
       "displayName": "Honeycomb",
       "source": "./plugins/partner-built/honeycomb",
       "description": "Official Honeycomb high-cardinality production investigation, wide-event/BubbleUp query patterns, OpenTelemetry metrics, SLO burn-rate & trigger triage, trace verification, and board creation skills with bundled remote MCP configuration (`HONEYCOMB_API_KEY`, `HONEYCOMB_MCP_URL`).",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "author": {
         "name": "Honeycomb.io",
         "url": "https://www.honeycomb.io"
@@ -1224,7 +1224,7 @@
       "displayName": "LaunchDarkly",
       "source": "./plugins/partner-built/launchdarkly",
       "description": "Official LaunchDarkly feature flag management, progressive guarded rollouts, experimentation, observability (logs, traces, errors, sessions), and AI Config / Agent Control graph skills with bundled remote MCP configuration (`LAUNCHDARKLY_ACCESS_TOKEN`).",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "author": {
         "name": "LaunchDarkly",
         "url": "https://launchdarkly.com"
@@ -1243,7 +1243,7 @@
       "displayName": "Neo4j Support Specialist",
       "source": "./plugins/partner-built/neo4j",
       "description": "Official Neo4j 2026.x read-only diagnostics and `A1`–`A12` support runbooks for self-managed Neo4j on Amazon EKS, ECS, and EC2 with bundled Neo4j MCP configuration (`NEO4J_MCP_URL`, `NEO4J_MCP_AUTH`).",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "author": {
         "name": "Neo4j, Inc.",
         "url": "https://neo4j.com"

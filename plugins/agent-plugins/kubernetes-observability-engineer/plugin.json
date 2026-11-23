@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "kubernetes-observability-engineer",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Principal Kubernetes Observability, Telemetry & Monitoring SRE Engineer: full-stack metrics, alerting, distributed tracing, log analytics, and OpenTelemetry pipeline engineering across Prometheus 3.0+ (PromQL 3.0, Native Histograms, OTLP ingestion, RED/SLO multi-burn-rate triage, exemplar extraction, multi-mode rule unit testing & deployment, TSDB cardinality FinOps, zero-knowledge ServiceMonitor/PodMonitor/Probe CRDs, 19-exporter onboarding), Alertmanager (incident correlation, routing tree simulation, inhibition analysis, SP001-SP010 silence governance, missed-notification diagnostics), Grafana Tempo (TraceQL 2.x/3.x & TraceQL Metrics, critical-path latency regression diffs, service topology, TempoStack/TempoMonolithic operator CRs), Grafana Loki 3.x & Loki Operator (discovery-first 4-stage LogQL authoring, structured metadata & Bloom filter FinOps, N-to-1 service error triage, release regression comparison, cross-service trace_id log correlation, Loki Ruler alerting/recording rules, Compactor PII deletion, LokiStack CRDs), and OpenTelemetry on Kubernetes (OpenTelemetryCollector provisioning, auto-instrumentation & eBPF/OBI zero-code telemetry, OTTL cardinality filtering, tail sampling, spanmetrics/servicegraph connectors, and observability security posture auditing).",
   "author": {
     "name": "TalkOps AI"
