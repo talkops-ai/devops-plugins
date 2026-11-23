@@ -153,7 +153,7 @@ Add your plugin entry to **both**:
 
 ### 4. Update Repository Docs & Attribution
 
-- Add your plugin to [README.md](./README.md) (update counts and tables) and the relevant category index (`plugins/<category>/README.md`).
+- Add your plugin to [README.md](./README.md) (in the appropriate collapsible catalog table; avoid adding hardcoded counts) and the relevant category index (`plugins/<category>/README.md`).
 - If you add or change MCP servers, update [docs/mcp-server-coverage.md](./docs/mcp-server-coverage.md).
 - If your plugin adapts or redistributes third-party upstream skills (especially partner-built plugins), keep upstream files unmodified where required by license (e.g., MPL-2.0) and add full attribution to [NOTICE](./NOTICE).
 

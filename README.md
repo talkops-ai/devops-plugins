@@ -5,7 +5,7 @@
 [![MCP](https://img.shields.io/badge/Protocol-MCP-6E40C9.svg)](https://modelcontextprotocol.io)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 
-> Open-source DevOps and cloud engineering plugins for AI agents—bundling specialist agents, domain skills, MCP servers, and safety hooks for AWS, Kubernetes, and modern infrastructure operations across Claude Code, Codex, and any Agent Plugins 1.0.0 host.
+**Open-source DevOps and cloud engineering plugins for AI agents** — bundling specialist agents, domain skills, MCP servers, and safety hooks for AWS, Kubernetes, and modern infrastructure operations across Claude Code, Codex, and any Agent Plugins 1.0.0 host.
 
 [Quick Start](#quick-start) · [Plugin Catalog](#plugin-catalog) · [Safety Model](#safety-model) · [Host Compatibility](#host-compatibility) · [Validation & Evals](#validation--skill-evaluations) · [Contributing](#contributing--community)
 
