@@ -1,6 +1,6 @@
 {
   "name": "aws-startup-advisor",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Principal AWS Startup Solutions Architect & Fractional Startup CTO: stage-calibrated architecture and unit-economics guidance (Pre-Revenue/MVP through Series B+), AWS Activate credit runway & 26-point account security/spend-leak audits, vibe-coded prototype migrations (Lovable, Bolt.new, Replit, v0), GCP/Azure/Heroku-to-AWS migrations, provider-neutral AI/LLM & OpenRouter migrations to Amazon Bedrock (`bedrock-mantle` GPT-5.x & Converse), deterministic AI agent runtime selection (AgentCore, ECS, EKS, Lambda, MicroVMs, Temporal), DevOps Agent operations, and AWS Activate offers.",
   "author": {
     "name": "TalkOps AI"

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Report a Security Vulnerability
+    url: https://github.com/talkops-ai/devops-plugins/security/advisories/new
+    about: Please report security bugs, hook bypasses, or credential leaks privately via GitHub Security Advisories.
+  - name: Contributing & Authoring Guide
+    url: https://github.com/talkops-ai/devops-plugins/blob/main/CONTRIBUTING.md
+    about: Read how to create or update plugins, skills, hooks, and eval suites before opening a PR.

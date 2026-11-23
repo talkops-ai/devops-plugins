@@ -1,0 +1,49 @@
+name: New Plugin or Skill Proposal
+description: Propose a new agent plugin, vertical plugin, partner-built plugin, or canonical skill
+title: "[Proposal]: "
+labels: ["enhancement"]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Contribution Category
+      options:
+        - Agent plugin (plugins/agent-plugins/)
+        - Vertical plugin (plugins/vertical-plugins/)
+        - Partner-built plugin (plugins/partner-built/)
+        - New skill in an existing plugin
+        - New slash command or safety hook
+    validations:
+      required: true
+
+  - type: input
+    id: name
+    attributes:
+      label: Proposed Name (kebab-case)
+      placeholder: "e.g., aws-iot-engineer, datadog, eks-pod-identity-migration"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Motivation & Use Cases
+      description: What real-world DevOps / cloud engineering workflows should this cover, and how does it avoid overlapping with existing plugins or skills?
+    validations:
+      required: true
+
+  - type: textarea
+    id: components
+    attributes:
+      label: Proposed Skills, MCP Servers & Guardrails
+      description: List planned skills, bundled or connector MCP servers, read-only/mutation safety hooks, and upstream license/attribution (if partner-built).
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: willingness
+    attributes:
+      label: Contribution Readiness
+      options:
+        - label: I would like to implement and submit a PR for this proposal
+        - label: I have checked README.md and docs/authoring-agent-plugins.md to ensure no duplicate plugin/skill exists

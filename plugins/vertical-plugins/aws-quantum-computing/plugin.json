@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "aws-quantum-computing",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Quantum computing and hybrid algorithm engineering on Amazon Braket for the main agent: OpenQASM 3.0 & Braket SDK circuit design, Managed Simulators (SV1, DM1, TN1), QPU hardware targeting (IonQ, Rigetti, IQM, QuEra), Braket Hybrid Jobs (VQE, QAOA, PennyLane adjoint differentiation), pre-execution shot/task cost governance, and VPC/KMS security.",
   "author": {
     "name": "TalkOps AI"

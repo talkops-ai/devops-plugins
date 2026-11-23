@@ -1,6 +1,6 @@
 {
   "name": "aws-resilience",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Resilience engineering, disaster recovery, and chaos testing for the main agent: AWS Resilience Hub assessments, AWS Fault Injection Service (FIS) chaos experiments with CloudWatch stop conditions, Route 53 Application Recovery Controller (ARC) zonal shift/region switch, and multi-region RTO/RPO DR architecture.",
   "author": {
     "name": "TalkOps AI"

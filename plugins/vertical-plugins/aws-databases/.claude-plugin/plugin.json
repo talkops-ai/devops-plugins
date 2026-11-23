@@ -1,6 +1,6 @@
 {
   "name": "aws-databases",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Full-lifecycle AWS database engineering for the main agent: Aurora (PostgreSQL, MySQL, DSQL), RDS (PostgreSQL, MySQL, MariaDB, Oracle, SQL Server, Db2), DynamoDB, DocumentDB, ElastiCache (Valkey/Redis/Memcached), Keyspaces, Neptune, Timestream for InfluxDB, Performance Insights wait-event triage, Blue/Green deployments, and DMS migrations.",
   "author": {
     "name": "TalkOps AI"

@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "honeycomb",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Official Honeycomb high-cardinality production investigation, wide-event/BubbleUp query patterns, OpenTelemetry metrics, SLO burn-rate & trigger triage, trace verification, and board creation skills with bundled remote MCP configuration (`HONEYCOMB_API_KEY`, `HONEYCOMB_MCP_URL`).",
   "author": {
     "name": "Honeycomb.io",

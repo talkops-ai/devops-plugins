@@ -1,6 +1,6 @@
 {
   "name": "aws-networking",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Enterprise AWS networking and edge perimeter skills for the main agent: multi-AZ VPC design, Transit Gateway, Cloud WAN, VPC Lattice, IPAM, VPC Endpoints/PrivateLink, Direct Connect, Site-to-Site VPN, Route 53, CloudFront, WAF, Shield Advanced, Network Firewall, and Reachability Analyzer diagnostics.",
   "author": {
     "name": "TalkOps AI"

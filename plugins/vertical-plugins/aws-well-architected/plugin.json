@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "aws-well-architected",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Principal Solutions Architecture toolkit for the main agent: AWS Well-Architected Six-Pillar reviews, MADR 3.0 Architecture Decision Records (ADRs), Draw.io & Mermaid architecture diagrams, STRIDE threat modeling, multi-account Landing Zone design, and multi-region DR architecture.",
   "author": {
     "name": "TalkOps AI"

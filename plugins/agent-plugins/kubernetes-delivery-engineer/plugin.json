@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "kubernetes-delivery-engineer",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Principal Kubernetes Application Onboarding, GitOps & Progressive Delivery Engineer: end-to-end workload packaging and release management with Helm (chart discovery, values validation, security scanning, atomic upgrades, rollbacks), GitOps continuous delivery with ArgoCD (repository/project onboarding, sync orchestration, drift remediation, history rollbacks), progressive delivery with Argo Rollouts (Deployment-to-Rollout migration, canary/blue-green strategies, Prometheus AnalysisTemplate gating, experiments), multi-stage freight promotion pipelines with Kargo (Warehouse discovery, Stage DAGs, freight promotion/approval, stage verification), and ingress/traffic routing with Traefik v3 (HTTP/TCP/UDP IngressRoutes, weighted canary services, traffic mirroring, middlewares, TLS/mTLS policies, NGINX annotation migration, and security posture auditing).",
   "author": {
     "name": "TalkOps AI"

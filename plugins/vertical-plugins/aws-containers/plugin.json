@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "aws-containers",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Production container operations for the main agent: Amazon EKS (Auto Mode, Karpenter, Pod Identity, VPC CNI, CoreDNS), Amazon ECS (Fargate, Express Mode, circuit breakers, stopped-task triage), ECR build/push, and container runtime security.",
   "author": {
     "name": "TalkOps AI"

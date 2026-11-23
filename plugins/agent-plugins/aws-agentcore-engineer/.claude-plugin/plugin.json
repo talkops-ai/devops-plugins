@@ -1,6 +1,6 @@
 {
   "name": "aws-agentcore-engineer",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Principal AWS AgentCore and AIOps engineer: architects, scaffolds, deploys, secures, and operates AI agents on Amazon Bedrock AgentCore across Harness/Runtime, Hybrid LangGraph+Strands orchestration, Gateway and MCP 2026-07-28 tools, Two-Step OBO and Request/Response Interceptors, STM/LTM memory with KMS CMKs, Cedar policy engines, Two-Tier CI/CD evaluations, and Day-2 CloudWatch/X-Ray/Application Signals/CloudTrail AIOps.",
   "author": {
     "name": "TalkOps AI"

@@ -1,104 +1,28 @@
 # TalkOps DevOps Plugins
 
-Production-grade agents, skills, slash commands, deterministic safety hooks, and MCP servers for AWS architecture, cloud engineering, FinOps, security, and SRE operations.
+[![License](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](./LICENSE)
+[![Agent Plugins](https://img.shields.io/badge/Agent_Plugins-1.0.0-0A66C2.svg)](https://agent-plugins.org)
+[![MCP](https://img.shields.io/badge/Protocol-MCP-6E40C9.svg)](https://modelcontextprotocol.io)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 
-The marketplace contains **49 plugins** (**446 canonical skills**) across three categories:
+> Open-source DevOps and cloud engineering plugins for AI agents—bundling specialist agents, domain skills, MCP servers, and safety hooks for AWS, Kubernetes, and modern infrastructure operations across Claude Code, Codex, and any Agent Plugins 1.0.0 host.
 
-- **[Agent plugins (20)](./plugins/agent-plugins)**: one named Principal-level AWS or Kubernetes specialist agent per plugin (**401 skill instances / 350 unique skills**, **23 slash commands**). Every skill, slash command, safety hook, and MCP server in the plugin is bound to that agent, and the host runtime spawns the agent as an isolated sub-agent. Each agent plugin is **self-contained**.
-- **[Vertical plugins (21)](./plugins/vertical-plugins)**: focused AWS domain bundles of skills (**246 skill instances / 225 unique skills**), multi-phase slash-command playbooks (**108 total**), safety hooks, and MCP servers that attach **directly to your main agent**, with no sub-agent hand-off. Install a vertical when you want deep AWS domain capability directly in your primary session.
-- **[Partner-built plugins (8)](./plugins/partner-built)**: ecosystem and vendor plugins (`terraform`, `crossplane-aws-engineer`, `launchdarkly`, `coralogix`, `honeycomb`, `elastic`, `neo4j`, and `bronto` — **72 skills**, **21 slash commands**) that ship with Claude Code, portable Agent Plugins 1.0.0, and Codex layouts.
-
----
-
-## Agent Plugins (Sub-Agent Specialists)
-
-Each [agent plugin](./plugins/agent-plugins) spawns a dedicated specialist sub-agent with its own scoped MCP servers, skills, slash commands, and guardrails:
-
-| Function | Agent | Skills | Commands | MCP servers | What it does |
-|---|---|---:|---:|---|---|
-| **Build & deliver** | **[AWS IaC Engineer](./plugins/agent-plugins/aws-iac-engineer)** (`aws-iac-engineer`) | 13 | 0 | `aws-mcp`, `awsiac`, `terraform`, `pulumi` | Multi-engine AWS IaC (CDK, CloudFormation, Terraform/OpenTofu, Pulumi, Crossplane), EKS Karpenter bootstrap IaC, FinOps cost estimates, brownfield imports, and CI/CD & GitOps pipelines. |
-|  | **[AWS Deployment Engineer](./plugins/agent-plugins/aws-deployment-engineer)** (`aws-deployment-engineer`) | 9 | 0 | `aws-mcp`, `awsknowledge`, `awsiac`, `awspricing`, `awsapi`, `cloudwatch` | Codebase discovery → hosting architecture → pre-deploy cost estimate → IaC scaffolding → deployment verification & rollback. |
-|  | **[AWS Serverless Engineer](./plugins/agent-plugins/aws-serverless-engineer)** (`aws-serverless-engineer`) | 24 | 0 | `aws-serverless-mcp`, `aws-documentation-mcp`, `aws-dynamodb-mcp`, `aws-sns-sqs-mcp`, `aws-cloudwatch-mcp`, `aws-billing-cost-mcp` + connectors | Lambda (SnapStart, Power Tuning, Durable Functions, Managed Instances), API Gateway, Step Functions, EventBridge, SQS/SNS, DynamoDB, Aurora DSQL, and SAM/CDK. |
-|  | **[AWS Amplify Engineer](./plugins/agent-plugins/aws-amplify-engineer)** (`aws-amplify-engineer`) | 9 | 0 | `aws-mcp`, `awsknowledge`, `appsync`, `awsiac`, `dynamodb`, `cloudwatch` | Amplify Gen 2 TypeScript-first full-stack web & mobile apps: Cognito Auth, AppSync Data, S3 Storage, Functions, Custom CDK, and Hosting CI/CD. |
-|  | **[AWS Location Engineer](./plugins/agent-plugins/aws-location-engineer)** (`aws-location-engineer`) | 6 | 0 | `aws-mcp`, `awslocation` | Maps, geocoding, places search, route calculation/matrix, geofencing, and device tracking with Amazon Location Service V2. |
-| **Platform & operations** | **[AWS Platform Engineer](./plugins/agent-plugins/aws-platform-engineer)** (`aws-platform-engineer`) | 44 | 0 | `aws-mcp`, `aws-iac`, `iam`, `cloudwatch`, `cloudtrail`, `pricing`, `billing-cost`, `well-architected-security`, `eks`, `ecs`, `serverless`, `awsnetwork`, `finch`, `sns-sqs`, `mq` | EC2, Golden AMIs, EKS (Auto Mode, Karpenter v1 autoscaling, Pod Identity), ECS Fargate, multi-AZ VPC/TGW/Cloud WAN/DX routing & flow/DNS diagnostics, S3/EFS/FSx/Backup storage resiliency, quota checks, and Golden Path landing zones. |
-|  | **[AWS SRE Agent](./plugins/agent-plugins/aws-sre-agent)** (`aws-sre-agent`) | 43 | 0 | `aws-mcp`, `aws-api`, `cloudwatch`, `appsignals`, `prometheus`, `cloudtrail`, `eks`, `ecs`, `network`, `iac`, `cost-explorer`, `awssupport`, `awspricing`, `awsknowledge` + connectors | CloudWatch, Application Signals APM, X-Ray, CloudTrail forensics, Managed Prometheus/Grafana, EKS/ECS health & operations reviews, live-streaming readiness, AWS Health & Support cases, FIS/ARC resilience, COE postmortems, and optional Grafana Cloud/Cribl/ClickStack/Bluebox/Sumo Logic/Wiz connectors. |
-|  | **[AWS DevSecOps Engineer](./plugins/agent-plugins/aws-devsecops-engineer)** (`aws-devsecops-engineer`) | 20 | 11 | `aws-mcp`, `aws-security-agent`, `aws-cloudwatch`, `aws-cloudtrail`, `aws-well-architected-security`, `aws-billing` + connectors | Live incident RCA, Security Hub CSPM triage, least-privilege IAM, IaC/perimeter hardening, AWS Security Agent SAST/DAST/pentest scans & incident enrichment, optional Wiz security context, release gates, and FinOps guardrails. |
-| **Security & cost** | **[AWS Cloud Security Engineer](./plugins/agent-plugins/aws-cloud-security-engineer)** (`aws-cloud-security-engineer`) | 13 | 0 | `aws-mcp`, `iam`, `wa-security`, `cloudtrail`, `awsiac`, `cloudwatch`, `awsnetwork` + connectors | IAM & SCPs/RCPs, KMS & Secrets Manager data protection, Security Hub OCSF CSPM, GuardDuty & CloudTrail incident response & telemetry cost governance, WAF/Network Firewall perimeter, container security, and optional Wiz/Sumo Logic connectors. |
-|  | **[AWS FinOps Engineer](./plugins/agent-plugins/aws-finops-engineer)** (`aws-finops-engineer`) | 7 | 0 | `aws-mcp`, `billing`, `awspricing`, `cloudwatch`, `awsiac` | Cost Explorer & Anomaly Detection, CUR 2.0 Athena SQL analytics, Compute Optimizer P95/P99 rightsizing, CloudTrail/Config/GuardDuty/NAT Gateway cost optimization, Extended Support EOS cost modeling, Savings Plans/RIs, and Shift-Left IaC estimation. |
-| **Architecture & advisory** | **[AWS Solutions Architect](./plugins/agent-plugins/aws-solutions-architect)** (`aws-solutions-architect`) | 24 | 0 | `aws-mcp`, `awsknowledge`, `awspricing`, `iac`, `bcm`, `tm`, `drawio` | Well-Architected 6-pillar reviews, ADRs, STRIDE threat modeling, Draw.io architecture diagrams, multi-account Landing Zones, multi-region DR tiers, and Bedrock/ML architecture. |
-|  | **[AWS Startup Advisor](./plugins/agent-plugins/aws-startup-advisor)** (`aws-startup-advisor`) | 14 | 1 | `aws-mcp`, `awsknowledge`, `aws-pricing`, `aws-billing` | Stage-aware Pre-Seed to Series B architecture, account hygiene audits, Azure/GCP/Heroku → AWS migrations, OpenAI/Anthropic → Bedrock migrations, and AWS Activate optimization. |
-| **Data & AI** | **[AWS Data Engineer](./plugins/agent-plugins/aws-data-engineer)** (`aws-data-engineer`) | 29 | 0 | `aws-mcp`, `dataprocessing`, `redshift`, `s3tables`, `cloudwatch`, `spark-troubleshooting` | S3 Tables (Apache Iceberg), AWS Glue (Catalog, Spark ETL, DQDL Data Quality), Lake Formation governance, Athena, Redshift & support diagnostics, Kinesis/Firehose/MSK operations, MWAA, and OpenSearch expertise. |
-|  | **[AWS Database Engineer](./plugins/agent-plugins/aws-database-engineer)** (`aws-database-engineer`) | 21 | 0 | `awsknowledge`, `aws-mcp`, `dynamodb`, `cloudwatch`, `postgres`, `mysql`, `elasticache`, `awspricing` + connectors | Workload-driven DB selection, Aurora (PostgreSQL/MySQL/DSQL), RDS operational reviews & DevOps health checks, DynamoDB single-table design, ElastiCache (Valkey/Redis), DocumentDB, Keyspaces, Neptune, Performance Insights, and DMS migrations. |
-|  | **[AWS AgentCore Engineer](./plugins/agent-plugins/aws-agentcore-engineer)** (`aws-agentcore-engineer`) | 14 | 0 | `aws-mcp`, `awsknowledge`, `agentcore`, `strands-agents`, `cloudwatch`, `appsignals`, `cloudtrail` + connectors | Build, connect, deploy, harden, debug, evaluate, and operate production AI agents on Amazon Bedrock AgentCore & Strands Agents, including AgentCore/Bedrock operational reviews, observability setup, and optional Arize AX trace investigation. |
-|  | **[AWS SageMaker Engineer](./plugins/agent-plugins/aws-sagemaker-engineer)** (`aws-sagemaker-engineer`) | 35 | 0 | `aws-mcp`, `sagemaker`, `awspricing`, `awsiac`, `cloudwatch` | End-to-end ML engineering on Amazon SageMaker AI & Bedrock: distributed GPU/HyperPod cluster debugging, AI/ML access diagnostics, Bedrock/SageMaker fine-tuning & ops reviews, vLLM/LMI inference endpoints, MLOps Pipelines, and cost/endpoint triage. |
-| **Migration & modernization** | **[AWS Modernization Agent](./plugins/agent-plugins/aws-modernization-agent)** (`aws-modernization-agent`) | 13 | 0 | `aws-transform-mcp`, `aws-mcp`, `awsiac`, `postgres` | 7Rs portfolio assessment, Strangler Fig decomposition, AWS Transform (.NET, Java, mainframe COBOL, SQL Server), VMware MGN replatforming, DMS cutover, and parity verification. |
-|  | **[AWS EKS Upgrade Engineer](./plugins/agent-plugins/aws-eks-upgrade-engineer)** (`aws-eks-upgrade-engineer`) | 7 | 5 | `eks`, `aws-documentation-mcp`, `aws-api`, `aws-mcp`, `cloudwatch`, `awspricing`, `awsiac` + connectors | Read-only EKS upgrade readiness (0–100% score + 60+-gate Best Practices audit), live `managedFields` & Helm deprecated API scanning, Karpenter `KARP-01..14`, AL2→AL2023 `nodeadm` migration, 5-mode VPC CNI surge & ODCR/FDCR sizing, 7-day rollback, and Extended Support EOS cost analysis. |
-| **Kubernetes & cloud-native** | **[Kubernetes Delivery Engineer](./plugins/agent-plugins/kubernetes-delivery-engineer)** (`kubernetes-delivery-engineer`) | 24 | 4 | `helm`, `argocd`, `argo-rollout`, `kargo`, `traefik` | Kubernetes application onboarding, Helm chart packaging & security review, ArgoCD GitOps delivery, Argo Rollouts canary/blue-green & AnalysisTemplate gating, Kargo freight promotion pipelines, and Traefik v3 ingress/traffic routing. |
-|  | **[Kubernetes Observability Engineer](./plugins/agent-plugins/kubernetes-observability-engineer)** (`kubernetes-observability-engineer`) | 32 | 2 | `prometheus`, `alertmanager`, `tempo`, `loki`, `opentelemetry` + connectors | Full-stack Kubernetes observability & SRE: Prometheus 3.0+ PromQL/SLO/rules/TSDB FinOps, Alertmanager triage/routing/silence governance, Tempo TraceQL & latency diffs, Loki 3.x LogQL/Ruler/Compactor/LokiStack, OpenTelemetry Collectors, and optional Grafana Cloud & Cribl connectors. |
-
-Each plugin's own `README.md` lists its skills, slash commands, MCP servers, hooks, and optional connectors.
+[Quick Start](#quick-start) · [Plugin Catalog](#plugin-catalog) · [Safety Model](#safety-model) · [Host Compatibility](#host-compatibility) · [Validation & Evals](#validation--skill-evaluations) · [Contributing](#contributing--community)
 
 ---
 
-## Vertical Plugins (Main-Agent Capability Bundles)
-
-Each [vertical plugin](./plugins/vertical-plugins) binds its skills, slash commands, safety hooks (`secret-safety.py`, `aws-mutation-gate.py`, plus domain linters/gates), and MCP servers **directly to the main agent**:
-
-| Domain | Vertical plugin | Skills | Commands | MCP servers | What it does |
-|---|---|---:|---|---|---|
-| **Foundation** | **[`aws-essentials`](./plugins/vertical-plugins/aws-essentials)** | 6 | `account-baseline-audit` `sdk-snippet` `setup-auth` `troubleshoot-auth` `whoami` | `aws-mcp`, `awsknowledge`, `awsapi` | Foundational AWS skills for the main agent: credential & SSO preflight verification, account baseline security/billing hygiene audits, and SDK best practices for Python (Boto3), JavaScript/TypeScript v3, and Swift. |
-| **Build** | **[`aws-infrastructure-as-code`](./plugins/vertical-plugins/aws-infrastructure-as-code)** | 16 | `bootstrap-app` `brownfield-import` `compare-iac-tools` `generate-iac` `troubleshoot-deploy` `validate-stack` | `aws-mcp`, `awsknowledge`, `awsiac`, `awspricing`, `pulumi` + connectors | End-to-end AWS IaC and deployment skills for the main agent: AWS CDK, CloudFormation, Terraform/OpenTofu, Pulumi, Crossplane/ACK, brownfield resource import, preflight discovery, deployment verification/rollback, and vibe-coded app migration. |
-|  | **[`aws-serverless`](./plugins/vertical-plugins/aws-serverless)** | 26 | `api-gateway-design` `configure-event-bus` `debug-invocation` `optimize-cold-starts` `orchestrate-workflow` `scaffold-function` | `aws-mcp`, `aws-serverless-mcp`, `awsknowledge`, `dynamodb`, `sns-sqs`, `cloudwatch`, `billing` + connectors | Comprehensive serverless engineering skills for the main agent: AWS Lambda (SnapStart, Power Tuning, Durable Functions, Managed Instances), API Gateway, Step Functions, EventBridge (Buses, Scheduler, Pipes), SQS/SNS, Event Source Mappings, DynamoDB single-table modeling, Aurora DSQL, and SAM/CDK deployment. |
-|  | **[`aws-web-and-mobile`](./plugins/vertical-plugins/aws-web-and-mobile)** | 14 | `amplify-gen2-deploy` `amplify-init` `configure-auth` `graphql-api` `location-maps-and-geofencing` | `aws-mcp`, `awsknowledge`, `appsync`, `awslocation`, `awsiac`, `dynamodb`, `cloudwatch` | Full-stack web, mobile, and geospatial engineering for the main agent: AWS Amplify Gen 2 (TypeScript-first Auth/Cognito, Data/AppSync GraphQL, Functions/CDK, Storage/S3, Hosting CI/CD, AI Kit), AWS Blocks, and Amazon Location Service V2 (Maps, Places, Routes, Trackers, Geofences). |
-| **Platform** | **[`aws-compute`](./plugins/vertical-plugins/aws-compute)** | 6 | `beanstalk-ops` `configure-asg` `golden-ami-pipeline` `launch-instance` `rightsize-fleet` | `aws-mcp`, `awsknowledge`, `cloudwatch`, `awspricing`, `awsiac` | EC2 and PaaS compute skills for the main agent: instance family selection (Graviton4, compute/memory/GPU), Auto Scaling Groups, EC2 Image Builder golden AMIs, Elastic Beanstalk, instance profiles, and CloudWatch/Compute Optimizer right-sizing. |
-|  | **[`aws-containers`](./plugins/vertical-plugins/aws-containers)** | 6 | `build-push-image` `container-security-audit` `ecs-troubleshoot` `eks-troubleshoot` `karpenter-rightsize` | `aws-mcp`, `eks`, `ecs`, `finch`, `cloudwatch`, `awspricing`, `awsiac` | Production container operations for the main agent: Amazon EKS (Auto Mode, Karpenter v1 autoscaling, Pod Identity, VPC CNI, CoreDNS), Amazon ECS (Fargate, Express Mode, circuit breakers, stopped-task triage), ECR build/push, and container runtime security. |
-|  | **[`aws-networking`](./plugins/vertical-plugins/aws-networking)** | 18 | `audit-vpc` `design-hub-spoke` `harden-network-perimeter` `trace-connectivity` `troubleshoot-dns` | `aws-mcp`, `awsnetwork`, `cloudwatch`, `awsiac`, `awsknowledge` | Enterprise AWS networking and edge perimeter skills for the main agent: multi-AZ VPC design, Transit Gateway, Cloud WAN, VPC Lattice, IPAM, VPC Endpoints/PrivateLink, Direct Connect, Site-to-Site VPN, Route 53, CloudFront, WAF, Shield Advanced, Network Firewall, and Reachability Analyzer diagnostics. |
-|  | **[`aws-storage`](./plugins/vertical-plugins/aws-storage)** | 6 | `audit-s3-security` `backup-and-replication-plan` `optimize-storage-tiers` `troubleshoot-efs` | `aws-mcp`, `s3tables`, `cloudwatch`, `awspricing`, `awsiac` | Cloud storage architecture, security, and operations for the main agent: Amazon S3 (Storage Lens, Intelligent-Tiering, Object Lock, S3 Tables), EFS performance & mount troubleshooting, EBS gp3/io2, FSx, AWS Backup vault lock, KMS data protection, and cross-region DR replication. |
-|  | **[`aws-messaging-and-streaming`](./plugins/vertical-plugins/aws-messaging-and-streaming)** | 12 | `choose-messaging` `eventbridge-routing` `kinesis-stream-ops` `msk-troubleshoot` `queue-health` | `aws-mcp`, `sns-sqs`, `msk`, `mq`, `cloudwatch`, `awspricing` | Event-driven messaging, streaming, and customer communications for the main agent: SQS, SNS, EventBridge (Event Buses, Pipes, Scheduler), Amazon MSK (Kafka), Kinesis Data Streams, Managed Service for Apache Flink, Amazon MQ, and End-User Messaging (SES, SMS, WhatsApp, Push). |
-| **Data & AI** | **[`aws-databases`](./plugins/vertical-plugins/aws-databases)** | 19 | `aurora-cluster-ops` `blue-green-schema-migration` `caching-strategy` `choose-database` `dynamodb-single-table-design` `troubleshoot-db` | `aws-mcp`, `awsknowledge`, `dynamodb`, `postgres`, `mysql`, `elasticache`, `cloudwatch`, `awspricing` + connectors | Full-lifecycle AWS database engineering for the main agent: Aurora (PostgreSQL, MySQL, DSQL), RDS (PostgreSQL, MySQL, MariaDB, Oracle, SQL Server, Db2), DynamoDB, DocumentDB, ElastiCache (Valkey/Redis/Memcached), Keyspaces, Neptune, Timestream for InfluxDB, Performance Insights wait-event triage, Blue/Green deployments, and DMS migrations. |
-|  | **[`aws-analytics`](./plugins/vertical-plugins/aws-analytics)** | 27 | `glue-data-quality` `lake-formation-governance` `lakehouse-design` `opensearch-ops` `redshift-optimize` `spark-debug` | `aws-mcp`, `awsdataprocessing`, `redshift`, `s3tables`, `cloudwatch`, `spark-troubleshooting`, `awspricing` | Modern data lakehouse and analytics engineering for the main agent: S3 Tables (Apache Iceberg), AWS Glue (Catalog, Spark ETL, Data Quality DQDL), Lake Formation governance, Amazon Athena, Amazon Redshift, Amazon OpenSearch, EMR, MWAA (Airflow), Kinesis/MSK streaming ingestion, and system-table auditing. |
-|  | **[`aws-ai-ml`](./plugins/vertical-plugins/aws-ai-ml)** | 23 | `agentcore-deploy` `bedrock-agent` `genai-rag` `migrate-llm-to-bedrock` `sagemaker-endpoint-triage` `sagemaker-job` | `aws-mcp`, `awsknowledge`, `sagemaker`, `agentcore`, `strands-agents`, `cloudwatch`, `awspricing`, `awsiac` | Production Generative AI, Agentic AI, and ML engineering for the main agent: Amazon Bedrock (Converse API, Knowledge Bases, Guardrails, LLM migration), Amazon Bedrock AgentCore (Build, Connect, Deploy, Harden, Debug, Optimize, Pay) & Strands Agents, and Amazon SageMaker AI (Training, Inference, Fine-Tuning, MLOps Pipelines, Cost Estimation, Endpoint Diagnostics). |
-| **Operate** | **[`aws-observability`](./plugins/vertical-plugins/aws-observability)** | 10 | `create-canary` `postmortem-coe` `promql-slo-burnrate` `query-logs` `setup-apm` `triage-incident` | `aws-mcp`, `cloudwatch`, `appsignals`, `cloudtrail`, `prometheus`, `awssupport`, `awsknowledge` | Full-stack AWS observability and SRE incident triage for the main agent: CloudWatch (Metrics, Logs Insights, Alarms, SLOs, Synthetics Canaries), Application Signals APM, X-Ray, Amazon Managed Prometheus (PromQL burn rates) & Grafana, CloudTrail multi-region auditing, GenAI observability, and COE postmortems. |
-|  | **[`aws-resilience`](./plugins/vertical-plugins/aws-resilience)** | 11 | `assess-resilience` `chaos-experiment` `dr-strategy-matrix` `game-day-runbook` `zonal-shift` | `aws-mcp`, `awsknowledge`, `cloudwatch`, `appsignals`, `cloudtrail`, `awssupport` | Resilience engineering, disaster recovery, and chaos testing for the main agent: AWS Resilience Hub assessments, AWS Fault Injection Service (FIS) chaos experiments with CloudWatch stop conditions, Route 53 Application Recovery Controller (ARC) zonal shift/region switch, and multi-region RTO/RPO DR architecture. |
-| **Secure & govern** | **[`aws-security-identity`](./plugins/vertical-plugins/aws-security-identity)** | 15 | `audit-iam` `audit-kms-and-data-protection` `rotate-secrets` `security-posture` `threat-model-stride` `triage-guardduty-incident` | `aws-mcp`, `iam`, `wa-security`, `aws-security-agent`, `cloudtrail`, `awsiac`, `cloudwatch`, `tm` | Cloud security, identity governance, and incident forensics for the main agent: IAM least-privilege & Access Analyzer, AWS Organizations SCPs/RCPs, KMS & Secrets Manager, Security Hub CSPM (OCSF), GuardDuty & CloudTrail incident triage, WAF/Network Firewall perimeter hardening, container workload security, and STRIDE threat modeling. |
-|  | **[`aws-cost-optimization`](./plugins/vertical-plugins/aws-cost-optimization)** | 3 | `cost-anomaly` `cur-athena-query` `estimate-architecture` `rightsize-commitment` `waste-hunt-audit` | `aws-mcp`, `billing`, `awspricing`, `cloudwatch`, `awsiac` | Cloud FinOps and cost engineering for the main agent: Cost Explorer & Anomaly Detection, CUR 2.0 Athena SQL analytics, Compute Optimizer P95/P99 right-sizing, Savings Plans & Reserved Instance commitment modeling, Shift-Left IaC cost estimation, AWS Budgets/Invoicing governance, and waste elimination. |
-|  | **[`aws-well-architected`](./plugins/vertical-plugins/aws-well-architected)** | 6 | `architecture-diagram` `generate-adr` `landing-zone-design` `review` `threat-model` | `aws-mcp`, `awsknowledge`, `wa-security`, `awspricing`, `awsiac`, `tm`, `drawio` | Principal Solutions Architecture toolkit for the main agent: AWS Well-Architected Six-Pillar reviews, MADR 3.0 Architecture Decision Records (ADRs), Draw.io & Mermaid architecture diagrams, STRIDE threat modeling, multi-account Landing Zone design, and multi-region DR architecture. |
-| **Modernize** | **[`aws-migration`](./plugins/vertical-plugins/aws-migration)** | 11 | `cloud-to-aws-migration` `convert-schema` `migration-plan` `modernize-code` `strangler-fig-cutover` | `aws-mcp`, `aws-transform-mcp`, `awsiac`, `postgres`, `awspricing`, `cloudwatch` | Application, database, and cloud-to-AWS migration skills for the main agent: 7 Rs migration strategy & Strangler Fig decomposition, AWS Transform (.NET, Java, mainframe, SQL), AWS MGN & App2Container, DMS schema conversion & CDC cutover, Babelfish/SQL remediation, and Azure/GCP/Heroku to AWS migrations. |
-| **Specialty** | **[`aws-marketplace-seller`](./plugins/vertical-plugins/aws-marketplace-seller)** | 4 | `create-private-offer-workflow` `integrate-metering` `publish-catalog-product` `verify-seller-setup` | `aws-mcp`, `awsknowledge`, `awspricing`, `awsiac`, `cloudwatch` | End-to-end AWS Marketplace ISV & Seller engineering for the main agent: Metering & Entitlement APIs (ResolveCustomer, BatchMeterUsage, RegisterUsage, GetEntitlements), Catalog API product listings (StartChangeSet for SaaS, Container, AMI, GenAI), Private Offers & CPPO with Flexible Payment Scheduler, Agreement API, and SaaS control-plane onboarding. |
-|  | **[`aws-end-user-computing`](./plugins/vertical-plugins/aws-end-user-computing)** | 4 | `optimize-euc-costs` `provision-workspaces-fleet` `setup-agent-access` `troubleshoot-stream` | `aws-mcp`, `awsknowledge`, `cloudwatch`, `awspricing`, `awsiac` | AWS End User Computing (EUC) fleet architecture and operations for the main agent: Amazon WorkSpaces Personal & Pools, Active Directory & IAM Identity Center integration, WSP streaming tuning, AutoStop/AlwaysOn cost optimization, Amazon AppStream 2.0 (Elastic, On-Demand, Always-On fleets & Image Builder), WorkSpaces Secure Browser, EUC CloudWatch triage, and WorkSpaces Agent Access. |
-|  | **[`aws-quantum-computing`](./plugins/vertical-plugins/aws-quantum-computing)** | 3 | `debug-quantum-task` `design-circuit` `estimate-braket-cost` `launch-hybrid-job` | `aws-mcp`, `awsknowledge`, `cloudwatch`, `awspricing` | Quantum computing and hybrid algorithm engineering on Amazon Braket for the main agent: OpenQASM 3.0 & Braket SDK circuit design, Managed Simulators (SV1, DM1, TN1), QPU hardware targeting (IonQ, Rigetti, IQM, QuEra), Braket Hybrid Jobs (VQE, QAOA, PennyLane adjoint differentiation), pre-execution shot/task cost governance, and VPC/KMS security. |
-
-See the [vertical plugins index](./plugins/vertical-plugins/README.md) for the mapping between each vertical plugin and its counterpart specialist agent plugin(s).
-
----
-
-## Partner-Built Plugins
-
-| Plugin | Vendor / Maintainer | License | Skills | Commands | What it holds |
-|---|---|---|---:|---:|---|
-| [`terraform`](./plugins/partner-built/terraform) | HashiCorp | MPL-2.0 | 16 | 0 | All 16 official Terraform skills: style, modules, tests, search/import, Stacks, Sentinel/OPA policy, Azure Verified Modules, and provider development. Cloud-agnostic; attaches to the main agent. |
-| [`crossplane-aws-engineer`](./plugins/partner-built/crossplane-aws-engineer) | TalkOps | MIT | 1 | 0 | Crossplane AWS platform engineering skill and specialist agent: Upbound `provider-family-aws`, XRDs, Claims, Pipeline Compositions, IRSA authentication, tested fixtures, and offline schema validation scripts. |
-| [`launchdarkly`](./plugins/partner-built/launchdarkly) | LaunchDarkly | Apache-2.0 | 19 | 4 | Official LaunchDarkly feature flag management, progressive guarded rollouts, experimentation, observability (logs, traces, errors, sessions), and AI Config / Agent Control graph skills with bundled `.mcp.json` / `mcp.json` (`LAUNCHDARKLY_ACCESS_TOKEN`). Attaches to the main agent. |
-| [`coralogix`](./plugins/partner-built/coralogix) | Coralogix | Apache-2.0 | 19 | 4 | Official Coralogix DataPrime log/span analytics, PromQL metrics, alerts, cases, service catalog, RUM, AI Center, dashboards, Olly, and TCO data-usage skills with bundled `.mcp.json` / `mcp.json` (`CORALOGIX_API_KEY`, `CORALOGIX_REGION`). Attaches to the main agent. |
-| [`honeycomb`](./plugins/partner-built/honeycomb) | Honeycomb.io | Apache-2.0 | 7 | 4 | Official Honeycomb high-cardinality production investigation, wide-event/BubbleUp query patterns, OpenTelemetry metrics, SLO burn-rate & trigger triage, trace verification, and board creation skills with bundled `.mcp.json` / `mcp.json` (`HONEYCOMB_API_KEY`, `HONEYCOMB_MCP_URL`). Attaches to the main agent. |
-| [`elastic`](./plugins/partner-built/elastic) | Elastic | Apache-2.0 | 6 | 4 | Official Elastic SRE incident triage, service reliability, Kubernetes investigation, Cloud Security Posture (CSP), and LLM observability skills with bundled `.mcp.json` / `mcp.json` (`ELASTIC_KIBANA_URL`, `ELASTIC_API_KEY`). Attaches to the main agent. |
-| [`neo4j`](./plugins/partner-built/neo4j) | Neo4j, Inc. | Apache-2.0 | 1 | 2 | Official Neo4j 2026.x read-only diagnostics and `A1`–`A12` support runbooks for self-managed Neo4j on Amazon EKS, ECS, and EC2 with bundled `.mcp.json` / `mcp.json` (`NEO4J_MCP_AUTH`, `NEO4J_URI`). Attaches to the main agent. |
-| [`bronto`](./plugins/partner-built/bronto) | Bronto | Apache-2.0 | 3 | 3 | Official Bronto dataset/collection discovery, SQL-style log search and time-series aggregation, and production error spike investigation skills with bundled `.mcp.json` / `mcp.json` (`BRONTO_API_KEY`, `BRONTO_REGION`). Attaches to the main agent. |
-
----
-
-## Getting started
+## Quick Start
 
 ### Claude Code
 
 ```bash
-# Add the marketplace
+# 1. Add the marketplace
 claude plugin marketplace add talkops-ai/devops-plugins
 
-# Install specialist sub-agents
+# 2. Install specialist sub-agents...
 claude plugin install aws-sre-agent@talkops-devops-plugins
 claude plugin install aws-iac-engineer@talkops-devops-plugins
+claude plugin install kubernetes-delivery-engineer@talkops-devops-plugins
 
 # ...or attach domain capabilities directly to your main agent
 claude plugin install aws-networking@talkops-devops-plugins
@@ -106,22 +30,18 @@ claude plugin install aws-serverless@talkops-devops-plugins
 claude plugin install aws-databases@talkops-devops-plugins
 ```
 
-Claude delegates to an installed agent plugin automatically based on its description, or you can invoke it explicitly with `@agent-<plugin>:<agent>`, or run it as the main thread:
+**Usage:**
+- Specialist agents delegate automatically, or run directly via `claude --agent aws-sre-agent:aws-sre-agent` (or `@agent-<plugin>:<agent>`).
+- Vertical skills activate automatically on relevant tasks, or run multi-phase workflows via `/<plugin>:<command>` (e.g., `/aws-networking:trace-connectivity`, `/aws-databases:troubleshoot-db`).
 
-```bash
-claude --agent aws-sre-agent:aws-sre-agent
-```
-
-When using a vertical plugin, skills activate automatically on relevant tasks or explicitly via `/<plugin>:<skill>`, and multi-phase operational workflows run via `/<plugin>:<command>` (for example, `/aws-networking:trace-connectivity` or `/aws-databases:troubleshoot-db`).
-
-### Codex
+### OpenAI Codex
 
 ```bash
 # Add the marketplace (Codex reads .agents/plugins/marketplace.json)
 codex plugin marketplace add talkops-ai/devops-plugins
 ```
 
-Then install plugins from the Plugins Directory (`/plugins`), or enable them in `~/.codex/config.toml`:
+Install plugins from `/plugins` or enable them in `~/.codex/config.toml`:
 
 ```toml
 [plugins."aws-iac-engineer@talkops-devops-plugins"]
@@ -131,99 +51,190 @@ enabled = true
 enabled = true
 ```
 
-Codex loads each plugin's skills, MCP servers (from the portable `mcp.json`), and hooks. Approve the hooks when Codex asks you to trust them. Codex plugins can't bundle agents directly, so each agent plugin also ships a Codex custom agent definition. To use a specialist as a sub-agent in Codex, copy its `.toml` into your agents directory:
+To run an agent plugin as a custom sub-agent in Codex, copy its `.toml` into `~/.codex/agents/`:
 
 ```bash
 cp plugins/agent-plugins/aws-iac-engineer/codex/agents/aws-iac-engineer.toml ~/.codex/agents/
 ```
 
-Codex starts MCP servers with a minimal environment. If a server can't see your AWS profile, set `AWS_PROFILE` and `AWS_REGION` for it in `~/.codex/config.toml`.
+### Other Agent Plugins 1.0.0 Hosts
 
-### Other agent hosts
+Every plugin ships a portable [Agent Plugins 1.0.0](https://agent-plugins.org) root layout (`plugin.json`, `skills/`, `mcp.json`) compatible with **Cursor**, **GitHub Copilot**, **Gemini CLI / Antigravity**, **Windsurf**, and other spec-compliant hosts.
 
-Every agent, vertical, and partner plugin follows the portable [Agent Plugins 1.0.0](https://agent-plugins.org) format: `plugin.json`, `skills/`, and `mcp.json` at the plugin root. Any host that implements it (Cursor, GitHub Copilot, Gemini CLI / Antigravity, Windsurf, and others) can load the skills and MCP servers. Sub-agents, slash commands, and hooks depend on the host.
+<details>
+<summary><b>Prerequisites</b></summary>
 
-| Capability | Claude Code | Codex | Other Agent Plugins hosts |
+- [`uv`](https://docs.astral.sh/uv/) (`uvx`) to launch stdio MCP servers, and Node.js (`npx`) for `@drawio/mcp`.
+- **AWS CLI v2** with credentials from your environment (`AWS_PROFILE`, IAM Identity Center SSO, or an instance/task role). Set `AWS_REGION` in your environment (defaults to `us-east-1` in Claude Code).
+- **Python 3** on `PATH` for deterministic safety hooks.
+- **Optional connectors** (endpoint-bound DBs, scoped Lambda/Step Functions tools, Docker-based Terraform MCP, or third-party observability connectors) are documented in each plugin's `CONNECTORS.md`.
+
+</details>
+
+---
+
+## Plugin Catalog
+
+Plugins are organized into three categories depending on how you want capabilities loaded:
+
+| Category | Directory | How It Loads | Best For |
 |---|---|---|---|
-| Skills | yes | yes | yes |
-| Bundled MCP servers | yes (`.mcp.json`) | yes (`mcp.json`) | yes (`mcp.json`) |
-| Specialist sub-agent | yes (`agents/`) | copy `codex/agents/<name>.toml` | host-dependent |
-| Hooks (secret safety, mutation gate, linters) | yes | yes, after trust | host-dependent |
-| Slash commands (`commands/*.md`) | yes | no (skills still apply) | host-dependent |
+| **Agent plugins** | [`plugins/agent-plugins`](./plugins/agent-plugins/README.md) | Isolated specialist sub-agent with scoped MCP tools & hooks | End-to-end Principal-level AWS & Kubernetes engineering roles |
+| **Vertical plugins** | [`plugins/vertical-plugins`](./plugins/vertical-plugins/README.md) | Attaches directly to your main agent (no sub-agent hand-off) | Deep AWS domain skills and slash-command playbooks in your primary session |
+| **Partner-built plugins** | [`plugins/partner-built`](./plugins/partner-built/README.md) | Attaches to your main agent (or vendor agent) | Official vendor & cloud-native ecosystem integrations |
 
-### Prerequisites
+<details>
+<summary><b>Browse Agent Plugins (Specialist Sub-Agents)</b></summary>
 
-- [`uv`](https://docs.astral.sh/uv/) so that `uvx` can launch the stdio MCP servers, and Node.js (`npx`) for `@drawio/mcp`.
-- AWS CLI v2. Credentials come from your environment (`AWS_PROFILE`, IAM Identity Center SSO, or an instance/task role). Foundational plugins bundle `signing-in-to-aws` and `aws-auth-and-environment-preflight`.
-- `AWS_REGION` defaults to `us-east-1` in Claude Code when it isn't set; on other hosts, set it in your environment.
-- Python 3 on `PATH` for the deterministic safety hooks.
-- Optional connection-bound connectors (e.g., RDS/Aurora endpoints, scoped Lambda/Step Functions tools, or the Docker-based `hashicorp/terraform-mcp-server`) are documented in each plugin's `CONNECTORS.md`.
+| Function | Plugin | Focus |
+|---|---|---|
+| **Build & deliver** | [`aws-iac-engineer`](./plugins/agent-plugins/aws-iac-engineer) | CDK, CloudFormation, Terraform/OpenTofu, Pulumi, Crossplane, Karpenter IaC, brownfield imports, and GitOps CI/CD. |
+| | [`aws-deployment-engineer`](./plugins/agent-plugins/aws-deployment-engineer) | Codebase discovery, target architecture, FinOps cost estimates, IaC scaffolding, and post-deploy verification & rollback. |
+| | [`aws-serverless-engineer`](./plugins/agent-plugins/aws-serverless-engineer) | Lambda (SnapStart, Durable Functions, Managed Instances), API Gateway, Step Functions, EventBridge, SQS/SNS, DynamoDB, Aurora DSQL, and SAM/CDK. |
+| | [`aws-amplify-engineer`](./plugins/agent-plugins/aws-amplify-engineer) | Amplify Gen 2 TypeScript-first full-stack apps: Cognito Auth, AppSync Data, S3 Storage, Functions, Custom CDK, and Hosting CI/CD. |
+| | [`aws-location-engineer`](./plugins/agent-plugins/aws-location-engineer) | Amazon Location Service V2 maps, geocoding, places search, routing/matrices, geofencing, and fleet tracking. |
+| **Platform & operations** | [`aws-platform-engineer`](./plugins/agent-plugins/aws-platform-engineer) | EC2, Golden AMIs, EKS (Auto Mode, Karpenter, Pod Identity), ECS Fargate, VPC/TGW/Cloud WAN/DX diagnostics, S3/EFS/FSx/Backup, and Golden Path landing zones. |
+| | [`aws-sre-agent`](./plugins/agent-plugins/aws-sre-agent) | CloudWatch, Application Signals, X-Ray, CloudTrail forensics, Prometheus/Grafana, EKS/ECS health & ops reviews, AWS Health/Support, FIS/ARC resilience, COE postmortems, and observability connectors. |
+| | [`aws-devsecops-engineer`](./plugins/agent-plugins/aws-devsecops-engineer) | Live incident RCA, Security Hub CSPM triage, least-privilege IAM, IaC/perimeter hardening, AWS Security Agent SAST/DAST/pentest scans, release gates, and FinOps guardrails. |
+| **Security & cost** | [`aws-cloud-security-engineer`](./plugins/agent-plugins/aws-cloud-security-engineer) | IAM & SCP/RCP Data Perimeters, KMS & Secrets Manager, Security Hub (OCSF), GuardDuty/CloudTrail IR & telemetry cost governance, WAF/Network Firewall, and Wiz/Sumo Logic connectors. |
+| | [`aws-finops-engineer`](./plugins/agent-plugins/aws-finops-engineer) | Cost Explorer & Anomaly Detection, CUR 2.0 Athena SQL, Compute Optimizer right-sizing, CloudTrail/Config/GuardDuty/NAT GW optimization, Extended Support EOS modeling, and Savings Plans/RIs. |
+| **Architecture & advisory** | [`aws-solutions-architect`](./plugins/agent-plugins/aws-solutions-architect) | Well-Architected 6-pillar reviews, ADRs, STRIDE threat modeling, Draw.io architecture diagrams, multi-account Landing Zones, multi-region DR, and Bedrock/ML design. |
+| | [`aws-startup-advisor`](./plugins/agent-plugins/aws-startup-advisor) | Pre-Seed to Series B architecture, account hygiene audits, Azure/GCP/Heroku → AWS migrations, OpenAI/Anthropic → Bedrock migrations, and AWS Activate optimization. |
+| **Data & AI** | [`aws-data-engineer`](./plugins/agent-plugins/aws-data-engineer) | S3 Tables (Apache Iceberg), Glue Spark ETL & DQDL, Lake Formation, Athena, Redshift, Kinesis/Firehose/MSK, MWAA, and OpenSearch. |
+| | [`aws-database-engineer`](./plugins/agent-plugins/aws-database-engineer) | Aurora (PostgreSQL/MySQL/DSQL), RDS ops reviews & DevOps health checks, DynamoDB, ElastiCache (Valkey/Redis), DocumentDB, Keyspaces, Neptune, Performance Insights, and DMS. |
+| | [`aws-agentcore-engineer`](./plugins/agent-plugins/aws-agentcore-engineer) | Build, connect, deploy, harden, debug, evaluate, and operate AI agents on Amazon Bedrock AgentCore & Strands Agents, plus optional Arize AX trace investigation. |
+| | [`aws-sagemaker-engineer`](./plugins/agent-plugins/aws-sagemaker-engineer) | SageMaker AI & Bedrock ML engineering: HyperPod GPU cluster debugging, AI/ML access diagnostics, fine-tuning, vLLM/LMI inference, MLOps Pipelines, and ops reviews. |
+| **Migration & upgrades** | [`aws-modernization-agent`](./plugins/agent-plugins/aws-modernization-agent) | 7 Rs portfolio assessment, Strangler Fig decomposition, AWS Transform (.NET, Java, mainframe COBOL, SQL Server), VMware MGN replatforming, and DMS cutover. |
+| | [`aws-eks-upgrade-engineer`](./plugins/agent-plugins/aws-eks-upgrade-engineer) | Read-only EKS upgrade readiness scoring, Best Practices audits, deprecated API scanning, Karpenter migrations, AL2→AL2023 `nodeadm` migration, CNI surge sizing, rollback, and EOS cost analysis. |
+| **Kubernetes & cloud-native** | [`kubernetes-delivery-engineer`](./plugins/agent-plugins/kubernetes-delivery-engineer) | Kubernetes application onboarding, Helm packaging & security review, ArgoCD GitOps, Argo Rollouts canary/blue-green gating, Kargo freight promotion, and Traefik v3 routing. |
+| | [`kubernetes-observability-engineer`](./plugins/agent-plugins/kubernetes-observability-engineer) | Full-stack Kubernetes observability & SRE: Prometheus 3.0+, Alertmanager, Grafana Tempo (TraceQL), Grafana Loki 3.x (LogQL), OpenTelemetry Collectors, and Grafana Cloud/Cribl connectors. |
+
+See [`plugins/agent-plugins/README.md`](./plugins/agent-plugins/README.md) for full skill, command, and MCP server details.
+
+</details>
+
+<details>
+<summary><b>Browse Vertical Plugins (Main-Agent AWS Domain Bundles)</b></summary>
+
+| Domain | Plugin | Focus |
+|---|---|---|
+| **Foundation** | [`aws-essentials`](./plugins/vertical-plugins/aws-essentials) | Credential & SSO preflight, account baseline audits, and Python/JS-TS/Swift SDK best practices. |
+| **Build** | [`aws-infrastructure-as-code`](./plugins/vertical-plugins/aws-infrastructure-as-code) | CDK, CloudFormation, Terraform/OpenTofu, Pulumi, Crossplane/ACK, brownfield imports, and deployment verification. |
+| | [`aws-serverless`](./plugins/vertical-plugins/aws-serverless) | Lambda, API Gateway, Step Functions, EventBridge, SQS/SNS, ESMs, DynamoDB, Aurora DSQL, and SAM/CDK. |
+| | [`aws-web-and-mobile`](./plugins/vertical-plugins/aws-web-and-mobile) | Amplify Gen 2 (Auth, Data/AppSync, Storage, Functions, Hosting, AI Kit), AWS Blocks, and Amazon Location Service V2. |
+| **Platform** | [`aws-compute`](./plugins/vertical-plugins/aws-compute) | EC2 instance selection (Graviton4/GPU), Auto Scaling Groups, EC2 Image Builder golden AMIs, Elastic Beanstalk, and right-sizing. |
+| | [`aws-containers`](./plugins/vertical-plugins/aws-containers) | EKS (Auto Mode, Karpenter, Pod Identity, VPC CNI), ECS Fargate/Express Mode, ECR build/push, and container security. |
+| | [`aws-networking`](./plugins/vertical-plugins/aws-networking) | Multi-AZ VPC, Transit Gateway, Cloud WAN, VPC Lattice, Direct Connect, VPN, Route 53, CloudFront, WAF, Shield, and Network Firewall. |
+| | [`aws-storage`](./plugins/vertical-plugins/aws-storage) | S3 (Storage Lens, Intelligent-Tiering, Object Lock, S3 Tables), EFS, EBS, FSx, AWS Backup, KMS, and cross-region DR. |
+| | [`aws-messaging-and-streaming`](./plugins/vertical-plugins/aws-messaging-and-streaming) | SQS, SNS, EventBridge, Amazon MSK (Kafka), Kinesis, Managed Flink, Amazon MQ, and End-User Messaging (SES/SMS/WhatsApp). |
+| **Data & AI** | [`aws-databases`](./plugins/vertical-plugins/aws-databases) | Aurora (PG/MySQL/DSQL), RDS, DynamoDB, DocumentDB, ElastiCache (Valkey/Redis), Keyspaces, Neptune, Timestream, Performance Insights, and DMS. |
+| | [`aws-analytics`](./plugins/vertical-plugins/aws-analytics) | S3 Tables (Iceberg), Glue ETL & DQDL, Lake Formation, Athena, Redshift, OpenSearch, EMR, MWAA, and streaming ingestion. |
+| | [`aws-ai-ml`](./plugins/vertical-plugins/aws-ai-ml) | Amazon Bedrock, Bedrock AgentCore & Strands Agents, and SageMaker AI training, inference, fine-tuning, and MLOps. |
+| **Operate** | [`aws-observability`](./plugins/vertical-plugins/aws-observability) | CloudWatch, Application Signals APM, X-Ray, Managed Prometheus/Grafana, CloudTrail auditing, and COE postmortems. |
+| | [`aws-resilience`](./plugins/vertical-plugins/aws-resilience) | AWS Resilience Hub, Fault Injection Service (FIS) chaos experiments, Route 53 ARC zonal shift/region switch, and DR matrices. |
+| **Secure & govern** | [`aws-security-identity`](./plugins/vertical-plugins/aws-security-identity) | IAM least privilege, SCPs/RCPs, KMS & Secrets Manager, Security Hub (OCSF), GuardDuty, CloudTrail forensics, and STRIDE threat modeling. |
+| | [`aws-cost-optimization`](./plugins/vertical-plugins/aws-cost-optimization) | Cost Explorer, CUR 2.0 Athena SQL, Compute Optimizer right-sizing, Savings Plans/RIs, and Shift-Left IaC cost estimation. |
+| | [`aws-well-architected`](./plugins/vertical-plugins/aws-well-architected) | Well-Architected 6-pillar reviews, MADR ADRs, Draw.io & Mermaid diagrams, STRIDE threat modeling, and Landing Zone design. |
+| **Modernize** | [`aws-migration`](./plugins/vertical-plugins/aws-migration) | 7 Rs strategy, Strangler Fig decomposition, AWS Transform, MGN, App2Container, DMS cutover, and Azure/GCP/Heroku → AWS migrations. |
+| **Specialty** | [`aws-marketplace-seller`](./plugins/vertical-plugins/aws-marketplace-seller) | AWS Marketplace ISV metering & entitlements, Catalog API listings, Private Offers/CPPO, and SaaS control-plane onboarding. |
+| | [`aws-end-user-computing`](./plugins/vertical-plugins/aws-end-user-computing) | Amazon WorkSpaces Personal & Pools, AppStream 2.0, WorkSpaces Secure Browser, EUC cost tuning, and Agent Access. |
+| | [`aws-quantum-computing`](./plugins/vertical-plugins/aws-quantum-computing) | Amazon Braket OpenQASM 3.0 & SDK circuits, Managed Simulators, QPU targeting, Hybrid Jobs, and shot cost governance. |
+
+See [`plugins/vertical-plugins/README.md`](./plugins/vertical-plugins/README.md) for slash commands, MCP servers, and agent alternatives.
+
+</details>
+
+<details>
+<summary><b>Browse Partner-Built Plugins (Ecosystem & Vendor Integrations)</b></summary>
+
+| Plugin | Vendor / Maintainer | License | Focus |
+|---|---|---|---|
+| [`terraform`](./plugins/partner-built/terraform) | HashiCorp | MPL-2.0 | Official HashiCorp Terraform skills: HCL style, modules, tests, search/import, Stacks, Sentinel/OPA policy, Azure Verified Modules, and provider development. |
+| [`crossplane-aws-engineer`](./plugins/partner-built/crossplane-aws-engineer) | TalkOps | MIT | Crossplane AWS platform engineering: Upbound `provider-family-aws`, XRDs, Claims, Pipeline Compositions, IRSA auth, and offline validation. |
+| [`launchdarkly`](./plugins/partner-built/launchdarkly) | LaunchDarkly | Apache-2.0 | Feature flag management, progressive guarded rollouts, experimentation, observability, and AI Config / Agent Control graphs. |
+| [`coralogix`](./plugins/partner-built/coralogix) | Coralogix | Apache-2.0 | DataPrime log/span analytics, PromQL metrics, alerts, cases, service catalog, RUM, AI Center, dashboards, Olly, and TCO data-usage audits. |
+| [`honeycomb`](./plugins/partner-built/honeycomb) | Honeycomb.io | Apache-2.0 | High-cardinality production investigation, BubbleUp/wide-event queries, OpenTelemetry metrics, SLO burn-rate triage, trace verification, and boards. |
+| [`elastic`](./plugins/partner-built/elastic) | Elastic | Apache-2.0 | SRE incident triage, service reliability, Kubernetes investigation, Cloud Security Posture (CSP), and LLM observability. |
+| [`neo4j`](./plugins/partner-built/neo4j) | Neo4j, Inc. | Apache-2.0 | Read-only Neo4j diagnostics and support runbooks for self-managed Neo4j on Amazon EKS, ECS, and EC2. |
+| [`bronto`](./plugins/partner-built/bronto) | Bronto | Apache-2.0 | Dataset/collection discovery, SQL-style log search and time-series aggregation, and production error spike investigation. |
+
+See [`plugins/partner-built/README.md`](./plugins/partner-built/README.md) for slash commands and MCP environment variables.
+
+</details>
 
 ---
 
-## Safety model
+## Safety Model
 
-Three layers protect your AWS accounts from accidental secret exposure or unapproved mutations across **both agent plugins and vertical plugins**:
+Three defense-in-depth layers protect your cloud accounts and Kubernetes clusters across every plugin:
 
-1. **Server side (all hosts).** Bundled `awslabs` MCP servers default to read-only flags where supported (`--readonly`, `ALLOW_WRITE=false`, `READ_OPERATIONS_ONLY=true`). Dedicated read-only specialist agents (`aws-sre-agent`, `aws-eks-upgrade-engineer`, `aws-finops-engineer`, `aws-solutions-architect`) also run `aws-mcp` with `--read-only` and/or enforce read-only hook locks.
+1. **Read-only MCP defaults.** Bundled `awslabs` and `talkops-mcp` servers start in read-only mode where supported (`--read-only`, `ALLOW_WRITE=false`, `MCP_ALLOW_WRITE=false`, `READ_OPERATIONS_ONLY=true`). Read-only specialists enforce read-only locks end-to-end.
 2. **Deterministic `PreToolUse` / `PostToolUse` hooks.**
-   - **`secret-safety.py`**: Blocks shell commands and AWS MCP calls across all 49 plugins that attempt to print, exfiltrate, or hardcode AWS secret keys, session tokens, `.env` secrets, or private keys.
-   - **`aws-mutation-gate.py`**: Intercepts mutating `aws`, `terraform`, `tofu`, `cdk`, `sam`, `pulumi`, `eksctl`, `kubectl`, `helm`, `copilot`, and `amplify` operations across all 18 AWS agent plugins, all 21 vertical plugins, and AWS/IaC partner plugins (`terraform`, `crossplane-aws-engineer`). It blocks mutations outright for read-only agents and requires explicit user confirmation otherwise (`TALKOPS_AWS_MUTATION_GATE=off|warn|ask|deny`).
-   - **Domain-specific hooks**: `session-aws-preflight.py` and `session-argocd-preflight.py` (credential, region, and GitOps preflight), `iac-post-write-lint.py` (`cfn-lint` / `cfn-guard` / `terraform validate` after template edits), `validate-drawio.sh` (`PostToolUse` AWS4 `.drawio` XML validator), `finops-sql-and-cost-gate.py` (Athena CUR SQL partition & cost guardrails), `turn-completion-verifier.py`, and Aurora DSQL `PostToolUse` transaction checks.
-3. **IAM.** The ultimate boundary. See [docs/iam-guardrails.md](./docs/iam-guardrails.md) for read-only roles and AWS MCP condition keys.
+   - **`secret-safety.py`** blocks shell commands and MCP calls across all plugins that attempt to print, exfiltrate, or hardcode credentials, session tokens, `.env` secrets, or private keys.
+   - **`aws-mutation-gate.py`** intercepts mutating `aws`, `terraform`, `tofu`, `cdk`, `sam`, `pulumi`, `eksctl`, `kubectl`, `helm`, `copilot`, and `amplify` operations—blocking outright on read-only agents and requiring confirmation otherwise (`TALKOPS_AWS_MUTATION_GATE=off|warn|ask|deny`).
+   - **Domain hooks** provide credential/GitOps preflight (`session-aws-preflight.py`, `session-argocd-preflight.py`), IaC linters (`iac-post-write-lint.py`, `iac-verification-gate.py`), AWS4 `.drawio` validation, and Athena CUR cost guardrails (`finops-sql-and-cost-gate.py`).
+3. **IAM & RBAC least privilege.** Hooks and prompts are defense-in-depth; IAM remains the ultimate boundary. See [docs/iam-guardrails.md](./docs/iam-guardrails.md).
 
 ---
 
-## How MCP servers bind to plugins
+## Host Compatibility
 
-1. Each server is declared in the plugin's `.mcp.json` (Claude Code) and `mcp.json` (portable Agent Plugins 1.0.0 schema).
-2. In **agent plugins**, the agent's `tools:` allowlist grants that server by pattern (`mcp__plugin_<plugin>_<server>__*`), isolating each sub-agent to its own MCP servers.
-3. In **vertical plugins**, there is no sub-agent wrapper — the bundled skills, slash commands, hooks, and MCP servers attach directly to the main agent.
-4. **Connectors.** Servers that require a user-supplied target endpoint, secret ARN, or local Docker runtime at startup (Aurora DSQL, DocumentDB, Neptune, Keyspaces, Valkey, Memcached, SQL Server, Oracle, Timestream for InfluxDB, scoped Lambda/Step Functions tools, and `terraform`) are documented in `CONNECTORS.md` with copy-pasteable `claude mcp add`, `codex mcp add`, and `config.toml` snippets. See [docs/mcp-server-coverage.md](./docs/mcp-server-coverage.md) for the full 62-server coverage matrix.
+| Capability | Claude Code | OpenAI Codex | Other Agent Plugins 1.0.0 Hosts |
+|---|---|---|---|
+| Skills (`skills/`) | Yes | Yes | Yes |
+| Bundled MCP servers | Yes (`.mcp.json`) | Yes (`mcp.json`) | Yes (`mcp.json`) |
+| Specialist sub-agent | Yes (`agents/`) | Copy `codex/agents/<name>.toml` | Host-dependent |
+| Deterministic hooks | Yes | Yes (after trust) | Host-dependent |
+| Slash commands (`commands/*.md`) | Yes | No (skills still apply) | Host-dependent |
+
+Bundled MCP servers start automatically when a plugin is enabled; connection-bound servers (endpoints, secrets, or Docker runtimes) are documented as optional connectors in each plugin's `CONNECTORS.md`. See [docs/mcp-server-coverage.md](./docs/mcp-server-coverage.md) for the full coverage matrix.
 
 ---
 
-## Repository layout
+## Validation & Skill Evaluations
 
-```
-.claude-plugin/marketplace.json   # Claude Code marketplace catalog (name: talkops-devops-plugins)
-.agents/plugins/marketplace.json  # Codex marketplace catalog
-plugins/
-  agent-plugins/<agent>/          # .claude-plugin/plugin.json · agents/<agent>.md · skills/ · commands/ · .mcp.json · hooks/
-                                  # plugin.json · mcp.json (portable) · .codex-plugin/plugin.json · codex/agents/<agent>.toml
-  vertical-plugins/<domain>/      # .claude-plugin/plugin.json · skills/ · commands/ · .mcp.json · hooks/ · CONNECTORS.md
-                                  # plugin.json · mcp.json (portable) · .codex-plugin/plugin.json
-  partner-built/<plugin>/         # vendor/ecosystem plugins: same three layouts (Claude Code, Portable, Codex)
-evals/
-  README.md                       # open-source 3-layer skill evaluation architecture & usage guide
-  schemas/                        # JSON Schemas for execution (evals.json) and trigger (trigger_evals.json) suites
-  skills/<skill-name>/            # canonical evals.json, trigger_evals.json & optional files/ fixtures (446 skills · 7,448 checks)
-scripts/
-  _plugin_lib.py                  # shared dependency-free frontmatter and schema helpers
-  validate_plugins.py             # structural, binding, portable-format, and Codex validation across all 49 plugins
-  eval_skills.py                  # static audit, 4-quadrant trigger routing, and isolated execution eval runner
-docs/
-  authoring-agent-plugins.md      # standards for authoring and maintaining agent, vertical, and partner plugins
-  iam-guardrails.md               # IAM patterns that back read-only and approval rules
-  mcp-server-coverage.md          # how each MCP server is used across agent, vertical, and partner plugins
-  skill-evals-handover-guide.md   # authoring & debugging guide for skill evaluations
-  skill-evals-rollout-plan.md     # phased rollout & live-verification tracker across canonical skills
-```
-
-## Validating plugins & running skill evaluations
-
-All **49 plugins** and **446 canonical skill evaluation suites** (**3,459** execution cases + **3,989** 4-quadrant trigger queries = **7,448** checks, including **274** full multi-quadrant suites live-verified `100% GREEN` against read-only AWS & Kubernetes MCP environments) are validated before opening a PR:
+All plugins and canonical skills are backed by an open-source, three-layer validation and evaluation pipeline (`evals/` stays at the repo root so users incur zero install overhead):
 
 ```bash
-python3 scripts/validate_plugins.py                                      # structural, manifest, hook, and MCP binding checks
+python3 scripts/validate_plugins.py                                      # manifest, binding, hook, portable & Codex checks
 python3 scripts/validate_plugins.py --claude                             # also run `claude plugin validate`
-python3 scripts/eval_skills.py static                                    # static skill, link, script, schema & open-source hygiene audit
-python3 scripts/eval_skills.py trigger --skill <name> --harness claude   # 4-quadrant trigger precision/recall eval (runs in .eval-runs/)
-python3 scripts/eval_skills.py run --skill <name> --harness claude       # isolated end-to-end skill, MCP & safety-hook execution eval
+python3 scripts/eval_skills.py static                                    # static skill, link, script, drift & hygiene audit
+python3 scripts/eval_skills.py trigger --skill <name> --harness claude   # 4-quadrant trigger precision/recall eval
+python3 scripts/eval_skills.py run --skill <name> --harness claude       # isolated end-to-end skill, MCP & safety-hook eval
 ```
 
-See [docs/authoring-agent-plugins.md](./docs/authoring-agent-plugins.md) and [evals/README.md](./evals/README.md) before adding or modifying a plugin or skill.
+See [evals/README.md](./evals/README.md) for schemas and authoring rules, and [docs/authoring-agent-plugins.md](./docs/authoring-agent-plugins.md) for plugin specifications.
+
+<details>
+<summary><b>Repository Layout</b></summary>
+
+```text
+.claude-plugin/marketplace.json   # Claude Code marketplace catalog
+.agents/plugins/marketplace.json  # Codex marketplace catalog
+plugins/
+  agent-plugins/<agent>/          # Specialist sub-agent plugins (Claude Code, Portable, Codex)
+  vertical-plugins/<domain>/      # Main-agent AWS domain bundles
+  partner-built/<vendor>/         # Vendor & cloud-native ecosystem plugins
+evals/                            # Canonical skill evaluation suites & JSON Schemas
+scripts/                          # Plugin validator (validate_plugins.py) & eval runner (eval_skills.py)
+docs/                             # Authoring guide, IAM guardrails, MCP coverage, evals guides
+llms.txt                          # Machine-readable repository index for LLMs & coding agents
+```
+
+</details>
+
+---
+
+## Contributing & Community
+
+Contributions are welcome—new skills, bug fixes, safety hooks, evaluation suites, and new agent, vertical, or partner-built plugins.
+
+- **[CONTRIBUTING.md](./CONTRIBUTING.md)** — How to update skills, sync shared mirrors, add new plugins, author evals, and pass pre-PR checks.
+- **[docs/authoring-agent-plugins.md](./docs/authoring-agent-plugins.md)** — Technical specification for manifests, MCP bindings, connectors, and hooks.
+- **[SECURITY.md](./SECURITY.md)** — Responsible vulnerability disclosure and defense-in-depth safety model.
+- **[CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)** — Community standards and expectations.
+- **[llms.txt](./llms.txt)** — Structured repository map for AI assistants and LLM crawlers.
 
 ## License
 
-Apache-2.0. See [LICENSE](./LICENSE) and [NOTICE](./NOTICE) for upstream attribution.
+Apache-2.0. See [LICENSE](./LICENSE) and [NOTICE](./NOTICE) for full license terms and upstream attribution.

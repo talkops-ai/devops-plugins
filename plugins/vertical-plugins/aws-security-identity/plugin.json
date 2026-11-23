@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "aws-security-identity",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Cloud security, identity governance, and incident forensics for the main agent: IAM least-privilege & Access Analyzer, AWS Organizations SCPs/RCPs, KMS & Secrets Manager, Security Hub CSPM (OCSF), GuardDuty & CloudTrail incident triage, WAF/Network Firewall perimeter hardening, container workload security, and STRIDE threat modeling.",
   "author": {
     "name": "TalkOps AI"

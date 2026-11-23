@@ -1,6 +1,6 @@
 {
   "name": "aws-analytics",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Modern data lakehouse and analytics engineering for the main agent: S3 Tables (Apache Iceberg), AWS Glue (Catalog, Spark ETL, Data Quality DQDL), Lake Formation governance, Amazon Athena, Amazon Redshift, Amazon OpenSearch, EMR, MWAA (Airflow), Kinesis/MSK streaming ingestion, and system-table auditing.",
   "author": {
     "name": "TalkOps AI"

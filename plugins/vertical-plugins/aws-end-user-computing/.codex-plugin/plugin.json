@@ -1,6 +1,6 @@
 {
   "name": "aws-end-user-computing",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "AWS End User Computing (EUC) fleet architecture and operations for the main agent: Amazon WorkSpaces Personal & Pools, Active Directory & IAM Identity Center integration, WSP streaming tuning, AutoStop/AlwaysOn cost optimization, Amazon AppStream 2.0 (Elastic, On-Demand, Always-On fleets & Image Builder), WorkSpaces Secure Browser, EUC CloudWatch triage, and WorkSpaces Agent Access.",
   "author": {
     "name": "TalkOps AI"

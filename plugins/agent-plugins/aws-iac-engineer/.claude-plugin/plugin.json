@@ -1,6 +1,6 @@
 {
   "name": "aws-iac-engineer",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Principal AWS Infrastructure-as-Code Engineer: architects, authors, validates, estimates cost, deploys, and troubleshoots AWS infrastructure across CDK, CloudFormation, Terraform/OpenTofu (aws + awscc), Pulumi, and Crossplane (Upbound provider-family-aws), with CodePipeline/GitHub Actions/GitLab CI/Atlantis/ArgoCD GitOps delivery and brownfield resource imports.",
   "author": {
     "name": "TalkOps AI"

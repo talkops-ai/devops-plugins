@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "aws-infrastructure-as-code",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "End-to-end AWS IaC and deployment skills for the main agent: AWS CDK, CloudFormation, Terraform/OpenTofu, Pulumi, Crossplane/ACK, brownfield resource import, preflight discovery, deployment verification/rollback, and vibe-coded app migration.",
   "author": {
     "name": "TalkOps AI"

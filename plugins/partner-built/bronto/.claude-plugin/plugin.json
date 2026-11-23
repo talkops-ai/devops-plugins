@@ -1,6 +1,6 @@
 {
   "name": "bronto",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Official Bronto dataset/collection discovery, SQL-style log search and time-series aggregation, and production error spike investigation skills with bundled remote MCP configuration (`BRONTO_API_KEY`, `BRONTO_REGION`).",
   "author": {
     "name": "Bronto",
